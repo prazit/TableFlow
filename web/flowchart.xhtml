@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <h:head>
+        <title>TFlow Editor</title>
+
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    </h:head>
+    <h:body>
+        <h:outputStylesheet library="css" name="tflow.css${editorCtl.forceReloadResources}" target="head"/>
+        <h:outputStylesheet library="css" name="editor.css${editorCtl.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="leader-line.min.js" target="head"/>
+        <h:outputScript library="js" name="flowchart.js${editorCtl.forceReloadResources}" target="head"/>
+
+        <div class="flow-chart">
+
+            <div class="source section">
+                <p:panelGrid columns="5">
+
+                    <p:outputPanel styleClass="data-source">
+                        <p>Trade Finance</p>
+                        <p:graphicImage library="images" name="database.png"/>
+                        <span>Database</span>
+                        <div class="start-plug"></div>
+                    </p:outputPanel>
+
+                    <p:spacer width="50"/>
+
+                    <p:outputPanel styleClass="data-source active">
+                        <div class="end-plug"></div>
+                        <p>ADJINTR</p>
+                        <p:graphicImage library="images" name="sql.png"/>
+                        <span>SQL</span>
+                        <div class="start-plug"></div>
+                    </p:outputPanel>
+
+                    <p:spacer width="50"/>
+
+                    <p:panel header="" styleClass="data-table">
+                        <f:facet name="actions">
+                            <div class="end-plug"></div>
+                            <div>
+                                <p:graphicImage library="images" name="sql.png"/>
+                                <b>Fixed Account</b>
+                                <p:commandButton type="button"
+                                                 styleClass="ui-button-secondary"
+                                                 icon="pi pi-ellipsis-h"/>
+                            </div>
+                            <div class="start-plug" id="tb1SP"></div>
+                        </f:facet>
+
+                        <div class="string column">
+                            <span class="pi pi-dollar"/>
+                            <label>String Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="integer column">
+                            <span class="pi pi-dollar"/>
+                            <label>Integer Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="decimal column">
+                            <span class="pi pi-dollar"/>
+                            <label>Deicmal Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="date column">
+                            <span class="pi pi-dollar"/>
+                            <label>Date Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <p:separator title="output"/>
+
+                        <div class="output column">
+                            <p:graphicImage library="images" name="database.png"/>
+                            <label>Data Warehouse - (Fixed Accounts)</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="output column">
+                            <p:graphicImage library="images" name="local.png"/>
+                            <label>CSV - (file-name)</label>
+                            <div class="start-plug"></div>
+                        </div>
+                    </p:panel>
+
+
+                    <p:spacer width="50"/>
+
+                    <p:spacer width="50"/>
+
+                    <p:outputPanel styleClass="data-source">
+                        <div class="end-plug"></div>
+                        <p>MORE</p>
+                        <p:graphicImage library="images" name="sql.png"/>
+                        <span>SQL</span>
+                        <div class="start-plug"></div>
+                    </p:outputPanel>
+
+                    <p:spacer width="50"/>
+
+                    <p:panel header="" styleClass="data-table active">
+                        <f:facet name="actions">
+                            <div class="end-plug"></div>
+                            <div>
+                                <p:graphicImage library="images" name="sql.png"/>
+                                <b>More</b>
+                                <p:commandButton type="button"
+                                                 styleClass="ui-button-secondary"
+                                                 icon="pi pi-ellipsis-h"/>
+                            </div>
+                            <div class="start-plug"></div>
+                        </f:facet>
+
+                        <div class="string column">
+                            <span class="pi pi-dollar"/>
+                            <label>More String Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="integer column">
+                            <span class="pi pi-dollar"/>
+                            <label>More Integer Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="decimal column">
+                            <span class="pi pi-dollar"/>
+                            <label>More Deicmal Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="date column">
+                            <span class="pi pi-dollar"/>
+                            <label>More Date Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <p:separator title="output"/>
+
+                        <div class="output column">
+                            <p:graphicImage library="images" name="database.png"/>
+                            <label>Data Warehouse - (Fixed Accounts)</label>
+                            <div class="start-plug"></div>
+                        </div>
+                    </p:panel>
+
+
+                    <p:outputPanel styleClass="data-source">
+                        <p>Trade Finance 1</p>
+                        <p:graphicImage library="images" name="ftp.png"/>
+                        <span>SFTP</span>
+                        <div class="start-plug"></div>
+                    </p:outputPanel>
+
+                    <p:spacer width="50"/>
+
+                    <p:outputPanel styleClass="data-source">
+                        <div>
+                            <div class="end-plug"></div>
+                            <p>ADJINTR</p>
+                            <p:graphicImage library="images" name="csv.png"/>
+                            <span>CSV</span>
+                            <div class="start-plug"></div>
+                        </div>
+                    </p:outputPanel>
+
+                    <p:spacer width="50"/>
+
+                    <p:panel header="" styleClass="data-table">
+                        <f:facet name="actions">
+                            <div class="end-plug"></div>
+                            <div>
+                                <p:graphicImage library="images" name="csv.png"/>
+                                <b>Interest Rate Table</b>
+                                <p:commandButton type="button"
+                                                 styleClass="ui-button-secondary"
+                                                 icon="pi pi-ellipsis-h"/>
+                            </div>
+                            <div class="start-plug"></div>
+                        </f:facet>
+
+                        <div class="string column">
+                            <span class="pi pi-dollar"/>
+                            <label>String Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="integer column">
+                            <span class="pi pi-dollar"/>
+                            <label>Integer Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="decimal column">
+                            <span class="pi pi-dollar"/>
+                            <label>Deicmal Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="date column">
+                            <span class="pi pi-dollar"/>
+                            <label>Date Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <p:separator title="output"/>
+
+                        <div class="output column">
+                            <p:graphicImage library="images" name="database.png"/>
+                            <label>Data Warehouse - (Interest Rate Table)</label>
+                            <div class="start-plug"></div>
+                        </div>
+                    </p:panel>
+
+                </p:panelGrid>
+            </div>
+
+            <div class="transform section">
+                <p:panelGrid columns="4">
+
+                    <p:spacer width="50"/>
+
+                    <p:panel header="" styleClass="function">
+                        <f:facet name="actions">
+                            <div>
+                                <p:graphicImage library="images" name="transform.png"/>
+                                <b>Percent to Rate</b>
+                                <p:commandButton type="button"
+                                                 styleClass="ui-button-secondary"
+                                                 icon="pi pi-ellipsis-h"/>
+                            </div>
+                            <div class="start-plug"></div>
+                        </f:facet>
+
+                        <div class="string column">
+                            <div class="end-plug"></div>
+                            <span class="pi pi-dollar"/>
+                            <label>String parameter</label>
+                        </div>
+
+                        <div class="decimal column">
+                            <div class="end-plug"></div>
+                            <span class="pi pi-dollar"/>
+                            <label>Deicmal parameter</label>
+                        </div>
+                    </p:panel>
+
+                    <p:spacer width="50"/>
+
+                    <p:panel header="" styleClass="data-table">
+                        <f:facet name="actions">
+                            <div class="end-plug" id="tb2EP"></div>
+                            <div>
+                                <p:graphicImage library="images" name="transfer.png"/>
+                                <b>Adjust Interest Rate</b>
+                                <p:commandButton type="button"
+                                                 styleClass="ui-button-secondary"
+                                                 icon="pi pi-ellipsis-h"/>
+                            </div>
+                            <div class="start-plug"></div>
+                        </f:facet>
+
+                        <div class="string column">
+                            <div class="end-plug"></div>
+                            <span class="pi pi-dollar"/>
+                            <label>String Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="integer column">
+                            <div class="end-plug"></div>
+                            <span class="pi pi-dollar"/>
+                            <label>Integer Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="decimal column">
+                            <div class="end-plug"></div>
+                            <span class="pi pi-dollar"/>
+                            <label>Deicmal Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="date column">
+                            <div class="end-plug"></div>
+                            <span class="pi pi-dollar"/>
+                            <label>Date Column</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <p:separator title="transform"/>
+
+                        <div class="transform column">
+                            <p:graphicImage library="images" name="transform.png"/>
+                            <label>Remove No Change Accounts</label>
+                        </div>
+
+                        <p:separator title="output"/>
+
+                        <div class="output column">
+                            <p:graphicImage library="images" name="database.png"/>
+                            <label>Data Warehouse - (Adjust Interest Rate)</label>
+                            <div class="start-plug"></div>
+                        </div>
+
+                        <div class="output column">
+                            <p:graphicImage library="images" name="ftp.png"/>
+                            <label>CSV - (ADJINTR.csv)</label>
+                            <div class="start-plug"></div>
+                        </div>
+                    </p:panel>
+
+                </p:panelGrid>
+            </div>
+
+            <div class="output section">
+                <p:panelGrid columns="4">
+
+                    <p:spacer width="50px"/>
+
+                    <p:outputPanel styleClass="step-output">
+                        <div class="end-plug"></div>
+                        <p>ADJINTR</p>
+                        <p:graphicImage library="images" name="csv.png"/>
+                        <span>CSV</span>
+                        <div class="start-plug"></div>
+                    </p:outputPanel>
+
+                    <p:spacer width="50px"/>
+
+                    <p:outputPanel styleClass="step-output">
+                        <div class="end-plug"></div>
+                        <p>Trade Finance 1</p>
+                        <p:graphicImage library="images" name="ftp.png"/>
+                        <span>SFTP</span>
+                    </p:outputPanel>
+
+                </p:panelGrid>
+            </div>
+
+        </div>
+
+        <script>
+            var leaderLine1, leaderLine2, leaderLine3;
+            $(function () {
+                var startElement = document.getElementById('tb1SP'),
+                    startElement2 = document.getElementById('element-3'),
+                    endElement = document.getElementById('tb2EP');
+
+                // New leader line has red color and size 8.
+                var line1 = {
+                    path: 'magnet',
+                    outline: false,
+                    color: 'gray',
+                    size: 1,
+
+                    startSocket: 'right',
+                    startPlug: 'behind',
+
+                    endSocket: 'left',
+                    endPlug: 'behind'
+                };
+                var line2 = {
+                    path: 'straight',
+                    outline: false,
+                    color: 'silver',
+                    size: 2,
+
+                    startSocket: 'right',
+                    startPlug: 'disc',
+                    startPlugSize: 2,
+
+                    endSocket: 'left',
+                    endPlug: 'arrow',
+                    endPlugSize: 2
+                };
+
+                leaderLine1 = new LeaderLine(startElement, endElement, line1);
+                /*leaderLine2 = new LeaderLine(startElement2, endElement, line2);*/
+            });
+        </script>
+
+    </h:body>
+</f:view>
+</html>

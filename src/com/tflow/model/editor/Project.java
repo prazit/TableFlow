@@ -1,0 +1,79 @@
+package com.tflow.model.editor;
+
+import java.util.List;
+import java.util.Map;
+
+public class Project {
+    private String name;
+    private Batch batch;
+    private int activeStepIndex;
+    private List<Step> stepList;
+    private Map<String, DataSource> dataSourceList;
+    private Map<String, SFTP> sftpList;
+    private Map<String, Variable> variableList;
+    private String lastElementId;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Batch getBatch() {
+        return batch;
+    }
+
+    public void setBatch(Batch batch) {
+        this.batch = batch;
+    }
+
+    public int getActiveStepIndex() {
+        return activeStepIndex;
+    }
+
+    public void setActiveStepIndex(int activeStepIndex) {
+        this.activeStepIndex = activeStepIndex;
+    }
+
+    public List<Step> getStepList() {
+        return stepList;
+    }
+
+    public void setStepList(List<Step> stepList) {
+        this.stepList = stepList;
+    }
+
+    public Map<String, DataSource> getDataSourceList() {
+        return dataSourceList;
+    }
+
+    public void setDataSourceList(Map<String, DataSource> dataSourceList) {
+        this.dataSourceList = dataSourceList;
+    }
+
+    public Map<String, SFTP> getSftpList() {
+        return sftpList;
+    }
+
+    public void setSftpList(Map<String, SFTP> sftpList) {
+        this.sftpList = sftpList;
+    }
+
+    public Map<String, Variable> getVariableList() {
+        return variableList;
+    }
+
+    public void setVariableList(Map<String, Variable> variableList) {
+        this.variableList = variableList;
+    }
+
+    public String getLastElementId() {
+        return lastElementId;
+    }
+
+    public void setLastElementId(String lastElementId) {
+        this.lastElementId = lastElementId;
+    }
+}

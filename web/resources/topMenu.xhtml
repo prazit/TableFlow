@@ -1,0 +1,55 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui">
+
+    <h:outputStylesheet library="css" name="tflow.css${editorCtl.forceReloadResources}" target="head"/>
+
+    <div class="top-area fixed-top no-border no-padding no-margin">
+        <p:graphicImage library="images" name="logo.jpg" styleClass="logo"/>
+        <div class="top-menu">
+            <h:form>
+                <p:menubar>
+
+                    <p:menuitem value="Light" icon="pi pi-fw pi-sun"
+                                actionListener="${editorCtl.lightTheme}"
+                                rendered="${app.workspace.user.theme=='DARK'}" title="Switch to Light Theme"/>
+                    <p:menuitem value="Dark" icon="pi pi-fw pi-moon"
+                                actionListener="${editorCtl.darkTheme}"
+                                rendered="${app.workspace.user.theme=='LIGHT'}" title="Switch to Dark Theme"/>
+
+                    <p:divider layout="vertical"/>
+
+                    <p:submenu label="Project" icon="pi pi-fw pi-file">
+                        <p:submenu label="New" icon="pi pi-fw pi-plus">
+                            <p:menuitem value="Project..." icon="pi pi-fw pi-file"/>
+                            <p:menuitem value="Project from Existing Project..." icon="pi pi-fw pi-file"/>
+                            <p:menuitem value="Project from Template..." icon="pi pi-fw pi-file"/>
+                        </p:submenu>
+                        <p:menuitem value="Open..." icon="pi pi-fw pi-open"/>
+                        <p:divider/>
+                        <p:menuitem value="Import..." icon="pi pi-fw pi-import"/>
+                        <p:menuitem value="Export..." icon="pi pi-fw pi-export"/>
+                    </p:submenu>
+
+                    <p:divider layout="vertical"/>
+
+                    <p:submenu label="Administrator" icon="pi pi-fw pi-user">
+                        <p:menuitem value="Activities" icon="pi pi-fw pi-user-plus"/>
+                        <p:divider/>
+                        <p:menuitem value="Users" icon="pi pi-fw pi-user-plus"/>
+                        <p:menuitem value="Roles" icon="pi pi-fw pi-user-plus"/>
+                        <p:menuitem value="Permissions" icon="pi pi-fw pi-user-plus"/>
+                        <p:divider/>
+                        <p:menuitem value="Projects" icon="pi pi-fw pi-user-minus"/>
+                    </p:submenu>
+
+                    <p:divider layout="vertical"/>
+
+                    <p:menuitem value="Logout" icon="pi pi-fw pi-power-off"/>
+                </p:menubar>
+            </h:form>
+        </div>
+    </div>
+
+</f:view>

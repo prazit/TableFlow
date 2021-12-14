@@ -1,0 +1,15 @@
+#/* Current:  */
+
+#/* project */
+project.name=TFlow
+version.name=(Development) version
+build.date=19/10/2020 11:04
+
+#/* major changes */
+version.number=0
+
+#/* minor changes */
+revision.number=0
+
+#/* fix bugs */
+build.number=1

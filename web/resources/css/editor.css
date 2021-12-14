@@ -1,0 +1,262 @@
+:root {
+    --plug-size: 8px;
+    --string-color: red;
+    --integer-color: green;
+    --decimal-color: blue;
+    --date-color: yellow;
+    --table-color: gray;
+}
+
+body .ui-panelgrid .ui-panelgrid-cell {
+    /*border: 1px dotted var(--surface-c); // for Layout Debuging */
+    border: 0;
+}
+
+.screen-area > .ui-splitter {
+    height: 100%;
+    border: 0;
+    background-color: var(--surface-b);
+}
+
+/*.main-panel .tool-panel.ui-panel .ui-panel-titlebar {
+    background-color: var(--surface-a);
+}*/
+
+.main-panel .tool-panel.ui-panel .ui-panel-actions {
+    width: 100%;
+}
+
+.main-panel .tool-panel.ui-panel .ui-panel-actions .ui-menu.ui-menubar {
+    border: 0;
+    padding: 0;
+    border-radius: calc(var(--border-radius) - 1px);
+}
+
+.zoom-factor input {
+    width: 3em;
+    height: 1.5em;
+    text-align: center;
+}
+
+.zoom-factor .ui-slider {
+    width: 15em;
+    border-color: var(--surface-c);
+}
+
+.main-panel .tool-panel.ui-panel .ui-panel-content {
+    /*border-top: 0;*/
+    padding: 0;
+}
+
+
+iframe {
+    border: 0;
+    height: 100%;
+    width: 100%;
+    position: static;
+}
+
+/* -- flow-chart -- */
+
+.flow-chart {
+    background-color: var(--surface-a);
+}
+
+.section {
+    display: table-cell;
+    padding: calc(2 * var(--padding));
+    background-color: var(--surface-a);
+    vertical-align: middle;
+}
+
+.section + .section {
+    border-left: var(--surface-c) dashed 4px;
+}
+
+.data-source,
+.step-output {
+    position: relative; /* relative position to support the end-plug */
+    border: var(--surface-c) solid 1px;
+    border-radius: var(--border-radius);
+    background-color: var(--surface-e);
+    min-width: 8rem;
+    padding: var(--padding);
+    text-align: center;
+}
+
+.data-source.active,
+.step-output.active {
+    background-color: var(--surface-c);
+}
+
+.step-output > div {
+    display: table-cell;
+}
+
+.step-output > div + div {
+    border-left: var(--surface-c) solid 1px;
+}
+
+.data-source img,
+.step-output img {
+    width: 4rem;
+}
+
+.data-source p,
+.data-source span,
+.step-output p,
+.step-output span {
+    margin: var(--margin);
+    white-space: nowrap;
+    display: block;
+}
+
+.data-source p,
+.step-output p {
+    font-weight: bold;
+}
+
+body .ui-panel.data-table .ui-panel-titlebar,
+body .ui-panel.data-table .ui-panel-content {
+    background-color: var(--surface-e);
+}
+
+body .ui-panel.data-table.active .ui-panel-titlebar,
+body .ui-panel.data-table.active .ui-panel-content {
+    background-color: var(--surface-c);
+}
+
+/*body .flow-chart .ui-panel .ui-panel-titlebar {
+    padding: var(--padding);
+}*/
+
+body .flow-chart .ui-panel .ui-panel-titlebar .ui-panel-actions {
+    width: 100%;
+    white-space: nowrap;
+    text-align: center;
+    position: relative; /* relative position to support the end-plug */
+}
+
+body .flow-chart .ui-panel .ui-panel-titlebar .ui-panel-actions button {
+    margin-left: var(--margin);
+    margin-right: calc(var(--margin) + var(--plug-size));
+}
+
+body .flow-chart .ui-panel .ui-panel-content {
+    padding: 0;
+}
+
+body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.ui-panel .ui-panel-content .column {
+    position: relative; /* relative position to support the end-plug */
+    width: 100%;
+    padding: var(--padding);
+    white-space: nowrap;
+}
+
+.ui-panel .ui-panel-content .column + .column {
+    border-top: var(--surface-c) solid 1px;
+}
+
+.column div + span {
+    margin-left: calc(var(--plug-size) + var(--margin));
+}
+
+.column label {
+    margin-right: calc(var(--margin) + var(--plug-size));
+}
+
+.ui-panel .ui-panel-actions img,
+.ui-panel .ui-panel-content .column img {
+    height: 1em;
+    margin-left: var(--margin);
+    margin-right: var(--margin);
+}
+
+.column.string span {
+    color: var(--string-color);
+}
+
+.column.integer span {
+    color: var(--integer-color);
+}
+
+.column.decimal span {
+    color: var(--decimal-color);
+}
+
+.column.date span {
+    color: var(--date-color);
+}
+
+.column.output span {
+    color: var(--date-color);
+}
+
+.start-plug,
+.end-plug {
+    display: inline-block;
+    height: var(--plug-size);
+    width: var(--plug-size);
+    border-radius: 50%;
+    position: absolute;
+    top: calc(50% - (var(--plug-size) / 2));
+}
+
+.ui-panel-actions .start-plug {
+    right: 0;
+}
+
+.data-source .start-plug,
+.step-output .start-plug,
+.column .start-plug {
+    right: var(--padding);
+}
+
+.data-source .end-plug,
+.step-output .end-plug {
+    left: var(--padding);
+}
+
+.ui-panel-actions .end-plug {
+    left: 0;
+}
+
+.ui-panel-actions .start-plug,
+.ui-panel-actions .end-plug,
+.data-source .start-plug,
+.data-source .end-plug,
+.step-output .start-plug,
+.step-output .end-plug {
+    background-color: var(--table-color);
+}
+
+.string .start-plug,
+.string .end-plug {
+    background-color: var(--string-color);
+}
+
+.integer .start-plug,
+.integer .end-plug {
+    background-color: var(--integer-color);
+}
+
+.decimal .start-plug,
+.decimal .end-plug {
+    background-color: var(--decimal-color);
+}
+
+.date .start-plug,
+.date .end-plug {
+    background-color: var(--date-color);
+}
+
+.output .start-plug,
+.output .end-plug {
+    background-color: var(--table-color);
+}
