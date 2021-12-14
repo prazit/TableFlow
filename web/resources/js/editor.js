@@ -31,6 +31,10 @@ function toggleRight() {
 
 var flowchart, zoomFactor;
 
+function zoomStart() {
+    document.getElementById('flowchart').contentWindow.hideLines();
+}
+
 function zoom() {
     if (undefined === zoomFactor)
         zoomFactor = document.getElementById('actionForm:zoomFactor');
@@ -38,6 +42,15 @@ function zoom() {
         flowchart = $(document.getElementById('flowchart').contentWindow.document.getElementsByTagName('html'));
     console.log('zoom:' + zoomFactor.value);
     flowchart.css('zoom', zoomFactor.value);
+}
+
+function zoomEnd(){
+    var flowchartWindow = document.getElementById('flowchart').contentWindow;
+    var scrollX = flowchartWindow.scrollX;
+    var scrollY = flowchartWindow.scrollY;
+    flowchartWindow.scrollTo(0,0);
+    flowchartWindow.showLines();
+    flowchartWindow.scrollTo(scrollX,scrollY);
 }
 
 $(function () {

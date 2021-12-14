@@ -57,7 +57,7 @@
                             <div class="start-plug" id="tb1SP"></div>
                         </f:facet>
 
-                        <div class="string column">
+                        <div class="string column" id="tb1c1">
                             <span class="pi pi-dollar"/>
                             <label>String Column</label>
                             <div class="start-plug"></div>
@@ -273,7 +273,7 @@
                             <div class="start-plug"></div>
                         </f:facet>
 
-                        <div class="string column">
+                        <div class="string column" id="tb3c1">
                             <div class="end-plug"></div>
                             <span class="pi pi-dollar"/>
                             <label>String Column</label>
@@ -355,10 +355,13 @@
 
         <script>
             var leaderLine1, leaderLine2, leaderLine3;
+            var lines = [];
+
             $(function () {
                 var startElement = document.getElementById('tb1SP'),
-                    startElement2 = document.getElementById('element-3'),
-                    endElement = document.getElementById('tb2EP');
+                    startElement2 = document.getElementById('tb1c1'),
+                    endElement = document.getElementById('tb2EP'),
+                    endElement2 = document.getElementById('tb3c1');
 
                 // New leader line has red color and size 8.
                 var line1 = {
@@ -374,23 +377,41 @@
                     endPlug: 'behind'
                 };
                 var line2 = {
-                    path: 'straight',
+                    path: 'magnet',
                     outline: false,
-                    color: 'silver',
-                    size: 2,
+                    color: 'red',
+                    size: 1,
 
                     startSocket: 'right',
                     startPlug: 'disc',
                     startPlugSize: 2,
 
                     endSocket: 'left',
-                    endPlug: 'arrow',
+                    endPlug: 'disc',
                     endPlugSize: 2
                 };
 
                 leaderLine1 = new LeaderLine(startElement, endElement, line1);
-                /*leaderLine2 = new LeaderLine(startElement2, endElement, line2);*/
+                leaderLine2 = new LeaderLine(startElement2, endElement2, line2);
+
+                lines[0] = leaderLine1;
+                lines[1] = leaderLine2;
             });
+
+            function hideLines() {
+                for(var i=0; i &lt; lines.length; i++)
+                    lines[i].hide();
+
+            }
+
+            function showLines() {
+                for(var i=0; i &lt; lines.length; i++) {
+                    lines[i].position();
+                    lines[i].show();
+                }
+            }
+
+            window.reposition = reposition;
         </script>
 
     </h:body>

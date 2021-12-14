@@ -69,12 +69,12 @@
 
                                         <p:menuitem styleClass="zoom-factor">
                                             <p:outputLabel value="Zoom : "/>
-                                            <p:inputText id="zoomFactor" value="1" onkeyup="zoom()"/>
+                                            <p:inputText id="zoomFactor" value="1" onkeyup="zoomStart();zoom();zoomEnd();"/>
                                         </p:menuitem>
 
                                         <p:menuitem styleClass="zoom-factor">
                                             <p:slider for="zoomFactor" value="1" minValue="0.25" maxValue="2.5"
-                                                      step="0.01" range="max" onSlide="zoom()"/>
+                                                      step="0.01" range="max" onSlideStart="zoomStart()" onSlide="zoom()" onSlideEnd="zoomEnd()"/>
                                         </p:menuitem>
                                     </p:menubar>
 
