@@ -140,11 +140,13 @@ body .tool-panel.ui-panel {
 .tool-panel.ui-panel .ui-panel-actions .close {
     background-color: var(--surface-a);
     border-color: var(--surface-c);
+    color: var(--surface-c);
 }
 
 .tool-panel.ui-panel .ui-panel-actions .close:hover {
     background-color: var(--surface-c);
     border-color: var(--surface-a);
+    color: var(--surface-a);
 }
 
 /* SPECIFIC */

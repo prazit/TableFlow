@@ -234,27 +234,18 @@
                     <p:spacer width="50"/>
 
                     <p:panel header="" styleClass="function">
-                        <f:facet name="actions">
-                            <div>
-                                <p:graphicImage library="images" name="transform.png"/>
-                                <b>Percent to Rate</b>
-                                <p:commandButton type="button"
-                                                 styleClass="ui-button-secondary"
-                                                 icon="pi pi-ellipsis-h"/>
-                            </div>
-                            <div class="start-plug"></div>
-                        </f:facet>
-
                         <div class="string column">
                             <div class="end-plug"></div>
-                            <span class="pi pi-dollar"/>
-                            <label>String parameter</label>
+                            <p:graphicImage library="images" name="transform.png"/>
+                            <label>Lookup</label>
+                            <div class="start-plug" id="fx1c1"></div>
                         </div>
 
                         <div class="decimal column">
                             <div class="end-plug"></div>
-                            <span class="pi pi-dollar"/>
-                            <label>Deicmal parameter</label>
+                            <p:graphicImage library="images" name="transform.png"/>
+                            <label>Percent to Rate</label>
+                            <div class="start-plug" id="fx1c2"></div>
                         </div>
                     </p:panel>
 
@@ -273,8 +264,8 @@
                             <div class="start-plug"></div>
                         </f:facet>
 
-                        <div class="string column" id="tb3c1">
-                            <div class="end-plug"></div>
+                        <div class="string column">
+                            <div class="end-plug" id="tb4c1"></div>
                             <span class="pi pi-dollar"/>
                             <label>String Column</label>
                             <div class="start-plug"></div>
@@ -288,7 +279,7 @@
                         </div>
 
                         <div class="decimal column">
-                            <div class="end-plug"></div>
+                            <div class="end-plug" id="tb4c3"></div>
                             <span class="pi pi-dollar"/>
                             <label>Deicmal Column</label>
                             <div class="start-plug"></div>
@@ -354,64 +345,6 @@
         </div>
 
         <script>
-            var leaderLine1, leaderLine2, leaderLine3;
-            var lines = [];
-
-            $(function () {
-                var startElement = document.getElementById('tb1SP'),
-                    startElement2 = document.getElementById('tb1c1'),
-                    endElement = document.getElementById('tb2EP'),
-                    endElement2 = document.getElementById('tb3c1');
-
-                // New leader line has red color and size 8.
-                var line1 = {
-                    path: 'magnet',
-                    outline: false,
-                    color: 'gray',
-                    size: 1,
-
-                    startSocket: 'right',
-                    startPlug: 'behind',
-
-                    endSocket: 'left',
-                    endPlug: 'behind'
-                };
-                var line2 = {
-                    path: 'magnet',
-                    outline: false,
-                    color: 'red',
-                    size: 1,
-
-                    startSocket: 'right',
-                    startPlug: 'disc',
-                    startPlugSize: 2,
-
-                    endSocket: 'left',
-                    endPlug: 'disc',
-                    endPlugSize: 2
-                };
-
-                leaderLine1 = new LeaderLine(startElement, endElement, line1);
-                leaderLine2 = new LeaderLine(startElement2, endElement2, line2);
-
-                lines[0] = leaderLine1;
-                lines[1] = leaderLine2;
-            });
-
-            function hideLines() {
-                for(var i=0; i &lt; lines.length; i++)
-                    lines[i].hide();
-
-            }
-
-            function showLines() {
-                for(var i=0; i &lt; lines.length; i++) {
-                    lines[i].position();
-                    lines[i].show();
-                }
-            }
-
-            window.reposition = reposition;
         </script>
 
     </h:body>

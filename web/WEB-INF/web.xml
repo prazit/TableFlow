@@ -15,9 +15,7 @@
 
     <context-param>
         <param-name>primefaces.THEME</param-name>
-        <!--<param-value>luna-amber</param-value>-->
-        <!--<param-value>saga</param-value>-->
-        <param-value>${app.workspace.user.theme.name}</param-value>
+        <param-value>${workspace.user.theme.name}</param-value>
     </context-param>
 
     <!--<context-root>/TFlow</context-root>-->

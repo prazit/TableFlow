@@ -1,5 +1,6 @@
 package com.tflow.controller;
 
+import com.tflow.model.editor.Workspace;
 import com.tflow.system.Application;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
@@ -14,7 +15,7 @@ import javax.inject.Named;
 public class EditorController extends BaseController {
 
     @Inject
-    private Application app;
+    private Workspace workspace;
 
     @PostConstruct
     public void onCreation() {
@@ -22,12 +23,12 @@ public class EditorController extends BaseController {
     }
 
     public void lightTheme() {
-        app.getWorkspace().getUser().setTheme(Theme.LIGHT);
+        workspace.getUser().setTheme(Theme.LIGHT);
         FacesUtil.redirect("/editor.xhtml");
     }
 
     public void darkTheme() {
-        app.getWorkspace().getUser().setTheme(Theme.DARK);
+        workspace.getUser().setTheme(Theme.DARK);
         FacesUtil.redirect("/editor.xhtml");
     }
 

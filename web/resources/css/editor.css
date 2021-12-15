@@ -163,8 +163,13 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
     border-top: var(--surface-c) solid 1px;
 }
 
-.column div + span {
+.column div + span,
+.column div + img {
     margin-left: calc(var(--plug-size) + var(--margin));
+}
+
+.column div + img {
+    height: 1em;
 }
 
 .column label {
@@ -172,7 +177,8 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
 }
 
 .ui-panel .ui-panel-actions img,
-.ui-panel .ui-panel-content .column img {
+.ui-panel .ui-panel-content .transform.column img,
+.ui-panel .ui-panel-content .output.column img {
     height: 1em;
     margin-left: var(--margin);
     margin-right: var(--margin);

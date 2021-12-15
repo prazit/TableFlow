@@ -17,9 +17,6 @@ public class Application {
     @Inject
     private Logger log;
 
-    @Inject
-    private Workspace workspace;
-
     //    private VersionConfigFile version;
     private String versionString;
 
@@ -39,8 +36,6 @@ public class Application {
         // TODO: load configuration first then remove initialize below
         cssForceReload = true;
         forceReloadResources = "";
-        workspace.setUser(new User());
-        workspace.getUser().setTheme(Theme.DARK);
 
     }
 
@@ -85,13 +80,5 @@ public class Application {
 
     public String getForceReloadResources() {
         return forceReloadResources;
-    }
-
-    public Workspace getWorkspace() {
-        return workspace;
-    }
-
-    public void setWorkspace(Workspace workspace) {
-        this.workspace = workspace;
     }
 }
