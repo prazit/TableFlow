@@ -37,18 +37,22 @@ function zoomStart() {
 
 function zoom() {
     if (undefined === zoomFactor)
-        zoomFactor = document.getElementById('actionForm:zoomFactor');
+        zoomFactor = document.getElementById('actionForm:zoomFactor_input');
     if (undefined === flowchart)
         flowchart = $(document.getElementById('flowchart').contentWindow.document.getElementsByTagName('html'));
-    console.log('zoom:' + zoomFactor.value);
-    flowchart.css('zoom', zoomFactor.value);
+    var zooming = zoomFactor.value;
+    console.log('zoom:' + zooming);
+    flowchart.css('zoom', zooming);
 }
 
 function zoomEnd(){
+    zoom();
+
     var flowchartWindow = document.getElementById('flowchart').contentWindow;
     var scrollX = flowchartWindow.scrollX;
     var scrollY = flowchartWindow.scrollY;
     flowchartWindow.scrollTo(0,0);
+
     flowchartWindow.showLines();
     flowchartWindow.scrollTo(scrollX,scrollY);
 }
@@ -60,4 +64,6 @@ $(function () {
     rightPanel = $('.right-panel');
     rightGutter = $('.right-panel + .ui-splitter-gutter');
     rightToggle = $('.right-panel-toggle').click(toggleRight).children('.ui-button-icon-left');
+
+    /*load zoom value from local session storage*/
 });

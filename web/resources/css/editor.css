@@ -33,7 +33,7 @@ body .ui-panelgrid .ui-panelgrid-cell {
 }
 
 .zoom-factor input {
-    width: 3em;
+    width: 5em;
     height: 1.5em;
     text-align: center;
 }
@@ -51,8 +51,8 @@ body .ui-panelgrid .ui-panelgrid-cell {
 
 iframe {
     border: 0;
-    height: 100%;
-    width: 100%;
+    height: calc(100% - 1px);
+    width: calc(100% - 1px);
     position: static;
 }
 

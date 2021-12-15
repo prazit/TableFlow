@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html style="background-color: var(--surface-a)">
 <f:view xmlns="http://www.w3.org/1999/xhtml"
         xmlns:f="http://java.sun.com/jsf/core"
         xmlns:h="http://java.sun.com/jsf/html"
@@ -14,7 +14,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
     </h:head>
-    <h:body>
+    <h:body style="background-color: var(--surface-a)">
         <h:outputStylesheet library="css" name="tflow.css${editorCtl.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css${editorCtl.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
@@ -233,7 +233,7 @@
 
                     <p:spacer width="50"/>
 
-                    <p:panel header="" styleClass="function">
+                    <p:panel styleClass="function">
                         <div class="string column">
                             <div class="end-plug"></div>
                             <p:graphicImage library="images" name="transform.png"/>
