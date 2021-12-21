@@ -2,7 +2,9 @@ package com.tflow.model.editor.datasource;
 
 import javafx.util.Pair;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Database extends DataSource {
     private static final long serialVersionUID = 2021121709996660011L;
@@ -17,7 +19,16 @@ public class Database extends DataSource {
     private int retry;
     private String quotesForName;
     private String quotesForValue;
-    private List<Pair<String, String>> propList;
+    private Map<String, String> propList;
+
+    public Database(String name, DBMS dbms, String plug) {
+        this.dbms = dbms;
+        setType("Database");
+        setImage("database.png");
+        setName(name);
+        setPlug(plug);
+        propList = new HashMap<>();
+    }
 
     public DBMS getDbms() {
         return dbms;
@@ -99,11 +110,11 @@ public class Database extends DataSource {
         this.quotesForValue = quotesForValue;
     }
 
-    public List<Pair<String, String>> getPropList() {
+    public Map<String, String> getPropList() {
         return propList;
     }
 
-    public void setPropList(List<Pair<String, String>> propList) {
+    public void setPropList(Map<String, String> propList) {
         this.propList = propList;
     }
 }

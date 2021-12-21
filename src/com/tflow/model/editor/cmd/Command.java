@@ -1,10 +1,16 @@
 package com.tflow.model.editor.cmd;
 
-import java.io.Serializable;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
-public abstract class Command implements Serializable {
-    public abstract void doCommand(Map<String, Object> paramMap);
+public abstract class Command {
+    public abstract void execute(Map<CommandParamKey, Object> paramMap);
 
-    public abstract void undoCommand(Map<String, Object> paramMap);
+    /**
+     * function to support error: Required Parameter
+     **/
+    protected void required(CommandParamKey paramKey) {
+        LoggerFactory.getLogger(this.getClass()).error("Required parameter '{}'.", paramKey);
+    }
 }

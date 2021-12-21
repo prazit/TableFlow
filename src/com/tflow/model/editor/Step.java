@@ -1,8 +1,11 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.room.Tower;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Step {
 
@@ -12,8 +15,26 @@ public class Step {
     private List<Action> history;
     private List<DataTable> dataList;
     private List<TransformTable> transformList;
-    private String outputType;
-    private String outputName;
+    private List<DataOutput> outputList;
+
+    private Tower dataTower;
+    private Tower transformTower;
+    private Tower outputTower;
+    private List<Line> lineList;
+
+    public Step(int id, String name, int index) {
+        this.id = id;
+        this.name = name;
+        this.index = index;
+        history = new ArrayList<>();
+        dataList = new ArrayList<>();
+        transformList = new ArrayList<>();
+        outputList = new ArrayList<>();
+        dataTower = new Tower(3);
+        transformTower = new Tower(2);
+        outputTower = new Tower(2);
+        lineList = new ArrayList<>();
+    }
 
     public int getId() {
         return id;
@@ -63,19 +84,43 @@ public class Step {
         this.transformList = transformList;
     }
 
-    public String getOutputType() {
-        return outputType;
+    public List<DataOutput> getOutputList() {
+        return outputList;
     }
 
-    public void setOutputType(String outputType) {
-        this.outputType = outputType;
+    public void setOutputList(List<DataOutput> outputList) {
+        this.outputList = outputList;
     }
 
-    public String getOutputName() {
-        return outputName;
+    public Tower getDataTower() {
+        return dataTower;
     }
 
-    public void setOutputName(String outputName) {
-        this.outputName = outputName;
+    public void setDataTower(Tower dataTower) {
+        this.dataTower = dataTower;
+    }
+
+    public Tower getTransformTower() {
+        return transformTower;
+    }
+
+    public void setTransformTower(Tower transformTower) {
+        this.transformTower = transformTower;
+    }
+
+    public Tower getOutputTower() {
+        return outputTower;
+    }
+
+    public void setOutputTower(Tower outputTower) {
+        this.outputTower = outputTower;
+    }
+
+    public List<Line> getLineList() {
+        return lineList;
+    }
+
+    public void setLineList(List<Line> lineList) {
+        this.lineList = lineList;
     }
 }

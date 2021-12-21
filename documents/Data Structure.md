@@ -65,8 +65,19 @@ Table Flow
 | :heavy_check_mark: | history       | List of Action          | List as stack                                                |
 | :heavy_check_mark: | dataList      | List of Data Table      |                                                              |
 | :heavy_check_mark: | transformList | List of Transform Table |                                                              |
-| :heavy_check_mark: | outputName    | string                  | name of the table that used as Step Output                   |
-| :heavy_check_mark: | outputType    |                         | type of the output used as Step Output                       |
+| :heavy_check_mark: | outputList    | List of Data Output     |                                                              |
+
+
+
+### TOWER FLOOR ROOM
+
+Following objects can put in the Room.
+
++ DataSource
++ DataFile
++ DataTable
++ ColumnFx
++ TransformTable
 
 
 
@@ -182,8 +193,8 @@ Extends from DATA SOURCE
 
 | :heavy_check_mark: | name      | data type | description                                                  |
 | ------------------ | --------- | --------- | ------------------------------------------------------------ |
-| :heavy_check_mark: | type      | string    | load from Data File, allow to change                         |
-| :heavy_check_mark: | name      | string    | load from Data File, not allow to change                     |
+| :heavy_check_mark: | type      | string    | data-type load from Data File, allow to change               |
+| :heavy_check_mark: | name      | string    | column-name load from Data File, not allow to change         |
 | :heavy_check_mark: | startPlug | string    | HTML element id used by Linked Line (start-plug), auto generated. |
 
 

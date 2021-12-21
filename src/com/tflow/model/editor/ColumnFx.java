@@ -1,9 +1,11 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.editor.room.Room;
+
 import java.io.Serializable;
 import java.util.Map;
 
-public class ColumnFx implements Serializable {
+public class ColumnFx extends Room implements Serializable {
     private static final long serialVersionUID = 2021121709996660042L;
 
     private String name;

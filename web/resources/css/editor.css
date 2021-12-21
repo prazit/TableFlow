@@ -165,7 +165,7 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
 
 .column div + span,
 .column div + img {
-    margin-left: calc(var(--plug-size) + var(--margin));
+    margin-left: calc(var(--plug-size) + var(--margin)) !important;
 }
 
 .column div + img {
@@ -177,8 +177,7 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
 }
 
 .ui-panel .ui-panel-actions img,
-.ui-panel .ui-panel-content .transform.column img,
-.ui-panel .ui-panel-content .output.column img {
+.ui-panel .ui-panel-content .column img {
     height: 1em;
     margin-left: var(--margin);
     margin-right: var(--margin);

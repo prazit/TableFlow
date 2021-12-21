@@ -1,11 +1,12 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.datasource.DataSource;
+import com.tflow.model.editor.room.Room;
 
 import java.io.Serializable;
 import java.util.List;
 
-public class DataTable implements Serializable {
+public class DataTable extends Room implements Serializable {
     private static final long serialVersionUID = 2021121709996660030L;
 
     private int id;

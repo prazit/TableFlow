@@ -1,9 +1,11 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.editor.room.Room;
+
 import java.io.Serializable;
 import java.util.List;
 
-public class TransformTable implements Serializable {
+public class TransformTable extends Room implements Serializable {
     private static final long serialVersionUID = 2021121709996660040L;
 
     private String id;

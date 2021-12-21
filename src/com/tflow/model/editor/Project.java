@@ -2,6 +2,8 @@ package com.tflow.model.editor;
 
 import com.tflow.model.editor.datasource.DataSource;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +15,15 @@ public class Project {
     private Map<String, DataSource> dataSourceList;
     private Map<String, SFTP> sftpList;
     private Map<String, Variable> variableList;
-    private String lastElementId;
+    private int lastElementId;
+
+    public Project(String name) {
+        this.name = name;
+        stepList = new ArrayList<>();
+        dataSourceList = new HashMap<>();
+        sftpList = new HashMap<>();
+        variableList = new HashMap<>();
+    }
 
     public String getName() {
         return name;
@@ -71,11 +81,20 @@ public class Project {
         this.variableList = variableList;
     }
 
-    public String getLastElementId() {
+    public int getLastElementId() {
         return lastElementId;
     }
 
-    public void setLastElementId(String lastElementId) {
+    public void setLastElementId(int lastElementId) {
         this.lastElementId = lastElementId;
+    }
+
+    /**
+     * Generate new element id (unique within the project)
+     *
+     * @return String elementId
+     */
+    public String newElementId() {
+        return "em" + (++lastElementId);
     }
 }

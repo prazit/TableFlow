@@ -11,13 +11,9 @@ public class TestCommand extends Command {
     @Inject
     Logger log;
 
-    public void doCommand(Map<String, Object> paramMap) {
-        String data1 = (String) paramMap.get("data1");
-        String data2 = (String) paramMap.get("data1");
-        log.debug("TestCommand.doCommand(data1:{},data2:{})", data1, data2);
-    }
-
-    public void undoCommand(Map<String, Object> paramMap) {
-
+    public void execute(Map<CommandParamKey, Object> paramMap) {
+        String data1 = (String) paramMap.get(CommandParamKey.DATA_TEST1);
+        String data2 = (String) paramMap.get(CommandParamKey.DATA_TEST2);
+        log.debug("TestCommand.execute(DATA_TEST1:{},DATA_TEST2:{})", data1, data2);
     }
 }

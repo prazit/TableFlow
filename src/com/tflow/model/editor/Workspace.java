@@ -17,9 +17,15 @@ public class Workspace implements Serializable {
 
     @PostConstruct
     public void onCreation() {
-        // TODO: load session settings first then remove initialize below
+        // TODO: load session settings first then remove initialize below, test only.
         user = new User();
         user.setTheme(Theme.DARK);
+
+        project = new Project("Mockup Project");
+
+        Step step = new Step(1, "Mockup Step 1", 0);
+        project.getStepList().add(step);
+        project.setActiveStepIndex(0);
     }
 
     public Project getProject() {

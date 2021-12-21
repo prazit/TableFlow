@@ -1,39 +1,64 @@
 package com.tflow.model.editor.action;
 
 import com.tflow.model.editor.cmd.Command;
+import com.tflow.model.editor.cmd.CommandParamKey;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class Action implements Serializable {
+public abstract class Action implements Serializable {
     private static final long serialVersionUID = 2021121609912360000L;
 
     protected String icon;
     protected String name;
     protected String code;
     protected String description;
-    protected Map<String, Object> paramMap;
+    protected Map<CommandParamKey, Object> paramMap;
     protected boolean canUndo;
     protected boolean canRedo;
 
     private List<Command> commandList;
+    private List<Command> undoCommandList;
 
-    public void test() {
+    protected abstract void initAction();
 
+    protected abstract void initCommands();
+
+    protected abstract void initUndoCommands();
+
+    public Action() {
+        initAction();
     }
 
-    public Action(Map<String, Object> paramMap, Command... command) {
-        this.commandList = Arrays.asList(command);
+    public void setActionParameters(Map<CommandParamKey, Object> paramMap) {
         this.paramMap = paramMap;
+    }
+
+    private void initCommandsWrapper() {
+        initCommands();
+        canRedo = commandList != null && commandList.size() > 0;
+    }
+
+    private void initUndoCommandsWrapper() {
+        initUndoCommands();
+        canUndo = undoCommandList != null && undoCommandList.size() > 0;
+    }
+
+    protected void setCommands(Command... commands) {
+        this.commandList = Arrays.asList(commands);
+    }
+
+    protected void setUndoCommands(Command... commands) {
+        this.undoCommandList = Arrays.asList(commands);
     }
 
     public String getIcon() {
         return icon;
     }
 
-    public void setIcon(String icon) {
+    protected void setIcon(String icon) {
         this.icon = icon;
     }
 
@@ -41,7 +66,7 @@ public class Action implements Serializable {
         return name;
     }
 
-    public void setName(String name) {
+    protected void setName(String name) {
         this.name = name;
     }
 
@@ -49,42 +74,42 @@ public class Action implements Serializable {
         return description;
     }
 
-    public void setDescription(String description) {
+    protected void setDescription(String description) {
         this.description = description;
     }
 
-    public boolean isCanUndo() {
-        return canUndo;
-    }
-
-    public void setCanUndo(boolean canUndo) {
-        this.canUndo = canUndo;
-    }
-
     public boolean isCanRedo() {
+        if (commandList == null)
+            initCommandsWrapper();
         return canRedo;
     }
 
-    public void setCanRedo(boolean canRedo) {
-        this.canRedo = canRedo;
+    public boolean isCanUndo() {
+        if (commandList == null)
+            initUndoCommandsWrapper();
+        return canUndo;
     }
 
-    public void doCommands() {
+    public void execute() {
+        if (commandList == null)
+            initCommandsWrapper();
         for (Command command : commandList)
-            command.doCommand(paramMap);
+            command.execute(paramMap);
     }
 
-    public void undoCommands() {
-        for (Command command : commandList)
-            command.undoCommand(paramMap);
+    public void executeUndo() {
+        if (commandList == null)
+            initUndoCommandsWrapper();
+        for (Command command : undoCommandList)
+            command.execute(paramMap);
     }
 
     @Override
     public String toString() {
         return "ActionBase{" +
                 "icon='" + icon + '\'' +
-                ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", canUndo=" + canUndo +
                 ", canRedo=" + canRedo +

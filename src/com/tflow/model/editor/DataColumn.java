@@ -3,15 +3,31 @@ package com.tflow.model.editor;
 public class DataColumn {
     private static final long serialVersionUID = 2021121709996660031L;
 
-    private String type;
+    private int index;
+    private DataType type;
     private String name;
     private String startPlug;
 
-    public String getType() {
+    public DataColumn(int index, DataType type, String name, String startPlug) {
+        this.index = index;
+        this.type = type;
+        this.name = name;
+        this.startPlug = startPlug;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public DataType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(DataType type) {
         this.type = type;
     }
 

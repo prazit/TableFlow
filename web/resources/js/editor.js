@@ -1,3 +1,7 @@
+function refershFlowChart() {
+    document.getElementById('flowchart').src += '';
+}
+
 var leftPanel, leftGutter, leftToggle;
 var rightPanel, rightGutter, rightToggle;
 

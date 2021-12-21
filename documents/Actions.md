@@ -1,4 +1,4 @@
-# ACTION / COMMAND
+# ACTION
 
 Table Flow v.0.0.0
 
@@ -8,12 +8,12 @@ Table Flow v.0.0.0
 
 Available actions in the current version.
 
-| Command            | Scope     | Remark                         | Status |
-| ------------------ | --------- | ------------------------------ | ------ |
-| New Workspace      | Session   |                                |        |
-| New Project        | Workspace | single step with blank diagram |        |
-| Add Step           | Project   |                                |        |
-| Change Active Step | Project   |                                |        |
+| :heavy_check_mark: | Command            | Scope     | Remark                         | Status |
+| :----------------: | ------------------ | --------- | ------------------------------ | ------ |
+|                    | New Workspace      | Session   |                                |        |
+|                    | New Project        | Workspace | single step with blank diagram |        |
+|                    | Add Step           | Project   |                                |        |
+|                    | Change Active Step | Project   |                                |        |
 
 
 
