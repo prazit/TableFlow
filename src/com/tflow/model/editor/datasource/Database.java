@@ -1,9 +1,8 @@
 package com.tflow.model.editor.datasource;
 
-import javafx.util.Pair;
+import com.tflow.model.editor.room.RoomType;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Database extends DataSource {
@@ -28,6 +27,7 @@ public class Database extends DataSource {
         setName(name);
         setPlug(plug);
         propList = new HashMap<>();
+        this.setRoomType(RoomType.DATA_SOURCE);
     }
 
     public DBMS getDbms() {

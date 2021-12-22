@@ -40,6 +40,8 @@
                                 <h:form id="actionForm">
                                     <p:menubar>
                                         <p:submenu label="Add">
+                                            <p:menuitem value="DB Connection..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addDataSource}"/>
+                                            <p:divider/>
                                             <p:menuitem value="Data Table..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addDataTable}"/>
                                             <p:menuitem value="Transform Table..." icon="pi pi-fw pi-plus"/>
                                             <p:divider/>

@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.room.Room;
+import com.tflow.model.editor.room.RoomType;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class DataFile extends Room implements Serializable {
         this.paramMap = paramMap;
         this.endPlug = endPlug;
         this.startPlug = startPlug;
+        this.setRoomType(RoomType.DATA_FILE);
     }
 
     public DataFileType getType() {

@@ -12,8 +12,7 @@ function showLines() {
 }
 
 var lines = [];
-var curveLine = {
-        path: 'fluid',
+var pLine = {
         outline: false,
         size: 1,
 
@@ -21,16 +20,17 @@ var curveLine = {
         startPlug: 'behind',
 
         endSocket: 'auto',
-        endPlug: 'behind'
+        /*endPlug: 'behind'*/
+        endPlugSize: 2
     },
-    tLine = Object.assign({color: 'gray'}, curveLine),
-    sLine = Object.assign({color: 'red'}, curveLine),
-    iLine = Object.assign({color: 'green'}, curveLine),
-    dLine = Object.assign({color: 'blue'}, curveLine),
-    dtLine = Object.assign({color: 'yellow'}, curveLine);
+    tLine = Object.assign({color: 'gray', path: 'magnet'}, pLine),
+    sLine = Object.assign({color: 'red', path: 'fluid'}, pLine),
+    iLine = Object.assign({color: 'green', path: 'fluid'}, pLine),
+    dLine = Object.assign({color: 'blue', path: 'fluid'}, pLine),
+    dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine);
 
 function addLine(lineList) {
-    $(lineList).each(function(e){
+    $(lineList).each(function (e) {
         lines[lines.length] = new LeaderLine(document.getElementById(e.startPlug), document.getElementById(e.endPlug), e.type);
     });
 }

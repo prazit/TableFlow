@@ -2,9 +2,7 @@ package com.tflow.controller;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.DataOutput;
-import com.tflow.model.editor.action.Action;
-import com.tflow.model.editor.action.TestAction;
-import com.tflow.model.editor.cmd.AddDataTable;
+import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DBMS;
 import com.tflow.model.editor.datasource.DataSource;
@@ -14,15 +12,11 @@ import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
 
-import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ViewScoped
 @Named("editorCtl")
@@ -77,8 +71,7 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.DATA_TEST2, 35000.00053);
 
         List<Action> actionList = new ArrayList<>();
-        TestAction testAction = new TestAction();
-        testAction.setActionParameters(paramMap);
+        TestAction testAction = new TestAction(paramMap);
         actionList.add(testAction);
 
         try {
@@ -98,22 +91,43 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.DATA_TEST1, new String[]{"Data1", "Data1.1", "Data1.2"});
         paramMap.put(CommandParamKey.DATA_TEST2, new String[]{"Data2", "Data2.1", "Data2.2"});
 
-        TestAction action = new TestAction();
-        action.setActionParameters(paramMap);
-        action.execute();
+        try {
+            new TestAction(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("TestAction Failed!", e);
+        }
     }
 
     /**
-     * Create mockup data in activeStep and refresh the flowchart.
+     * for Mockup Data Only, remove me please.
      */
-    public void addDataTable() {
-        /*TODO: need show parameters dialog and remove Mockup-Data below*/
+    private static int testRunningNumber = 0;
+
+    public void addDataSource() {
+        /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
         Project project = workspace.getProject();
         Step step = project.getStepList().get(project.getActiveStepIndex());
 
+        /*create DataSource, Data File, DataTable (Command: AddDataTable)*/
+        Database database = new Database("DB Connection " + (++testRunningNumber), DBMS.ORACLE, project.newElementId());
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_SOURCE, database);
+        paramMap.put(CommandParamKey.PROJECT, project);
+        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
+
+        try {
+            new AddDataSource(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add DataSource Failed!", e);
+        }
+    }
+
+    private DataTable getSQLDataTable(Project project) {
         /*create DataSource, Data File, DataTable (Commmand: AddDataTable)*/
-        Database database = new Database("DB Connection 1", DBMS.ORACLE, project.newElementId());
+        Map<String, DataSource> dataSourceList = project.getDataSourceList();
+        Database database = (Database) dataSourceList.get(dataSourceList.keySet().toArray()[0]);
 
         DataFile dataFile = new DataFile(
                 DataFileType.IN_SQL,
@@ -123,22 +137,24 @@ public class EditorController extends Controller {
                 project.newElementId()
         );
 
-        DataTable dataTable = new DataTable();
-        dataTable.setDataSource(database);
-        dataTable.setDataFile(dataFile);
-        dataTable.setName("Mockup Data Table");
-        dataTable.setElementId(project.newElementId());
-        dataTable.setEndPlug(project.newElementId());
-        dataTable.setStartPlug(project.newElementId());
-        dataTable.setId(1);
-        dataTable.setIndex(10);
+        DataTable dataTable = new DataTable(
+                1,
+                "Mockup Data Table",
+                10,
+                dataFile,
+                database,
+                "",
+                "String",
+                false,
+                project.newElementId(),
+                project.newElementId()
+        );
 
-        List<DataColumn> columnList = new ArrayList<>();
+        List<DataColumn> columnList = dataTable.getColumnList();
         columnList.add(new DataColumn(1, DataType.STRING, "String", project.newElementId()));
         columnList.add(new DataColumn(2, DataType.INTEGER, "Integer", project.newElementId()));
         columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal", project.newElementId()));
         columnList.add(new DataColumn(4, DataType.DATE, "Date", project.newElementId()));
-        dataTable.setColumnList(columnList);
 
         DataFile outputSQLFile = new DataFile(
                 DataFileType.OUT_DBINSERT,
@@ -158,17 +174,44 @@ public class EditorController extends Controller {
 
         Local local = new Local("My Server", "/output/", project.newElementId());
 
-        List<DataOutput> outputList = new ArrayList<>();
+        List<DataOutput> outputList = dataTable.getOutputList();
         outputList.add(new DataOutput(dataTable, outputSQLFile, database, project.newElementId()));
         outputList.add(new DataOutput(dataTable, outputCSVFile, local, project.newElementId()));
-        dataTable.setOutputList(outputList);
+
+        return dataTable;
+    }
+
+    /**
+     * Create mockup data in activeStep and refresh the flowchart.
+     */
+    public void addDataTable() {
+        /*TODO: need to show parameters dialog and remove Mockup-Data below*/
+
+        Project project = workspace.getProject();
+        Step step = project.getStepList().get(project.getActiveStepIndex());
+
+        DataTable dataTable = getSQLDataTable(project);
+        /* TODO: need more cases for DataTable (local-file, sftp-file) */
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
         paramMap.put(CommandParamKey.TOWER, step.getDataTower());
         paramMap.put(CommandParamKey.LINE, step.getLineList());
-        new AddDataTable().execute(paramMap);
+        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
 
+        try {
+            new AddDataTable(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add DataTable Failed!", e);
+            /*TODO: show error message on screen*/
+            return;
+        }
+
+        /*TODO: refresh flowchart page*/
+        FacesUtil.runClientScript("refershFlowChart();");
+    }
+
+    public void addTransformTable() {
         /*TODO: create TransformTable with ColumnFx*/
 
         /*TODO: add Output to DataTable and assign as Step Output*/

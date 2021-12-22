@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class Action implements Serializable {
-    private static final long serialVersionUID = 2021121609912360000L;
+    private static final long serialVersionUID = 2021122109996660000L;
 
-    protected String icon;
+    protected String image;
     protected String name;
     protected String code;
     protected String description;
@@ -19,6 +19,8 @@ public abstract class Action implements Serializable {
     protected boolean canUndo;
     protected boolean canRedo;
 
+    private List<CommandParamKey> paramList;
+    private List<CommandParamKey> undoParamList;
     private List<Command> commandList;
     private List<Command> undoCommandList;
 
@@ -50,16 +52,24 @@ public abstract class Action implements Serializable {
         this.commandList = Arrays.asList(commands);
     }
 
+    protected void setParams(CommandParamKey... params) {
+        this.paramList = Arrays.asList(params);
+    }
+
     protected void setUndoCommands(Command... commands) {
         this.undoCommandList = Arrays.asList(commands);
     }
 
-    public String getIcon() {
-        return icon;
+    protected void setUndoParams(CommandParamKey... params) {
+        this.undoParamList = Arrays.asList(params);
     }
 
-    protected void setIcon(String icon) {
-        this.icon = icon;
+    public String getImage() {
+        return image;
+    }
+
+    protected void setImage(String image) {
+        this.image = image;
     }
 
     public String getName() {
@@ -90,24 +100,44 @@ public abstract class Action implements Serializable {
         return canUndo;
     }
 
-    public void execute() {
+    public void execute() throws RequiredParamException {
         if (commandList == null)
             initCommandsWrapper();
+        requiredParam(paramList, paramMap, false);
         for (Command command : commandList)
             command.execute(paramMap);
+
+        /*TODO: add Action to history*/
     }
 
-    public void executeUndo() {
+    public void executeUndo() throws RequiredParamException {
         if (commandList == null)
             initUndoCommandsWrapper();
+        requiredParam(undoParamList, paramMap, true);
+
+        /*TODO: check allowed to undo or not (last action in the history)*/
+
         for (Command command : undoCommandList)
             command.execute(paramMap);
+
+        /*TODO: remove Action from history (FILO)*/
+    }
+
+    private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap, boolean undo) throws RequiredParamException {
+        for (CommandParamKey required : paramList) {
+            if (!paramMap.containsKey(required)) {
+                throw new RequiredParamException(required, this, undo);
+            }
+        }
+        if(!paramMap.containsKey(CommandParamKey.HISTORY)) {
+            throw new RequiredParamException(CommandParamKey.HISTORY, this, undo);
+        }
     }
 
     @Override
     public String toString() {
         return "ActionBase{" +
-                "icon='" + icon + '\'' +
+                "icon='" + image + '\'' +
                 ", code='" + code + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +

@@ -5,15 +5,24 @@ import com.tflow.model.editor.DataFile;
 import com.tflow.model.editor.DataTable;
 import com.tflow.model.editor.TransformTable;
 import com.tflow.model.editor.datasource.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
+/**
+ * Known implementation classes.<br/>
+ * EmptyRoom, DataSource, DataFile, DataTable, ColumnFx, TransformTable
+ */
 public class Room implements Serializable {
     private static final long serialVersionUID = 2021121909996660030L;
 
+    private Logger log = LoggerFactory.getLogger(Room.class);
+
     private String elementId;
     private int roomIndex;
-    private String floor;
+    private RoomType roomType;
+    private Floor floor;
 
     public String getElementId() {
         return elementId;
@@ -31,11 +40,19 @@ public class Room implements Serializable {
         this.roomIndex = roomIndex;
     }
 
-    public String getFloor() {
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
+
+    public Floor getFloor() {
         return floor;
     }
 
-    public void setFloor(String floor) {
+    public void setFloor(Floor floor) {
         this.floor = floor;
     }
 
@@ -61,5 +78,15 @@ public class Room implements Serializable {
 
     public boolean isEmptyRoom() {
         return this instanceof EmptyRoom;
+    }
+
+    @Override
+    public String toString() {
+        return "Room{" +
+                "elementId='" + elementId + '\'' +
+                ", roomIndex=" + roomIndex +
+                ", floor=" + floor +
+                ", instanceOf=" + this.getClass().getName() +
+                '}';
     }
 }

@@ -23,7 +23,7 @@ public class Workspace implements Serializable {
 
         project = new Project("Mockup Project");
 
-        Step step = new Step(1, "Mockup Step 1", 0);
+        Step step = new Step(1, "Mockup Step 1", 0, project);
         project.getStepList().add(step);
         project.setActiveStepIndex(0);
     }

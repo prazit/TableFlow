@@ -22,7 +22,9 @@ public class Step {
     private Tower outputTower;
     private List<Line> lineList;
 
-    public Step(int id, String name, int index) {
+    private Project owner;
+
+    public Step(int id, String name, int index, Project owner) {
         this.id = id;
         this.name = name;
         this.index = index;
@@ -30,10 +32,11 @@ public class Step {
         dataList = new ArrayList<>();
         transformList = new ArrayList<>();
         outputList = new ArrayList<>();
-        dataTower = new Tower(3);
-        transformTower = new Tower(2);
-        outputTower = new Tower(2);
+        dataTower = new Tower(3, this);
+        transformTower = new Tower(2, this);
+        outputTower = new Tower(2, this);
         lineList = new ArrayList<>();
+        this.owner = owner;
     }
 
     public int getId() {
@@ -122,5 +125,9 @@ public class Step {
 
     public void setLineList(List<Line> lineList) {
         this.lineList = lineList;
+    }
+
+    public Project getOwner() {
+        return owner;
     }
 }

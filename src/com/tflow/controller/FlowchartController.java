@@ -60,9 +60,6 @@ public class FlowchartController extends Controller {
         }
 
         javaScript = "$(function(){" + builder.toString() + "});";
-        log.warn("lineList.size = {}", lineList.size());
-        log.warn("javascript = {}", javaScript);
-
         FacesUtil.runClientScript(javaScript);
     }
 

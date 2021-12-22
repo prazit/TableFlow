@@ -1,5 +1,7 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.editor.room.RoomType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,7 @@ public class Local extends DataSource {
         setPlug(plug);
         this.rootPath = rootPath;
         pathHistory = new ArrayList<>();
+        this.setRoomType(RoomType.DATA_SOURCE);
     }
 
     public List<String> getPathHistory() {

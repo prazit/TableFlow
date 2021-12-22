@@ -2,8 +2,10 @@ package com.tflow.model.editor;
 
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.room.Room;
+import com.tflow.model.editor.room.RoomType;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DataTable extends Room implements Serializable {
@@ -22,6 +24,22 @@ public class DataTable extends Room implements Serializable {
 
     private String endPlug;
     private String startPlug;
+
+    public DataTable(int id, String name, int index, DataFile dataFile, DataSource dataSource, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
+        this.id = id;
+        this.name = name;
+        this.index = index;
+        this.dataFile = dataFile;
+        this.dataSource = dataSource;
+        this.query = query;
+        this.idColName = idColName;
+        this.noTransform = noTransform;
+        this.endPlug = endPlug;
+        this.startPlug = startPlug;
+        this.columnList = new ArrayList<>();
+        this.outputList = new ArrayList<>();
+        this.setRoomType(RoomType.DATA_TABLE);
+    }
 
     public int getId() {
         return id;

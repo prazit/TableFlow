@@ -1,5 +1,8 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.editor.room.RoomType;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class SFTP extends DataSource {
@@ -14,6 +17,17 @@ public class SFTP extends DataSource {
     private String password;
     private int retry;
     private String tmp;
+
+    public SFTP(String name, String rootPath, String plug) {
+        setName(name);
+        setType("SFTP");
+        setImage("ftp.png");
+        setPlug(plug);
+        this.rootPath = rootPath;
+        pathHistory = new ArrayList<>();
+        this.setRoomType(RoomType.DATA_SOURCE);
+    }
+
 
     public List<String> getPathHistory() {
         return pathHistory;

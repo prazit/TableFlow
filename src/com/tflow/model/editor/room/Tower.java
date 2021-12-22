@@ -1,5 +1,7 @@
 package com.tflow.model.editor.room;
 
+import com.tflow.model.editor.Project;
+import com.tflow.model.editor.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +20,12 @@ public class Tower implements Serializable {
     private int roomsOnAFloor;
     private Room activeRoom;
 
-    public Tower(int roomsOnAFloor) {
+    private Step owner;
+
+    public Tower(int roomsOnAFloor, Step owner) {
         this.roomsOnAFloor = roomsOnAFloor;
         floorList = new ArrayList<>();
+        this.owner = owner;
     }
 
     /**
@@ -48,10 +53,11 @@ public class Tower implements Serializable {
             floorList = Arrays.asList(floor);
         }
 
-        EmptyRoom emptyRoom = new EmptyRoom();
+        Project project = floorList.get(0).getTower().getOwner().getOwner();
         for (Floor fl : floorList) {
             List<Room> roomList = fl.getRoomList();
             for (int r = 0; r < count; r++) {
+                EmptyRoom emptyRoom = new EmptyRoom(r, floor, project.newElementId());
                 roomList.add(r, emptyRoom);
             }
         }
@@ -90,5 +96,22 @@ public class Tower implements Serializable {
 
     public void setActiveRoom(Room activeRoom) {
         this.activeRoom = activeRoom;
+    }
+
+    /**
+     * Stack of rooms on every floor with the same index.
+     *
+     * @param roomIndex start at 0.
+     */
+    public List<Room> getStack(int roomIndex) {
+        List<Room> roomList = new ArrayList<>();
+        for (Floor floor : floorList) {
+            roomList.add(floor.getRoomList().get(roomIndex));
+        }
+        return roomList;
+    }
+
+    public Step getOwner() {
+        return owner;
     }
 }
