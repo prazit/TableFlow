@@ -1,7 +1,7 @@
 package com.tflow.controller;
 
-import com.tflow.model.editor.*;
 import com.tflow.model.editor.DataOutput;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DBMS;
@@ -11,12 +11,20 @@ import com.tflow.model.editor.datasource.Local;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
+import org.primefaces.model.menu.DefaultMenuItem;
+import org.primefaces.model.menu.DefaultMenuModel;
+import org.primefaces.model.menu.MenuElement;
+import org.primefaces.model.menu.MenuModel;
 
+import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @ViewScoped
 @Named("editorCtl")
@@ -24,6 +32,58 @@ public class EditorController extends Controller {
 
     @Inject
     private Workspace workspace;
+
+    private String projectName;
+    /*TODO: remove stepList*/private List<Step> stepList;
+    private MenuModel stepMenu;
+
+    @PostConstruct
+    public void onCreation() {
+        initStepList();
+    }
+
+    private void initStepList() {
+        Project project = workspace.getProject();
+        stepList = project.getStepList();
+        projectName = project.getName();
+
+        stepMenu = new DefaultMenuModel();
+        List<MenuElement> menuItemList = stepMenu.getElements();
+        for (Step step : stepList) {
+            menuItemList.add(DefaultMenuItem.builder()
+                    .value(step.getName())
+                    .icon("pi pi-home")
+                    .command("${editorCtl.selectStep(" + step.getIndex() + ")}")
+                    .build()
+            );
+        }
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public List<Step> getStepList() {
+        return stepList;
+    }
+
+    public void setStepList(List<Step> stepList) {
+        this.stepList = stepList;
+    }
+
+    public MenuModel getStepMenu() {
+        return stepMenu;
+    }
+
+    public void setStepMenu(MenuModel stepMenu) {
+        this.stepMenu = stepMenu;
+    }
+
+    /*== ACTIONS ==*/
 
     public void lightTheme() {
         workspace.getUser().setTheme(Theme.LIGHT);
@@ -98,8 +158,13 @@ public class EditorController extends Controller {
         }
     }
 
+    public void selectStep(int stepIndex) {
+        workspace.getProject().setActiveStepIndex(stepIndex);
+        FacesUtil.runClientScript("refershFlowChart();");
+    }
+
     /**
-     * for Mockup Data Only, remove me please.
+     * for Mockup DataSource Only, remove me please.
      */
     private static int testRunningNumber = 0;
 
@@ -107,7 +172,7 @@ public class EditorController extends Controller {
         /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
         Project project = workspace.getProject();
-        Step step = project.getStepList().get(project.getActiveStepIndex());
+        Step step = project.getCurrentStep();
 
         /*create DataSource, Data File, DataTable (Command: AddDataTable)*/
         Database database = new Database("DB Connection " + (++testRunningNumber), DBMS.ORACLE, project.newElementId());
@@ -121,7 +186,12 @@ public class EditorController extends Controller {
             new AddDataSource(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add DataSource Failed!", e);
+            FacesUtil.addError("Add DataSource Failed with Internal Error!");
+            return;
         }
+
+        FacesUtil.addInfo("DataSource[" + database.getName() + "] added.");
+        FacesUtil.runClientScript("refershFlowChart();");
     }
 
     private DataTable getSQLDataTable(Project project) {
@@ -188,7 +258,7 @@ public class EditorController extends Controller {
         /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
         Project project = workspace.getProject();
-        Step step = project.getStepList().get(project.getActiveStepIndex());
+        Step step = project.getCurrentStep();
 
         DataTable dataTable = getSQLDataTable(project);
         /* TODO: need more cases for DataTable (local-file, sftp-file) */
@@ -203,11 +273,10 @@ public class EditorController extends Controller {
             new AddDataTable(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add DataTable Failed!", e);
-            /*TODO: show error message on screen*/
+            FacesUtil.addError("msg", "Add DataTable Failed with Internal Error!");
             return;
         }
 
-        /*TODO: refresh flowchart page*/
         FacesUtil.runClientScript("refershFlowChart();");
     }
 

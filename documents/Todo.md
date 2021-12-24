@@ -4,14 +4,15 @@
 
 |        Done        | Task                                                         | Remark                                                       |
 | :----------------: | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| :white_check_mark: | Create Mockup Data for Sample Step using Commands<br />UI: Menu Add > testMockupData |                                                              |
-|                    | Show all objects in Mockup Data using Commands               |                                                              |
-| :heavy_check_mark: | - Show DataSource                                            |                                                              |
-| :heavy_check_mark: | - Show DataFile                                              |                                                              |
-| :heavy_check_mark: | - Show DataTable                                             |                                                              |
+|                    | Show all objects in **Mockup Data Mode** using Commands      |                                                              |
+| :heavy_check_mark: | - Show Step List and Open Step Flowchart                     | (no undo)                                                    |
+| :heavy_check_mark: | - Show DataSource                                            | Command: AddDataTable                                        |
+| :heavy_check_mark: | - Show DataFile                                              | Command: AddDataTable                                        |
+| :heavy_check_mark: | - Show DataTable                                             | Command: AddDataTable                                        |
 | :heavy_check_mark: | - Show Lines                                                 |                                                              |
 | :white_check_mark: | - Show Transformation Table                                  | Command: AddTransformTable                                   |
-|                    | - Show Column Fx Table                                       |                                                              |
+|                    | - Show Column Fx Table                                       | Command: AddTransformColumn                                  |
+|                    | - Show Property Sheet of the Objects                         | Command: SelectRoom                                          |
 | :heavy_check_mark: | DataStructure: change step output to outputList and the DataOutput need a link back to owner table. |                                                              |
 | :heavy_check_mark: | DataStructure: add Tower Floor Room to the Step              |                                                              |
 | :heavy_check_mark: | Data Structure: all objects                                  |                                                              |

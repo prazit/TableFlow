@@ -19,211 +19,222 @@
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
         <h:outputScript library="js" name="flowchart.js${app.forceReloadResources}" target="head"/>
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
-
+        <script>
+            var parentWindow = window.parent;
+            parentWindow.zoomStart();
+            parentWindow.zoomEnd();
+        </script>
         <div class="flow-chart">
 
-            <h:form>
+            <h:form rendered="${flowchartCtl.enabled}">
+                <p:growl id="growl" showDetail="true" escape="false"/>
+                <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
+
                 <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine(null)}"/>
                 <script>$(function () {
                     addLine();
                 });</script>
-            </h:form>
 
-            <div class="source section">
-                <table>
-                    <p:repeat value="${flowchartCtl.dataTower.floorList}" var="floor">
-                        <tr>
-                            <td>
-                                <p:outputPanel styleClass="data-source"
-                                               rendered="${floor.roomList[0].roomType==RoomType.DATA_SOURCE}">
-                                    <p>${floor.roomList[0].name}</p>
-                                    <p:graphicImage library="images" name="${floor.roomList[0].image}"/>
-                                    <span>${floor.roomList[0].type}</span>
-                                    <div class="start-plug" id="${floor.roomList[0].plug}"></div>
-                                </p:outputPanel>
-                                <p:spacer rendered="${floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
-                            </td>
+                <div class="source section">
+                    <table>
+                        <p:repeat value="${flowchartCtl.dataTower.floorList}" var="floor">
+                            <tr>
+                                <td>
+                                    <p:outputPanel styleClass="data-source"
+                                                   rendered="${floor.roomList[0].roomType==RoomType.DATA_SOURCE}">
+                                        <p>${floor.roomList[0].name}</p>
+                                        <p:graphicImage library="images" name="${floor.roomList[0].image}"/>
+                                        <span>${floor.roomList[0].type}</span>
+                                        <div class="start-plug" id="${floor.roomList[0].plug}"></div>
+                                    </p:outputPanel>
+                                    <p:spacer rendered="${floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
+                                </td>
 
-                            <td>
-                                <p:spacer width="100"/>
-                            </td>
+                                <td>
+                                    <p:spacer width="100"/>
+                                </td>
 
-                            <td>
-                                <p:outputPanel styleClass="data-source"
-                                               rendered="${floor.roomList[1].roomType==RoomType.DATA_FILE}">
-                                    <div class="end-plug" id="${floor.roomList[1].endPlug}"></div>
-                                    <p>${floor.roomList[1].name}</p>
-                                    <p:graphicImage library="images" name="${floor.roomList[1].image}"/>
-                                    <span>${floor.roomList[1].type.name}</span>
-                                    <div class="start-plug" id="${floor.roomList[1].startPlug}"></div>
-                                </p:outputPanel>
-                                <p:spacer rendered="${floor.roomList[1].roomType!=RoomType.DATA_FILE}"/>
-                            </td>
+                                <td>
+                                    <p:outputPanel styleClass="data-source"
+                                                   rendered="${floor.roomList[1].roomType==RoomType.DATA_FILE}">
+                                        <div class="end-plug" id="${floor.roomList[1].endPlug}"></div>
+                                        <p>${floor.roomList[1].name}</p>
+                                        <p:graphicImage library="images" name="${floor.roomList[1].image}"/>
+                                        <span>${floor.roomList[1].type.name}</span>
+                                        <div class="start-plug" id="${floor.roomList[1].startPlug}"></div>
+                                    </p:outputPanel>
+                                    <p:spacer rendered="${floor.roomList[1].roomType!=RoomType.DATA_FILE}"/>
+                                </td>
 
-                            <td>
-                                <p:spacer width="100"/>
-                            </td>
+                                <td>
+                                    <p:spacer width="100"/>
+                                </td>
 
-                            <td>
-                                <p:panel header="" styleClass="data-table" rendered="true">
-                                    <f:facet name="actions">
-                                        <div class="end-plug" id="${floor.roomList[2].endPlug}"></div>
-                                        <div>
-                                            <p:graphicImage library="images"
-                                                            name="${floor.roomList[2].getDataFile().image}"/>
-                                            <b>${floor.roomList[2].name}</b>
-                                            <p:commandButton type="button"
-                                                             styleClass="ui-button-secondary"
-                                                             icon="pi pi-ellipsis-h"/>
-                                        </div>
-                                        <div class="start-plug" id="${floor.roomList[2].startPlug}"></div>
-                                    </f:facet>
+                                <td>
+                                    <p:panel header="" styleClass="data-table" rendered="true">
+                                        <f:facet name="actions">
+                                            <div class="end-plug" id="${floor.roomList[2].endPlug}"></div>
+                                            <div>
+                                                <p:graphicImage library="images"
+                                                                name="${floor.roomList[2].getDataFile().image}"/>
+                                                <b>${floor.roomList[2].name}</b>
+                                                <p:commandButton type="button"
+                                                                 styleClass="ui-button-secondary"
+                                                                 icon="pi pi-ellipsis-h"/>
+                                            </div>
+                                            <div class="start-plug" id="${floor.roomList[2].startPlug}"></div>
+                                        </f:facet>
 
-                                    <p:repeat value="${floor.roomList[2].columnList}" var="column">
+                                        <p:repeat value="${floor.roomList[2].columnList}" var="column">
 
-                                        <div class="${column.type.name().toLowerCase()} column">
-                                            <p:graphicImage library="images" name="${column.type.image}"/>
-                                            <label>${column.name}</label>
-                                            <div class="start-plug" id="${column.startPlug}"></div>
-                                        </div>
+                                            <div class="${column.type.name().toLowerCase()} column">
+                                                <p:graphicImage library="images" name="${column.type.image}"/>
+                                                <label>${column.name}</label>
+                                                <div class="start-plug" id="${column.startPlug}"></div>
+                                            </div>
 
-                                    </p:repeat>
+                                        </p:repeat>
 
-                                    <p:separator title="output"/>
+                                        <p:separator title="output"/>
 
-                                    <p:repeat value="${floor.roomList[2].outputList}" var="output">
+                                        <p:repeat value="${floor.roomList[2].outputList}" var="output">
 
-                                        <div class="output column">
-                                            <p:graphicImage library="images" name="${output.dataFile.image}"/>
-                                            <label>${output.dataSource.name} - (${output.dataFile.name})</label>
-                                            <div class="start-plug" id="${output.startPlug}"></div>
-                                        </div>
+                                            <div class="output column">
+                                                <p:graphicImage library="images" name="${output.dataFile.image}"/>
+                                                <label>${output.dataSource.name} - (${output.dataFile.name})</label>
+                                                <div class="start-plug" id="${output.startPlug}"></div>
+                                            </div>
 
-                                    </p:repeat>
+                                        </p:repeat>
 
-                                </p:panel>
-                                <p:spacer rendered="false"/>
-                            </td>
-                        </tr>
-                        <tr style="height: 50px"><td></td><td></td><td></td></tr>
-                    </p:repeat>
-                </table>
-            </div>
+                                    </p:panel>
+                                    <p:spacer rendered="false"/>
+                                </td>
+                            </tr>
+                            <tr style="height: 50px">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </p:repeat>
+                    </table>
+                </div>
 
-            <div class="transform section">
-                <p:panelGrid columns="4">
+                <div class="transform section">
+                    <p:panelGrid columns="4">
 
-                    <p:spacer width="50"/>
+                        <p:spacer width="50"/>
 
-                    <p:panel styleClass="function">
-                        <div class="string column">
-                            <div class="end-plug"></div>
-                            <p:graphicImage library="images" name="transform.png"/>
-                            <label>Lookup</label>
-                            <div class="start-plug" id="fx1c1"></div>
-                        </div>
-
-                        <div class="decimal column">
-                            <div class="end-plug"></div>
-                            <p:graphicImage library="images" name="transform.png"/>
-                            <label>Percent to Rate</label>
-                            <div class="start-plug" id="fx1c2"></div>
-                        </div>
-                    </p:panel>
-
-                    <p:spacer width="50"/>
-
-                    <p:panel header="" styleClass="data-table">
-                        <f:facet name="actions">
-                            <div class="end-plug" id="tb2EP"></div>
-                            <div>
-                                <p:graphicImage library="images" name="transfer.png"/>
-                                <b>Adjust Interest Rate</b>
-                                <p:commandButton type="button"
-                                                 styleClass="ui-button-secondary"
-                                                 icon="pi pi-ellipsis-h"/>
+                        <p:panel styleClass="function">
+                            <div class="string column">
+                                <div class="end-plug"></div>
+                                <p:graphicImage library="images" name="transform.png"/>
+                                <label>Lookup</label>
+                                <div class="start-plug" id="fx1c1"></div>
                             </div>
-                            <div class="start-plug"></div>
-                        </f:facet>
 
-                        <div class="string column">
-                            <div class="end-plug" id="tb4c1"></div>
-                            <span class="pi pi-dollar"/>
-                            <label>String Column</label>
-                            <div class="start-plug"></div>
-                        </div>
+                            <div class="decimal column">
+                                <div class="end-plug"></div>
+                                <p:graphicImage library="images" name="transform.png"/>
+                                <label>Percent to Rate</label>
+                                <div class="start-plug" id="fx1c2"></div>
+                            </div>
+                        </p:panel>
 
-                        <div class="integer column">
+                        <p:spacer width="50"/>
+
+                        <p:panel header="" styleClass="data-table">
+                            <f:facet name="actions">
+                                <div class="end-plug" id="tb2EP"></div>
+                                <div>
+                                    <p:graphicImage library="images" name="transfer.png"/>
+                                    <b>Adjust Interest Rate</b>
+                                    <p:commandButton type="button"
+                                                     styleClass="ui-button-secondary"
+                                                     icon="pi pi-ellipsis-h"/>
+                                </div>
+                                <div class="start-plug"></div>
+                            </f:facet>
+
+                            <div class="string column">
+                                <div class="end-plug" id="tb4c1"></div>
+                                <span class="pi pi-dollar"/>
+                                <label>String Column</label>
+                                <div class="start-plug"></div>
+                            </div>
+
+                            <div class="integer column">
+                                <div class="end-plug"></div>
+                                <span class="pi pi-dollar"/>
+                                <label>Integer Column</label>
+                                <div class="start-plug"></div>
+                            </div>
+
+                            <div class="decimal column">
+                                <div class="end-plug" id="tb4c3"></div>
+                                <span class="pi pi-dollar"/>
+                                <label>Deicmal Column</label>
+                                <div class="start-plug"></div>
+                            </div>
+
+                            <div class="date column">
+                                <div class="end-plug"></div>
+                                <span class="pi pi-dollar"/>
+                                <label>Date Column</label>
+                                <div class="start-plug"></div>
+                            </div>
+
+                            <p:separator title="transform"/>
+
+                            <div class="transform column">
+                                <p:graphicImage library="images" name="transform.png"/>
+                                <label>Remove No Change Accounts</label>
+                            </div>
+
+                            <p:separator title="output"/>
+
+                            <div class="output column">
+                                <p:graphicImage library="images" name="database.png"/>
+                                <label>Data Warehouse - (Adjust Interest Rate)</label>
+                                <div class="start-plug"></div>
+                            </div>
+
+                            <div class="output column">
+                                <p:graphicImage library="images" name="ftp.png"/>
+                                <label>CSV - (ADJINTR.csv)</label>
+                                <div class="start-plug"></div>
+                            </div>
+                        </p:panel>
+
+                    </p:panelGrid>
+                </div>
+
+                <div class="output section">
+                    <p:panelGrid columns="4">
+
+                        <p:spacer width="50px"/>
+
+                        <p:outputPanel styleClass="step-output">
                             <div class="end-plug"></div>
-                            <span class="pi pi-dollar"/>
-                            <label>Integer Column</label>
+                            <p>ADJINTR</p>
+                            <p:graphicImage library="images" name="csv.png"/>
+                            <span>CSV</span>
                             <div class="start-plug"></div>
-                        </div>
+                        </p:outputPanel>
 
-                        <div class="decimal column">
-                            <div class="end-plug" id="tb4c3"></div>
-                            <span class="pi pi-dollar"/>
-                            <label>Deicmal Column</label>
-                            <div class="start-plug"></div>
-                        </div>
+                        <p:spacer width="50px"/>
 
-                        <div class="date column">
+                        <p:outputPanel styleClass="step-output">
                             <div class="end-plug"></div>
-                            <span class="pi pi-dollar"/>
-                            <label>Date Column</label>
-                            <div class="start-plug"></div>
-                        </div>
-
-                        <p:separator title="transform"/>
-
-                        <div class="transform column">
-                            <p:graphicImage library="images" name="transform.png"/>
-                            <label>Remove No Change Accounts</label>
-                        </div>
-
-                        <p:separator title="output"/>
-
-                        <div class="output column">
-                            <p:graphicImage library="images" name="database.png"/>
-                            <label>Data Warehouse - (Adjust Interest Rate)</label>
-                            <div class="start-plug"></div>
-                        </div>
-
-                        <div class="output column">
+                            <p>Trade Finance 1</p>
                             <p:graphicImage library="images" name="ftp.png"/>
-                            <label>CSV - (ADJINTR.csv)</label>
-                            <div class="start-plug"></div>
-                        </div>
-                    </p:panel>
+                            <span>SFTP</span>
+                        </p:outputPanel>
 
-                </p:panelGrid>
-            </div>
+                    </p:panelGrid>
+                </div>
 
-            <div class="output section">
-                <p:panelGrid columns="4">
-
-                    <p:spacer width="50px"/>
-
-                    <p:outputPanel styleClass="step-output">
-                        <div class="end-plug"></div>
-                        <p>ADJINTR</p>
-                        <p:graphicImage library="images" name="csv.png"/>
-                        <span>CSV</span>
-                        <div class="start-plug"></div>
-                    </p:outputPanel>
-
-                    <p:spacer width="50px"/>
-
-                    <p:outputPanel styleClass="step-output">
-                        <div class="end-plug"></div>
-                        <p>Trade Finance 1</p>
-                        <p:graphicImage library="images" name="ftp.png"/>
-                        <span>SFTP</span>
-                    </p:outputPanel>
-
-                </p:panelGrid>
-            </div>
-
+            </h:form>
         </div>
 
     </h:body>

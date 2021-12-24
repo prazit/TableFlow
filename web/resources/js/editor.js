@@ -33,11 +33,11 @@ function toggleRight() {
     }
 }
 
-var flowchart, zoomFactor;
-
 function zoomStart() {
     document.getElementById('flowchart').contentWindow.hideLines();
 }
+
+var flowchart, zoomFactor;
 
 function zoom() {
     if (undefined === zoomFactor)
@@ -51,6 +51,7 @@ function zoom() {
 
 function zoomEnd(){
     zoom();
+    flowchart = undefined;
 
     var flowchartWindow = document.getElementById('flowchart').contentWindow;
     var scrollX = flowchartWindow.scrollX;

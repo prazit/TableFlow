@@ -18,6 +18,7 @@ public class Project {
     private int lastElementId;
 
     public Project(String name) {
+        activeStepIndex = -1;
         this.name = name;
         stepList = new ArrayList<>();
         dataSourceList = new HashMap<>();
@@ -89,6 +90,8 @@ public class Project {
         this.lastElementId = lastElementId;
     }
 
+    /*== Public Methods ==*/
+
     /**
      * Generate new element id (unique within the project)
      *
@@ -96,5 +99,10 @@ public class Project {
      */
     public String newElementId() {
         return "em" + (++lastElementId);
+    }
+
+    public Step getCurrentStep() {
+        if (activeStepIndex < 0) return null;
+        return stepList.get(activeStepIndex);
     }
 }

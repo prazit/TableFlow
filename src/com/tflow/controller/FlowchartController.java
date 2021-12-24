@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +21,8 @@ public class FlowchartController extends Controller {
     @Inject
     private Workspace workspace;
 
+    private boolean enabled;
+
     private Tower dataTower;
     private Tower transformTower;
     private Tower outputTower;
@@ -31,36 +32,22 @@ public class FlowchartController extends Controller {
     @PostConstruct
     public void onCreation() {
         Project project = workspace.getProject();
-        Step step = project.getStepList().get(project.getActiveStepIndex());
-        dataTower = step.getDataTower();
-        transformTower = step.getTransformTower();
-        outputTower = step.getOutputTower();
-        lineList = step.getLineList();
+        Step step = project.getCurrentStep();
+        enabled = step != null;
+        if (enabled) {
+            dataTower = step.getDataTower();
+            transformTower = step.getTransformTower();
+            outputTower = step.getOutputTower();
+            lineList = step.getLineList();
+        }
     }
 
-    public void addLine(Line singleLine) {
-        List<Line> lineList;
-        int index = 0;
-        if (singleLine == null) {
-            lineList = this.lineList;
-        } else {
-            lineList = Arrays.asList(singleLine);
-            index = this.lineList.size();
-            this.lineList.add(singleLine);
-        }
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-        StringBuilder builder = new StringBuilder();
-        for (Line line : lineList) {
-            builder.append(String.format("lines[%d] = new LeaderLine(document.getElementById('%s'), document.getElementById('%s'), %s);",
-                    index++,
-                    line.getStartPlug(),
-                    line.getEndPlug(),
-                    line.getType().getJsVar()
-            ));
-        }
-
-        javaScript = "$(function(){" + builder.toString() + "});";
-        FacesUtil.runClientScript(javaScript);
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Tower getDataTower() {
@@ -103,4 +90,32 @@ public class FlowchartController extends Controller {
     public void setJavaScript(String javaScript) {
         this.javaScript = javaScript;
     }
+
+
+
+    public void addLine(Line singleLine) {
+        List<Line> lineList;
+        int index = 0;
+        if (singleLine == null) {
+            lineList = this.lineList;
+        } else {
+            lineList = Arrays.asList(singleLine);
+            index = this.lineList.size();
+            this.lineList.add(singleLine);
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (Line line : lineList) {
+            builder.append(String.format("lines[%d] = new LeaderLine(document.getElementById('%s'), document.getElementById('%s'), %s);",
+                    index++,
+                    line.getStartPlug(),
+                    line.getEndPlug(),
+                    line.getType().getJsVar()
+            ));
+        }
+
+        javaScript = "$(function(){" + builder.toString() + "});";
+        FacesUtil.runClientScript(javaScript);
+    }
+
 }
