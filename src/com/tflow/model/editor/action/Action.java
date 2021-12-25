@@ -100,7 +100,7 @@ public abstract class Action implements Serializable {
         return canUndo;
     }
 
-    public void execute() throws RequiredParamException {
+    public void execute() throws RequiredParamException, UnsupportedOperationException {
         if (commandList == null)
             initCommandsWrapper();
         requiredParam(paramList, paramMap, false);
@@ -110,7 +110,7 @@ public abstract class Action implements Serializable {
         /*TODO: add Action to history*/
     }
 
-    public void executeUndo() throws RequiredParamException {
+    public void executeUndo() throws RequiredParamException, UnsupportedOperationException {
         if (commandList == null)
             initUndoCommandsWrapper();
         requiredParam(undoParamList, paramMap, true);
@@ -129,7 +129,7 @@ public abstract class Action implements Serializable {
                 throw new RequiredParamException(required, this, undo);
             }
         }
-        if(!paramMap.containsKey(CommandParamKey.HISTORY)) {
+        if (!paramMap.containsKey(CommandParamKey.HISTORY)) {
             throw new RequiredParamException(CommandParamKey.HISTORY, this, undo);
         }
     }

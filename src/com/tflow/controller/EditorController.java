@@ -36,6 +36,7 @@ public class EditorController extends Controller {
     private String projectName;
     /*TODO: remove stepList*/private List<Step> stepList;
     private MenuModel stepMenu;
+    private boolean flowchartEnabled;
 
     @PostConstruct
     public void onCreation() {
@@ -54,9 +55,12 @@ public class EditorController extends Controller {
                     .value(step.getName())
                     .icon("pi pi-home")
                     .command("${editorCtl.selectStep(" + step.getIndex() + ")}")
+                    .update("actionForm")
                     .build()
             );
         }
+
+        flowchartEnabled = project.getActiveStepIndex() >= 0;
     }
 
     public String getProjectName() {
@@ -81,6 +85,14 @@ public class EditorController extends Controller {
 
     public void setStepMenu(MenuModel stepMenu) {
         this.stepMenu = stepMenu;
+    }
+
+    public boolean isFlowchartEnabled() {
+        return flowchartEnabled;
+    }
+
+    public void setFlowchartEnabled(boolean flowchartEnabled) {
+        this.flowchartEnabled = flowchartEnabled;
     }
 
     /*== ACTIONS ==*/
@@ -160,6 +172,7 @@ public class EditorController extends Controller {
 
     public void selectStep(int stepIndex) {
         workspace.getProject().setActiveStepIndex(stepIndex);
+        flowchartEnabled = true;
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
@@ -208,9 +221,8 @@ public class EditorController extends Controller {
         );
 
         DataTable dataTable = new DataTable(
-                1,
+                project.newUniqueId(),
                 "Mockup Data Table",
-                10,
                 dataFile,
                 database,
                 "",
@@ -226,6 +238,7 @@ public class EditorController extends Controller {
         columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal", project.newElementId()));
         columnList.add(new DataColumn(4, DataType.DATE, "Date", project.newElementId()));
 
+        /*TODO: split code below to the Action AddDataOutput*/
         DataFile outputSQLFile = new DataFile(
                 DataFileType.OUT_DBINSERT,
                 "account_master",
@@ -261,12 +274,13 @@ public class EditorController extends Controller {
         Step step = project.getCurrentStep();
 
         DataTable dataTable = getSQLDataTable(project);
-        /* TODO: need more cases for DataTable (local-file, sftp-file) */
+        /* TODO: need more data-cases for DataTable (local-file, sftp-file) */
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
         paramMap.put(CommandParamKey.TOWER, step.getDataTower());
-        paramMap.put(CommandParamKey.LINE, step.getLineList());
+        paramMap.put(CommandParamKey.LINE_LIST, step.getLineList());
+        paramMap.put(CommandParamKey.STEP, step);
         paramMap.put(CommandParamKey.HISTORY, step.getHistory());
 
         try {
@@ -281,13 +295,39 @@ public class EditorController extends Controller {
     }
 
     public void addTransformTable() {
-        /*TODO: create TransformTable with ColumnFx*/
+        /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
-        /*TODO: add Output to DataTable and assign as Step Output*/
+        Project project = workspace.getProject();
+        Step step = project.getCurrentStep();
 
-        /*TODO: add Output to TransformTable and assign as Step Output*/
+        DataTable sourceTable = step.getDataList().get(0);
+        TransformTable transformTable = new TransformTable(
+                project.newUniqueId(),
+                "Transformation Table",
+                sourceTable.getId(),
+                SourceType.DATA_TABLE,
+                sourceTable.getIdColName(),
+                project.newElementId(),
+                project.newElementId()
+        );
 
-        /*TODO: refresh flowchart page*/
+        /* TODO: need more source-type for TransformTable (SourceType.TRANSFORM_TABLE) */
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
+        paramMap.put(CommandParamKey.TOWER, step.getTransformTower());
+        paramMap.put(CommandParamKey.LINE_LIST, step.getLineList());
+        paramMap.put(CommandParamKey.STEP, step);
+        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
+
+        try {
+            new AddTransformTable(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add TransformTable Failed!", e);
+            FacesUtil.addError("msg", "Add TransformTable Failed with Internal Error!");
+            return;
+        }
+
         FacesUtil.runClientScript("refershFlowChart();");
     }
 

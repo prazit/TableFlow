@@ -11,7 +11,7 @@
 | :heavy_check_mark: | - Show DataTable                                             | Command: AddDataTable                                        |
 | :heavy_check_mark: | - Show Lines                                                 |                                                              |
 | :white_check_mark: | - Show Transformation Table                                  | Command: AddTransformTable                                   |
-|                    | - Show Column Fx Table                                       | Command: AddTransformColumn                                  |
+|                    | - Show Column Fx Table                                       | Command: AddFxColumn                                         |
 |                    | - Show Property Sheet of the Objects                         | Command: SelectRoom                                          |
 | :heavy_check_mark: | DataStructure: change step output to outputList and the DataOutput need a link back to owner table. |                                                              |
 | :heavy_check_mark: | DataStructure: add Tower Floor Room to the Step              |                                                              |

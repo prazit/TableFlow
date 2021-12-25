@@ -37,29 +37,24 @@ function zoomStart() {
     document.getElementById('flowchart').contentWindow.hideLines();
 }
 
-var flowchart, zoomFactor;
-
 function zoom() {
-    if (undefined === zoomFactor)
-        zoomFactor = document.getElementById('actionForm:zoomFactor_input');
-    if (undefined === flowchart)
-        flowchart = $(document.getElementById('flowchart').contentWindow.document.getElementsByTagName('html'));
+    zoomFactor = document.getElementById('actionForm:zoomFactor_input');
+    flowchart = $(document.getElementById('flowchart').contentWindow.document.getElementsByTagName('html'));
     var zooming = zoomFactor.value;
     console.log('zoom:' + zooming);
     flowchart.css('zoom', zooming);
 }
 
-function zoomEnd(){
+function zoomEnd() {
     zoom();
-    flowchart = undefined;
 
     var flowchartWindow = document.getElementById('flowchart').contentWindow;
     var scrollX = flowchartWindow.scrollX;
     var scrollY = flowchartWindow.scrollY;
-    flowchartWindow.scrollTo(0,0);
+    flowchartWindow.scrollTo(0, 0);
 
     flowchartWindow.showLines();
-    flowchartWindow.scrollTo(scrollX,scrollY);
+    flowchartWindow.scrollTo(scrollX, scrollY);
 }
 
 $(function () {

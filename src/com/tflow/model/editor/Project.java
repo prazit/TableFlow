@@ -15,7 +15,9 @@ public class Project {
     private Map<String, DataSource> dataSourceList;
     private Map<String, SFTP> sftpList;
     private Map<String, Variable> variableList;
+
     private int lastElementId;
+    private int lastUniqueId;
 
     public Project(String name) {
         activeStepIndex = -1;
@@ -82,14 +84,6 @@ public class Project {
         this.variableList = variableList;
     }
 
-    public int getLastElementId() {
-        return lastElementId;
-    }
-
-    public void setLastElementId(int lastElementId) {
-        this.lastElementId = lastElementId;
-    }
-
     /*== Public Methods ==*/
 
     /**
@@ -99,6 +93,10 @@ public class Project {
      */
     public String newElementId() {
         return "em" + (++lastElementId);
+    }
+
+    public int newUniqueId() {
+        return ++lastUniqueId;
     }
 
     public Step getCurrentStep() {

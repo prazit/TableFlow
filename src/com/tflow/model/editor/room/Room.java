@@ -1,10 +1,5 @@
 package com.tflow.model.editor.room;
 
-import com.tflow.model.editor.ColumnFx;
-import com.tflow.model.editor.DataFile;
-import com.tflow.model.editor.DataTable;
-import com.tflow.model.editor.TransformTable;
-import com.tflow.model.editor.datasource.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,37 +51,13 @@ public class Room implements Serializable {
         this.floor = floor;
     }
 
-    public boolean isDataSource() {
-        return this instanceof DataSource;
-    }
-
-    public boolean isDataFile() {
-        return this instanceof DataFile;
-    }
-
-    public boolean isDataTable() {
-        return this instanceof DataTable;
-    }
-
-    public boolean isColumnFx() {
-        return this instanceof ColumnFx;
-    }
-
-    public boolean isTransformTable() {
-        return this instanceof TransformTable;
-    }
-
-    public boolean isEmptyRoom() {
-        return this instanceof EmptyRoom;
-    }
-
     @Override
     public String toString() {
         return "Room{" +
                 "elementId='" + elementId + '\'' +
                 ", roomIndex=" + roomIndex +
+                ", roomType=" + roomType +
                 ", floor=" + floor +
-                ", instanceOf=" + this.getClass().getName() +
                 '}';
     }
 }

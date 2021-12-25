@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <b>Required parameters:</b><br/>
- * DATA_SOURCE<br/>
- * PROJECT<br/>
+ * Add DataSource to TOWER and DataSource List.
  */
 public class AddDataSource extends Command {
 

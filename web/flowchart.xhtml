@@ -110,8 +110,15 @@
                                     </p:panel>
                                     <p:spacer rendered="false"/>
                                 </td>
+
+                                <td>
+                                    <p:spacer width="100"/>
+                                </td>
                             </tr>
                             <tr style="height: 50px">
+                                <td></td>
+                                <td></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -121,92 +128,95 @@
                 </div>
 
                 <div class="transform section">
-                    <p:panelGrid columns="4">
+                    <table>
+                        <p:repeat value="${flowchartCtl.transformTower.floorList}" var="tfloor">
+                            <tr>
+                                <td>
+                                    <p:panel styleClass="function" rendered="${tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
+                                        <p:repeat value="${tfloor.roomList[1].columnList}" var="tcolumn">
 
-                        <p:spacer width="50"/>
+                                            <p:outputPanel rendered="${tcolumn.fx != null}">
+                                                <div class="${tcolumn.type.name().toLowerCase()} column">
+                                                    <div class="end-plug" id="${tcolumn.fx.endPlug}"></div>
+                                                    <p:graphicImage library="images" name="${tcolumn.type.image}"/>
+                                                    <label>${tcolumn.fx.name}</label>
+                                                    <div class="start-plug" id="${tcolumn.fx.startPlug}"></div>
+                                                </div>
+                                            </p:outputPanel>
 
-                        <p:panel styleClass="function">
-                            <div class="string column">
-                                <div class="end-plug"></div>
-                                <p:graphicImage library="images" name="transform.png"/>
-                                <label>Lookup</label>
-                                <div class="start-plug" id="fx1c1"></div>
-                            </div>
+                                        </p:repeat>
+                                    </p:panel>
+                                    <p:spacer rendered="${tfloor.roomList[1].roomType!=RoomType.TRANSFORM_TABLE}"/>
+                                </td>
 
-                            <div class="decimal column">
-                                <div class="end-plug"></div>
-                                <p:graphicImage library="images" name="transform.png"/>
-                                <label>Percent to Rate</label>
-                                <div class="start-plug" id="fx1c2"></div>
-                            </div>
-                        </p:panel>
+                                <td>
+                                    <p:spacer width="50"/>
+                                </td>
 
-                        <p:spacer width="50"/>
+                                <td>
+                                    <p:panel header="" styleClass="data-table" rendered="${tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
+                                        <f:facet name="actions">
+                                            <div class="end-plug" id="${tfloor.roomList[1].endPlug}"></div>
+                                            <div>
+                                                <p:graphicImage library="images" name="transfer.png"/>
+                                                <b>${tfloor.roomList[1].name}</b>
+                                                <p:commandButton type="button"
+                                                                 styleClass="ui-button-secondary"
+                                                                 icon="pi pi-ellipsis-h"/>
+                                            </div>
+                                            <div class="start-plug" id="${tfloor.roomList[1].endPlug}"></div>
+                                        </f:facet>
 
-                        <p:panel header="" styleClass="data-table">
-                            <f:facet name="actions">
-                                <div class="end-plug" id="tb2EP"></div>
-                                <div>
-                                    <p:graphicImage library="images" name="transfer.png"/>
-                                    <b>Adjust Interest Rate</b>
-                                    <p:commandButton type="button"
-                                                     styleClass="ui-button-secondary"
-                                                     icon="pi pi-ellipsis-h"/>
-                                </div>
-                                <div class="start-plug"></div>
-                            </f:facet>
+                                        <p:repeat value="${tfloor.roomList[1].columnList}" var="tcolumn">
 
-                            <div class="string column">
-                                <div class="end-plug" id="tb4c1"></div>
-                                <span class="pi pi-dollar"/>
-                                <label>String Column</label>
-                                <div class="start-plug"></div>
-                            </div>
+                                            <div class="${tcolumn.type.name().toLowerCase()} column">
+                                                <div class="end-plug" id="${tcolumn.endPlug}"></div>
+                                                <p:graphicImage library="images" name="${tcolumn.type.image}"/>
+                                                <label>${tcolumn.name}</label>
+                                                <div class="start-plug" id="${tcolumn.startPlug}"></div>
+                                            </div>
 
-                            <div class="integer column">
-                                <div class="end-plug"></div>
-                                <span class="pi pi-dollar"/>
-                                <label>Integer Column</label>
-                                <div class="start-plug"></div>
-                            </div>
+                                        </p:repeat>
 
-                            <div class="decimal column">
-                                <div class="end-plug" id="tb4c3"></div>
-                                <span class="pi pi-dollar"/>
-                                <label>Deicmal Column</label>
-                                <div class="start-plug"></div>
-                            </div>
+                                        <p:separator title="transform"/>
 
-                            <div class="date column">
-                                <div class="end-plug"></div>
-                                <span class="pi pi-dollar"/>
-                                <label>Date Column</label>
-                                <div class="start-plug"></div>
-                            </div>
+                                        <p:repeat value="${tfloor.roomList[1].fxList}" var="tfx">
 
-                            <p:separator title="transform"/>
+                                            <div class="transform column">
+                                                <p:graphicImage library="images" name="transform.png"/>
+                                                <label>${tfx.name}</label>
+                                            </div>
 
-                            <div class="transform column">
-                                <p:graphicImage library="images" name="transform.png"/>
-                                <label>Remove No Change Accounts</label>
-                            </div>
+                                        </p:repeat>
 
-                            <p:separator title="output"/>
+                                        <p:separator title="output"/>
 
-                            <div class="output column">
-                                <p:graphicImage library="images" name="database.png"/>
-                                <label>Data Warehouse - (Adjust Interest Rate)</label>
-                                <div class="start-plug"></div>
-                            </div>
+                                        <p:repeat value="${tfloor.roomList[1].outputList}" var="toutput">
 
-                            <div class="output column">
-                                <p:graphicImage library="images" name="ftp.png"/>
-                                <label>CSV - (ADJINTR.csv)</label>
-                                <div class="start-plug"></div>
-                            </div>
-                        </p:panel>
+                                            <div class="output column">
+                                                <p:graphicImage library="images" name="${toutput.dataFile.image}"/>
+                                                <label>${toutput.dataSource.name} - (${toutput.dataFile.name})</label>
+                                                <div class="start-plug" id="${toutput.startPlug}"></div>
+                                            </div>
 
-                    </p:panelGrid>
+                                        </p:repeat>
+
+                                    </p:panel>
+                                    <p:spacer rendered="${tfloor.roomList[1].roomType!=RoomType.TRANSFORM_TABLE}"/>
+                                </td>
+
+                                <td>
+                                    <p:spacer width="50"/>
+                                </td>
+                            </tr>
+                            <tr style="height: 50px">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </p:repeat>
+                    </table>
                 </div>
 
                 <div class="output section">

@@ -5,7 +5,6 @@ import com.tflow.model.editor.room.Tower;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Step {
 
@@ -129,5 +128,23 @@ public class Step {
 
     public Project getOwner() {
         return owner;
+    }
+
+    public DataTable getDataTable(int sourceId) {
+        for (DataTable dataTable : dataList) {
+            if (dataTable.getId() == sourceId) {
+                return dataTable;
+            }
+        }
+        return null;
+    }
+
+    public TransformTable getTransformTable(int sourceId) {
+        for (TransformTable transformTable : transformList) {
+            if (transformTable.getId() == sourceId) {
+                return transformTable;
+            }
+        }
+        return null;
     }
 }

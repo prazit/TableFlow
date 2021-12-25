@@ -25,10 +25,10 @@ public class DataTable extends Room implements Serializable {
     private String endPlug;
     private String startPlug;
 
-    public DataTable(int id, String name, int index, DataFile dataFile, DataSource dataSource, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
+    public DataTable(int id, String name, DataFile dataFile, DataSource dataSource, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
         this.id = id;
         this.name = name;
-        this.index = index;
+        this.index = -1;
         this.dataFile = dataFile;
         this.dataSource = dataSource;
         this.query = query;

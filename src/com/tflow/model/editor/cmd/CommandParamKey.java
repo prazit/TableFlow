@@ -12,10 +12,10 @@ public enum CommandParamKey {
     TRANSFORM_TABLE,
 
     TOWER,
-    LINE,
+    LINE_LIST,
 
     DATA_TEST1,
     DATA_TEST2,
-    ;
+    STEP;
 
 }

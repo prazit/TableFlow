@@ -4,30 +4,30 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 
 import java.util.Map;
 
-public class AddDataTable extends Action {
-    private static final long serialVersionUID = 2021122109996660002L;
+public class AddTransformTable extends Action {
+    private static final long serialVersionUID = 2021122109996660003L;
 
-    public AddDataTable(Map<CommandParamKey, Object> paramMap) {
+    public AddTransformTable(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);
     }
 
     @Override
     protected void initAction() {
-        this.name = "Add Data Table";
-        this.description = "add data table to current step";
-        this.code = "ADT";
+        this.name = "Add Transform Table";
+        this.description = "add transform-table to current step";
+        this.code = "ATT";
         this.image = "action.png";
     }
 
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.DATA_TABLE,
+                CommandParamKey.TRANSFORM_TABLE,
                 CommandParamKey.TOWER,
                 CommandParamKey.LINE_LIST,
                 CommandParamKey.STEP
         );
-        setCommands(new com.tflow.model.editor.cmd.AddDataTable());
+        setCommands(new com.tflow.model.editor.cmd.AddTransformTable());
     }
 
     @Override
@@ -36,6 +36,6 @@ public class AddDataTable extends Action {
                 CommandParamKey.DATA_TABLE,
                 CommandParamKey.TOWER,
         );*/
-        /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataTable());*/
+        /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveTransformTable());*/
     }
 }

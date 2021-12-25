@@ -1,32 +1,17 @@
 package com.tflow.model.editor;
 
-import java.io.Serializable;
-
-public class TransformColumn  implements Serializable {
+public class TransformColumn extends DataColumn {
     private static final long serialVersionUID = 2021121709996660041L;
 
-    private String name;
-    private String type;
     private String dataColName;
     private ColumnFx fx;
 
     private String endPlug;
-    private String startPlug;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug) {
+        super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug);
+        dataColName = "" + name;
+        this.endPlug = endPlug;
     }
 
     public String getDataColName() {
@@ -53,11 +38,4 @@ public class TransformColumn  implements Serializable {
         this.endPlug = endPlug;
     }
 
-    public String getStartPlug() {
-        return startPlug;
-    }
-
-    public void setStartPlug(String startPlug) {
-        this.startPlug = startPlug;
-    }
 }

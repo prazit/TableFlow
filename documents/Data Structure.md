@@ -69,14 +69,13 @@ Table Flow
 
 
 
-### TOWER FLOOR ROOM
+## TOWER FLOOR ROOM
 
-Following objects can put in the Room.
+Only objects below can put in the Room.
 
-+ DataSource
-+ DataFile
++ DataSource (both input and output)
++ DataFile (both input and output)
 + DataTable
-+ ColumnFx
 + TransformTable
 
 
@@ -100,7 +99,7 @@ Action or user-command that make some changes to the active project.
 
 ## DATA SOURCE
 
-Base class fro DATABASE, LOCAL and SFTP
+ROOM, base class fro DATABASE, LOCAL and SFTP
 
 | :heavy_check_mark: | name | data type      | description                                                  |
 | :----------------: | ---- | -------------- | ------------------------------------------------------------ |
@@ -160,6 +159,8 @@ Extends from DATA SOURCE
 
 ## DATA FILE
 
+ROOM
+
 | :heavy_check_mark: | name      | data type | description                                                  |
 | :----------------: | --------- | --------- | ------------------------------------------------------------ |
 | :heavy_check_mark: | type      | FileType  | [Enumeration] sql-in, sql-out, markdown-in, markdown-out, csv-out, txt-out<br /><br />contain parameter prototype list. |
@@ -171,6 +172,8 @@ Extends from DATA SOURCE
 
 
 ## DATA TABLE
+
+ROOM
 
 | :heavy_check_mark: | name        | data type           | description                                                  |
 | :----------------: | ----------- | ------------------- | ------------------------------------------------------------ |
@@ -211,6 +214,8 @@ Extends from DATA SOURCE
 
 ## TRANSFORM TABLE
 
+ROOM
+
 | :heavy_check_mark: | name       | data type                | description                                                  |
 | :----------------: | ---------- | ------------------------ | ------------------------------------------------------------ |
 | :heavy_check_mark: | id         | integer                  | unique number used as ID of the table.<br />This id allow this table able to change the name and index freely but all references to this table need to use this id instead of name and index. |
@@ -226,14 +231,14 @@ Extends from DATA SOURCE
 
 ## TRANSFORM COLUMN
 
-| :heavy_check_mark: | name        | data type | description                                                 |
-| :----------------: | ----------- | --------- | ----------------------------------------------------------- |
-| :heavy_check_mark: | name        | string    | column name                                                 |
-| :heavy_check_mark: | type        | string    | column type                                                 |
-| :heavy_check_mark: | dataColName | string    | column name (TransformTable.dataTable.colum[name]) or 'FX+' |
-| :heavy_check_mark: | fx          | ColumnFx  | function definition to show in the transform box            |
-| :heavy_check_mark: | endPlug     | string    | element id for End of Linked Line                           |
-| :heavy_check_mark: | startPlug   | string    | element id for Start of Linked Line                         |
+| :heavy_check_mark: | name        | data type | description                                                |
+| :----------------: | ----------- | --------- | ---------------------------------------------------------- |
+| :heavy_check_mark: | name        | string    | column name                                                |
+| :heavy_check_mark: | type        | string    | data type                                                  |
+| :heavy_check_mark: | dataColName | string    | column name (TransformTable.dataTable.colum[name]) or null |
+| :heavy_check_mark: | fx          | ColumnFx  | function definition to show in the transform box           |
+| :heavy_check_mark: | endPlug     | string    | element id for End of Linked Line                          |
+| :heavy_check_mark: | startPlug   | string    | element id for Start of Linked Line                        |
 
 
 

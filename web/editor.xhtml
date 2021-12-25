@@ -44,12 +44,12 @@
                         <p:panel header="" styleClass="tool-panel">
                             <f:facet name="actions">
                                 <h:form id="actionForm">
-                                    <p:menubar>
+                                    <p:menubar rendered="${editorCtl.flowchartEnabled}">
                                         <p:submenu label="Add">
                                             <p:menuitem value="DB Connection..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addDataSource}"/>
                                             <p:divider/>
                                             <p:menuitem value="Data Table..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addDataTable}"/>
-                                            <p:menuitem value="Transform Table..." icon="pi pi-fw pi-plus"/>
+                                            <p:menuitem value="Transform Table..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addTransformTable}"/>
                                             <p:divider/>
                                             <p:menuitem value="Column..." icon="pi pi-fw pi-plus"/>
                                             <p:menuitem value="Output..." icon="pi pi-fw pi-plus"/>
@@ -92,7 +92,6 @@
                                                       onSlide="zoom()" onSlideEnd="zoomEnd()"/>
                                         </p:menuitem>
                                     </p:menubar>
-
                                 </h:form>
                             </f:facet>
 

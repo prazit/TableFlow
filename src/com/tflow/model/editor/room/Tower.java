@@ -5,7 +5,6 @@ import com.tflow.model.editor.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,10 +69,14 @@ public class Tower implements Serializable {
     }
 
     public Floor getAvailableFloor(boolean newFloor) {
+        return getAvailableFloor(newFloor, -1);
+    }
+
+    public Floor getAvailableFloor(boolean newFloor, int newFloorIndex) {
         Floor floor = null;
         if (!newFloor && floorList.size() > 0) {
             for (Floor fl : floorList) {
-                if (fl.isAvailableFloor()) {
+                if (fl.isEmpty()) {
                     floor = fl;
                     break;
                 }
@@ -81,10 +84,10 @@ public class Tower implements Serializable {
         }
 
         if (floor == null) {
-            int flIndex = floorList.size();
+            int flIndex = newFloorIndex < 0 ? floorList.size() : newFloorIndex;
             floor = new Floor(flIndex, this);
             addRoom(roomsOnAFloor, floor);
-            floorList.add(floor);
+            floorList.add(flIndex, floor);
         }
 
         return floor;

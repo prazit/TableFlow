@@ -63,13 +63,14 @@ public class Floor implements Serializable {
         old.setRoomIndex(0);
 
         room.setRoomIndex(roomIndex);
+        room.setFloor(this);
         roomList.add(roomIndex, room);
     }
 
-    boolean isAvailableFloor() {
+    public boolean isEmpty() {
         int emptyCount = 0;
         for (Room room : roomList) {
-            if (room.isEmptyRoom()) {
+            if (room.getRoomType() == RoomType.EMPTY) {
                 emptyCount++;
             }
         }

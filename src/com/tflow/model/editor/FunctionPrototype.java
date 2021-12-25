@@ -8,11 +8,11 @@ public enum FunctionPrototype {
 
     COL_LOOKUP("Lookup",
             /* parameter-name=data-type(args)*/
-            "TargetTableLookup=TableName",
+            "SourceTable=TableName",
             "Condition=Condition(ColumnName==ColumnName(TargetTableLookup))",
             /*"Conditions=ConditionList(ColumnName==ColumnName(TargetTableLookup))",*/
-            "TargetColumnValue=ColumnName(TargetTableLookup)",
-            "TargetColumnValueDefault=ColumnType(TargetColumnValue)"),
+            "SourceColumn=ColumnName(TargetTableLookup)",
+            "DefaultValue=ColumnType(TargetColumnValue)"),
     COL_GET("GetValue",
             "Table:Table",
             "Row:Row",
@@ -39,6 +39,9 @@ public enum FunctionPrototype {
         return name;
     }
 
+    /**
+     * @return Map between paramName(String) and paramType(String)
+     */
     public Map<String, String> getParamMap() {
         return paramMap;
     }
