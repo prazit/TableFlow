@@ -1,23 +1,30 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.editor.Properties;
+import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.room.RoomType;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Database extends DataSource {
+public class Database extends DataSource implements Selectable {
     private static final long serialVersionUID = 2021121709996660011L;
 
     private DBMS dbms;
     private String url;
     private String driver;
     private String user;
-    private boolean userEncrypted;
     private String password;
-    private boolean passwordEncrypted;
     private int retry;
+
+    /*always encrypted*/
+    private boolean userEncrypted;
+    private boolean passwordEncrypted;
+
+    /*quotes depend on selected dbms*/
     private String quotesForName;
     private String quotesForValue;
+
     private Map<String, String> propList;
 
     public Database(String name, DBMS dbms, String plug) {
@@ -26,6 +33,8 @@ public class Database extends DataSource {
         setImage("database.png");
         setName(name);
         setPlug(plug);
+        userEncrypted = true;
+        passwordEncrypted = true;
         propList = new HashMap<>();
         this.setRoomType(RoomType.DATA_SOURCE);
     }
@@ -116,5 +125,15 @@ public class Database extends DataSource {
 
     public void setPropList(Map<String, String> propList) {
         this.propList = propList;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.DATA_BASE;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return "db" + id;
     }
 }

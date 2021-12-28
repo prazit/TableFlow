@@ -4,24 +4,28 @@ import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
-public class DataFile extends Room implements Serializable {
+public class DataFile extends Room implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660020L;
 
     private DataFileType type;
     private String image;
     private String name;
+    private String path;
+
     private Map<String, String> paramMap;
 
     private String endPlug;
     private String startPlug;
 
-    public DataFile(DataFileType type, String name, Map<String, String> paramMap, String endPlug, String startPlug) {
+    public DataFile(DataFileType type, String name, String path, String endPlug, String startPlug) {
         this.type = type;
         this.name = name;
+        this.path = path;
         this.image = type.getImage();
-        this.paramMap = paramMap;
+        this.paramMap = new HashMap<>();
         this.endPlug = endPlug;
         this.startPlug = startPlug;
         this.setRoomType(RoomType.DATA_FILE);
@@ -51,6 +55,14 @@ public class DataFile extends Room implements Serializable {
         this.name = name;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     public String getEndPlug() {
         return endPlug;
     }
@@ -67,8 +79,14 @@ public class DataFile extends Room implements Serializable {
         this.startPlug = startPlug;
     }
 
-    public Map<String, String> getParamMap() {
-        return paramMap;
+    @Override
+    public Properties getProperties() {
+        return Properties.DATA_FILE;
     }
 
+    @Override
+    public String getSelectableId() {
+        if (name == null) return "";
+        return name.replaceAll("[ .]", "_");
+    }
 }

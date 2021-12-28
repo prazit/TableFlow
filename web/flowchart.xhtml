@@ -1,9 +1,11 @@
 <!DOCTYPE html>
+<!--suppress ELSpecValidationInJSP -->
 <html style="background-color: var(--surface-a)">
 <f:view xmlns="http://www.w3.org/1999/xhtml"
         xmlns:f="http://java.sun.com/jsf/core"
         xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui"
+        xmlns:c="http://java.sun.com/jsp/jstl/core"
 >
 
     <h:head>
@@ -14,40 +16,44 @@
 
     </h:head>
     <h:body style="background-color: var(--surface-a)">
-        <h:outputStylesheet library="css" name="tflow.css${app.forceReloadResources}" target="head"/>
-        <h:outputStylesheet library="css" name="editor.css${app.forceReloadResources}" target="head"/>
+        <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
+        <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
-        <h:outputScript library="js" name="flowchart.js${app.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="flowchart.js#{app.forceReloadResources}" target="head"/>
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
-        <script>
-            var parentWindow = window.parent;
-            parentWindow.zoomStart();
-            parentWindow.zoomEnd();
-        </script>
         <div class="flow-chart">
 
-            <h:form rendered="${flowchartCtl.enabled}">
+            <h:form id="fchForm" rendered="#{flowchartCtl.enabled}">
                 <p:growl id="growl" showDetail="true" escape="false"/>
                 <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
 
+                <p:remoteCommand name="setActiveObj" action="#{flowchartCtl.selectObject}"/>
                 <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine(null)}"/>
                 <script>$(function () {
                     addLine();
                 });</script>
 
-                <div class="source section">
+                <p:outputPanel styleClass="source section">
                     <table>
-                        <p:repeat value="${flowchartCtl.dataTower.floorList}" var="floor">
+                        <p:repeat value="#{flowchartCtl.dataTower.floorList}" var="floor">
                             <tr>
                                 <td>
-                                    <p:outputPanel styleClass="data-source"
-                                                   rendered="${floor.roomList[0].roomType==RoomType.DATA_SOURCE}">
-                                        <p>${floor.roomList[0].name}</p>
-                                        <p:graphicImage library="images" name="${floor.roomList[0].image}"/>
-                                        <span>${floor.roomList[0].type}</span>
-                                        <div class="start-plug" id="${floor.roomList[0].plug}"></div>
+                                    <p:outputPanel styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])}" rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}">
+                                        <input name="selectableId" type="hidden" value="#{floor.roomList[0].selectableId}"/>
+
+                                        <c:set var="testMemberName" value="name"/>
+                                        <p>Property:#{floor.roomList[0][testMemberName]}</p>
+
+                                        <p>#{floor.roomList[0].name}</p>
+                                        <p:graphicImage library="images" name="#{floor.roomList[0].image}"/>
+
+                                        <c:set var="testMemberName" value="type"/>
+                                        <p>Property:#{floor.roomList[0][testMemberName]}</p>
+
+                                        <span>#{floor.roomList[0].type}</span>
+                                        <div class="start-plug" id="#{floor.roomList[0].plug}"></div>
                                     </p:outputPanel>
-                                    <p:spacer rendered="${floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
+                                    <p:spacer rendered="#{floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
                                 </td>
 
                                 <td>
@@ -55,15 +61,16 @@
                                 </td>
 
                                 <td>
-                                    <p:outputPanel styleClass="data-source"
-                                                   rendered="${floor.roomList[1].roomType==RoomType.DATA_FILE}">
-                                        <div class="end-plug" id="${floor.roomList[1].endPlug}"></div>
-                                        <p>${floor.roomList[1].name}</p>
-                                        <p:graphicImage library="images" name="${floor.roomList[1].image}"/>
-                                        <span>${floor.roomList[1].type.name}</span>
-                                        <div class="start-plug" id="${floor.roomList[1].startPlug}"></div>
+                                    <p:outputPanel styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[1])}" rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}">
+                                        <input name="selectableId" type="hidden" value="#{floor.roomList[1].selectableId}"/>
+
+                                        <div class="end-plug" id="#{floor.roomList[1].endPlug}"></div>
+                                        <p>#{floor.roomList[1].name}</p>
+                                        <p:graphicImage library="images" name="#{floor.roomList[1].image}"/>
+                                        <span>#{floor.roomList[1].type.name}</span>
+                                        <div class="start-plug" id="#{floor.roomList[1].startPlug}"></div>
                                     </p:outputPanel>
-                                    <p:spacer rendered="${floor.roomList[1].roomType!=RoomType.DATA_FILE}"/>
+                                    <p:spacer rendered="#{floor.roomList[1].roomType!=RoomType.DATA_FILE}"/>
                                 </td>
 
                                 <td>
@@ -71,38 +78,42 @@
                                 </td>
 
                                 <td>
-                                    <p:panel header="" styleClass="data-table" rendered="true">
+                                    <p:panel header="" styleClass="data-table selectable#{flowchartCtl.active(floor.roomList[2])}" rendered="true">
                                         <f:facet name="actions">
-                                            <div class="end-plug" id="${floor.roomList[2].endPlug}"></div>
+                                            <input name="selectableId" type="hidden" value="#{floor.roomList[2].selectableId}"/>
+
+                                            <div class="end-plug" id="#{floor.roomList[2].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images"
-                                                                name="${floor.roomList[2].getDataFile().image}"/>
-                                                <b>${floor.roomList[2].name}</b>
+                                                                name="#{floor.roomList[2].getDataFile().image}"/>
+                                                <b>#{floor.roomList[2].name}</b>
                                                 <p:commandButton type="button"
                                                                  styleClass="ui-button-secondary"
                                                                  icon="pi pi-ellipsis-h"/>
                                             </div>
-                                            <div class="start-plug" id="${floor.roomList[2].startPlug}"></div>
+                                            <div class="start-plug" id="#{floor.roomList[2].startPlug}"></div>
                                         </f:facet>
 
-                                        <p:repeat value="${floor.roomList[2].columnList}" var="column">
+                                        <p:repeat value="#{floor.roomList[2].columnList}" var="column">
 
-                                            <div class="${column.type.name().toLowerCase()} column">
-                                                <p:graphicImage library="images" name="${column.type.image}"/>
-                                                <label>${column.name}</label>
-                                                <div class="start-plug" id="${column.startPlug}"></div>
+                                            <div class="#{column.type.name().toLowerCase()} column selectable#{flowchartCtl.active(column)}">
+                                                <input name="selectableId" type="hidden" value="#{column.selectableId}"/>
+                                                <p:graphicImage library="images" name="#{column.type.image}"/>
+                                                <label>#{column.name}</label>
+                                                <div class="start-plug" id="#{column.startPlug}"></div>
                                             </div>
 
                                         </p:repeat>
 
                                         <p:separator title="output"/>
 
-                                        <p:repeat value="${floor.roomList[2].outputList}" var="output">
+                                        <p:repeat value="#{floor.roomList[2].outputList}" var="output">
 
-                                            <div class="output column">
-                                                <p:graphicImage library="images" name="${output.dataFile.image}"/>
-                                                <label>${output.dataSource.name} - (${output.dataFile.name})</label>
-                                                <div class="start-plug" id="${output.startPlug}"></div>
+                                            <div class="output column selectable#{flowchartCtl.active(output)}">
+                                                <input name="selectableId" type="hidden" value="#{output.selectableId}"/>
+                                                <p:graphicImage library="images" name="#{output.dataFile.image}"/>
+                                                <label>#{output.dataSource.name} - (#{output.dataFile.name})</label>
+                                                <div class="start-plug" id="#{output.startPlug}"></div>
                                             </div>
 
                                         </p:repeat>
@@ -125,28 +136,28 @@
                             </tr>
                         </p:repeat>
                     </table>
-                </div>
+                </p:outputPanel>
 
                 <div class="transform section">
                     <table>
-                        <p:repeat value="${flowchartCtl.transformTower.floorList}" var="tfloor">
+                        <p:repeat value="#{flowchartCtl.transformTower.floorList}" var="tfloor">
                             <tr>
                                 <td>
-                                    <p:panel styleClass="function" rendered="${tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
-                                        <p:repeat value="${tfloor.roomList[1].columnList}" var="tcolumn">
+                                    <p:panel styleClass="function" rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
+                                        <p:repeat value="#{tfloor.roomList[1].columnList}" var="tcolumn">
 
-                                            <p:outputPanel rendered="${tcolumn.fx != null}">
-                                                <div class="${tcolumn.type.name().toLowerCase()} column">
-                                                    <div class="end-plug" id="${tcolumn.fx.endPlug}"></div>
-                                                    <p:graphicImage library="images" name="${tcolumn.type.image}"/>
-                                                    <label>${tcolumn.fx.name}</label>
-                                                    <div class="start-plug" id="${tcolumn.fx.startPlug}"></div>
+                                            <p:outputPanel rendered="#{tcolumn.fx != null}">
+                                                <div class="#{tcolumn.type.name().toLowerCase()} column selectable">
+                                                    <div class="end-plug" id="#{tcolumn.fx.endPlug}"></div>
+                                                    <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
+                                                    <label>#{tcolumn.fx.name}</label>
+                                                    <div class="start-plug" id="#{tcolumn.fx.startPlug}"></div>
                                                 </div>
                                             </p:outputPanel>
 
                                         </p:repeat>
                                     </p:panel>
-                                    <p:spacer rendered="${tfloor.roomList[1].roomType!=RoomType.TRANSFORM_TABLE}"/>
+                                    <p:spacer rendered="#{tfloor.roomList[1].roomType!=RoomType.TRANSFORM_TABLE}"/>
                                 </td>
 
                                 <td>
@@ -154,55 +165,55 @@
                                 </td>
 
                                 <td>
-                                    <p:panel header="" styleClass="data-table" rendered="${tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
+                                    <p:panel header="" styleClass="data-table selectable" rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
                                         <f:facet name="actions">
-                                            <div class="end-plug" id="${tfloor.roomList[1].endPlug}"></div>
+                                            <div class="end-plug" id="#{tfloor.roomList[1].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images" name="transfer.png"/>
-                                                <b>${tfloor.roomList[1].name}</b>
+                                                <b>#{tfloor.roomList[1].name}</b>
                                                 <p:commandButton type="button"
                                                                  styleClass="ui-button-secondary"
                                                                  icon="pi pi-ellipsis-h"/>
                                             </div>
-                                            <div class="start-plug" id="${tfloor.roomList[1].endPlug}"></div>
+                                            <div class="start-plug" id="#{tfloor.roomList[1].endPlug}"></div>
                                         </f:facet>
 
-                                        <p:repeat value="${tfloor.roomList[1].columnList}" var="tcolumn">
+                                        <p:repeat value="#{tfloor.roomList[1].columnList}" var="tcolumn">
 
-                                            <div class="${tcolumn.type.name().toLowerCase()} column">
-                                                <div class="end-plug" id="${tcolumn.endPlug}"></div>
-                                                <p:graphicImage library="images" name="${tcolumn.type.image}"/>
-                                                <label>${tcolumn.name}</label>
-                                                <div class="start-plug" id="${tcolumn.startPlug}"></div>
+                                            <div class="#{tcolumn.type.name().toLowerCase()} column selectable">
+                                                <div class="end-plug" id="#{tcolumn.endPlug}"></div>
+                                                <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
+                                                <label>#{tcolumn.name}</label>
+                                                <div class="start-plug" id="#{tcolumn.startPlug}"></div>
                                             </div>
 
                                         </p:repeat>
 
                                         <p:separator title="transform"/>
 
-                                        <p:repeat value="${tfloor.roomList[1].fxList}" var="tfx">
+                                        <p:repeat value="#{tfloor.roomList[1].fxList}" var="tfx">
 
-                                            <div class="transform column">
+                                            <div class="transform column selectable">
                                                 <p:graphicImage library="images" name="transform.png"/>
-                                                <label>${tfx.name}</label>
+                                                <label>#{tfx.name}</label>
                                             </div>
 
                                         </p:repeat>
 
                                         <p:separator title="output"/>
 
-                                        <p:repeat value="${tfloor.roomList[1].outputList}" var="toutput">
+                                        <p:repeat value="#{tfloor.roomList[1].outputList}" var="toutput">
 
-                                            <div class="output column">
-                                                <p:graphicImage library="images" name="${toutput.dataFile.image}"/>
-                                                <label>${toutput.dataSource.name} - (${toutput.dataFile.name})</label>
-                                                <div class="start-plug" id="${toutput.startPlug}"></div>
+                                            <div class="output column selectable">
+                                                <p:graphicImage library="images" name="#{toutput.dataFile.image}"/>
+                                                <label>#{toutput.dataSource.name} - (#{toutput.dataFile.name})</label>
+                                                <div class="start-plug" id="#{toutput.startPlug}"></div>
                                             </div>
 
                                         </p:repeat>
 
                                     </p:panel>
-                                    <p:spacer rendered="${tfloor.roomList[1].roomType!=RoomType.TRANSFORM_TABLE}"/>
+                                    <p:spacer rendered="#{tfloor.roomList[1].roomType!=RoomType.TRANSFORM_TABLE}"/>
                                 </td>
 
                                 <td>

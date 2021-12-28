@@ -72,6 +72,10 @@ public class FacesUtil implements Serializable {
         return FacesContext.getCurrentInstance();
     }
 
+    public static String getRequestParam(String param) {
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(param);
+    }
+
     public static void runClientScript(String javaScript) {
         PrimeFaces.current().executeScript(javaScript);
     }

@@ -1,5 +1,6 @@
 package com.tflow.model.editor.room;
 
+import com.tflow.model.editor.Selectable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ public class Room implements Serializable {
     @Override
     public String toString() {
         return "Room{" +
+                "selectableId='" + ((Selectable)this).getSelectableId() + '\'' +
                 "elementId='" + elementId + '\'' +
                 ", roomIndex=" + roomIndex +
                 ", roomType=" + roomType +

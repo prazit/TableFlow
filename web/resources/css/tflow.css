@@ -117,6 +117,13 @@ body .tool-panel.ui-panel {
     height: 100%;
 }
 
+body .tool-panel .ui-accordion .ui-accordion-content {
+    padding: 0;
+}
+body .tool-panel .ui-accordion .ui-accordion-content .ui-menu {
+    border: 0;
+}
+
 .tool-panel.ui-panel .ui-panel-titlebar {
     padding: var(--padding);
     padding-left: calc(var(--padding) + var(--padding));

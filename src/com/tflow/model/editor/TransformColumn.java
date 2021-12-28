@@ -8,8 +8,8 @@ public class TransformColumn extends DataColumn {
 
     private String endPlug;
 
-    public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug) {
-        super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug);
+    public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug, DataTable owner) {
+        super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug, owner);
         dataColName = "" + name;
         this.endPlug = endPlug;
     }
@@ -38,4 +38,8 @@ public class TransformColumn extends DataColumn {
         this.endPlug = endPlug;
     }
 
+    @Override
+    public Properties getProperties() {
+        return Properties.TRANSFORM_COLUMN;
+    }
 }

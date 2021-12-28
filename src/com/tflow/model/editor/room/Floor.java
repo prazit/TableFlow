@@ -1,10 +1,12 @@
 package com.tflow.model.editor.room;
 
+import com.tflow.model.editor.Selectable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Floor implements Serializable {
@@ -75,5 +77,15 @@ public class Floor implements Serializable {
             }
         }
         return emptyCount == roomList.size();
+    }
+
+    public List<Selectable> getSelectableList() {
+        List<Selectable> selectableList = new ArrayList<>();
+        for (Room room : roomList) {
+            if (room instanceof Selectable) {
+                selectableList.add((Selectable) room);
+            }
+        }
+        return selectableList;
     }
 }

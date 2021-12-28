@@ -1,9 +1,6 @@
 package com.tflow.controller;
 
-import com.tflow.model.editor.Line;
-import com.tflow.model.editor.Project;
-import com.tflow.model.editor.Step;
-import com.tflow.model.editor.Workspace;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.util.FacesUtil;
 
@@ -12,7 +9,9 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ViewScoped
 @Named("flowchartCtl")
@@ -29,17 +28,56 @@ public class FlowchartController extends Controller {
     private List<Line> lineList;
     private String javaScript;
 
+    private Selectable activeObject;
+    private Map<String, Selectable> selectableMap;
+
     @PostConstruct
     public void onCreation() {
         Project project = workspace.getProject();
-        Step step = project.getCurrentStep();
+        Step step = project.getActiveStep();
         enabled = step != null;
         if (enabled) {
             dataTower = step.getDataTower();
             transformTower = step.getTransformTower();
             outputTower = step.getOutputTower();
             lineList = step.getLineList();
+            activeObject = step.getActiveObject();
+            selectableMap = collectSelectableToMap();
         }
+    }
+
+    private Map<String, Selectable> collectSelectableToMap() {
+        Map<String, Selectable> map = new HashMap<>();
+
+        List<Selectable> selectableList = dataTower.getSelectableList();
+        if (activeObject == null && selectableList.size() > 0) {
+            activeObject = selectableList.get(0);
+        }
+
+        for (Selectable selectable : selectableList) {
+            map.put(selectable.getSelectableId(), selectable);
+            if (selectable instanceof DataTable) {
+                DataTable dt = (DataTable) selectable;
+
+                for (DataColumn column : dt.getColumnList()) {
+                    map.put(column.getSelectableId(), column);
+                }
+
+                for (DataOutput output : dt.getOutputList()) {
+                    map.put(output.getSelectableId(), output);
+                }
+
+                if (selectable instanceof TransformTable) {
+                    TransformTable tt = (TransformTable) selectable;
+                    for (TableFx fx : tt.getFxList()) {
+                        map.put(fx.getSelectableId(), fx);
+                    }
+                }
+
+            }
+        }
+
+        return map;
     }
 
     public boolean isEnabled() {
@@ -83,7 +121,6 @@ public class FlowchartController extends Controller {
     }
 
     public String getJavaScript() {
-        log.warn("getJavaScript = {}", javaScript);
         return javaScript;
     }
 
@@ -91,7 +128,27 @@ public class FlowchartController extends Controller {
         this.javaScript = javaScript;
     }
 
+    public Selectable getActiveObject() {
+        return activeObject;
+    }
 
+    public void setActiveObject(Selectable activeObject) {
+        this.activeObject = activeObject;
+    }
+
+    public String active(Selectable selectable) {
+        String active = (selectable.getSelectableId().compareTo(activeObject.getSelectableId()) == 0) ? " active" : "";
+        return active;
+    }
+
+    public void selectObject() {
+        String objectId = FacesUtil.getRequestParam("selectableId");
+        Selectable selected = selectableMap.get(objectId);
+        if (selected != null) {
+            setActiveObject(selected);
+            workspace.getProject().getActiveStep().setActiveObject(selected);
+        }
+    }
 
     public void addLine(Line singleLine) {
         List<Line> lineList;

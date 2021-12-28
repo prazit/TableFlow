@@ -23,6 +23,8 @@ public class Step {
 
     private Project owner;
 
+    private Selectable activeObject;
+
     public Step(int id, String name, int index, Project owner) {
         this.id = id;
         this.name = name;
@@ -146,5 +148,13 @@ public class Step {
             }
         }
         return null;
+    }
+
+    public Selectable getActiveObject() {
+        return activeObject;
+    }
+
+    public void setActiveObject(Selectable activeObject) {
+        this.activeObject = activeObject;
     }
 }

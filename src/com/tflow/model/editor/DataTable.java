@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataTable extends Room implements Serializable {
+public class DataTable extends Room implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660030L;
 
     private int id;
@@ -20,6 +20,8 @@ public class DataTable extends Room implements Serializable {
     private String idColName;
     private List<DataColumn> columnList;
     private List<DataOutput> outputList;
+
+    /*noTransform can use Auto Generated Value*/
     private boolean noTransform;
 
     private String endPlug;
@@ -135,5 +137,15 @@ public class DataTable extends Room implements Serializable {
 
     public void setStartPlug(String startPlug) {
         this.startPlug = startPlug;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.DATA_TABLE;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return "dt" + id;
     }
 }

@@ -40,6 +40,9 @@ function zoomStart() {
 function zoom() {
     zoomFactor = document.getElementById('actionForm:zoomFactor_input');
     flowchart = $(document.getElementById('flowchart').contentWindow.document.getElementsByTagName('html'));
+
+    if(zoomFactor == null) return;
+
     var zooming = zoomFactor.value;
     console.log('zoom:' + zooming);
     flowchart.css('zoom', zooming);

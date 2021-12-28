@@ -34,7 +34,6 @@ public class EditorController extends Controller {
     private Workspace workspace;
 
     private String projectName;
-    /*TODO: remove stepList*/private List<Step> stepList;
     private MenuModel stepMenu;
     private boolean flowchartEnabled;
 
@@ -45,7 +44,7 @@ public class EditorController extends Controller {
 
     private void initStepList() {
         Project project = workspace.getProject();
-        stepList = project.getStepList();
+        List<Step> stepList = project.getStepList();
         projectName = project.getName();
 
         stepMenu = new DefaultMenuModel();
@@ -69,14 +68,6 @@ public class EditorController extends Controller {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
-    }
-
-    public List<Step> getStepList() {
-        return stepList;
-    }
-
-    public void setStepList(List<Step> stepList) {
-        this.stepList = stepList;
     }
 
     public MenuModel getStepMenu() {
@@ -185,7 +176,7 @@ public class EditorController extends Controller {
         /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
         Project project = workspace.getProject();
-        Step step = project.getCurrentStep();
+        Step step = project.getActiveStep();
 
         /*create DataSource, Data File, DataTable (Command: AddDataTable)*/
         Database database = new Database("DB Connection " + (++testRunningNumber), DBMS.ORACLE, project.newElementId());
@@ -215,7 +206,7 @@ public class EditorController extends Controller {
         DataFile dataFile = new DataFile(
                 DataFileType.IN_SQL,
                 "DataFile.sql",
-                null,
+                "data/",
                 project.newElementId(),
                 project.newElementId()
         );
@@ -233,16 +224,16 @@ public class EditorController extends Controller {
         );
 
         List<DataColumn> columnList = dataTable.getColumnList();
-        columnList.add(new DataColumn(1, DataType.STRING, "String", project.newElementId()));
-        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer", project.newElementId()));
-        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal", project.newElementId()));
-        columnList.add(new DataColumn(4, DataType.DATE, "Date", project.newElementId()));
+        columnList.add(new DataColumn(1, DataType.STRING, "String", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(4, DataType.DATE, "Date", project.newElementId(), dataTable));
 
         /*TODO: split code below to the Action AddDataOutput*/
         DataFile outputSQLFile = new DataFile(
                 DataFileType.OUT_DBINSERT,
-                "account_master",
-                null,
+                "accmas",
+                "account.",
                 project.newElementId(),
                 project.newElementId()
         );
@@ -250,7 +241,7 @@ public class EditorController extends Controller {
         DataFile outputCSVFile = new DataFile(
                 DataFileType.OUT_CSV,
                 "output.csv",
-                null,
+                "out/",
                 project.newElementId(),
                 project.newElementId()
         );
@@ -271,7 +262,7 @@ public class EditorController extends Controller {
         /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
         Project project = workspace.getProject();
-        Step step = project.getCurrentStep();
+        Step step = project.getActiveStep();
 
         DataTable dataTable = getSQLDataTable(project);
         /* TODO: need more data-cases for DataTable (local-file, sftp-file) */
@@ -298,7 +289,7 @@ public class EditorController extends Controller {
         /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
         Project project = workspace.getProject();
-        Step step = project.getCurrentStep();
+        Step step = project.getActiveStep();
 
         DataTable sourceTable = step.getDataList().get(0);
         TransformTable transformTable = new TransformTable(

@@ -1,6 +1,7 @@
 package com.tflow.model.editor.room;
 
 import com.tflow.model.editor.Project;
+import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,5 +117,13 @@ public class Tower implements Serializable {
 
     public Step getOwner() {
         return owner;
+    }
+
+    public List<Selectable> getSelectableList() {
+        List<Selectable> selectableList = new ArrayList<>();
+        for (Floor floor : floorList) {
+            selectableList.addAll(floor.getSelectableList());
+        }
+        return selectableList;
     }
 }

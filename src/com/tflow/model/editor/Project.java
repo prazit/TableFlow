@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.datasource.DataSource;
+import com.tflow.model.editor.datasource.SFTP;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +100,7 @@ public class Project {
         return ++lastUniqueId;
     }
 
-    public Step getCurrentStep() {
+    public Step getActiveStep() {
         if (activeStepIndex < 0) return null;
         return stepList.get(activeStepIndex);
     }

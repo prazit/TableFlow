@@ -50,7 +50,7 @@ public class AddTransformTable extends Command {
         /*copy column from source-table*/
         List<DataColumn> columnList = transformTable.getColumnList();
         for (DataColumn dataColumn : sourceColumnList) {
-            columnList.add(new TransformColumn(dataColumn, project.newElementId(), project.newElementId()));
+            columnList.add(new TransformColumn(dataColumn, project.newElementId(), project.newElementId(), transformTable));
         }
 
         /*put this transform-table on the same floor of source table*/

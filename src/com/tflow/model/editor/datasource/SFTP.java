@@ -1,11 +1,13 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.editor.Properties;
+import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.room.RoomType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SFTP extends DataSource {
+public class SFTP extends DataSource implements Selectable {
     private static final long serialVersionUID = 2021121709996660012L;
 
     private List<String> pathHistory;
@@ -16,6 +18,8 @@ public class SFTP extends DataSource {
     private String user;
     private String password;
     private int retry;
+
+    /*tmp=/ftp/<id>/<root-path>/*/
     private String tmp;
 
     public SFTP(String name, String rootPath, String plug) {
@@ -91,5 +95,15 @@ public class SFTP extends DataSource {
 
     public void setTmp(String tmp) {
         this.tmp = tmp;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.SFTP;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return "ftp" + id;
     }
 }

@@ -11,6 +11,30 @@ function showLines() {
     }
 }
 
+$(function () {
+
+    var parentWindow = window.parent;
+    parentWindow.zoomStart();
+    parentWindow.zoomEnd();
+
+    $('.selectable').on('click', function (ev) {
+        /*TODO: remove clickEvent variable below, test only*/
+        clickEvent = ev;
+        var e = $(ev.currentTarget);
+        var id = e.find('input[name=selectableId]').attr('value');
+        $('.active').removeClass('active');
+        e.addClass('active');
+        setActiveObj([
+            {name: 'selectableId', value: id}
+        ]);
+
+        if (e.hasClass('column')) {
+            return false;
+        }
+    });
+
+});
+
 var lines = [];
 var pLine = {
         outline: false,
@@ -23,17 +47,13 @@ var pLine = {
         /*endPlug: 'behind'*/
         endPlugSize: 2
     },
-    tLine = Object.assign({color: 'gray', path: 'magnet'}, pLine),
+    tLine = Object.assign({color: 'gray', path: 'fluid'}, pLine),
     sLine = Object.assign({color: 'red', path: 'fluid'}, pLine),
     iLine = Object.assign({color: 'green', path: 'fluid'}, pLine),
     dLine = Object.assign({color: 'blue', path: 'fluid'}, pLine),
     dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine);
 
-function addLine(lineList) {
-    $(lineList).each(function (e) {
-        lines[lines.length] = new LeaderLine(document.getElementById(e.startPlug), document.getElementById(e.endPlug), e.type);
-    });
-}
+var clickEvent;
 
 /*
 // PlainDraggable SAMPLE

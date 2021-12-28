@@ -1,6 +1,8 @@
 package com.tflow.model.editor;
 
-public class DataColumn {
+import java.io.Serializable;
+
+public class DataColumn implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660031L;
 
     protected int index;
@@ -8,12 +10,14 @@ public class DataColumn {
     protected String name;
 
     protected String startPlug;
+    private DataTable owner;
 
-    public DataColumn(int index, DataType type, String name, String startPlug) {
+    public DataColumn(int index, DataType type, String name, String startPlug, DataTable owner) {
         this.index = index;
         this.type = type;
         this.name = name;
         this.startPlug = startPlug;
+        this.owner = owner;
     }
 
     public int getIndex() {
@@ -46,5 +50,26 @@ public class DataColumn {
 
     public void setStartPlug(String startPlug) {
         this.startPlug = startPlug;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.DATA_COLUMN;
+    }
+
+    @Override
+    public String getSelectableId() {
+        if (name == null) return "";
+        return owner.getSelectableId() + name.replaceAll("[ ]", "_");
+    }
+
+    @Override
+    public String toString() {
+        return "DataColumn{" +
+                "selectableId=" + ((Selectable) this).getSelectableId() +
+                "index=" + index +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

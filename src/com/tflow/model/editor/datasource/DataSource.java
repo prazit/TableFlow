@@ -7,10 +7,19 @@ import java.io.Serializable;
 public class DataSource extends Room implements Serializable {
     private static final long serialVersionUID = 2021121709996660010L;
 
-    private String type;
-    private String name;
-    private String image;
-    private String plug;
+    protected int id;
+    protected String type;
+    protected String name;
+    protected String image;
+    protected String plug;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getType() {
         return type;

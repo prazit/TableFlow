@@ -165,7 +165,7 @@ ROOM
 | :----------------: | --------- | --------- | ------------------------------------------------------------ |
 | :heavy_check_mark: | type      | FileType  | [Enumeration] sql-in, sql-out, markdown-in, markdown-out, csv-out, txt-out<br /><br />contain parameter prototype list. |
 | :heavy_check_mark: | name      | String    | file name                                                    |
-| :heavy_check_mark: | paramMap  | Map<K,V>  | parameter map (data-file attributes) <br /><br />contains Datasource Query Parameter for Input,<br />contains Output Properties for Output |
+| :heavy_check_mark: | paramMap  | Map<K,V>  | parameter map (more attributes) <br /><br />:x: contains Datasource Query Parameter for Input,<br />:heavy_check_mark: contains Output Properties for Output |
 | :heavy_check_mark: | endPlug   | string    | HTML element id used by Linked Line (end-plug), auto generated. |
 | :heavy_check_mark: | startPlug | string    | HTML element id used by Linked Line (start-plug), auto generated. |
 

@@ -3,6 +3,9 @@ package com.tflow.model.editor;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This Enum using PROTOTYPE STRING in the parameter fields.
+ */
 public enum DataFileType {
     /*TODO: need complete list for Output-File parameters*/
 
@@ -52,11 +55,14 @@ public enum DataFileType {
         return name;
     }
 
-    public Map<String, String> getParamMap() {
-        return paramMap;
-    }
-
     public String getImage() {
         return image;
+    }
+
+    /**
+     * @return Map(Field - Name, Prototype - String)
+     */
+    public Map<String, String> getParamMap() {
+        return paramMap;
     }
 }

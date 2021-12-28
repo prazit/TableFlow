@@ -41,4 +41,9 @@ public class TransformTable extends DataTable {
     public void setFxList(List<TableFx> fxList) {
         this.fxList = fxList;
     }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.TRANSFORM_TABLE;
+    }
 }
