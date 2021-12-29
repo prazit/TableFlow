@@ -21,7 +21,6 @@ public class Project {
     private int lastUniqueId;
 
     public Project(String name) {
-        activeStepIndex = -1;
         this.name = name;
         stepList = new ArrayList<>();
         dataSourceList = new HashMap<>();

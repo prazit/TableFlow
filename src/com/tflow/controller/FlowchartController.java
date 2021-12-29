@@ -19,41 +19,46 @@ public class FlowchartController extends Controller {
 
     @Inject
     private Workspace workspace;
-
-    private boolean enabled;
-
-    private Tower dataTower;
-    private Tower transformTower;
-    private Tower outputTower;
-    private List<Line> lineList;
-    private String javaScript;
-
-    private Selectable activeObject;
+    private Step step;
     private Map<String, Selectable> selectableMap;
 
     @PostConstruct
     public void onCreation() {
         Project project = workspace.getProject();
-        Step step = project.getActiveStep();
-        enabled = step != null;
-        if (enabled) {
-            dataTower = step.getDataTower();
-            transformTower = step.getTransformTower();
-            outputTower = step.getOutputTower();
-            lineList = step.getLineList();
-            activeObject = step.getActiveObject();
-            selectableMap = collectSelectableToMap();
-        }
+        step = project.getActiveStep();
+        selectableMap = collectSelectableToMap();
+    }
+
+    public Step getStep() {
+        return step;
+    }
+
+    public void setStep(Step step) {
+        this.step = step;
     }
 
     private Map<String, Selectable> collectSelectableToMap() {
-        Map<String, Selectable> map = new HashMap<>();
 
-        List<Selectable> selectableList = dataTower.getSelectableList();
+        List<Selectable> selectableList = step.getDataTower().getSelectableList();
+        Selectable activeObject = step.getActiveObject();
         if (activeObject == null && selectableList.size() > 0) {
             activeObject = selectableList.get(0);
+            step.setActiveObject(activeObject);
         }
 
+        Map<String, Selectable> map = new HashMap<>();
+        collectSelectableTo(map, selectableList);
+
+        selectableList = step.getTransformTower().getSelectableList();
+        collectSelectableTo(map, selectableList);
+
+        selectableList = step.getOutputTower().getSelectableList();
+        collectSelectableTo(map, selectableList);
+
+        return map;
+    }
+
+    private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
         for (Selectable selectable : selectableList) {
             map.put(selectable.getSelectableId(), selectable);
             if (selectable instanceof DataTable) {
@@ -76,89 +81,41 @@ public class FlowchartController extends Controller {
 
             }
         }
-
-        return map;
     }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+    /*== Public Methods ==*/
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public Tower getDataTower() {
-        return dataTower;
-    }
-
-    public void setDataTower(Tower dataTower) {
-        this.dataTower = dataTower;
-    }
-
-    public Tower getTransformTower() {
-        return transformTower;
-    }
-
-    public void setTransformTower(Tower transformTower) {
-        this.transformTower = transformTower;
-    }
-
-    public Tower getOutputTower() {
-        return outputTower;
-    }
-
-    public void setOutputTower(Tower outputTower) {
-        this.outputTower = outputTower;
-    }
-
-    public List<Line> getLineList() {
-        return lineList;
-    }
-
-    public void setLineList(List<Line> lineList) {
-        this.lineList = lineList;
-    }
-
-    public String getJavaScript() {
-        return javaScript;
-    }
-
-    public void setJavaScript(String javaScript) {
-        this.javaScript = javaScript;
-    }
-
-    public Selectable getActiveObject() {
-        return activeObject;
-    }
-
-    public void setActiveObject(Selectable activeObject) {
-        this.activeObject = activeObject;
-    }
-
+    /**
+     * Get active class for css.
+     * @return " active" or empty string
+     */
     public String active(Selectable selectable) {
-        String active = (selectable.getSelectableId().compareTo(activeObject.getSelectableId()) == 0) ? " active" : "";
-        return active;
+        return (selectable.getSelectableId().compareTo(step.getActiveObject().getSelectableId()) == 0) ? " active" : "";
     }
 
+    /**
+     * Set active object from client.
+     */
     public void selectObject() {
-        String objectId = FacesUtil.getRequestParam("selectableId");
-        Selectable selected = selectableMap.get(objectId);
-        if (selected != null) {
-            setActiveObject(selected);
-            workspace.getProject().getActiveStep().setActiveObject(selected);
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        Selectable selected = selectableMap.get(selectableId);
+        if (selected == null) {
+            log.warn("selectableMap not contains selectableId={}", selectableId);
+            /*throw new IllegalStateException("selectableMap not contains selectableId=" + selectableId);*/
+        } else {
+            step.setActiveObject(selected);
         }
     }
 
-    public void addLine(Line singleLine) {
-        List<Line> lineList;
+    public void addLine() {
+
+        Line singleLine = getRequestedLine();
+
+        List<Line> lineList = step.getLineList();
         int index = 0;
-        if (singleLine == null) {
-            lineList = this.lineList;
-        } else {
-            lineList = Arrays.asList(singleLine);
-            index = this.lineList.size();
-            this.lineList.add(singleLine);
+        if (singleLine != null) {
+            lineList.add(singleLine);
+            index = lineList.size();
         }
 
         StringBuilder builder = new StringBuilder();
@@ -171,8 +128,17 @@ public class FlowchartController extends Controller {
             ));
         }
 
-        javaScript = "$(function(){" + builder.toString() + "});";
+        String javaScript = "$(function(){" + builder.toString() + ";startup();});";
         FacesUtil.runClientScript(javaScript);
+    }
+
+    private Line getRequestedLine() {
+        String startPlug = FacesUtil.getRequestParam("startPlug");
+        if(startPlug == null) return null;
+
+        String endPlug = FacesUtil.getRequestParam("endPlug");
+        String lineType = FacesUtil.getRequestParam("lineType");
+        return new Line(startPlug,endPlug,LineType.valueOf(lineType.toUpperCase()));
     }
 
 }

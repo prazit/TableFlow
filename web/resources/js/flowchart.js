@@ -11,15 +11,22 @@ function showLines() {
     }
 }
 
-$(function () {
+function startup () {
 
+    /*make more height*/
     var parentWindow = window.parent;
+    $('.section').each(function (i, e) {
+        $(e).height(parentWindow.outerHeight * 10);
+    })
+
+    /*zoom to current value*/
     parentWindow.zoomStart();
     parentWindow.zoomEnd();
 
+    /*make selectable objects*/
     $('.selectable').on('click', function (ev) {
         /*TODO: remove clickEvent variable below, test only*/
-        clickEvent = ev;
+        window.clickEvent = ev;
         var e = $(ev.currentTarget);
         var id = e.find('input[name=selectableId]').attr('value');
         $('.active').removeClass('active');
@@ -33,7 +40,10 @@ $(function () {
         }
     });
 
-});
+    /*need to show after all works*/
+    $('.flow-chart').css('visibility', 'visible');
+
+}
 
 var lines = [];
 var pLine = {
@@ -52,8 +62,6 @@ var pLine = {
     iLine = Object.assign({color: 'green', path: 'fluid'}, pLine),
     dLine = Object.assign({color: 'blue', path: 'fluid'}, pLine),
     dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine);
-
-var clickEvent;
 
 /*
 // PlainDraggable SAMPLE

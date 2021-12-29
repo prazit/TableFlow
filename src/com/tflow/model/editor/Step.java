@@ -24,6 +24,7 @@ public class Step {
     private Project owner;
 
     private Selectable activeObject;
+    private Double zoom;
 
     public Step(int id, String name, int index, Project owner) {
         this.id = id;
@@ -37,6 +38,7 @@ public class Step {
         transformTower = new Tower(2, this);
         outputTower = new Tower(2, this);
         lineList = new ArrayList<>();
+        zoom = Double.valueOf(100);
         this.owner = owner;
     }
 
@@ -156,5 +158,13 @@ public class Step {
 
     public void setActiveObject(Selectable activeObject) {
         this.activeObject = activeObject;
+    }
+
+    public void setZoom(Double zoom) {
+        this.zoom = zoom;
+    }
+
+    public Double getZoom() {
+        return zoom;
     }
 }

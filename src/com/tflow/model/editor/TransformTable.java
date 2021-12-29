@@ -2,6 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.model.editor.room.RoomType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransformTable extends DataTable {
@@ -15,6 +16,7 @@ public class TransformTable extends DataTable {
         super(id, name, null, null, null, idColName, false, endPlug, startPlug);
         this.sourceId = sourceId;
         this.sourceType = sourceType;
+        fxList = new ArrayList<>();
         this.setRoomType(RoomType.TRANSFORM_TABLE);
     }
 

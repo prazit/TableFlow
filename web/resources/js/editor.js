@@ -1,9 +1,6 @@
 function refershFlowChart() {
-    document.getElementById('flowchart').src += '';
+    document.getElementById('flowchart').src += '?refresh=1';
 }
-
-var leftPanel, leftGutter, leftToggle;
-var rightPanel, rightGutter, rightToggle;
 
 function toggleLeft() {
     if (leftPanel.css('display') === 'none') {
@@ -34,30 +31,64 @@ function toggleRight() {
 }
 
 function zoomStart() {
-    document.getElementById('flowchart').contentWindow.hideLines();
+    /*document.getElementById('flowchart').*/
+    contentWindow.hideLines();
+    if (sections === undefined)
+        sections = contentWindow.$('.section');
+}
+
+function zoomVal() {
+    var zoomFactor = document.getElementById('actionForm:zoomFactor_input');
+    if (zoomFactor == null) return '100%';
+    return zoomFactor.value;
 }
 
 function zoom() {
-    zoomFactor = document.getElementById('actionForm:zoomFactor_input');
-    flowchart = $(document.getElementById('flowchart').contentWindow.document.getElementsByTagName('html'));
+    var zoomFactor = document.getElementById('actionForm:zoomFactor_input');
+    if (zoomFactor == null) return;
 
-    if(zoomFactor == null) return;
-
-    var zooming = zoomFactor.value;
-    console.log('zoom:' + zooming);
-    flowchart.css('zoom', zooming);
+    var flowchart = $(contentWindow.document.getElementsByTagName('html'));
+    flowchart.css('zoom', zoomVal());
 }
 
-function zoomEnd() {
+function zoomEnd(submit) {
     zoom();
 
-    var flowchartWindow = document.getElementById('flowchart').contentWindow;
-    var scrollX = flowchartWindow.scrollX;
-    var scrollY = flowchartWindow.scrollY;
-    flowchartWindow.scrollTo(0, 0);
+    var active = contentWindow.$('.active').first();
+    var scrollX, scrollY;
+    if (active.length === 0) {
+        scrollX = contentWindow.scrollX;
+        scrollY = contentWindow.scrollY;
+    }
 
-    flowchartWindow.showLines();
-    flowchartWindow.scrollTo(scrollX, scrollY);
+    contentWindow.scrollTo(0, 0);
+    contentWindow.showLines();
+
+    if (active.length === 0) {
+        contentWindow.scrollTo(scrollX, scrollY);
+    } else {
+        /*scroll to active object*/
+        var zoomed = zoomVal().replace('%', '') / 100.0;
+        var pos = active.offset();
+        pos.top *= zoomed;
+        pos.left *= zoomed;
+        pos.top -= ((contentWindow.innerHeight - (active.outerHeight() * zoomed)) / 2);
+        pos.left -= ((contentWindow.innerWidth - (active.outerWidth() * zoomed)) / 2);
+        contentWindow.scrollTo(pos);
+    }
+
+    if (submit === undefined) return;
+
+    var zoomFactor = document.getElementById('actionForm:zoomFactor_input');
+    if (zoomFactor == null) return;
+
+    var zooming = zoomFactor.value;
+    if (zooming === zoomValue) return;
+
+    zoomValue = zooming;
+    submitZoom([
+        {name: 'zoom', value: zooming}
+    ]);
 }
 
 $(function () {
@@ -67,6 +98,10 @@ $(function () {
     rightPanel = $('.right-panel');
     rightGutter = $('.right-panel + .ui-splitter-gutter');
     rightToggle = $('.right-panel-toggle').click(toggleRight).children('.ui-button-icon-left');
-
-    /*load zoom value from local session storage*/
+    contentWindow = document.getElementById('flowchart').contentWindow;
 });
+
+var leftPanel, leftGutter, leftToggle;
+var rightPanel, rightGutter, rightToggle;
+var zoomValue;
+var sections, contentWindow;

@@ -21,6 +21,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ public class EditorController extends Controller {
     private String projectName;
     private MenuModel stepMenu;
     private boolean flowchartEnabled;
+    private Double zoom;
 
     @PostConstruct
     public void onCreation() {
@@ -59,7 +61,7 @@ public class EditorController extends Controller {
             );
         }
 
-        flowchartEnabled = project.getActiveStepIndex() >= 0;
+        selectStep(project.getActiveStepIndex(), false);
     }
 
     public String getProjectName() {
@@ -86,7 +88,15 @@ public class EditorController extends Controller {
         this.flowchartEnabled = flowchartEnabled;
     }
 
-    /*== ACTIONS ==*/
+    public Double getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(Double zoom) {
+        this.zoom = zoom;
+    }
+
+    /*== Public Methods ==*/
 
     public void lightTheme() {
         workspace.getUser().setTheme(Theme.LIGHT);
@@ -162,9 +172,28 @@ public class EditorController extends Controller {
     }
 
     public void selectStep(int stepIndex) {
-        workspace.getProject().setActiveStepIndex(stepIndex);
+        selectStep(stepIndex, true);
+    }
+
+    public void selectStep(int stepIndex, boolean refresh) {
+        Project project = workspace.getProject();
+        project.setActiveStepIndex(stepIndex);
+
+        Step activeStep = project.getActiveStep();
+        zoom = activeStep.getZoom();
+
         flowchartEnabled = true;
-        FacesUtil.runClientScript("refershFlowChart();");
+        if (refresh) FacesUtil.runClientScript("refershFlowChart();");
+        log.warn("selectStep(i:{},n:{},z:{})", stepIndex, activeStep.getName(), zoom);
+    }
+
+    public void submitZoom() {
+        String zoom = FacesUtil.getRequestParam("zoom").replaceAll("[%]", "").trim();
+        if (zoom.isEmpty()) return;
+
+        Step activeStep = workspace.getProject().getActiveStep();
+        log.warn("zoom:{} step:{}", zoom, activeStep.getName());
+        activeStep.setZoom(Double.valueOf(zoom));
     }
 
     /**

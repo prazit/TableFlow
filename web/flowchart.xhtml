@@ -21,21 +21,21 @@
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
         <h:outputScript library="js" name="flowchart.js#{app.forceReloadResources}" target="head"/>
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
-        <div class="flow-chart">
+        <div class="flow-chart" style="visibility: hidden">
 
-            <h:form id="fchForm" rendered="#{flowchartCtl.enabled}">
+            <h:form id="fchForm">
                 <p:growl id="growl" showDetail="true" escape="false"/>
                 <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
 
                 <p:remoteCommand name="setActiveObj" action="#{flowchartCtl.selectObject}"/>
-                <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine(null)}"/>
-                <script>$(function () {
-                    addLine();
-                });</script>
+                <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine}"/>
+                <script>$(function(){addLine()});</script>
+
+                <h1 style="color: var(--surface-c);position: fixed;padding: var(--padding);margin: var(--margin)">#{flowchartCtl.step.name}</h1>
 
                 <p:outputPanel styleClass="source section">
                     <table>
-                        <p:repeat value="#{flowchartCtl.dataTower.floorList}" var="floor">
+                        <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">
                             <tr>
                                 <td>
                                     <p:outputPanel styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])}" rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}">
@@ -140,19 +140,19 @@
 
                 <div class="transform section">
                     <table>
-                        <p:repeat value="#{flowchartCtl.transformTower.floorList}" var="tfloor">
+                        <p:repeat value="#{flowchartCtl.step.transformTower.floorList}" var="tfloor">
                             <tr>
                                 <td>
                                     <p:panel styleClass="function" rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
                                         <p:repeat value="#{tfloor.roomList[1].columnList}" var="tcolumn">
 
-                                            <p:outputPanel rendered="#{tcolumn.fx != null}">
-                                                <div class="#{tcolumn.type.name().toLowerCase()} column selectable">
-                                                    <div class="end-plug" id="#{tcolumn.fx.endPlug}"></div>
-                                                    <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
-                                                    <label>#{tcolumn.fx.name}</label>
-                                                    <div class="start-plug" id="#{tcolumn.fx.startPlug}"></div>
-                                                </div>
+                                            <p:outputPanel styleClass="#{tcolumn.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumn.fx)}" rendered="#{tcolumn.fx != null}">
+                                                <input name="selectableId" type="hidden" value="#{tcolumn.fx.selectableId}"/>
+
+                                                <div class="end-plug" id="#{tcolumn.fx.endPlug}"></div>
+                                                <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
+                                                <label>#{tcolumn.fx.name}</label>
+                                                <div class="start-plug" id="#{tcolumn.fx.startPlug}"></div>
                                             </p:outputPanel>
 
                                         </p:repeat>
@@ -165,8 +165,9 @@
                                 </td>
 
                                 <td>
-                                    <p:panel header="" styleClass="data-table selectable" rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
+                                    <p:panel header="" styleClass="data-table selectable#{flowchartCtl.active(tfloor.roomList[1])}" rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
                                         <f:facet name="actions">
+                                            <input name="selectableId" type="hidden" value="#{tfloor.roomList[1].selectableId}"/>
                                             <div class="end-plug" id="#{tfloor.roomList[1].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images" name="transfer.png"/>
@@ -180,7 +181,8 @@
 
                                         <p:repeat value="#{tfloor.roomList[1].columnList}" var="tcolumn">
 
-                                            <div class="#{tcolumn.type.name().toLowerCase()} column selectable">
+                                            <div class="#{tcolumn.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumn)}">
+                                                <input name="selectableId" type="hidden" value="#{tcolumn.selectableId}"/>
                                                 <div class="end-plug" id="#{tcolumn.endPlug}"></div>
                                                 <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
                                                 <label>#{tcolumn.name}</label>
@@ -193,7 +195,8 @@
 
                                         <p:repeat value="#{tfloor.roomList[1].fxList}" var="tfx">
 
-                                            <div class="transform column selectable">
+                                            <div class="transform column selectable#{flowchartCtl.active(tfx)}">
+                                                <input name="selectableId" type="hidden" value="#{tfx.selectableId}"/>
                                                 <p:graphicImage library="images" name="transform.png"/>
                                                 <label>#{tfx.name}</label>
                                             </div>
@@ -204,7 +207,8 @@
 
                                         <p:repeat value="#{tfloor.roomList[1].outputList}" var="toutput">
 
-                                            <div class="output column selectable">
+                                            <div class="output column selectable#{flowchartCtl.active(toutput)}">
+                                                <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
                                                 <p:graphicImage library="images" name="#{toutput.dataFile.image}"/>
                                                 <label>#{toutput.dataSource.name} - (#{toutput.dataFile.name})</label>
                                                 <div class="start-plug" id="#{toutput.startPlug}"></div>
