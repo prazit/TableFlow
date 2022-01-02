@@ -16,24 +16,24 @@
 
     </h:head>
     <h:body style="background-color: var(--surface-a)">
+
         <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
         <h:outputScript library="js" name="flowchart.js#{app.forceReloadResources}" target="head"/>
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
-        <div class="flow-chart" style="visibility: hidden">
 
+        <div class="flow-chart" style="visibility: hidden">
             <h:form id="fchForm">
                 <p:growl id="growl" showDetail="true" escape="false"/>
                 <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
 
-                <p:remoteCommand name="setActiveObj" action="#{flowchartCtl.selectObject}"/>
                 <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine}"/>
                 <script>$(function(){addLine()});</script>
 
                 <h1 style="color: var(--surface-c);position: fixed;padding: var(--padding);margin: var(--margin)">#{flowchartCtl.step.name}</h1>
 
-                <p:outputPanel styleClass="source section">
+                <p:outputPanel styleClass="source section" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">
                     <table>
                         <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">
                             <tr>
@@ -138,7 +138,7 @@
                     </table>
                 </p:outputPanel>
 
-                <div class="transform section">
+                <p:outputPanel styleClass="transform section" rendered="#{!flowchartCtl.step.transformTower.isEmpty()}">
                     <table>
                         <p:repeat value="#{flowchartCtl.step.transformTower.floorList}" var="tfloor">
                             <tr>
@@ -232,9 +232,9 @@
                             </tr>
                         </p:repeat>
                     </table>
-                </div>
+                </p:outputPanel>
 
-                <div class="output section">
+                <p:outputPanel styleClass="output section" rendered="#{!flowchartCtl.step.outputTower.isEmpty()}">
                     <p:panelGrid columns="4">
 
                         <p:spacer width="50px"/>
@@ -257,7 +257,7 @@
                         </p:outputPanel>
 
                     </p:panelGrid>
-                </div>
+                </p:outputPanel>
 
             </h:form>
         </div>

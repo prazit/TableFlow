@@ -1,15 +1,15 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.room.Room;
-
 import java.io.Serializable;
 import java.util.Map;
 
-public class ColumnFx implements Serializable {
+public class ColumnFx implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660042L;
 
+    private DataColumn owner;
+
     private String name;
-    private FunctionPrototype function;
+    private ColumnFunction function;
     private Map<String, Object> paramMap;
 
     private String endPlug;
@@ -23,11 +23,11 @@ public class ColumnFx implements Serializable {
         this.name = name;
     }
 
-    public FunctionPrototype getFunction() {
+    public ColumnFunction getFunction() {
         return function;
     }
 
-    public void setFunction(FunctionPrototype function) {
+    public void setFunction(ColumnFunction function) {
         this.function = function;
     }
 
@@ -53,5 +53,23 @@ public class ColumnFx implements Serializable {
 
     public void setStartPlug(String startPlug) {
         this.startPlug = startPlug;
+    }
+
+    public DataColumn getOwner() {
+        return owner;
+    }
+
+    public void setOwner(DataColumn owner) {
+        this.owner = owner;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return function.getProperties();
+    }
+
+    @Override
+    public String getSelectableId() {
+        return owner.getSelectableId() + name.replaceAll("[ ]", "");
     }
 }

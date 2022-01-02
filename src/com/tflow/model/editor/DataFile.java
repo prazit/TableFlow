@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 
@@ -10,25 +11,49 @@ import java.util.Map;
 public class DataFile extends Room implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660020L;
 
+    private HasDataFile owner;
+    private DataSource dataSource;
     private DataFileType type;
     private String image;
     private String name;
     private String path;
 
-    private Map<String, String> paramMap;
+    private Map<String, Object> propertyMap;
 
     private String endPlug;
     private String startPlug;
 
-    public DataFile(DataFileType type, String name, String path, String endPlug, String startPlug) {
+    public DataFile(DataSource dataSource, DataFileType type, String name, String path, String endPlug, String startPlug) {
+        this.dataSource = dataSource;
         this.type = type;
         this.name = name;
         this.path = path;
         this.image = type.getImage();
-        this.paramMap = new HashMap<>();
+        this.propertyMap = initPropertyMap(type);
         this.endPlug = endPlug;
         this.startPlug = startPlug;
         this.setRoomType(RoomType.DATA_FILE);
+    }
+
+    private Map<String, Object> initPropertyMap(DataFileType type) {
+        Map<String, Object> resultMap = new HashMap<>();
+        for (String property : type.getProperties().getPrototypeList()) {
+            String[] params = property.split("[:]");
+            if (params[0].equals(".")) {
+                resultMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
+            } else {
+                resultMap.put(params[0], PropertyType.valueOf(params[2].toUpperCase()).getInitial());
+            }
+        }
+        return resultMap;
+    }
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public DataFileType getType() {
@@ -79,9 +104,25 @@ public class DataFile extends Room implements Serializable, Selectable {
         this.startPlug = startPlug;
     }
 
+    public HasDataFile getOwner() {
+        return owner;
+    }
+
+    public void setOwner(HasDataFile owner) {
+        this.owner = owner;
+    }
+
+    public Map<String, Object> getPropertyMap() {
+        return propertyMap;
+    }
+
+    public void setPropertyMap(Map<String, Object> propertyMap) {
+        this.propertyMap = propertyMap;
+    }
+
     @Override
     public Properties getProperties() {
-        return Properties.DATA_FILE;
+        return type.getProperties();
     }
 
     @Override

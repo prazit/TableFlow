@@ -17,7 +17,7 @@ Table Flow
 |                    | Project Variables       | List of Variables              | [Conversion file] |
 | :heavy_check_mark: | Step                    | Converter Properties           | [Converter file]  |
 | :heavy_check_mark: | Data Tables             | List of Source Properties      | [Converter file]  |
-|                    | Transform Tables        | List of Target Properties      | [Converter file]  |
+| :heavy_check_mark: | Transform Tables        | List of Target Properties      | [Converter file]  |
 
 
 
@@ -99,11 +99,12 @@ Action or user-command that make some changes to the active project.
 
 ## DATA SOURCE
 
-ROOM, base class fro DATABASE, LOCAL and SFTP
+ROOM, base class for DATABASE, LOCAL and SFTP
 
 | :heavy_check_mark: | name | data type      | description                                                  |
 | :----------------: | ---- | -------------- | ------------------------------------------------------------ |
 | :heavy_check_mark: | type | DataSourceType | [Enum] database, local, ftp/sftp                             |
+| :heavy_check_mark: | id   | int            | unique id depends on the type                                |
 | :heavy_check_mark: | name | String         | Data source name                                             |
 | :heavy_check_mark: | plug | string         | HTML element id used by Linked Line (start-plug), auto generated. |
 

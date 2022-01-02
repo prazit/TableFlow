@@ -13,14 +13,15 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-        <h:outputStylesheet library="css" name="editor.css${editorCtl.forceReloadResources}" target="head"/>
+        <h:outputStylesheet library="css" name="editor.css#{editorCtl.forceReloadResources}" target="head"/>
     </h:head>
     <h:body>
-        <h:outputScript library="js" name="editor.js${editorCtl.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="editor.js#{editorCtl.forceReloadResources}" target="head"/>
 
         <div class="container">
             <ui:include src="resources/exceptionMessage.xhtml"/>
             <ui:include src="resources/topMenu.xhtml"/>
+            <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
             <div class="screen-area">
                 <p:splitter id="tool-splitter" styleClass="p-mb-3" gutterSize="5">
                     <p:splitterPanel styleClass="left-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="15">
@@ -32,35 +33,36 @@
                             </f:facet>
                             <h:form id="menuForm">
                                 <p:accordionPanel widgetVar="basic">
-                                    <p:tab title="${editorCtl.projectName}">
-                                        <p:menu model="${editorCtl.stepMenu}"/>
+                                    <p:tab title="#{editorCtl.projectName}">
+                                        <p:menu model="#{editorCtl.stepMenu}"/>
                                     </p:tab>
                                 </p:accordionPanel>
+                                <p:remoteCommand name="setActiveObj" action="#{editorCtl.selectObject}" update="propertyForm"/>
                             </h:form>
                         </p:panel>
                     </p:splitterPanel>
 
-                    <p:splitterPanel styleClass="main-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="70">
+                    <p:splitterPanel styleClass="main-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="55">
                         <p:panel header="" styleClass="tool-panel">
                             <f:facet name="actions">
                                 <h:form id="actionForm">
                                     <p:remoteCommand name="submitZoom" action="#{editorCtl.submitZoom}"/>
 
-                                    <p:menubar rendered="${editorCtl.flowchartEnabled}">
+                                    <p:menubar>
                                         <p:submenu label="Add">
-                                            <p:menuitem value="DB Connection..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addDataSource}"/>
+                                            <p:menuitem value="DB Connection..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataSource}"/>
                                             <p:divider/>
-                                            <p:menuitem value="Data Table..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addDataTable}"/>
-                                            <p:menuitem value="Transform Table..." icon="pi pi-fw pi-plus" actionListener="${editorCtl.addTransformTable}"/>
+                                            <p:menuitem value="Data Table..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataTable}"/>
+                                            <p:menuitem value="Transform Table..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addTransformTable}"/>
                                             <p:divider/>
                                             <p:menuitem value="Column..." icon="pi pi-fw pi-plus"/>
                                             <p:menuitem value="Output..." icon="pi pi-fw pi-plus"/>
                                             <p:menuitem value="Transformation..." icon="pi pi-fw pi-plus"/>
                                             <p:divider/>
                                             <p:menuitem value="testWriteSerialize" icon="pi pi-fw pi-plus"
-                                                        actionListener="${editorCtl.testWriteSerialize}"/>
+                                                        actionListener="#{editorCtl.testWriteSerialize}"/>
                                             <p:menuitem value="testReadSerialize" icon="pi pi-fw pi-plus"
-                                                        actionListener="${editorCtl.testReadSerialize}"/>
+                                                        actionListener="#{editorCtl.testReadSerialize}"/>
                                         </p:submenu>
 
                                         <p:submenu label="Edit">
@@ -102,15 +104,57 @@
                         </p:panel>
                     </p:splitterPanel>
 
-                    <p:splitterPanel styleClass="right-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="15">
-                        <p:panel header="Property List" styleClass="tool-panel">
-                            <f:facet name="actions">
-                                <p:commandButton id="rightToggle" type="button"
-                                                 styleClass="right-panel-toggle close"
-                                                 icon="pi pi-times"/>
-                            </f:facet>
-                            [ Content Here ]
-                        </p:panel>
+                    <p:splitterPanel styleClass="right-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="30">
+                        <h:form id="propertyForm">
+                            <p:panel id="propertyPanel" header="Property List" styleClass="tool-panel">
+                                <f:facet name="actions">
+                                    <p:commandButton id="rightToggle" type="button" styleClass="right-panel-toggle close" icon="pi pi-times"/>
+                                </f:facet>
+
+                                <p:outputPanel id="propertyList" styleClass="properties">
+                                    <h3><p:inputText value="#{editorCtl.activeObject.properties}"/></h3>
+                                    <sup><p:outputLabel value="#{editorCtl.activeObject.getClass().getTypeName()}"/></sup>
+                                    <p:repeat value="#{editorCtl.propertyList}" var="prop">
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{!prop[0]=='.' and PropertyType.READONLY.equals(prop[2])}">
+                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
+                                            <div class="ui-g-8 property-label">#{editorCtl.activeObject[prop[0]]}</div>
+                                        </p:outputPanel>
+                                        <p:outputPanel styleClass="ui-g" rendered="#{prop[0]=='.' and PropertyType.READONLY.equals(prop[4])}">
+                                            <div class="ui-g-4 property-label">#{prop[3]}</div>
+                                            <div class="ui-g-8 property-label">#{editorCtl.activeObject[prop[1]][prop[2]]}</div>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{!prop[0]=='.' and PropertyType.STRING.equals(prop[2])}">
+                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
+                                            <div class="ui-g-8"><p:inputText value="#{editorCtl.activeObject[prop[0]]}"/></div>
+                                        </p:outputPanel>
+                                        <p:outputPanel styleClass="ui-g" rendered="#{prop[0]=='.' and PropertyType.STRING.equals(prop[4])}">
+                                            <div class="ui-g-4 property-label">#{prop[3]}</div>
+                                            <div class="ui-g-8"><p:inputText value="#{editorCtl.activeObject[prop[1]][prop[2]]}"/></div>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{!prop[0]=='.' and PropertyType.INT.equals(prop[2])}">
+                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
+                                            <div class="ui-g-8"><p:inputNumber value="#{editorCtl.activeObject[prop[0]]}"/></div>
+                                        </p:outputPanel>
+                                        <p:outputPanel styleClass="ui-g" rendered="#{prop[0]=='.' and PropertyType.INT.equals(prop[4])}">
+                                            <div class="ui-g-4 property-label">#{prop[3]}</div>
+                                            <div class="ui-g-8"><p:inputNumber value="#{editorCtl.activeObject[prop[1]][prop[2]]}"/></div>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.DBMS.equals(prop[2])}">
+                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
+                                            <div class="ui-g-8">
+                                                <p:selectOneMenu value="#{editorCtl.activeObject[prop[0]]}">
+                                                    <f:selectItems value="#{Dbms.values()}" var="dbms" itemLabel="#{dbms.name()}" itemValue="#{dbms.name()}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </p:outputPanel>
+                                    </p:repeat>
+                                </p:outputPanel>
+                            </p:panel>
+                        </h:form>
                     </p:splitterPanel>
                 </p:splitter>
             </div>

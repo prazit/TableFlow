@@ -4,7 +4,7 @@ import com.tflow.model.editor.DataOutput;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
-import com.tflow.model.editor.datasource.DBMS;
+import com.tflow.model.editor.datasource.Dbms;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -21,7 +21,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,12 +35,15 @@ public class EditorController extends Controller {
 
     private String projectName;
     private MenuModel stepMenu;
-    private boolean flowchartEnabled;
     private Double zoom;
+    private List<String[]> propertyList;
+    private Selectable activeObject;
+    private Map<String, Selectable> selectableMap;
 
     @PostConstruct
     public void onCreation() {
         initStepList();
+        selectableMap = collectSelectableToMap();
     }
 
     private void initStepList() {
@@ -56,12 +58,60 @@ public class EditorController extends Controller {
                     .value(step.getName())
                     .icon("pi pi-home")
                     .command("${editorCtl.selectStep(" + step.getIndex() + ")}")
-                    .update("actionForm")
+                    .update("actionForm,propertyForm")
                     .build()
             );
         }
 
         selectStep(project.getActiveStepIndex(), false);
+        changeActiveObject(project.getActiveStep().getActiveObject());
+    }
+
+    private Map<String, Selectable> collectSelectableToMap() {
+        Step step = workspace.getProject().getActiveStep();
+
+        List<Selectable> selectableList = step.getDataTower().getSelectableList();
+        Selectable activeObject = step.getActiveObject();
+        if (activeObject == null && selectableList.size() > 0) {
+            activeObject = selectableList.get(0);
+            step.setActiveObject(activeObject);
+        }
+
+        Map<String, Selectable> map = new HashMap<>();
+        collectSelectableTo(map, selectableList);
+
+        selectableList = step.getTransformTower().getSelectableList();
+        collectSelectableTo(map, selectableList);
+
+        selectableList = step.getOutputTower().getSelectableList();
+        collectSelectableTo(map, selectableList);
+
+        return map;
+    }
+
+    private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
+        for (Selectable selectable : selectableList) {
+            map.put(selectable.getSelectableId(), selectable);
+            if (selectable instanceof DataTable) {
+                DataTable dt = (DataTable) selectable;
+
+                for (DataColumn column : dt.getColumnList()) {
+                    map.put(column.getSelectableId(), column);
+                }
+
+                for (DataOutput output : dt.getOutputList()) {
+                    map.put(output.getSelectableId(), output);
+                }
+
+                if (selectable instanceof TransformTable) {
+                    TransformTable tt = (TransformTable) selectable;
+                    for (TableFx fx : tt.getFxList()) {
+                        map.put(fx.getSelectableId(), fx);
+                    }
+                }
+
+            }
+        }
     }
 
     public String getProjectName() {
@@ -80,20 +130,28 @@ public class EditorController extends Controller {
         this.stepMenu = stepMenu;
     }
 
-    public boolean isFlowchartEnabled() {
-        return flowchartEnabled;
-    }
-
-    public void setFlowchartEnabled(boolean flowchartEnabled) {
-        this.flowchartEnabled = flowchartEnabled;
-    }
-
     public Double getZoom() {
         return zoom;
     }
 
     public void setZoom(Double zoom) {
         this.zoom = zoom;
+    }
+
+    public List<String[]> getPropertyList() {
+        return propertyList;
+    }
+
+    public void setPropertyList(List<String[]> propertyList) {
+        this.propertyList = propertyList;
+    }
+
+    public Selectable getActiveObject() {
+        return activeObject;
+    }
+
+    public void setActiveObject(Selectable activeObject) {
+        this.activeObject = activeObject;
     }
 
     /*== Public Methods ==*/
@@ -177,13 +235,20 @@ public class EditorController extends Controller {
 
     public void selectStep(int stepIndex, boolean refresh) {
         Project project = workspace.getProject();
-        project.setActiveStepIndex(stepIndex);
+        if (stepIndex < 0 || stepIndex >= project.getStepList().size()) {
+            stepIndex = 0;
+        }
 
+        int prevStepIndex = project.getActiveStepIndex();
+        if (prevStepIndex == stepIndex) return;
+
+        project.setActiveStepIndex(stepIndex);
         Step activeStep = project.getActiveStep();
         zoom = activeStep.getZoom();
 
-        flowchartEnabled = true;
         if (refresh) FacesUtil.runClientScript("refershFlowChart();");
+
+        setActiveObject(activeStep.getActiveObject());
         log.warn("selectStep(i:{},n:{},z:{})", stepIndex, activeStep.getName(), zoom);
     }
 
@@ -208,7 +273,7 @@ public class EditorController extends Controller {
         Step step = project.getActiveStep();
 
         /*create DataSource, Data File, DataTable (Command: AddDataTable)*/
-        Database database = new Database("DB Connection " + (++testRunningNumber), DBMS.ORACLE, project.newElementId());
+        Database database = new Database("DB Connection " + (++testRunningNumber), Dbms.ORACLE, project.newElementId());
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, database);
@@ -233,6 +298,7 @@ public class EditorController extends Controller {
         Database database = (Database) dataSourceList.get(dataSourceList.keySet().toArray()[0]);
 
         DataFile dataFile = new DataFile(
+                database,
                 DataFileType.IN_SQL,
                 "DataFile.sql",
                 "data/",
@@ -244,7 +310,6 @@ public class EditorController extends Controller {
                 project.newUniqueId(),
                 "Mockup Data Table",
                 dataFile,
-                database,
                 "",
                 "String",
                 false,
@@ -260,6 +325,7 @@ public class EditorController extends Controller {
 
         /*TODO: split code below to the Action AddDataOutput*/
         DataFile outputSQLFile = new DataFile(
+                database,
                 DataFileType.OUT_DBINSERT,
                 "accmas",
                 "account.",
@@ -267,7 +333,9 @@ public class EditorController extends Controller {
                 project.newElementId()
         );
 
+        Local myComputer = new Local("MyComputer", "C:/myData/", project.newElementId());
         DataFile outputCSVFile = new DataFile(
+                myComputer,
                 DataFileType.OUT_CSV,
                 "output.csv",
                 "out/",
@@ -349,6 +417,35 @@ public class EditorController extends Controller {
         }
 
         FacesUtil.runClientScript("refershFlowChart();");
+    }
+
+    /**
+     * Set active object from client script in flowchart.
+     */
+    public void selectObject() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        Selectable activeObject = selectableMap.get(selectableId);
+        if (activeObject == null) {
+            log.warn("selectableMap not contains selectableId={}", selectableId);
+            /*throw new IllegalStateException("selectableMap not contains selectableId=" + selectableId);*/
+            return;
+        }
+
+        changeActiveObject(activeObject);
+    }
+
+    private void changeActiveObject(Selectable activeObject) {
+        if(activeObject == null) return;
+        this.activeObject = activeObject;
+
+        workspace.getProject().getActiveStep().setActiveObject(activeObject);
+
+        propertyList = new ArrayList<>();
+        Properties properties = activeObject.getProperties();
+        for (String prototypeString : properties.getPrototypeList()) {
+            String[] params = prototypeString.split("[:]");
+            propertyList.add(params);
+        }
     }
 
 }

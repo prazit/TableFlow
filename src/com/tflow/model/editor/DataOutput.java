@@ -3,7 +3,7 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.room.Room;
 
-public class DataOutput implements Selectable {
+public class DataOutput implements Selectable, HasDataFile {
     private static final long serialVersionUID = 2021121709996660032L;
 
     /**
@@ -19,6 +19,9 @@ public class DataOutput implements Selectable {
     public DataOutput(Room owner, DataFile dataFile, DataSource dataSource, String startPlug) {
         this.owner = owner;
         this.dataFile = dataFile;
+        if(dataFile != null) {
+            dataFile.setOwner(this);
+        }
         this.dataSource = dataSource;
         this.startPlug = startPlug;
     }
@@ -37,6 +40,11 @@ public class DataOutput implements Selectable {
 
     public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
+    }
+
+    @Override
+    public boolean isDataTable() {
+        return false;
     }
 
     public DataSource getDataSource() {

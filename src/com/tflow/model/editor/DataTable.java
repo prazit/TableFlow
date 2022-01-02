@@ -1,6 +1,5 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 
@@ -8,14 +7,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataTable extends Room implements Serializable, Selectable {
+public class DataTable extends Room implements Serializable, Selectable, HasDataFile {
     private static final long serialVersionUID = 2021121709996660030L;
 
     private int id;
     private String name;
     private int index;
     private DataFile dataFile;
-    private DataSource dataSource;
     private String query;
     private String idColName;
     private List<DataColumn> columnList;
@@ -27,12 +25,14 @@ public class DataTable extends Room implements Serializable, Selectable {
     private String endPlug;
     private String startPlug;
 
-    public DataTable(int id, String name, DataFile dataFile, DataSource dataSource, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
+    public DataTable(int id, String name, DataFile dataFile, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
         this.id = id;
         this.name = name;
         this.index = -1;
         this.dataFile = dataFile;
-        this.dataSource = dataSource;
+        if(dataFile != null) {
+            dataFile.setOwner(this);
+        }
         this.query = query;
         this.idColName = idColName;
         this.noTransform = noTransform;
@@ -71,16 +71,13 @@ public class DataTable extends Room implements Serializable, Selectable {
         return dataFile;
     }
 
+    @Override
+    public boolean isDataTable() {
+        return true;
+    }
+
     public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
-    }
-
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
     }
 
     public String getQuery() {

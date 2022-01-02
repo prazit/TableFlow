@@ -20,13 +20,11 @@ public class FlowchartController extends Controller {
     @Inject
     private Workspace workspace;
     private Step step;
-    private Map<String, Selectable> selectableMap;
 
     @PostConstruct
     public void onCreation() {
         Project project = workspace.getProject();
         step = project.getActiveStep();
-        selectableMap = collectSelectableToMap();
     }
 
     public Step getStep() {
@@ -37,74 +35,16 @@ public class FlowchartController extends Controller {
         this.step = step;
     }
 
-    private Map<String, Selectable> collectSelectableToMap() {
-
-        List<Selectable> selectableList = step.getDataTower().getSelectableList();
-        Selectable activeObject = step.getActiveObject();
-        if (activeObject == null && selectableList.size() > 0) {
-            activeObject = selectableList.get(0);
-            step.setActiveObject(activeObject);
-        }
-
-        Map<String, Selectable> map = new HashMap<>();
-        collectSelectableTo(map, selectableList);
-
-        selectableList = step.getTransformTower().getSelectableList();
-        collectSelectableTo(map, selectableList);
-
-        selectableList = step.getOutputTower().getSelectableList();
-        collectSelectableTo(map, selectableList);
-
-        return map;
-    }
-
-    private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
-        for (Selectable selectable : selectableList) {
-            map.put(selectable.getSelectableId(), selectable);
-            if (selectable instanceof DataTable) {
-                DataTable dt = (DataTable) selectable;
-
-                for (DataColumn column : dt.getColumnList()) {
-                    map.put(column.getSelectableId(), column);
-                }
-
-                for (DataOutput output : dt.getOutputList()) {
-                    map.put(output.getSelectableId(), output);
-                }
-
-                if (selectable instanceof TransformTable) {
-                    TransformTable tt = (TransformTable) selectable;
-                    for (TableFx fx : tt.getFxList()) {
-                        map.put(fx.getSelectableId(), fx);
-                    }
-                }
-
-            }
-        }
-    }
-
     /*== Public Methods ==*/
 
     /**
      * Get active class for css.
+     *
      * @return " active" or empty string
      */
     public String active(Selectable selectable) {
-        return (selectable.getSelectableId().compareTo(step.getActiveObject().getSelectableId()) == 0) ? " active" : "";
-    }
-
-    /**
-     * Set active object from client.
-     */
-    public void selectObject() {
-        String selectableId = FacesUtil.getRequestParam("selectableId");
-        Selectable selected = selectableMap.get(selectableId);
-        if (selected == null) {
-            log.warn("selectableMap not contains selectableId={}", selectableId);
-            /*throw new IllegalStateException("selectableMap not contains selectableId=" + selectableId);*/
-        } else {
-            step.setActiveObject(selected);
-        }
+        Selectable activeObject = step.getActiveObject();
+        return (activeObject != null && selectable.getSelectableId().compareTo(activeObject.getSelectableId()) == 0) ? " active" : "";
     }
 
     public void addLine() {
@@ -134,11 +74,11 @@ public class FlowchartController extends Controller {
 
     private Line getRequestedLine() {
         String startPlug = FacesUtil.getRequestParam("startPlug");
-        if(startPlug == null) return null;
+        if (startPlug == null) return null;
 
         String endPlug = FacesUtil.getRequestParam("endPlug");
         String lineType = FacesUtil.getRequestParam("lineType");
-        return new Line(startPlug,endPlug,LineType.valueOf(lineType.toUpperCase()));
+        return new Line(startPlug, endPlug, LineType.valueOf(lineType.toUpperCase()));
     }
 
 }

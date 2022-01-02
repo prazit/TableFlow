@@ -10,7 +10,7 @@ import java.util.Map;
 public class Database extends DataSource implements Selectable {
     private static final long serialVersionUID = 2021121709996660011L;
 
-    private DBMS dbms;
+    private Dbms dbms;
     private String url;
     private String driver;
     private String user;
@@ -27,7 +27,7 @@ public class Database extends DataSource implements Selectable {
 
     private Map<String, String> propList;
 
-    public Database(String name, DBMS dbms, String plug) {
+    public Database(String name, Dbms dbms, String plug) {
         this.dbms = dbms;
         setType("Database");
         setImage("database.png");
@@ -39,11 +39,11 @@ public class Database extends DataSource implements Selectable {
         this.setRoomType(RoomType.DATA_SOURCE);
     }
 
-    public DBMS getDbms() {
+    public Dbms getDbms() {
         return dbms;
     }
 
-    public void setDbms(DBMS dbms) {
+    public void setDbms(Dbms dbms) {
         this.dbms = dbms;
     }
 

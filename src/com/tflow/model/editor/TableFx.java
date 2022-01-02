@@ -8,12 +8,12 @@ public class TableFx implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660043L;
 
     private String name;
-    private FunctionPrototype function;
+    private TableFunction function;
     private Map<String, Object> paramMap;
 
     private TransformTable owner;
 
-    public TableFx(String name, FunctionPrototype function, TransformTable owner) {
+    public TableFx(String name, TableFunction function, TransformTable owner) {
         this.name = name;
         this.function = function;
         paramMap = new HashMap<>();
@@ -28,11 +28,11 @@ public class TableFx implements Serializable, Selectable {
         this.name = name;
     }
 
-    public FunctionPrototype getFunction() {
+    public TableFunction getFunction() {
         return function;
     }
 
-    public void setFunction(FunctionPrototype function) {
+    public void setFunction(TableFunction function) {
         this.function = function;
     }
 
@@ -46,12 +46,12 @@ public class TableFx implements Serializable, Selectable {
 
     @Override
     public Properties getProperties() {
-        return Properties.TABLE_FX;
+        return function.getProperties();
     }
 
     @Override
     public String getSelectableId() {
         if (name == null) return "";
-        return owner.getSelectableId() + name.replaceAll("[ ]", "_");
+        return owner.getSelectableId() + name.replaceAll("[ ]", "");
     }
 }

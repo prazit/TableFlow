@@ -25,15 +25,18 @@ function startup () {
 
     /*make selectable objects*/
     $('.selectable').on('click', function (ev) {
-        /*TODO: remove clickEvent variable below, test only*/
-        window.clickEvent = ev;
-        var e = $(ev.currentTarget);
-        var id = e.find('input[name=selectableId]').attr('value');
         $('.active').removeClass('active');
+
+        var e = $(ev.currentTarget);
         e.addClass('active');
-        setActiveObj([
+
+        var id = e.find('input[name=selectableId]').attr('value');
+        var parentWindow = window.parent;
+        parentWindow.setActiveObj([
             {name: 'selectableId', value: id}
         ]);
+
+        parentWindow.scrollToActive(e);
 
         if (e.hasClass('column')) {
             return false;

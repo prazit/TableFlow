@@ -67,14 +67,7 @@ function zoomEnd(submit) {
     if (active.length === 0) {
         contentWindow.scrollTo(scrollX, scrollY);
     } else {
-        /*scroll to active object*/
-        var zoomed = zoomVal().replace('%', '') / 100.0;
-        var pos = active.offset();
-        pos.top *= zoomed;
-        pos.left *= zoomed;
-        pos.top -= ((contentWindow.innerHeight - (active.outerHeight() * zoomed)) / 2);
-        pos.left -= ((contentWindow.innerWidth - (active.outerWidth() * zoomed)) / 2);
-        contentWindow.scrollTo(pos);
+        scrollToActive(active);
     }
 
     if (submit === undefined) return;
@@ -89,6 +82,19 @@ function zoomEnd(submit) {
     submitZoom([
         {name: 'zoom', value: zooming}
     ]);
+}
+
+function scrollToActive(active) {
+    /*scroll to active object*/
+    var zoomed = zoomVal().replace('%', '') / 100.0;
+    var pos = active.offset();
+    console.log('scrollToActive(offset-left:' + pos.left + ', offset-top:' + pos.top + ')');
+    pos.top *= zoomed;
+    pos.left *= zoomed;
+    pos.top -= ((contentWindow.innerHeight - (active.outerHeight() * zoomed)) / 2);
+    pos.left -= ((contentWindow.innerWidth - (active.outerWidth() * zoomed)) / 2);
+    contentWindow.scrollTo(pos);
+    console.log('scrollToActive(zoom:' + zoomed + ', to-left:' + pos.left + ', to-top:' + pos.top + ')');
 }
 
 $(function () {

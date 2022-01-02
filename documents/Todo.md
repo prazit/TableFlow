@@ -2,6 +2,12 @@
 
 ----
 
+:heavy_check_mark: = completed
+
+:x: = cancelled
+
+:white_check_mark: = in progress
+
 |        Done        | Task                                                         | Remark                                                       |
 | :----------------: | ------------------------------------------------------------ | ------------------------------------------------------------ |
 |                    | Show all objects in **Mockup Data Mode** using Commands      |                                                              |
@@ -13,8 +19,8 @@
 | :heavy_check_mark: | - Show Transformation Table                                  | Command: AddTransformTable <br />**(triggered from endPlug link)** |
 |                    | - Show New Column                                            | Command: AddColumn (transformTable)                          |
 |                    | - Show Column Fx Table                                       | Command: AddFxColumn<br />**(triggered from startPlug link)** |
-| :white_check_mark: | - Selectable Room                                            | Command: SelectRoom<br /><br />why position of data-table is 1,1 like this<br />![image-20211228153251022](C:\Users\prazi\AppData\Roaming\Typora\typora-user-images\image-20211228153251022.png) |
-| :white_check_mark: | - Show Property Sheet of the Objects                         | layout one sheet using prototype string<br /><br />POC: update whole ui:view |
+| :heavy_check_mark: | - Selectable Room                                            | Command: SelectRoom<br /><br />why position of data-table is 1,1 like this<br />![image-20211228153251022](C:\Users\prazi\AppData\Roaming\Typora\typora-user-images\image-20211228153251022.png)<br />fixed: change to use .offset instead of .position |
+| :white_check_mark: | - Show Property Sheet of the Objects                         | layout one sheet using prototype string                      |
 | :heavy_check_mark: | DataStructure: change step output to outputList and the DataOutput need a link back to owner table. |                                                              |
 | :heavy_check_mark: | DataStructure: add Tower Floor Room to the Step              |                                                              |
 | :heavy_check_mark: | Data Structure: all objects                                  |                                                              |

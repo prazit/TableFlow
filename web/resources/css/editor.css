@@ -48,6 +48,11 @@ body .ui-panelgrid .ui-panelgrid-cell {
     padding: 0;
 }
 
+.tool-panel .properties {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
 
 iframe {
     border: 0;

@@ -166,7 +166,7 @@ Table Flow v.0.0.0
 ## PROTOTYPE STRING
 
 ```
-<Member-Name>=<Property-Label>:<Property-Type>:param[:param]..
+<Member-Name>:<Property-Label>:<Property-Type>:param[:param]..
 ```
 
 :heavy_check_mark: = completed

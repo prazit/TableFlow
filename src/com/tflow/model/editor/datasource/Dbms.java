@@ -1,6 +1,6 @@
 package com.tflow.model.editor.datasource;
 
-public enum DBMS {
+public enum Dbms {
 
     ORACLE,
     DB2,

@@ -22,8 +22,8 @@ public class AddDataTable extends Command {
         List<Line> lineList = (List<Line>) paramMap.get(CommandParamKey.LINE_LIST);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
 
-        DataSource dataSource = dataTable.getDataSource();
         DataFile dataFile = dataTable.getDataFile();
+        DataSource dataSource = dataFile.getDataSource();
 
         /*check Room1 on every floor to find duplicated DataSource, mark for suppress and redirect line to the existing DataSource*/
         List<Room> room0List = tower.getStack(0);

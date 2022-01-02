@@ -60,7 +60,7 @@ public class DataColumn implements Serializable, Selectable {
     @Override
     public String getSelectableId() {
         if (name == null) return "";
-        return owner.getSelectableId() + name.replaceAll("[ ]", "_");
+        return owner.getSelectableId() + name.replaceAll("[ ]", "");
     }
 
     @Override
