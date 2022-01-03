@@ -87,14 +87,17 @@ function zoomEnd(submit) {
 function scrollToActive(active) {
     /*scroll to active object*/
     var zoomed = zoomVal().replace('%', '') / 100.0;
+    var innerHeight = contentWindow.innerHeight;
+    var innerWidth = contentWindow.innerWidth;
+    var outerHeight = active.outerHeight();
+    var outerWidth = active.outerWidth();
+    contentWindow.scrollTo(0,0);
     var pos = active.offset();
-    console.log('scrollToActive(offset-left:' + pos.left + ', offset-top:' + pos.top + ')');
     pos.top *= zoomed;
     pos.left *= zoomed;
-    pos.top -= ((contentWindow.innerHeight - (active.outerHeight() * zoomed)) / 2);
-    pos.left -= ((contentWindow.innerWidth - (active.outerWidth() * zoomed)) / 2);
+    pos.top -= (innerHeight - (outerHeight * zoomed)) / 2;
+    pos.left -= (innerWidth - (outerWidth * zoomed)) / 2;
     contentWindow.scrollTo(pos);
-    console.log('scrollToActive(zoom:' + zoomed + ', to-left:' + pos.left + ', to-top:' + pos.top + ')');
 }
 
 $(function () {

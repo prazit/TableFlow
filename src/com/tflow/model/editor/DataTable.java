@@ -17,7 +17,7 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     private String query;
     private String idColName;
     private List<DataColumn> columnList;
-    private List<DataOutput> outputList;
+    private List<DataFile> outputList;
 
     /*noTransform can use Auto Generated Value*/
     private boolean noTransform;
@@ -104,11 +104,11 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.columnList = columnList;
     }
 
-    public List<DataOutput> getOutputList() {
+    public List<DataFile> getOutputList() {
         return outputList;
     }
 
-    public void setOutputList(List<DataOutput> outputList) {
+    public void setOutputList(List<DataFile> outputList) {
         this.outputList = outputList;
     }
 

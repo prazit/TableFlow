@@ -1,5 +1,8 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.editor.view.PropertyView;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,13 +44,6 @@ public enum Properties {
             "type:Data Type:ReadOnly",
             "name:Column Name:String"
     ),
-    DATA_OUTPUT(
-            /*TODO: replace Child by DataSource Properties*/
-            /*TODO: replace Child by DataFile Properties*/
-            "dataSourceType:Data Source Type:DataSourceType",
-            "dataSource:Data Source:Child:DATA_SOURCE::dataSourceType",
-            "dataFile:Data File:Child:OUTPUT_FILE"
-    ),
     TRANSFORM_TABLE(
             "name:Table Name:String",
             "idColName:Key Column:Column"
@@ -70,8 +66,8 @@ public enum Properties {
     ),
 
     INPUT_SQL(
-            "dataSourceId:DB Connection:DBConnection",
-            "name:Filename:Upload:sql",
+            ".:dataSource:name:DB Connection:DBConnection",
+            "name:Filename:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
     ),
@@ -177,5 +173,37 @@ public enum Properties {
 
     public List<String> getPrototypeList() {
         return prototypeList;
+    }
+
+    public List<PropertyView> getPropertyList() {
+        List<PropertyView> propertyList = new ArrayList<>();
+        PropertyView propView;
+        String[] prototypes;
+        String[] params;
+        int length;
+        for (String prototypeString : prototypeList) {
+            prototypes = prototypeString.split("[:]");
+            propView = new PropertyView();
+            params = new String[]{};
+            length = prototypes.length;
+            if (prototypes[0].equals(".")) {
+                if (length > 5)
+                    params = Arrays.copyOfRange(prototypes, 5, length - 1);
+                propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
+                propView.setLabel(prototypes[3]);
+                propView.setVar(prototypes[2]);
+                propView.setVarParent(prototypes[1]);
+            } else {
+                if (length > 3)
+                    params = Arrays.copyOfRange(prototypes, 3, length - 1);
+                propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
+                propView.setLabel(prototypes[1]);
+                propView.setVar(prototypes[0]);
+                propView.setVarParent(null);
+            }
+            propView.setParams(params);
+            propertyList.add(propView);
+        }
+        return propertyList;
     }
 }

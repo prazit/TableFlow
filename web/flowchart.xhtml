@@ -51,7 +51,7 @@
                                         <p>Property:#{floor.roomList[0][testMemberName]}</p>
 
                                         <span>#{floor.roomList[0].type}</span>
-                                        <div class="start-plug" id="#{floor.roomList[0].plug}"></div>
+                                        <div class="start-plug#{null == flowchartCtl.step.activeObject?' active':''}" id="#{floor.roomList[0].plug}"></div>
                                     </p:outputPanel>
                                     <p:spacer rendered="#{floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
                                 </td>
@@ -111,8 +111,8 @@
 
                                             <div class="output column selectable#{flowchartCtl.active(output)}">
                                                 <input name="selectableId" type="hidden" value="#{output.selectableId}"/>
-                                                <p:graphicImage library="images" name="#{output.dataFile.image}"/>
-                                                <label>#{output.dataSource.name} - (#{output.dataFile.name})</label>
+                                                <p:graphicImage library="images" name="#{output.image}"/>
+                                                <label>#{output.dataSource.name} - (#{output.name})</label>
                                                 <div class="start-plug" id="#{output.startPlug}"></div>
                                             </div>
 
@@ -209,8 +209,8 @@
 
                                             <div class="output column selectable#{flowchartCtl.active(toutput)}">
                                                 <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
-                                                <p:graphicImage library="images" name="#{toutput.dataFile.image}"/>
-                                                <label>#{toutput.dataSource.name} - (#{toutput.dataFile.name})</label>
+                                                <p:graphicImage library="images" name="#{toutput.image}"/>
+                                                <label>#{toutput.dataSource.name} - (#{toutput.name})</label>
                                                 <div class="start-plug" id="#{toutput.startPlug}"></div>
                                             </div>
 

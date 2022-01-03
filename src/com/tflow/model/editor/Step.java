@@ -14,7 +14,7 @@ public class Step {
     private List<Action> history;
     private List<DataTable> dataList;
     private List<TransformTable> transformList;
-    private List<DataOutput> outputList;
+    private List<DataFile> outputList;
 
     private Tower dataTower;
     private Tower transformTower;
@@ -90,11 +90,11 @@ public class Step {
         this.transformList = transformList;
     }
 
-    public List<DataOutput> getOutputList() {
+    public List<DataFile> getOutputList() {
         return outputList;
     }
 
-    public void setOutputList(List<DataOutput> outputList) {
+    public void setOutputList(List<DataFile> outputList) {
         this.outputList = outputList;
     }
 

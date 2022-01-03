@@ -4,7 +4,8 @@
         xmlns:f="http://java.sun.com/jsf/core"
         xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui"
-        xmlns:ui="http://java.sun.com/jsf/facelets">
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:c="http://java.sun.com/jsp/jstl/core">
 
     <h:head>
         <title>TFlow Editor</title>
@@ -21,7 +22,6 @@
         <div class="container">
             <ui:include src="resources/exceptionMessage.xhtml"/>
             <ui:include src="resources/topMenu.xhtml"/>
-            <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
             <div class="screen-area">
                 <p:splitter id="tool-splitter" styleClass="p-mb-3" gutterSize="5">
                     <p:splitterPanel styleClass="left-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="15">
@@ -105,56 +105,48 @@
                     </p:splitterPanel>
 
                     <p:splitterPanel styleClass="right-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="30">
-                        <h:form id="propertyForm">
-                            <p:panel id="propertyPanel" header="Property List" styleClass="tool-panel">
-                                <f:facet name="actions">
-                                    <p:commandButton id="rightToggle" type="button" styleClass="right-panel-toggle close" icon="pi pi-times"/>
-                                </f:facet>
+                        <p:panel header="Property List" styleClass="tool-panel">
+                            <f:facet name="actions">
+                                <p:commandButton id="rightToggle" type="button" styleClass="right-panel-toggle close" icon="pi pi-times"/>
+                            </f:facet>
 
-                                <p:outputPanel id="propertyList" styleClass="properties">
+                            <h:form id="propertyForm">
+                                <p:scrollPanel styleClass="properties" style="height:100%;">
+                                    <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
                                     <h3><p:inputText value="#{editorCtl.activeObject.properties}"/></h3>
                                     <sup><p:outputLabel value="#{editorCtl.activeObject.getClass().getTypeName()}"/></sup>
                                     <p:repeat value="#{editorCtl.propertyList}" var="prop">
 
-                                        <p:outputPanel styleClass="ui-g" rendered="#{!prop[0]=='.' and PropertyType.READONLY.equals(prop[2])}">
-                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
-                                            <div class="ui-g-8 property-label">#{editorCtl.activeObject[prop[0]]}</div>
-                                        </p:outputPanel>
-                                        <p:outputPanel styleClass="ui-g" rendered="#{prop[0]=='.' and PropertyType.READONLY.equals(prop[4])}">
-                                            <div class="ui-g-4 property-label">#{prop[3]}</div>
-                                            <div class="ui-g-8 property-label">#{editorCtl.activeObject[prop[1]][prop[2]]}</div>
+                                        <span style="font-size:smaller;"><br/>#{prop}<br/></span>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.READONLY==prop.type}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8 property-label">#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</div>
                                         </p:outputPanel>
 
-                                        <p:outputPanel styleClass="ui-g" rendered="#{!prop[0]=='.' and PropertyType.STRING.equals(prop[2])}">
-                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
-                                            <div class="ui-g-8"><p:inputText value="#{editorCtl.activeObject[prop[0]]}"/></div>
-                                        </p:outputPanel>
-                                        <p:outputPanel styleClass="ui-g" rendered="#{prop[0]=='.' and PropertyType.STRING.equals(prop[4])}">
-                                            <div class="ui-g-4 property-label">#{prop[3]}</div>
-                                            <div class="ui-g-8"><p:inputText value="#{editorCtl.activeObject[prop[1]][prop[2]]}"/></div>
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.STRING.equals(prop.type)}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8"><p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}"/></div>
                                         </p:outputPanel>
 
-                                        <p:outputPanel styleClass="ui-g" rendered="#{!prop[0]=='.' and PropertyType.INT.equals(prop[2])}">
-                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
-                                            <div class="ui-g-8"><p:inputNumber value="#{editorCtl.activeObject[prop[0]]}"/></div>
-                                        </p:outputPanel>
-                                        <p:outputPanel styleClass="ui-g" rendered="#{prop[0]=='.' and PropertyType.INT.equals(prop[4])}">
-                                            <div class="ui-g-4 property-label">#{prop[3]}</div>
-                                            <div class="ui-g-8"><p:inputNumber value="#{editorCtl.activeObject[prop[1]][prop[2]]}"/></div>
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.INT.equals(prop.type)}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8"><p:inputNumber value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}"/></div>
                                         </p:outputPanel>
 
-                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.DBMS.equals(prop[2])}">
-                                            <div class="ui-g-4 property-label">#{prop[1]}</div>
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.DBMS.equals(prop.type)}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
-                                                <p:selectOneMenu value="#{editorCtl.activeObject[prop[0]]}">
-                                                    <f:selectItems value="#{Dbms.values()}" var="dbms" itemLabel="#{dbms.name()}" itemValue="#{dbms.name()}"/>
+                                                <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
+                                                    <f:selectItem itemLabel="-- select one --"/>
+                                                    <f:selectItems value="#{editorCtl.getItemList('Dbms')}" var="dbms" itemLabel="#{dbms.label}" itemValue="#{dbms.value}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </p:outputPanel>
                                     </p:repeat>
-                                </p:outputPanel>
-                            </p:panel>
-                        </h:form>
+                                </p:scrollPanel>
+                            </h:form>
+                        </p:panel>
                     </p:splitterPanel>
                 </p:splitter>
             </div>

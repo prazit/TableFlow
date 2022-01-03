@@ -3,6 +3,8 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.Map;
 
 public class DataFile extends Room implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660020L;
+
+    private Logger log = LoggerFactory.getLogger(DataFile.class);
 
     private HasDataFile owner;
     private DataSource dataSource;
@@ -45,6 +49,7 @@ public class DataFile extends Room implements Serializable, Selectable {
                 resultMap.put(params[0], PropertyType.valueOf(params[2].toUpperCase()).getInitial());
             }
         }
+        log.warn("initPropertyMap={}", resultMap);
         return resultMap;
     }
 

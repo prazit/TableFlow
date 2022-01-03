@@ -1,6 +1,5 @@
 package com.tflow.controller;
 
-import com.tflow.model.editor.DataOutput;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
@@ -8,6 +7,7 @@ import com.tflow.model.editor.datasource.Dbms;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
+import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
@@ -17,14 +17,12 @@ import org.primefaces.model.menu.MenuElement;
 import org.primefaces.model.menu.MenuModel;
 
 import javax.annotation.PostConstruct;
+import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ViewScoped
 @Named("editorCtl")
@@ -36,14 +34,14 @@ public class EditorController extends Controller {
     private String projectName;
     private MenuModel stepMenu;
     private Double zoom;
-    private List<String[]> propertyList;
+    private List<PropertyView> propertyList;
     private Selectable activeObject;
     private Map<String, Selectable> selectableMap;
 
     @PostConstruct
     public void onCreation() {
         initStepList();
-        selectableMap = collectSelectableToMap();
+        collectSelectableToMap();
     }
 
     private void initStepList() {
@@ -67,7 +65,7 @@ public class EditorController extends Controller {
         changeActiveObject(project.getActiveStep().getActiveObject());
     }
 
-    private Map<String, Selectable> collectSelectableToMap() {
+    private void collectSelectableToMap() {
         Step step = workspace.getProject().getActiveStep();
 
         List<Selectable> selectableList = step.getDataTower().getSelectableList();
@@ -77,16 +75,14 @@ public class EditorController extends Controller {
             step.setActiveObject(activeObject);
         }
 
-        Map<String, Selectable> map = new HashMap<>();
-        collectSelectableTo(map, selectableList);
+        selectableMap = new HashMap<>();
+        collectSelectableTo(selectableMap, selectableList);
 
         selectableList = step.getTransformTower().getSelectableList();
-        collectSelectableTo(map, selectableList);
+        collectSelectableTo(selectableMap, selectableList);
 
         selectableList = step.getOutputTower().getSelectableList();
-        collectSelectableTo(map, selectableList);
-
-        return map;
+        collectSelectableTo(selectableMap, selectableList);
     }
 
     private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
@@ -99,7 +95,7 @@ public class EditorController extends Controller {
                     map.put(column.getSelectableId(), column);
                 }
 
-                for (DataOutput output : dt.getOutputList()) {
+                for (DataFile output : dt.getOutputList()) {
                     map.put(output.getSelectableId(), output);
                 }
 
@@ -138,11 +134,11 @@ public class EditorController extends Controller {
         this.zoom = zoom;
     }
 
-    public List<String[]> getPropertyList() {
+    public List<PropertyView> getPropertyList() {
         return propertyList;
     }
 
-    public void setPropertyList(List<String[]> propertyList) {
+    public void setPropertyList(List<PropertyView> propertyList) {
         this.propertyList = propertyList;
     }
 
@@ -155,6 +151,22 @@ public class EditorController extends Controller {
     }
 
     /*== Public Methods ==*/
+
+    public void log(String msg) {
+        log.warn(msg);
+    }
+
+    public List<SelectItem> getItemList(String className) throws ClassNotFoundException {
+        List<SelectItem> selectItemList = new ArrayList<>();
+
+        if (className.equals("Dbms")) {
+            for (Dbms value : Dbms.values()) {
+                selectItemList.add(new SelectItem(value, value.name()));
+            }
+        }
+
+        return selectItemList;
+    }
 
     public void lightTheme() {
         workspace.getUser().setTheme(Theme.LIGHT);
@@ -240,7 +252,7 @@ public class EditorController extends Controller {
         }
 
         int prevStepIndex = project.getActiveStepIndex();
-        if (prevStepIndex == stepIndex) return;
+        /*if (prevStepIndex == stepIndex) return;*/
 
         project.setActiveStepIndex(stepIndex);
         Step activeStep = project.getActiveStep();
@@ -345,9 +357,9 @@ public class EditorController extends Controller {
 
         Local local = new Local("My Server", "/output/", project.newElementId());
 
-        List<DataOutput> outputList = dataTable.getOutputList();
-        outputList.add(new DataOutput(dataTable, outputSQLFile, database, project.newElementId()));
-        outputList.add(new DataOutput(dataTable, outputCSVFile, local, project.newElementId()));
+        List<DataFile> outputList = dataTable.getOutputList();
+        outputList.add(outputSQLFile);
+        outputList.add(outputCSVFile);
 
         return dataTable;
     }
@@ -379,6 +391,7 @@ public class EditorController extends Controller {
             return;
         }
 
+        collectSelectableToMap();
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
@@ -416,6 +429,7 @@ public class EditorController extends Controller {
             return;
         }
 
+        collectSelectableToMap();
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
@@ -435,17 +449,10 @@ public class EditorController extends Controller {
     }
 
     private void changeActiveObject(Selectable activeObject) {
-        if(activeObject == null) return;
+        if (activeObject == null) return;
         this.activeObject = activeObject;
-
         workspace.getProject().getActiveStep().setActiveObject(activeObject);
-
-        propertyList = new ArrayList<>();
-        Properties properties = activeObject.getProperties();
-        for (String prototypeString : properties.getPrototypeList()) {
-            String[] params = prototypeString.split("[:]");
-            propertyList.add(params);
-        }
+        propertyList = activeObject.getProperties().getPropertyList();
     }
 
 }
