@@ -1,6 +1,6 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.datasource.DataSource;
+import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.SFTP;
 
 import java.util.ArrayList;
@@ -13,9 +13,9 @@ public class Project {
     private Batch batch;
     private int activeStepIndex;
     private List<Step> stepList;
-    private Map<String, DataSource> dataSourceList;
-    private Map<String, SFTP> sftpList;
-    private Map<String, Variable> variableList;
+    private Map<Integer, Database> databaseMap;
+    private Map<Integer, SFTP> sftpMap;
+    private Map<String, Variable> variableMap;
 
     private int lastElementId;
     private int lastUniqueId;
@@ -24,9 +24,9 @@ public class Project {
         activeStepIndex = -1;
         this.name = name;
         stepList = new ArrayList<>();
-        dataSourceList = new HashMap<>();
-        sftpList = new HashMap<>();
-        variableList = new HashMap<>();
+        databaseMap = new HashMap<>();
+        sftpMap = new HashMap<>();
+        variableMap = new HashMap<>();
     }
 
     public String getName() {
@@ -61,28 +61,28 @@ public class Project {
         this.stepList = stepList;
     }
 
-    public Map<String, DataSource> getDataSourceList() {
-        return dataSourceList;
+    public Map<Integer, Database> getDatabaseMap() {
+        return databaseMap;
     }
 
-    public void setDataSourceList(Map<String, DataSource> dataSourceList) {
-        this.dataSourceList = dataSourceList;
+    public void setDatabaseMap(Map<Integer, Database> databaseMap) {
+        this.databaseMap = databaseMap;
     }
 
-    public Map<String, SFTP> getSftpList() {
-        return sftpList;
+    public Map<Integer, SFTP> getSftpMap() {
+        return sftpMap;
     }
 
-    public void setSftpList(Map<String, SFTP> sftpList) {
-        this.sftpList = sftpList;
+    public void setSftpMap(Map<Integer, SFTP> sftpMap) {
+        this.sftpMap = sftpMap;
     }
 
-    public Map<String, Variable> getVariableList() {
-        return variableList;
+    public Map<String, Variable> getVariableMap() {
+        return variableMap;
     }
 
-    public void setVariableList(Map<String, Variable> variableList) {
-        this.variableList = variableList;
+    public void setVariableMap(Map<String, Variable> variableMap) {
+        this.variableMap = variableMap;
     }
 
     /*== Public Methods ==*/

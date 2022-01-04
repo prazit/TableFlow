@@ -37,6 +37,11 @@ public class FlowchartController extends Controller {
 
     /*== Public Methods ==*/
 
+    public void updateElement() {
+        /*nothing to do here*/
+        log.warn("updateElement.");
+    }
+
     /**
      * Get active class for css.
      *

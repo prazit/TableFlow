@@ -24,7 +24,7 @@ public class SFTP extends DataSource implements Selectable {
 
     public SFTP(String name, String rootPath, String plug) {
         setName(name);
-        setType("SFTP");
+        setType(DataSourceType.SFTP);
         setImage("ftp.png");
         setPlug(plug);
         this.rootPath = rootPath;

@@ -91,13 +91,17 @@ function scrollToActive(active) {
     var innerWidth = contentWindow.innerWidth;
     var outerHeight = active.outerHeight();
     var outerWidth = active.outerWidth();
-    contentWindow.scrollTo(0,0);
+    contentWindow.scrollTo(0, 0);
     var pos = active.offset();
     pos.top *= zoomed;
     pos.left *= zoomed;
     pos.top -= (innerHeight - (outerHeight * zoomed)) / 2;
     pos.left -= (innerWidth - (outerWidth * zoomed)) / 2;
     contentWindow.scrollTo(pos);
+}
+
+function updateFlowchart(selectable) {
+    contentWindow['update' + selectable]();
 }
 
 $(function () {

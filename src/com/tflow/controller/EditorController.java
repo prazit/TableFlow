@@ -273,22 +273,15 @@ public class EditorController extends Controller {
         activeStep.setZoom(Double.valueOf(zoom));
     }
 
-    /**
-     * for Mockup DataSource Only, remove me please.
-     */
-    private static int testRunningNumber = 0;
-
-    public void addDataSource() {
-        /*TODO: need to show parameters dialog and remove Mockup-Data below*/
-
+    public void addDBConnection() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        /*create DataSource, Data File, DataTable (Command: AddDataTable)*/
-        Database database = new Database("DB Connection " + (++testRunningNumber), Dbms.ORACLE, project.newElementId());
+        Database database = new Database("Untitled", Dbms.ORACLE, project.newElementId());
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, database);
+        paramMap.put(CommandParamKey.TOWER, step.getDataTower());
         paramMap.put(CommandParamKey.PROJECT, project);
         paramMap.put(CommandParamKey.HISTORY, step.getHistory());
 
@@ -300,14 +293,18 @@ public class EditorController extends Controller {
             return;
         }
 
+        String selectableId = database.getSelectableId();
+        selectableMap.put(selectableId, database);
+        selectObject(selectableId);
+
         FacesUtil.addInfo("DataSource[" + database.getName() + "] added.");
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
     private DataTable getSQLDataTable(Project project) {
         /*create DataSource, Data File, DataTable (Commmand: AddDataTable)*/
-        Map<String, DataSource> dataSourceList = project.getDataSourceList();
-        Database database = (Database) dataSourceList.get(dataSourceList.keySet().toArray()[0]);
+        Map<Integer, Database> databaseMap = project.getDatabaseMap();
+        Database database = databaseMap.get(databaseMap.keySet().toArray()[0]);
 
         DataFile dataFile = new DataFile(
                 database,
@@ -437,7 +434,14 @@ public class EditorController extends Controller {
      * Set active object from client script in flowchart.
      */
     public void selectObject() {
-        String selectableId = FacesUtil.getRequestParam("selectableId");
+        selectObject(null);
+    }
+
+    public void selectObject(String selectableId) {
+        if (selectableId == null) {
+            selectableId = FacesUtil.getRequestParam("selectableId");
+        }
+
         Selectable activeObject = selectableMap.get(selectableId);
         if (activeObject == null) {
             log.warn("selectableMap not contains selectableId={}", selectableId);

@@ -8,7 +8,7 @@ public class DataSource extends Room implements Serializable {
     private static final long serialVersionUID = 2021121709996660010L;
 
     protected int id;
-    protected String type;
+    protected DataSourceType type;
     protected String name;
     protected String image;
     protected String plug;
@@ -21,11 +21,11 @@ public class DataSource extends Room implements Serializable {
         this.id = id;
     }
 
-    public String getType() {
+    public DataSourceType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(DataSourceType type) {
         this.type = type;
     }
 

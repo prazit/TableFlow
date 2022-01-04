@@ -23,6 +23,7 @@ public class AddDataSource extends Action {
     protected void initCommands() {
         setParams(
                 CommandParamKey.DATA_SOURCE,
+                CommandParamKey.TOWER,
                 CommandParamKey.PROJECT
         );
         setCommands(new com.tflow.model.editor.cmd.AddDataSource());
@@ -32,6 +33,7 @@ public class AddDataSource extends Action {
     protected void initUndoCommands() {
         /*setUndoParams(
                 CommandParamKey.DATA_SOURCE,
+                CommandParamKey.TOWER,
                 CommandParamKey.PROJECT
         );*/
         /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataSource());*/

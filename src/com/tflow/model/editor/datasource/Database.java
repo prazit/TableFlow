@@ -29,7 +29,7 @@ public class Database extends DataSource implements Selectable {
 
     public Database(String name, Dbms dbms, String plug) {
         this.dbms = dbms;
-        setType("Database");
+        setType(DataSourceType.DATABASE);
         setImage("database.png");
         setName(name);
         setPlug(plug);

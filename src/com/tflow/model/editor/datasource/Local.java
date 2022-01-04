@@ -13,7 +13,7 @@ public class Local extends DataSource {
 
     public Local(String name, String rootPath, String plug) {
         setName(name);
-        setType("Local");
+        setType(DataSourceType.LOCAL);
         setImage("Local.png");
         setPlug(plug);
         this.rootPath = rootPath;

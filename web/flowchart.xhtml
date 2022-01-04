@@ -24,12 +24,14 @@
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
 
         <div class="flow-chart" style="visibility: hidden">
-            <h:form id="fchForm">
+            <h:form id="editorForm">
                 <p:growl id="growl" showDetail="true" escape="false"/>
                 <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
 
                 <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine}"/>
-                <script>$(function(){addLine()});</script>
+                <script>$(function () {
+                    addLine()
+                });</script>
 
                 <h1 style="color: var(--surface-c);position: fixed;padding: var(--padding);margin: var(--margin)">#{flowchartCtl.step.name}</h1>
 
@@ -38,19 +40,15 @@
                         <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">
                             <tr>
                                 <td>
-                                    <p:outputPanel styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])}" rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}">
+                                    <p:outputPanel rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}" styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[0].selectableId}"/>
-
-                                        <c:set var="testMemberName" value="name"/>
-                                        <p>Property:#{floor.roomList[0][testMemberName]}</p>
+                                        <p:remoteCommand name="update#{floor.roomList[0].selectableId}" update="@parent"/>
 
                                         <p>#{floor.roomList[0].name}</p>
                                         <p:graphicImage library="images" name="#{floor.roomList[0].image}"/>
 
-                                        <c:set var="testMemberName" value="type"/>
-                                        <p>Property:#{floor.roomList[0][testMemberName]}</p>
-
                                         <span>#{floor.roomList[0].type}</span>
+                                        <span>#{floor.roomList[0].dbms}</span>
                                         <div class="start-plug#{null == flowchartCtl.step.activeObject?' active':''}" id="#{floor.roomList[0].plug}"></div>
                                     </p:outputPanel>
                                     <p:spacer rendered="#{floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
@@ -61,7 +59,7 @@
                                 </td>
 
                                 <td>
-                                    <p:outputPanel styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[1])}" rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}">
+                                    <p:outputPanel rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}" styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[1])}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[1].selectableId}"/>
 
                                         <div class="end-plug" id="#{floor.roomList[1].endPlug}"></div>
@@ -78,7 +76,7 @@
                                 </td>
 
                                 <td>
-                                    <p:panel header="" styleClass="data-table selectable#{flowchartCtl.active(floor.roomList[2])}" rendered="true">
+                                    <p:panel rendered="#{floor.roomList[2].roomType==RoomType.DATA_TABLE}" header="" styleClass="data-table selectable#{flowchartCtl.active(floor.roomList[2])}">
                                         <f:facet name="actions">
                                             <input name="selectableId" type="hidden" value="#{floor.roomList[2].selectableId}"/>
 
