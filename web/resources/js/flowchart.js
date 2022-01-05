@@ -11,7 +11,33 @@ function showLines() {
     }
 }
 
-function startup () {
+/**
+ * @param selectable = jQuery-Element or Selectable-Element ID
+ */
+function register(selectable) {
+    if (selectable.jquery === undefined) {
+        selectable = $('input[name=selectableId][value=' + selectable + ']').parent();
+    }
+
+    selectable.on('click', function (ev) {
+        $('.active').removeClass('active');
+
+        var e = $(ev.currentTarget);
+        e.addClass('active');
+
+        var id = e.find('input[name=selectableId]').attr('value');
+        var parentWindow = window.parent;
+        parentWindow.setActiveObj([
+            {name: 'selectableId', value: id}
+        ]);
+        parentWindow.scrollToActive(e);
+
+        /*stopPropagation*/
+        return false;
+    });
+}
+
+function startup() {
 
     /*make more height*/
     var parentWindow = window.parent;
@@ -24,24 +50,7 @@ function startup () {
     parentWindow.zoomEnd();
 
     /*make selectable objects*/
-    $('.selectable').on('click', function (ev) {
-        $('.active').removeClass('active');
-
-        var e = $(ev.currentTarget);
-        e.addClass('active');
-
-        var id = e.find('input[name=selectableId]').attr('value');
-        var parentWindow = window.parent;
-        parentWindow.setActiveObj([
-            {name: 'selectableId', value: id}
-        ]);
-
-        parentWindow.scrollToActive(e);
-
-        if (e.hasClass('column')) {
-            return false;
-        }
-    });
+    register($('.selectable'));
 
     /*need to show after all works*/
     $('.flow-chart').css('visibility', 'visible');

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public enum PropertyType {
 
     READONLY(""),
+    BOOLEAN(Boolean.FALSE),
     STRING(""),
     INT(0),
 

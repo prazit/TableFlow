@@ -4,9 +4,9 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.Dbms;
-import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
+import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
@@ -34,14 +34,14 @@ public class EditorController extends Controller {
     private String projectName;
     private MenuModel stepMenu;
     private Double zoom;
+
+    private Map<String, Selectable> selectableMap;
     private List<PropertyView> propertyList;
     private Selectable activeObject;
-    private Map<String, Selectable> selectableMap;
 
     @PostConstruct
     public void onCreation() {
         initStepList();
-        collectSelectableToMap();
     }
 
     private void initStepList() {
@@ -62,7 +62,6 @@ public class EditorController extends Controller {
         }
 
         selectStep(project.getActiveStepIndex(), false);
-        changeActiveObject(project.getActiveStep().getActiveObject());
     }
 
     private void collectSelectableToMap() {
@@ -258,10 +257,16 @@ public class EditorController extends Controller {
         Step activeStep = project.getActiveStep();
         zoom = activeStep.getZoom();
 
-        if (refresh) FacesUtil.runClientScript("refershFlowChart();");
+        collectSelectableToMap();
 
-        setActiveObject(activeStep.getActiveObject());
-        log.warn("selectStep(i:{},n:{},z:{})", stepIndex, activeStep.getName(), zoom);
+        Selectable activeObject = activeStep.getActiveObject();
+        if (activeObject == null) {
+            selectObject(null);
+        } else {
+            selectObject(activeObject.getSelectableId());
+        }
+
+        if (refresh) FacesUtil.runClientScript("refershFlowChart();");
     }
 
     public void submitZoom() {
@@ -288,8 +293,8 @@ public class EditorController extends Controller {
         try {
             new AddDataSource(paramMap).execute();
         } catch (RequiredParamException e) {
-            log.error("Add DataSource Failed!", e);
-            FacesUtil.addError("Add DataSource Failed with Internal Error!");
+            log.error("Add Database Failed!", e);
+            FacesUtil.addError("Add Database Failed with Internal Command Error!");
             return;
         }
 
@@ -297,7 +302,35 @@ public class EditorController extends Controller {
         selectableMap.put(selectableId, database);
         selectObject(selectableId);
 
-        FacesUtil.addInfo("DataSource[" + database.getName() + "] added.");
+        FacesUtil.addInfo("Database[" + database.getName() + "] added.");
+        FacesUtil.runClientScript("refershFlowChart();");
+    }
+
+    public void addSFTPConnection() {
+        Project project = workspace.getProject();
+        Step step = project.getActiveStep();
+
+        SFTP sftp = new SFTP("Untitled", "/", project.newElementId());
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_SOURCE, sftp);
+        paramMap.put(CommandParamKey.TOWER, step.getDataTower());
+        paramMap.put(CommandParamKey.PROJECT, project);
+        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
+
+        try {
+            new AddDataSource(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add SFTP Failed!", e);
+            FacesUtil.addError("Add SFTP Failed with Internal Command Error!");
+            return;
+        }
+
+        String selectableId = sftp.getSelectableId();
+        selectableMap.put(selectableId, sftp);
+        selectObject(selectableId);
+
+        FacesUtil.addInfo("SFTP[" + sftp.getName() + "] added.");
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
@@ -434,28 +467,36 @@ public class EditorController extends Controller {
      * Set active object from client script in flowchart.
      */
     public void selectObject() {
-        selectObject(null);
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        selectObject(selectableId);
     }
 
     public void selectObject(String selectableId) {
         if (selectableId == null) {
-            selectableId = FacesUtil.getRequestParam("selectableId");
+            /*reset property sheet variables*/
+            setPropertySheet(null);
+            return;
         }
 
         Selectable activeObject = selectableMap.get(selectableId);
         if (activeObject == null) {
-            log.warn("selectableMap not contains selectableId={}", selectableId);
+            log.error("selectableMap not contains selectableId={}", selectableId);
             /*throw new IllegalStateException("selectableMap not contains selectableId=" + selectableId);*/
             return;
         }
 
-        changeActiveObject(activeObject);
+        workspace.getProject().getActiveStep().setActiveObject(activeObject);
+        setPropertySheet(activeObject);
     }
 
-    private void changeActiveObject(Selectable activeObject) {
-        if (activeObject == null) return;
+    private void setPropertySheet(Selectable activeObject) {
+        if (activeObject == null) {
+            this.activeObject = null;
+            propertyList = new ArrayList<>();
+            return;
+        }
+
         this.activeObject = activeObject;
-        workspace.getProject().getActiveStep().setActiveObject(activeObject);
         propertyList = activeObject.getProperties().getPropertyList();
     }
 

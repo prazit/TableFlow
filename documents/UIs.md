@@ -175,7 +175,7 @@ Table Flow v.0.0.0
 
 | :heavy_check_mark: | name                | property<br /><sub>Fixed Text</sub> | data-type          | type params                         | default                   | remark                                                       |
 | :----------------: | ------------------- | ----------------------------------- | ------------------ | ----------------------------------- | ------------------------- | ------------------------------------------------------------ |
-|                    | String              | STRING                              | String             |                                     |                           |                                                              |
+| :heavy_check_mark: | String              | STRING                              | String             |                                     |                           |                                                              |
 |                    |                     |                                     |                    | max length                          | 1024                      |                                                              |
 |                    |                     |                                     |                    | Regex Pattern (mask)                | no-specified              |                                                              |
 |                    |                     |                                     |                    | password                            | false                     |                                                              |

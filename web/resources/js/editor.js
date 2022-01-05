@@ -100,7 +100,7 @@ function scrollToActive(active) {
     contentWindow.scrollTo(pos);
 }
 
-function updateFlowchart(selectable) {
+function updateEm(selectable) {
     contentWindow['update' + selectable]();
 }
 

@@ -51,7 +51,7 @@
                                     <p:menubar>
                                         <p:submenu label="Add">
                                             <p:menuitem value="DB Connection..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="propertyForm"/>
-                                            <p:menuitem value="SFTP Connection..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="propertyForm"/>
+                                            <p:menuitem value="SFTP Connection..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="propertyForm"/>
                                             <p:menuitem value="Data File..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="propertyForm"/>
                                             <p:divider/>
                                             <p:menuitem value="Data Table..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataTable}" update="propertyForm"/>
@@ -114,8 +114,8 @@
                             <h:form id="propertyForm">
                                 <p:scrollPanel styleClass="properties" style="height:100%;">
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
-                                    <h3><p:inputText value="#{editorCtl.activeObject.properties}"/></h3>
-                                    <sup><p:outputLabel value="#{editorCtl.activeObject.getClass().getTypeName()}"/></sup>
+                                    <h3>#{editorCtl.activeObject.properties}</h3>
+                                    <sup>#{editorCtl.activeObject.getClass().getTypeName()}</sup>
                                     <p:repeat value="#{editorCtl.propertyList}" var="prop">
 
                                         <span style="font-size:smaller;"><br/>#{prop}<br/></span>
@@ -129,8 +129,17 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="blur" onsuccess="updateFlowchart('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
                                                 </p:inputText>
+                                            </div>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.BOOLEAN==prop.type}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8">
+                                                <p:inputSwitch value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                </p:inputSwitch>
                                             </div>
                                         </p:outputPanel>
 
@@ -138,7 +147,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputNumber value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="blur" onsuccess="updateFlowchart('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
                                                 </p:inputNumber>
                                             </div>
                                         </p:outputPanel>
@@ -149,7 +158,7 @@
                                                 <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
                                                     <f:selectItem itemLabel="-- select one --"/>
                                                     <f:selectItems value="#{editorCtl.getItemList('Dbms')}" var="dbms" itemLabel="#{dbms.label}" itemValue="#{dbms.value}"/>
-                                                    <p:ajax event="change" onsuccess="updateFlowchart('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </p:outputPanel>
