@@ -22,7 +22,7 @@ public class AddDataSource extends Command {
         int id = project.newUniqueId();
         dataSource.setId(id);
 
-        Floor floor = tower.getAvailableFloor(false);
+        Floor floor = tower.getAvailableFloor(0,false);
         floor.setRoom(0, dataSource);
 
         switch (dataSource.getType()) {

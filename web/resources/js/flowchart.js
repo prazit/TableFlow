@@ -62,10 +62,10 @@ var pLine = {
         outline: false,
         size: 1,
 
-        startSocket: 'auto',
+        startSocket: 'right',
         startPlug: 'behind',
 
-        endSocket: 'auto',
+        endSocket: 'left',
         /*endPlug: 'behind'*/
         endPlugSize: 2
     },

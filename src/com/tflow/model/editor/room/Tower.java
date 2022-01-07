@@ -69,15 +69,15 @@ public class Tower implements Serializable {
         return floorList.get(floorIndex);
     }
 
-    public Floor getAvailableFloor(boolean newFloor) {
-        return getAvailableFloor(newFloor, -1);
+    public Floor getAvailableFloor(int roomIndex, boolean newFloor) {
+        return getAvailableFloor(roomIndex, newFloor, -1);
     }
 
-    public Floor getAvailableFloor(boolean newFloor, int newFloorIndex) {
+    public Floor getAvailableFloor(int roomIndex, boolean newFloor, int newFloorIndex) {
         Floor floor = null;
         if (!newFloor && floorList.size() > 0) {
             for (Floor fl : floorList) {
-                if (fl.isEmpty()) {
+                if (fl.isEmpty(roomIndex)) {
                     floor = fl;
                     break;
                 }

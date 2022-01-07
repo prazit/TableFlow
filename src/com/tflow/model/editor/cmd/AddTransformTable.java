@@ -60,7 +60,7 @@ public class AddTransformTable extends Command {
         if (floor == null) {
             /*case:Tower need more floor.*/
             for (int fi = tower.getFloorList().size(); fi <= floorIndex; fi++) {
-                floor = tower.getAvailableFloor(true);
+                floor = tower.getAvailableFloor(-1,true);
             }
         } else if (!floor.isEmpty()) {
             if (floor.getRoomList().get(1).equals(sourceRoom)) {
@@ -69,7 +69,7 @@ public class AddTransformTable extends Command {
                 roomIndex += 2;
             } else {
                 /*case: floor already used by another table then add new floor to the next*/
-                floor = tower.getAvailableFloor(true, ++floorIndex);
+                floor = tower.getAvailableFloor(-1,true, ++floorIndex);
             }
         }
         assert floor != null;

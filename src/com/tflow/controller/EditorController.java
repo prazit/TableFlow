@@ -334,6 +334,38 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
+    public void addDataFile() {
+        Project project = workspace.getProject();
+        Step step = project.getActiveStep();
+
+        Local local = new Local("Untitled", "/", project.newElementId());
+        DataFile dataFile = new DataFile(local, DataFileType.IN_MD, "Untitled", "/", project.newElementId(), project.newElementId());
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_SOURCE, local);
+        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+        paramMap.put(CommandParamKey.LINE_LIST, step.getLineList());
+        paramMap.put(CommandParamKey.TOWER, step.getDataTower());
+        paramMap.put(CommandParamKey.PROJECT, project);
+        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
+
+        try {
+            new AddDataFile(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add DataFile Failed!", e);
+            FacesUtil.addError("Add DataFile Failed with Internal Command Error!");
+            return;
+        }
+
+        String selectableId = dataFile.getSelectableId();
+        selectableMap.put(local.getSelectableId(), local);
+        selectableMap.put(selectableId, dataFile);
+        selectObject(selectableId);
+
+        FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
+        FacesUtil.runClientScript("refershFlowChart();");
+    }
+
     private DataTable getSQLDataTable(Project project) {
         /*create DataSource, Data File, DataTable (Commmand: AddDataTable)*/
         Map<Integer, Database> databaseMap = project.getDatabaseMap();

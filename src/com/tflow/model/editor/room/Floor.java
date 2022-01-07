@@ -70,9 +70,16 @@ public class Floor implements Serializable {
     }
 
     public boolean isEmpty() {
+        return isEmpty(-1);
+    }
+
+    public boolean isEmpty(int roomIndex) {
         int emptyCount = 0;
         for (Room room : roomList) {
             if (room.getRoomType() == RoomType.EMPTY) {
+                if (roomIndex == room.getRoomIndex()) {
+                    return true;
+                }
                 emptyCount++;
             }
         }

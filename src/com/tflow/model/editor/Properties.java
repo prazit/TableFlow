@@ -36,6 +36,10 @@ public enum Properties {
             "retry:Connection Retry:Int:9:0",
             "rootPath:Root Path:String"
     ),
+    LOCAL_FILE(
+            "name:Name:String",
+            "rootPath:Root Path:String"
+    ),
     DATA_TABLE(
             "name:Table Name:String",
             "idColName:Key Column:Column"

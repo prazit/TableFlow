@@ -12,8 +12,8 @@
 | :----------------: | ------------------------------------------------------------ | ------------------------------------------------------------ |
 |                    | Show all objects in **Mockup Data Mode** using Commands      |                                                              |
 | :heavy_check_mark: | - Show Step List and Open Step Flowchart                     | (no undo)                                                    |
-| :heavy_check_mark: | - Show DataSource                                            | Command: AddDataTable                                        |
-| :white_check_mark: | - Show DataFile                                              | Command: AddDataTable<br />***Command: AddDataFile***<br />***Command: ExtractDataFile*** |
+| :heavy_check_mark: | - Show DataSource                                            | Command: AddDataSource<br />***Command Parameters**: need to change later (use Step as document object)* |
+| :white_check_mark: | - Show DataFile                                              | Command: AddDataTable<br />Command: AddDataFile<br />***Command: ExtractDataFile*** when Upload File Completed and AddDataTable |
 | :heavy_check_mark: | - Show DataTable                                             | Command: AddDataTable                                        |
 | :heavy_check_mark: | - Show Lines                                                 |                                                              |
 | :heavy_check_mark: | - Show Transformation Table                                  | Command: AddTransformTable <br />**(triggered from endPlug link)** |
