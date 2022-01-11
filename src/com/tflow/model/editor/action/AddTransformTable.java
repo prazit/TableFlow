@@ -23,8 +23,6 @@ public class AddTransformTable extends Action {
     protected void initCommands() {
         setParams(
                 CommandParamKey.TRANSFORM_TABLE,
-                CommandParamKey.TOWER,
-                CommandParamKey.LINE_LIST,
                 CommandParamKey.STEP
         );
         setCommands(new com.tflow.model.editor.cmd.AddTransformTable());

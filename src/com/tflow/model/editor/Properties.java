@@ -42,7 +42,7 @@ public enum Properties {
     ),
     DATA_TABLE(
             "name:Table Name:String",
-            "idColName:Key Column:Column"
+            "idColName:Key Column:Column:id"
     ),
     DATA_COLUMN(
             "type:Data Type:ReadOnly",
@@ -50,39 +50,33 @@ public enum Properties {
     ),
     TRANSFORM_TABLE(
             "name:Table Name:String",
-            "idColName:Key Column:Column"
+            "idColName:Key Column:Column:id"
     ),
     TRANSFORM_COLUMN(
             "type:Data Type:ReadOnly",
             "name:Column Name:String"
     ),
-    COLUMN_FX(
-            /*TODO: replace FunctionProp by Function Properties*/
-            "name:Name:String",
-            "function:Function:Function:Column",
-            "paramMap:Parameters:FunctionProp:function"
-    ),
-    TABLE_FX(
-            /*TODO: replace FunctionProp by Function Properties*/
-            "name:Name:String",
-            "function:Function:Function:Table",
-            "paramMap:Parameters:FunctionProp:function"
-    ),
 
     INPUT_SQL(
+            "type:Type:FileType",
             ".:dataSource:name:DB Connection:DBConnection",
             "name:Filename:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
     ),
     INPUT_MARKDOWN(
+            "type:Type:FileType",
             "dataSource:FTP/SFTP:SFTP",
-            "name:Filename:Upload:md,txt"
+
+            /*TODO: change String of name to Upload. //"name:Filename:Upload:md,txt",*/
+            "name:Filename:String"
     ),
     INPUT_ENVIRONMENT(
+            "type:Type:FileType",
             "name:Environment:System"
     ),
     INPUT_DIRECTORY(
+            "type:Type:FileType",
             "path:Directory:String"
     ),
 
@@ -96,7 +90,9 @@ public enum Properties {
             /*TODO: need complete list for Output properties*/
             "dataSource:FTP/SFTP:SFTP",
             "name:File Name:String",
-            "path:File Path:String"
+            "path:File Path:String",
+            /*TODO: remove all vars below (test data-type)*/
+            ".:propertyMap:columnArray:Columns:ColumnArray:owner:id"
     ),
     OUTPUT_MARKDOWN(
             /*TODO: need complete list for Output properties*/
@@ -115,12 +111,12 @@ public enum Properties {
             ".:propertyMap:quotesOfName:Quotes for Name:String",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             ".:propertyMap:tableName:String",
-            ".:propertyMap:columnList:Columns:ColumnList",
+            ".:propertyMap:columnArray:Columns:ColumnArray:,",
             ".:propertyMap:create:Generate Table Creation Script:Boolean",
             ".:propertyMap:insert:Generate SQL Insert:Boolean",
             ".:propertyMap:update:Generate SQL Update:Boolean",
-            ".:propertyMap:preSQL:Pre-SQL:StringList",
-            ".:propertyMap:postSQL:Post-SQL:StringList"
+            ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
+            ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBINSERT(
             /*TODO: need complete list for Output properties*/
@@ -192,14 +188,14 @@ public enum Properties {
             length = prototypes.length;
             if (prototypes[0].equals(".")) {
                 if (length > 5)
-                    params = Arrays.copyOfRange(prototypes, 5, length - 1);
+                    params = Arrays.copyOfRange(prototypes, 5, length);
                 propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
                 propView.setLabel(prototypes[3]);
                 propView.setVar(prototypes[2]);
                 propView.setVarParent(prototypes[1]);
             } else {
                 if (length > 3)
-                    params = Arrays.copyOfRange(prototypes, 3, length - 1);
+                    params = Arrays.copyOfRange(prototypes, 3, length);
                 propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
                 propView.setLabel(prototypes[1]);
                 propView.setVar(prototypes[0]);

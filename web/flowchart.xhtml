@@ -29,6 +29,7 @@
                 <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
 
                 <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine}"/>
+                <p:remoteCommand name="updateLines" action="#{flowchartCtl.updateLines}"/>
                 <script>$(function () {
                     addLine()
                 });</script>
@@ -79,10 +80,10 @@
 
                                 <td>
                                     <p:panel rendered="#{floor.roomList[2].roomType==RoomType.DATA_TABLE}" header="" styleClass="data-table selectable#{flowchartCtl.active(floor.roomList[2])}">
-                                        <f:facet name="actions">
-                                            <input name="selectableId" type="hidden" value="#{floor.roomList[2].selectableId}"/>
-                                            <p:remoteCommand name="update#{floor.roomList[2].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[2].selectableId}')"/>
+                                        <input name="selectableId" type="hidden" value="#{floor.roomList[2].selectableId}"/>
+                                        <p:remoteCommand name="update#{floor.roomList[2].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[2].selectableId}')"/>
 
+                                        <f:facet name="actions">
                                             <div class="end-plug" id="#{floor.roomList[2].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images"
@@ -97,13 +98,13 @@
 
                                         <p:repeat value="#{floor.roomList[2].columnList}" var="column">
 
-                                            <div class="#{column.type.name().toLowerCase()} column selectable#{flowchartCtl.active(column)}">
+                                            <p:outputPanel styleClass="#{column.type.name().toLowerCase()} column selectable#{flowchartCtl.active(column)}">
                                                 <input name="selectableId" type="hidden" value="#{column.selectableId}"/>
                                                 <p:remoteCommand name="update#{column.selectableId}" update="@parent" oncomplete="register('#{column.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{column.type.image}"/>
                                                 <label>#{column.name}</label>
                                                 <div class="start-plug" id="#{column.startPlug}"></div>
-                                            </div>
+                                            </p:outputPanel>
 
                                         </p:repeat>
 

@@ -17,7 +17,7 @@ public class Local extends DataSource implements Selectable {
     public Local(String name, String rootPath, String plug) {
         setName(name);
         setType(DataSourceType.LOCAL);
-        setImage("Local.png");
+        setImage("local.png");
         setPlug(plug);
         this.rootPath = rootPath;
         pathHistory = new ArrayList<>();
@@ -46,6 +46,16 @@ public class Local extends DataSource implements Selectable {
         if (o == null || getClass() != o.getClass()) return false;
         Local local = (Local) o;
         return Objects.equals(rootPath, local.rootPath);
+    }
+
+    @Override
+    public String getStartPlug() {
+        return plug;
+    }
+
+    @Override
+    public void setStartPlug(String startPlug) {
+        this.plug = startPlug;
     }
 
     @Override

@@ -3,17 +3,26 @@ package com.tflow.model.editor;
 import java.io.Serializable;
 import java.util.Map;
 
-public class ColumnFx implements Serializable, Selectable {
+public class ColumnFx implements Serializable, Selectable, HasEndPlug {
     private static final long serialVersionUID = 2021121709996660042L;
 
-    private DataColumn owner;
-
+    private int id;
     private String name;
     private ColumnFunction function;
     private Map<String, Object> paramMap;
 
     private String endPlug;
     private String startPlug;
+
+    private DataColumn owner;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -39,18 +48,22 @@ public class ColumnFx implements Serializable, Selectable {
         this.paramMap = paramMap;
     }
 
+    @Override
     public String getEndPlug() {
         return endPlug;
     }
 
+    @Override
     public void setEndPlug(String endPlug) {
         this.endPlug = endPlug;
     }
 
+    @Override
     public String getStartPlug() {
         return startPlug;
     }
 
+    @Override
     public void setStartPlug(String startPlug) {
         this.startPlug = startPlug;
     }
@@ -70,6 +83,6 @@ public class ColumnFx implements Serializable, Selectable {
 
     @Override
     public String getSelectableId() {
-        return owner.getSelectableId() + name.replaceAll("[ ]", "");
+        return "cfx" + id;
     }
 }

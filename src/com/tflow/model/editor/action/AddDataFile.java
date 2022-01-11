@@ -24,9 +24,7 @@ public class AddDataFile extends Action {
         setParams(
                 CommandParamKey.DATA_SOURCE,
                 CommandParamKey.DATA_FILE,
-                CommandParamKey.TOWER,
-                CommandParamKey.LINE_LIST,
-                CommandParamKey.PROJECT
+                CommandParamKey.STEP
         );
         setCommands(
                 new com.tflow.model.editor.cmd.AddDataSource(),

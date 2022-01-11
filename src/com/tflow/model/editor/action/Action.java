@@ -1,5 +1,6 @@
 package com.tflow.model.editor.action;
 
+import com.tflow.model.editor.Step;
 import com.tflow.model.editor.cmd.Command;
 import com.tflow.model.editor.cmd.CommandParamKey;
 
@@ -89,48 +90,48 @@ public abstract class Action implements Serializable {
     }
 
     public boolean isCanRedo() {
-        if (commandList == null)
-            initCommandsWrapper();
+        if (commandList == null) initCommandsWrapper();
         return canRedo;
     }
 
     public boolean isCanUndo() {
-        if (commandList == null)
-            initUndoCommandsWrapper();
+        if (commandList == null) initUndoCommandsWrapper();
         return canUndo;
     }
 
     public void execute() throws RequiredParamException, UnsupportedOperationException {
-        if (commandList == null)
-            initCommandsWrapper();
+        if (commandList == null) initCommandsWrapper();
         requiredParam(paramList, paramMap, false);
-        for (Command command : commandList)
-            command.execute(paramMap);
+        for (Command command : commandList) command.execute(paramMap);
 
-        /*TODO: add Action to history*/
+        /*add this Action to history*/
+        @SuppressWarnings("unchecked")
+        List<Action> history = paramMap.containsKey(CommandParamKey.HISTORY) ? ((List<Action>) paramMap.get(CommandParamKey.HISTORY)) : ((Step) paramMap.get(CommandParamKey.STEP)).getHistory();
+        history.add(this);
     }
 
     public void executeUndo() throws RequiredParamException, UnsupportedOperationException {
-        if (commandList == null)
-            initUndoCommandsWrapper();
+        if (commandList == null) initUndoCommandsWrapper();
         requiredParam(undoParamList, paramMap, true);
 
         /*TODO: check allowed to undo or not (last action in the history)*/
 
-        for (Command command : undoCommandList)
-            command.execute(paramMap);
+        for (Command command : undoCommandList) command.execute(paramMap);
 
         /*TODO: remove Action from history (FILO)*/
     }
 
-    private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap, boolean undo) throws RequiredParamException {
+    private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap,
+                               boolean undo) throws RequiredParamException {
         for (CommandParamKey required : paramList) {
             if (!paramMap.containsKey(required)) {
                 throw new RequiredParamException(required, this, undo);
             }
         }
         if (!paramMap.containsKey(CommandParamKey.HISTORY)) {
-            throw new RequiredParamException(CommandParamKey.HISTORY, this, undo);
+            if (!paramMap.containsKey(CommandParamKey.STEP)) {
+                throw new RequiredParamException(CommandParamKey.HISTORY, this, undo);
+            }
         }
     }
 

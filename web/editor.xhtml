@@ -118,20 +118,9 @@
                                     <sup>#{editorCtl.activeObject.getClass().getTypeName()}</sup>
                                     <p:repeat value="#{editorCtl.propertyList}" var="prop">
 
-                                        <span style="font-size:smaller;"><br/>#{prop}<br/></span>
-
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.READONLY==prop.type}">
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8 property-label">#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</div>
-                                        </p:outputPanel>
-
-                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.STRING==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
-                                            <div class="ui-g-8">
-                                                <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
-                                                </p:inputText>
-                                            </div>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.BOOLEAN==prop.type}">
@@ -143,7 +132,25 @@
                                             </div>
                                         </p:outputPanel>
 
-                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.INT.equals(prop.type)}">
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.STRING==prop.type}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8">
+                                                <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
+                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                </p:inputText>
+                                            </div>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.STRINGARRAY==prop.type}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8">
+                                                <p:inputTextarea value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" converter="StringArray" converterParam="#{prop.params[0]}">
+                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                </p:inputTextarea>
+                                            </div>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.INT==prop.type}">
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputNumber value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
@@ -152,18 +159,41 @@
                                             </div>
                                         </p:outputPanel>
 
-                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.DBMS.equals(prop.type)}">
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.COLUMN==prop.type}">
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
                                                     <f:selectItem itemLabel="-- select one --"/>
-                                                    <f:selectItems value="#{editorCtl.getItemList('Dbms')}" var="dbms" itemLabel="#{dbms.label}" itemValue="#{dbms.value}"/>
+                                                    <f:selectItems value="#{editorCtl.getColumnList(editorCtl.activeObject[prop.params[0]])}" var="column" itemLabel="#{column.label}" itemValue="#{column.value}"/>
                                                     <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.COLUMNARRAY==prop.type}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8">
+                                                <p:selectCheckboxMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
+                                                    <f:selectItems value="#{editorCtl.getColumnList((prop.paramCount() > 1)?editorCtl.activeObject[prop.params[0]][prop.params[1]]:editorCtl.activeObject[prop.params[0]])}" var="column" itemLabel="#{column.label}" itemValue="#{column.value}"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                </p:selectCheckboxMenu>
+                                            </div>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g" rendered="#{prop.type.isItemList()}">
+                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-8">
+                                                <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
+                                                    <f:selectItem itemLabel="-- select one --"/>
+                                                    <f:selectItems value="#{editorCtl.getItemList(prop.type,prop.params)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </p:outputPanel>
+
                                     </p:repeat>
                                 </p:scrollPanel>
+                                <script>propertyCreated();</script>
                             </h:form>
                         </p:panel>
                     </p:splitterPanel>

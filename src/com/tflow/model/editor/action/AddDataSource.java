@@ -23,8 +23,7 @@ public class AddDataSource extends Action {
     protected void initCommands() {
         setParams(
                 CommandParamKey.DATA_SOURCE,
-                CommandParamKey.TOWER,
-                CommandParamKey.PROJECT
+                CommandParamKey.STEP
         );
         setCommands(new com.tflow.model.editor.cmd.AddDataSource());
     }

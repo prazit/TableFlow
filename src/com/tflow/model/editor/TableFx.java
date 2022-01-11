@@ -7,6 +7,7 @@ import java.util.Map;
 public class TableFx implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660043L;
 
+    private int id;
     private String name;
     private TableFunction function;
     private Map<String, Object> paramMap;
@@ -18,6 +19,14 @@ public class TableFx implements Serializable, Selectable {
         this.function = function;
         paramMap = new HashMap<>();
         this.owner = owner;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -45,13 +54,22 @@ public class TableFx implements Serializable, Selectable {
     }
 
     @Override
+    public String getStartPlug() {
+        return null;
+    }
+
+    @Override
+    public void setStartPlug(String startPlug) {
+
+    }
+
+    @Override
     public Properties getProperties() {
         return function.getProperties();
     }
 
     @Override
     public String getSelectableId() {
-        if (name == null) return "";
-        return owner.getSelectableId() + name.replaceAll("[ ]", "");
+        return "tfx" + id;
     }
 }

@@ -23,8 +23,6 @@ public class AddDataTable extends Action {
     protected void initCommands() {
         setParams(
                 CommandParamKey.DATA_TABLE,
-                CommandParamKey.TOWER,
-                CommandParamKey.LINE_LIST,
                 CommandParamKey.STEP
         );
         setCommands(new com.tflow.model.editor.cmd.AddDataTable());

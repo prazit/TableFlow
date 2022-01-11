@@ -60,6 +60,10 @@ public class PropertyView {
         this.params = params;
     }
 
+    public int paramCount(){
+        return params.length;
+    }
+
     @Override
     public String toString() {
         return "{" +

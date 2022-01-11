@@ -10,12 +10,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataFile extends Room implements Serializable, Selectable {
+public class DataFile extends Room implements Serializable, Selectable, HasEndPlug {
     private static final long serialVersionUID = 2021121709996660020L;
 
     private Logger log = LoggerFactory.getLogger(DataFile.class);
 
-    private HasDataFile owner;
+    private int id;
     private DataSource dataSource;
     private DataFileType type;
     private String image;
@@ -26,6 +26,8 @@ public class DataFile extends Room implements Serializable, Selectable {
 
     private String endPlug;
     private String startPlug;
+
+    private HasDataFile owner;
 
     public DataFile(DataSource dataSource, DataFileType type, String name, String path, String endPlug, String startPlug) {
         this.dataSource = dataSource;
@@ -45,12 +47,18 @@ public class DataFile extends Room implements Serializable, Selectable {
             String[] params = property.split("[:]");
             if (params[0].equals(".")) {
                 resultMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
-            } else {
-                resultMap.put(params[0], PropertyType.valueOf(params[2].toUpperCase()).getInitial());
             }
         }
         log.warn("initPropertyMap={}", resultMap);
         return resultMap;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public DataSource getDataSource() {
@@ -93,18 +101,22 @@ public class DataFile extends Room implements Serializable, Selectable {
         this.path = path;
     }
 
+    @Override
     public String getEndPlug() {
         return endPlug;
     }
 
+    @Override
     public void setEndPlug(String endPlug) {
         this.endPlug = endPlug;
     }
 
+    @Override
     public String getStartPlug() {
         return startPlug;
     }
 
+    @Override
     public void setStartPlug(String startPlug) {
         this.startPlug = startPlug;
     }
@@ -132,7 +144,6 @@ public class DataFile extends Room implements Serializable, Selectable {
 
     @Override
     public String getSelectableId() {
-        if (name == null) return "";
-        return name.replaceAll("[ .]", "_");
+        return "df" + id;
     }
 }

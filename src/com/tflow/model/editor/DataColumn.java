@@ -5,11 +5,13 @@ import java.io.Serializable;
 public class DataColumn implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660031L;
 
+    private int id;
     protected int index;
     protected DataType type;
     protected String name;
 
     protected String startPlug;
+
     private DataTable owner;
 
     public DataColumn(int index, DataType type, String name, String startPlug, DataTable owner) {
@@ -18,6 +20,14 @@ public class DataColumn implements Serializable, Selectable {
         this.name = name;
         this.startPlug = startPlug;
         this.owner = owner;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getIndex() {
@@ -44,10 +54,12 @@ public class DataColumn implements Serializable, Selectable {
         this.name = name;
     }
 
+    @Override
     public String getStartPlug() {
         return startPlug;
     }
 
+    @Override
     public void setStartPlug(String startPlug) {
         this.startPlug = startPlug;
     }
@@ -59,8 +71,15 @@ public class DataColumn implements Serializable, Selectable {
 
     @Override
     public String getSelectableId() {
-        if (name == null) return "";
-        return owner.getSelectableId() + name.replaceAll("[ ]", "");
+        return "dc" + id;
+    }
+
+    public DataTable getOwner() {
+        return owner;
+    }
+
+    public void setOwner(DataTable owner) {
+        this.owner = owner;
     }
 
     @Override

@@ -12,11 +12,27 @@ function showLines() {
 }
 
 /**
- * @param selectable = jQuery-Element or Selectable-Element ID
+ * @param selectable = jQuery-Element or Selectable-ID
  */
 function register(selectable) {
+
     if (selectable.jquery === undefined) {
+        var isTable = selectable.startsWith('dt');
+        console.log('register(selectableId:' + selectable + ') isTable=' + isTable);
+
+        /*call register only come from update function of selectable object*/
+        updateLines([
+            {name: 'selectableId', value: selectable}
+        ]);
+
+        /*change selectable-id to selectable-object*/
         selectable = $('input[name=selectableId][value=' + selectable + ']').parent();
+
+        if (isTable) {
+            var child = $(selectable).find('.selectable');
+            console.log('has '+ child.length +' child')
+            register(child);
+        }
     }
 
     selectable.on('click', function (ev) {

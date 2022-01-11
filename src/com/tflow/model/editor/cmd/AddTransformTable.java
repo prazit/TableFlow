@@ -20,15 +20,15 @@ public class AddTransformTable extends Command {
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
         TransformTable transformTable = (TransformTable) paramMap.get(CommandParamKey.TRANSFORM_TABLE);
-        Tower tower = (Tower) paramMap.get(CommandParamKey.TOWER);
-        List<Line> lineList = (List<Line>) paramMap.get(CommandParamKey.LINE_LIST);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
+        Tower tower = step.getTransformTower();
         Project project = step.getOwner();
+
+        transformTable.setId(project.newUniqueId());
 
         DataTable sourceTable;
         SourceType sourceType = transformTable.getSourceType();
         int sourceId = transformTable.getSourceId();
-        String sourcePlug;
         List<DataColumn> sourceColumnList;
         Room sourceRoom;
         switch (sourceType) {
@@ -44,7 +44,6 @@ public class AddTransformTable extends Command {
                 throw new UnsupportedOperationException("Unsupported source type " + sourceType + "(Id:" + sourceId + ") used by Transform Table(\" + transformTable.getName() + \")");
         }
         sourceRoom = (Room) sourceTable;
-        sourcePlug = sourceTable.getStartPlug();
         sourceColumnList = sourceTable.getColumnList();
 
         /*copy column from source-table*/
@@ -60,7 +59,7 @@ public class AddTransformTable extends Command {
         if (floor == null) {
             /*case:Tower need more floor.*/
             for (int fi = tower.getFloorList().size(); fi <= floorIndex; fi++) {
-                floor = tower.getAvailableFloor(-1,true);
+                floor = tower.getAvailableFloor(-1, true);
             }
         } else if (!floor.isEmpty()) {
             if (floor.getRoomList().get(1).equals(sourceRoom)) {
@@ -69,14 +68,17 @@ public class AddTransformTable extends Command {
                 roomIndex += 2;
             } else {
                 /*case: floor already used by another table then add new floor to the next*/
-                floor = tower.getAvailableFloor(-1,true, ++floorIndex);
+                floor = tower.getAvailableFloor(-1, true, ++floorIndex);
             }
         }
         assert floor != null;
         floor.setRoom(roomIndex, transformTable);
 
+        step.getSelectableMap().put(transformTable.getSelectableId(), transformTable);
+
         /*link from SourceTable to TransformTable*/
-        lineList.add(new Line(sourcePlug, transformTable.getEndPlug(), LineType.TABLE));
+        step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
+
     }
 
 }

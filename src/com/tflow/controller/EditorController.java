@@ -3,10 +3,7 @@ package com.tflow.controller;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
-import com.tflow.model.editor.datasource.Dbms;
-import com.tflow.model.editor.datasource.Database;
-import com.tflow.model.editor.datasource.Local;
-import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
@@ -35,7 +32,6 @@ public class EditorController extends Controller {
     private MenuModel stepMenu;
     private Double zoom;
 
-    private Map<String, Selectable> selectableMap;
     private List<PropertyView> propertyList;
     private Selectable activeObject;
 
@@ -62,51 +58,6 @@ public class EditorController extends Controller {
         }
 
         selectStep(project.getActiveStepIndex(), false);
-    }
-
-    private void collectSelectableToMap() {
-        Step step = workspace.getProject().getActiveStep();
-
-        List<Selectable> selectableList = step.getDataTower().getSelectableList();
-        Selectable activeObject = step.getActiveObject();
-        if (activeObject == null && selectableList.size() > 0) {
-            activeObject = selectableList.get(0);
-            step.setActiveObject(activeObject);
-        }
-
-        selectableMap = new HashMap<>();
-        collectSelectableTo(selectableMap, selectableList);
-
-        selectableList = step.getTransformTower().getSelectableList();
-        collectSelectableTo(selectableMap, selectableList);
-
-        selectableList = step.getOutputTower().getSelectableList();
-        collectSelectableTo(selectableMap, selectableList);
-    }
-
-    private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
-        for (Selectable selectable : selectableList) {
-            map.put(selectable.getSelectableId(), selectable);
-            if (selectable instanceof DataTable) {
-                DataTable dt = (DataTable) selectable;
-
-                for (DataColumn column : dt.getColumnList()) {
-                    map.put(column.getSelectableId(), column);
-                }
-
-                for (DataFile output : dt.getOutputList()) {
-                    map.put(output.getSelectableId(), output);
-                }
-
-                if (selectable instanceof TransformTable) {
-                    TransformTable tt = (TransformTable) selectable;
-                    for (TableFx fx : tt.getFxList()) {
-                        map.put(fx.getSelectableId(), fx);
-                    }
-                }
-
-            }
-        }
     }
 
     public String getProjectName() {
@@ -155,13 +106,85 @@ public class EditorController extends Controller {
         log.warn(msg);
     }
 
-    public List<SelectItem> getItemList(String className) throws ClassNotFoundException {
+    public List<SelectItem> getItemList(PropertyType type, String[] params) throws ClassNotFoundException {
         List<SelectItem> selectItemList = new ArrayList<>();
 
-        if (className.equals("Dbms")) {
-            for (Dbms value : Dbms.values()) {
-                selectItemList.add(new SelectItem(value, value.name()));
-            }
+        switch (type) {
+            case DBMS:
+                for (Dbms value : Dbms.values()) {
+                    selectItemList.add(new SelectItem(value, value.name()));
+                }
+                break;
+
+            case DATASOURCETYPE:
+                for (DataSourceType value : DataSourceType.values()) {
+                    selectItemList.add(new SelectItem(value, value.name()));
+                }
+                break;
+
+            case FILETYPE:
+                for (DataFileType value : DataFileType.values()) {
+                    selectItemList.add(new SelectItem(value, value.name()));
+                }
+                break;
+
+            case COLUMNFUNCTION:
+                for (ColumnFunction value : ColumnFunction.values()) {
+                    selectItemList.add(new SelectItem(value, value.name()));
+                }
+                break;
+
+            case TABLEFUNCTION:
+                for (TableFunction value : TableFunction.values()) {
+                    selectItemList.add(new SelectItem(value, value.name()));
+                }
+                break;
+
+            case DBCONNECTION:
+                Database database;
+                for (Map.Entry<Integer, Database> entry : workspace.getProject().getDatabaseMap().entrySet()) {
+                    database = entry.getValue();
+                    selectItemList.add(new SelectItem(entry.getKey(), database.getName()));
+                }
+                break;
+
+            case DBTABLE:
+                for (DataTable dataTable : workspace.getProject().getActiveStep().getDataList()) {
+                    selectItemList.add(new SelectItem(dataTable.getId(), dataTable.getName()));
+                }
+                break;
+
+            case SFTP:
+                SFTP sftp;
+                for (Map.Entry<Integer, SFTP> entry : workspace.getProject().getSftpMap().entrySet()) {
+                    sftp = entry.getValue();
+                    selectItemList.add(new SelectItem(entry.getKey(), sftp.getName()));
+                }
+                break;
+
+            default:
+                log.error("Unknown type({}) to generate item-list", type);
+                return selectItemList;
+        }
+
+        return selectItemList;
+    }
+
+    public List<SelectItem> getColumnList(int dataTableId) {
+        List<SelectItem> selectItemList = new ArrayList<>();
+
+        Step activeStep = workspace.getProject().getActiveStep();
+        DataTable dataTable = activeStep.getDataTable(dataTableId);
+        if (dataTable == null) {
+            dataTable = activeStep.getTransformTable(dataTableId);
+        }
+        if (dataTable == null) {
+            log.error("DataTable-ID({}) not found in this step({}:{}), no columns returned by getColumnList", dataTableId, activeStep.getIndex(), activeStep.getName());
+            return selectItemList;
+        }
+
+        for (DataColumn dataColumn : dataTable.getColumnList()) {
+            selectItemList.add(new SelectItem(dataColumn.getName(), dataColumn.getName()));
         }
 
         return selectItemList;
@@ -257,8 +280,6 @@ public class EditorController extends Controller {
         Step activeStep = project.getActiveStep();
         zoom = activeStep.getZoom();
 
-        collectSelectableToMap();
-
         Selectable activeObject = activeStep.getActiveObject();
         if (activeObject == null) {
             selectObject(null);
@@ -286,9 +307,7 @@ public class EditorController extends Controller {
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, database);
-        paramMap.put(CommandParamKey.TOWER, step.getDataTower());
-        paramMap.put(CommandParamKey.PROJECT, project);
-        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
+        paramMap.put(CommandParamKey.STEP, step);
 
         try {
             new AddDataSource(paramMap).execute();
@@ -298,9 +317,7 @@ public class EditorController extends Controller {
             return;
         }
 
-        String selectableId = database.getSelectableId();
-        selectableMap.put(selectableId, database);
-        selectObject(selectableId);
+        selectObject(database.getSelectableId());
 
         FacesUtil.addInfo("Database[" + database.getName() + "] added.");
         FacesUtil.runClientScript("refershFlowChart();");
@@ -314,9 +331,7 @@ public class EditorController extends Controller {
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, sftp);
-        paramMap.put(CommandParamKey.TOWER, step.getDataTower());
-        paramMap.put(CommandParamKey.PROJECT, project);
-        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
+        paramMap.put(CommandParamKey.STEP, step);
 
         try {
             new AddDataSource(paramMap).execute();
@@ -326,9 +341,7 @@ public class EditorController extends Controller {
             return;
         }
 
-        String selectableId = sftp.getSelectableId();
-        selectableMap.put(selectableId, sftp);
-        selectObject(selectableId);
+        selectObject(sftp.getSelectableId());
 
         FacesUtil.addInfo("SFTP[" + sftp.getName() + "] added.");
         FacesUtil.runClientScript("refershFlowChart();");
@@ -344,10 +357,7 @@ public class EditorController extends Controller {
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, local);
         paramMap.put(CommandParamKey.DATA_FILE, dataFile);
-        paramMap.put(CommandParamKey.LINE_LIST, step.getLineList());
-        paramMap.put(CommandParamKey.TOWER, step.getDataTower());
-        paramMap.put(CommandParamKey.PROJECT, project);
-        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
+        paramMap.put(CommandParamKey.STEP, step);
 
         try {
             new AddDataFile(paramMap).execute();
@@ -357,32 +367,18 @@ public class EditorController extends Controller {
             return;
         }
 
-        String selectableId = dataFile.getSelectableId();
-        selectableMap.put(local.getSelectableId(), local);
-        selectableMap.put(selectableId, dataFile);
-        selectObject(selectableId);
+        selectObject(dataFile.getSelectableId());
 
-        FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
-        FacesUtil.runClientScript("refershFlowChart();");
+        /*FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
+        FacesUtil.runClientScript("refershFlowChart();");*/
+        addDataTable(dataFile);
     }
 
-    private DataTable getSQLDataTable(Project project) {
+    private DataTable getDataTable(Project project, DataFile dataFile) {
         /*create DataSource, Data File, DataTable (Commmand: AddDataTable)*/
-        Map<Integer, Database> databaseMap = project.getDatabaseMap();
-        Database database = databaseMap.get(databaseMap.keySet().toArray()[0]);
-
-        DataFile dataFile = new DataFile(
-                database,
-                DataFileType.IN_SQL,
-                "DataFile.sql",
-                "data/",
-                project.newElementId(),
-                project.newElementId()
-        );
 
         DataTable dataTable = new DataTable(
-                project.newUniqueId(),
-                "Mockup Data Table",
+                "Untitled Data Table",
                 dataFile,
                 "",
                 "String",
@@ -398,15 +394,6 @@ public class EditorController extends Controller {
         columnList.add(new DataColumn(4, DataType.DATE, "Date", project.newElementId(), dataTable));
 
         /*TODO: split code below to the Action AddDataOutput*/
-        DataFile outputSQLFile = new DataFile(
-                database,
-                DataFileType.OUT_DBINSERT,
-                "accmas",
-                "account.",
-                project.newElementId(),
-                project.newElementId()
-        );
-
         Local myComputer = new Local("MyComputer", "C:/myData/", project.newElementId());
         DataFile outputCSVFile = new DataFile(
                 myComputer,
@@ -417,10 +404,7 @@ public class EditorController extends Controller {
                 project.newElementId()
         );
 
-        Local local = new Local("My Server", "/output/", project.newElementId());
-
         List<DataFile> outputList = dataTable.getOutputList();
-        outputList.add(outputSQLFile);
         outputList.add(outputCSVFile);
 
         return dataTable;
@@ -429,21 +413,18 @@ public class EditorController extends Controller {
     /**
      * Create mockup data in activeStep and refresh the flowchart.
      */
-    public void addDataTable() {
+    public void addDataTable(DataFile dataFile) {
         /*TODO: need to show parameters dialog and remove Mockup-Data below*/
 
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        DataTable dataTable = getSQLDataTable(project);
+        DataTable dataTable = getDataTable(project, dataFile);
         /* TODO: need more data-cases for DataTable (local-file, sftp-file) */
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
-        paramMap.put(CommandParamKey.TOWER, step.getDataTower());
-        paramMap.put(CommandParamKey.LINE_LIST, step.getLineList());
         paramMap.put(CommandParamKey.STEP, step);
-        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
 
         try {
             new AddDataTable(paramMap).execute();
@@ -453,7 +434,6 @@ public class EditorController extends Controller {
             return;
         }
 
-        collectSelectableToMap();
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
@@ -465,7 +445,6 @@ public class EditorController extends Controller {
 
         DataTable sourceTable = step.getDataList().get(0);
         TransformTable transformTable = new TransformTable(
-                project.newUniqueId(),
                 "Transformation Table",
                 sourceTable.getId(),
                 SourceType.DATA_TABLE,
@@ -478,10 +457,7 @@ public class EditorController extends Controller {
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
-        paramMap.put(CommandParamKey.TOWER, step.getTransformTower());
-        paramMap.put(CommandParamKey.LINE_LIST, step.getLineList());
         paramMap.put(CommandParamKey.STEP, step);
-        paramMap.put(CommandParamKey.HISTORY, step.getHistory());
 
         try {
             new AddTransformTable(paramMap).execute();
@@ -491,7 +467,6 @@ public class EditorController extends Controller {
             return;
         }
 
-        collectSelectableToMap();
         FacesUtil.runClientScript("refershFlowChart();");
     }
 
@@ -510,14 +485,15 @@ public class EditorController extends Controller {
             return;
         }
 
-        Selectable activeObject = selectableMap.get(selectableId);
+        Step activeStep = workspace.getProject().getActiveStep();
+        Selectable activeObject = activeStep.getSelectableMap().get(selectableId);
         if (activeObject == null) {
             log.error("selectableMap not contains selectableId={}", selectableId);
             /*throw new IllegalStateException("selectableMap not contains selectableId=" + selectableId);*/
             return;
         }
 
-        workspace.getProject().getActiveStep().setActiveObject(activeObject);
+        activeStep.setActiveObject(activeObject);
         setPropertySheet(activeObject);
     }
 

@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataTable extends Room implements Serializable, Selectable, HasDataFile {
+public class DataTable extends Room implements Serializable, Selectable, HasDataFile, HasEndPlug {
     private static final long serialVersionUID = 2021121709996660030L;
 
     private int id;
@@ -25,8 +25,7 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     private String endPlug;
     private String startPlug;
 
-    public DataTable(int id, String name, DataFile dataFile, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
-        this.id = id;
+    public DataTable(String name, DataFile dataFile, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
         this.name = name;
         this.index = -1;
         this.dataFile = dataFile;
@@ -120,18 +119,22 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.noTransform = noTransform;
     }
 
+    @Override
     public String getEndPlug() {
         return endPlug;
     }
 
+    @Override
     public void setEndPlug(String endPlug) {
         this.endPlug = endPlug;
     }
 
+    @Override
     public String getStartPlug() {
         return startPlug;
     }
 
+    @Override
     public void setStartPlug(String startPlug) {
         this.startPlug = startPlug;
     }

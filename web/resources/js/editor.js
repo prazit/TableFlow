@@ -102,6 +102,11 @@ function scrollToActive(active) {
 
 function updateEm(selectable) {
     contentWindow['update' + selectable]();
+    console.log('calling update' + selectable + '()');
+}
+
+function propertyCreated() {
+    /* init all behaviors of all input boxes such as auto-select-text */
 }
 
 $(function () {

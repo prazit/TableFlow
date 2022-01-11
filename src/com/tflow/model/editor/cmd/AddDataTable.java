@@ -14,45 +14,82 @@ import java.util.Map;
  */
 public class AddDataTable extends Command {
 
-
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {
         DataTable dataTable = (DataTable) paramMap.get(CommandParamKey.DATA_TABLE);
-        Tower tower = (Tower) paramMap.get(CommandParamKey.TOWER);
-        List<Line> lineList = (List<Line>) paramMap.get(CommandParamKey.LINE_LIST);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
 
-        DataFile dataFile = dataTable.getDataFile();
-        DataSource dataSource = dataFile.getDataSource();
+        dataTable.setId(step.getOwner().newUniqueId());
+        assignChildId(dataTable, step.getOwner());
 
-        /*check Room1 on every floor to find duplicated DataSource, mark for suppress and redirect line to the existing DataSource*/
-        List<Room> room0List = tower.getStack(0);
-        DataSource foundDataSource = null;
-        String dataSourcePlug = dataSource.getPlug();
-        for (Room room0 : room0List) {
-            if (room0 instanceof DataSource) {
-                DataSource dataSource0 = (DataSource) room0;
-                if (dataSource0.equals(dataSource)) {
-                    foundDataSource = dataSource0;
-                    dataSourcePlug = dataSource0.getPlug();
-                }
-            }
-        }
+        Tower tower = step.getDataTower();
 
-        Floor floor = tower.getAvailableFloor(-1, false);
-        if (foundDataSource == null) {
-            floor.setRoom(0, dataSource);
-        }
-        floor.setRoom(1, dataFile);
+        Floor floor = tower.getAvailableFloor(2, false);
         floor.setRoom(2, dataTable);
 
-        lineList.add(new Line(dataSourcePlug, dataFile.getEndPlug(), LineType.TABLE));
-        lineList.add(new Line(dataFile.getStartPlug(), dataTable.getEndPlug(), LineType.TABLE));
+        updateSelectableMap(step.getSelectableMap(), dataTable);
+
+        DataFile dataFile = dataTable.getDataFile();
+        step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
 
         /*Add to DataTable List*/
         List<DataTable> dataList = step.getDataList();
         dataTable.setIndex(dataList.size());
         dataList.add(dataTable);
+
+    }
+
+    /**
+     * Mockup Data and Template only.
+     */
+    private void assignChildId(DataTable dataTable, Project project) {
+
+        for (DataColumn column : dataTable.getColumnList()) {
+            column.setId(project.newUniqueId());
+        }
+
+        for (DataFile output : dataTable.getOutputList()) {
+            output.setId(project.newUniqueId());
+        }
+
+        if (!(dataTable instanceof TransformTable)) return;
+
+        TransformTable transformTable = (TransformTable) dataTable;
+
+        for (DataColumn column : dataTable.getColumnList()) {
+            ColumnFx fx = ((TransformColumn) column).getFx();
+            if (fx != null) fx.setId(project.newUniqueId());
+        }
+
+        for (TableFx tableFx : transformTable.getFxList()) {
+            tableFx.setId(project.newUniqueId());
+        }
+
+    }
+
+    private void updateSelectableMap(Map<String, Selectable> selectableMap, DataTable dataTable) {
+        selectableMap.put(dataTable.getSelectableId(), dataTable);
+
+        for (DataColumn column : dataTable.getColumnList()) {
+            selectableMap.put(column.getSelectableId(), column);
+        }
+
+        for (DataFile output : dataTable.getOutputList()) {
+            selectableMap.put(output.getSelectableId(), output);
+        }
+
+        if (dataTable instanceof TransformTable) {
+            TransformTable tt = (TransformTable) dataTable;
+
+            for (DataColumn column : tt.getColumnList()) {
+                ColumnFx fx = ((TransformColumn) column).getFx();
+                if (fx != null) selectableMap.put(column.getSelectableId(), fx);
+            }
+
+            for (TableFx fx : tt.getFxList()) {
+                selectableMap.put(fx.getSelectableId(), fx);
+            }
+        }
     }
 
 }

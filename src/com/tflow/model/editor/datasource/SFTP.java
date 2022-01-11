@@ -98,6 +98,16 @@ public class SFTP extends DataSource implements Selectable {
     }
 
     @Override
+    public String getStartPlug() {
+        return plug;
+    }
+
+    @Override
+    public void setStartPlug(String startPlug) {
+        this.plug = startPlug;
+    }
+
+    @Override
     public Properties getProperties() {
         return Properties.SFTP;
     }

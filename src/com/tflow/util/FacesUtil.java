@@ -12,24 +12,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
+import java.util.Map;
 
 public class FacesUtil implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(FacesUtil.class);
 
     public static void addInfo(String message) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"[INFO]",message));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "[INFO]", message));
     }
 
     public static void addInfo(String clientId, String message) {
-        FacesContext.getCurrentInstance().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_INFO,"[INFO]",message));
+        FacesContext.getCurrentInstance().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_INFO, "[INFO]", message));
     }
 
     public static void addError(String message) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"[ERROR]",message));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "[ERROR]", message));
     }
 
     public static void addError(String clientId, String message) {
-        FacesContext.getCurrentInstance().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_ERROR,"[ERROR]",message));
+        FacesContext.getCurrentInstance().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "[ERROR]", message));
     }
 
     public static void actionSuccess() {
@@ -73,7 +74,8 @@ public class FacesUtil implements Serializable {
     }
 
     public static String getRequestParam(String param) {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(param);
+        Map<String, String> requestParameterMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        return requestParameterMap.get(param);
     }
 
     public static void runClientScript(String javaScript) {

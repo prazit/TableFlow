@@ -15,14 +15,15 @@ import java.util.Map;
 public class AddDataSource extends Command {
 
     public void execute(Map<CommandParamKey, Object> paramMap) {
-        Project project = (Project) paramMap.get(CommandParamKey.PROJECT);
         DataSource dataSource = (DataSource) paramMap.get(CommandParamKey.DATA_SOURCE);
-        Tower tower = (Tower) paramMap.get(CommandParamKey.TOWER);
+        Step step = (Step) paramMap.get(CommandParamKey.STEP);
+        Tower tower = step.getDataTower();
+        Project project = step.getOwner();
 
         int id = project.newUniqueId();
         dataSource.setId(id);
 
-        Floor floor = tower.getAvailableFloor(0,false);
+        Floor floor = tower.getAvailableFloor(0, false);
         floor.setRoom(0, dataSource);
 
         switch (dataSource.getType()) {
@@ -38,6 +39,9 @@ public class AddDataSource extends Command {
                 /*nothing to do for local*/
                 break;
         }
+
+        Selectable selectable = (Selectable) dataSource;
+        step.getSelectableMap().put(selectable.getSelectableId(), selectable);
     }
 
 }

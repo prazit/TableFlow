@@ -3,6 +3,7 @@ package com.tflow.controller;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.util.FacesUtil;
+import org.jboss.weld.manager.Transform;
 
 import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
@@ -37,11 +38,6 @@ public class FlowchartController extends Controller {
 
     /*== Public Methods ==*/
 
-    public void updateElement() {
-        /*nothing to do here*/
-        log.warn("updateElement.");
-    }
-
     /**
      * Get active class for css.
      *
@@ -52,38 +48,94 @@ public class FlowchartController extends Controller {
         return (activeObject != null && selectable.getSelectableId().compareTo(activeObject.getSelectableId()) == 0) ? " active" : "";
     }
 
+    /**
+     * Draw lines on the client when page loaded.
+     * Or add new line from the client.
+     */
     public void addLine() {
+        Line newLine = getRequestedLine();
+        StringBuilder jsBuilder = new StringBuilder();
 
-        Line singleLine = getRequestedLine();
-
-        List<Line> lineList = step.getLineList();
-        int index = 0;
-        if (singleLine != null) {
-            lineList.add(singleLine);
-            index = lineList.size();
+        if (newLine == null) {
+            for (Line line : step.getLineList()) {
+                jsBuilder.append(line.getJsAdd());
+            }
+        } else {
+            step.addLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
+            jsBuilder.append(newLine.getJsAdd());
         }
 
-        StringBuilder builder = new StringBuilder();
-        for (Line line : lineList) {
-            builder.append(String.format("lines[%d] = new LeaderLine(document.getElementById('%s'), document.getElementById('%s'), %s);",
-                    index++,
-                    line.getStartPlug(),
-                    line.getEndPlug(),
-                    line.getType().getJsVar()
-            ));
-        }
-
-        String javaScript = "$(function(){" + builder.toString() + ";startup();});";
+        String javaScript = "$(function(){" + jsBuilder.toString() + ";startup();});";
         FacesUtil.runClientScript(javaScript);
     }
 
     private Line getRequestedLine() {
-        String startPlug = FacesUtil.getRequestParam("startPlug");
-        if (startPlug == null) return null;
+        String startSelectableId = FacesUtil.getRequestParam("startSelectableId");
+        if (startSelectableId == null) return null;
 
-        String endPlug = FacesUtil.getRequestParam("endPlug");
-        String lineType = FacesUtil.getRequestParam("lineType");
-        return new Line(startPlug, endPlug, LineType.valueOf(lineType.toUpperCase()));
+        String endSelectableId = FacesUtil.getRequestParam("endSelectableId");
+        return new Line(startSelectableId, endSelectableId);
+    }
+
+    /**
+     * register selectable object from the client to
+     * update all the lines that connected to this selectable object.
+     */
+    public void updateLines() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+
+        StringBuilder jsBuilder = new StringBuilder();
+        updateLines(jsBuilder, selectable);
+
+        /*in case of DataTable need to redraw lines of all columns and outputs*/
+        if (selectable instanceof DataTable) {
+            DataTable dataTable = (DataTable) selectable;
+            for (DataColumn column : dataTable.getColumnList()) {
+                updateLines(jsBuilder, column);
+            }
+            for (DataFile output : dataTable.getOutputList()) {
+                updateLines(jsBuilder, output);
+            }
+
+        }
+
+        /*in case of TransformTable need to redraw lines of all columnFX and tableFX*/
+        if (selectable instanceof TransformTable) {
+            TransformTable transformTable = (TransformTable) selectable;
+            for (DataColumn column : transformTable.getColumnList()) {
+                ColumnFx fx = ((TransformColumn) column).getFx();
+                if (fx != null) updateLines(jsBuilder, fx);
+            }
+            for (TableFx tableFx : transformTable.getFxList()) {
+                updateLines(jsBuilder, tableFx);
+            }
+        }
+
+        String javaScript = "$(function(){" + jsBuilder.toString() + ";window.parent.zoomEnd();console.log('register to the server is successful.');});";
+        FacesUtil.runClientScript(javaScript);
+    }
+
+    private void updateLines(StringBuilder jsBuilder, Selectable selectable) {
+        if (selectable.getStartPlug() != null) {
+            List<Line> lineList = step.getLineByStart(selectable.getSelectableId());
+            for (Line line : lineList) {
+                /*remove old lines that start by this object*/
+                jsBuilder.append(line.getJsRemove());
+                /*add new one and put it back to the same position*/
+                jsBuilder.append(line.getJsAdd());
+            }
+        }
+
+        if (selectable instanceof HasEndPlug) {
+            List<Line> lineList = step.getLineByEnd(selectable.getSelectableId());
+            for (Line line : lineList) {
+                /*remove old lines that start by this object*/
+                jsBuilder.append(line.getJsRemove());
+                /*add new one and put it back to the same position*/
+                jsBuilder.append(line.getJsAdd());
+            }
+        }
     }
 
 }

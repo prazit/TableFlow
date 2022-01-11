@@ -10,37 +10,47 @@ public enum PropertyType {
     READONLY(""),
     BOOLEAN(Boolean.FALSE),
     STRING(""),
+    STRINGARRAY(new ArrayList<String>()),
     INT(0),
 
-    DBMS(Dbms.ORACLE),
-    DATASOURCETYPE(DataSourceType.LOCAL),
-    FILETYPE(DataFileType.IN_MD),
-    FUNCTION(ColumnFunction.LOOKUP),
+    DBMS(Dbms.ORACLE,true),
+    DATASOURCETYPE(DataSourceType.LOCAL,true),
+    FILETYPE(DataFileType.IN_MD,true),
+    COLUMNFUNCTION(ColumnFunction.LOOKUP,true),
+    TABLEFUNCTION(TableFunction.SORT,true),
+    SYSTEM("",true),
 
-    DBCONNECTION(/*data-base-id*/0),
-    DBTABLE(/*table-name*/""),
+    DBCONNECTION(/*data-base-id*/0,true),
+    DBTABLE(/*table-name*/"",true),
 
-    COLUMN(/*column-id*/0),
-    SFTP(/*sftp-id*/0),
-    /*CHILD() //TODO: may be need to remove CHILD and put all property of CHILD directly,*/
+    COLUMN(/*column-id(name)*/0),
+    SFTP(/*sftp-id*/0,true),
 
-    STRINGLIST(new ArrayList<String>()),
-    COLUMNLIST(/*column-ids*/new ArrayList<Integer>()),
+    COLUMNARRAY(/*column-ids(names)*/new ArrayList<Integer>()),
 
     UPLOAD(""),
     FTPFILE(""),
-
-    /*FUNCTIONPROP() //TODO: similar to CHILD above,*/
-    /*FILEPROP(), //TODO: similar to CHILD above*/;
+    ;
 
     private Object initial;
+    boolean isItemList;
 
     PropertyType(Object initial) {
         this.initial = initial;
+        this.isItemList = false;
+    }
+
+    PropertyType(Object initial, boolean isItemList) {
+        this.initial = initial;
+        this.isItemList = isItemList;
     }
 
     public Object getInitial() {
         return initial;
+    }
+
+    public boolean isItemList() {
+        return isItemList;
     }
 
     public boolean equals(String type) {
