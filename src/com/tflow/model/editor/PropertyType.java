@@ -7,24 +7,26 @@ import java.util.ArrayList;
 
 public enum PropertyType {
 
+    EXPRESSION(""),
+
     READONLY(""),
     BOOLEAN(Boolean.FALSE),
     STRING(""),
     STRINGARRAY(new ArrayList<String>()),
     INT(0),
 
-    DBMS(Dbms.ORACLE,true),
-    DATASOURCETYPE(DataSourceType.LOCAL,true),
-    FILETYPE(DataFileType.IN_MD,true),
-    COLUMNFUNCTION(ColumnFunction.LOOKUP,true),
-    TABLEFUNCTION(TableFunction.SORT,true),
-    SYSTEM("",true),
+    DBMS(Dbms.ORACLE, true),
+    DATASOURCETYPE(DataSourceType.LOCAL, true),
+    FILETYPE(DataFileType.IN_MD, true),
+    COLUMNFUNCTION(ColumnFunction.LOOKUP, true),
+    TABLEFUNCTION(TableFunction.SORT, true),
+    SYSTEM("", true),
 
-    DBCONNECTION(/*data-base-id*/0,true),
-    DBTABLE(/*table-name*/"",true),
+    DBCONNECTION(/*data-base-id*/0, true),
+    DBTABLE(/*table-name*/"", true),
 
     COLUMN(/*column-id(name)*/0),
-    SFTP(/*sftp-id*/0,true),
+    SFTP(/*sftp-id*/0, true),
 
     COLUMNARRAY(/*column-ids(names)*/new ArrayList<Integer>()),
 

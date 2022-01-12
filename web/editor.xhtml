@@ -111,7 +111,7 @@
                                 <p:commandButton id="rightToggle" type="button" styleClass="right-panel-toggle close" icon="pi pi-times"/>
                             </f:facet>
 
-                            <h:form id="propertyForm">
+                            <h:form id="propertyForm" style="height:100%;">
                                 <p:scrollPanel styleClass="properties" style="height:100%;">
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
                                     <h3>#{editorCtl.activeObject.properties}</h3>
@@ -127,7 +127,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputSwitch value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this" update="#{prop.update}"/>
                                                 </p:inputSwitch>
                                             </div>
                                         </p:outputPanel>
@@ -136,7 +136,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this" update="#{prop.update}"/>
                                                 </p:inputText>
                                             </div>
                                         </p:outputPanel>
@@ -145,7 +145,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputTextarea value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" converter="StringArray" converterParam="#{prop.params[0]}">
-                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this" update="#{prop.update}"/>
                                                 </p:inputTextarea>
                                             </div>
                                         </p:outputPanel>
@@ -154,7 +154,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputNumber value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this" update="#{prop.update}"/>
                                                 </p:inputNumber>
                                             </div>
                                         </p:outputPanel>
@@ -165,7 +165,7 @@
                                                 <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
                                                     <f:selectItem itemLabel="-- select one --"/>
                                                     <f:selectItems value="#{editorCtl.getColumnList(editorCtl.activeObject[prop.params[0]])}" var="column" itemLabel="#{column.label}" itemValue="#{column.value}"/>
-                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this" update="#{prop.update}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </p:outputPanel>
@@ -175,7 +175,7 @@
                                             <div class="ui-g-8">
                                                 <p:selectCheckboxMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
                                                     <f:selectItems value="#{editorCtl.getColumnList((prop.paramCount() > 1)?editorCtl.activeObject[prop.params[0]][prop.params[1]]:editorCtl.activeObject[prop.params[0]])}" var="column" itemLabel="#{column.label}" itemValue="#{column.value}"/>
-                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                 </p:selectCheckboxMenu>
                                             </div>
                                         </p:outputPanel>
@@ -186,7 +186,7 @@
                                                 <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
                                                     <f:selectItem itemLabel="-- select one --"/>
                                                     <f:selectItems value="#{editorCtl.getItemList(prop.type,prop.params)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
-                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}')" process="@this"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </p:outputPanel>

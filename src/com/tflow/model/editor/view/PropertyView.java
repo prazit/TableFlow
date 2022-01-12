@@ -16,6 +16,14 @@ public class PropertyView {
 
     private String[] params;
 
+    private String update;
+    private String javaScript;
+
+    public PropertyView() {
+        update = "@this";
+        javaScript = "";
+    }
+
     public boolean hasParent() {
         return varParent != null;
     }
@@ -60,8 +68,24 @@ public class PropertyView {
         this.params = params;
     }
 
-    public int paramCount(){
+    public int paramCount() {
         return params.length;
+    }
+
+    public String getUpdate() {
+        return update;
+    }
+
+    public void setUpdate(String update) {
+        this.update = update;
+    }
+
+    public String getJavaScript() {
+        return javaScript;
+    }
+
+    public void setJavaScript(String javaScript) {
+        this.javaScript = javaScript;
     }
 
     @Override

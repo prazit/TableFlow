@@ -35,22 +35,21 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
         this.name = name;
         this.path = path;
         this.image = type.getImage();
-        this.propertyMap = initPropertyMap(type);
+        this.propertyMap = new HashMap<>();
+        initPropertyMap();
         this.endPlug = endPlug;
         this.startPlug = startPlug;
         this.setRoomType(RoomType.DATA_FILE);
     }
 
-    private Map<String, Object> initPropertyMap(DataFileType type) {
-        Map<String, Object> resultMap = new HashMap<>();
+    private void initPropertyMap() {
         for (String property : type.getProperties().getPrototypeList()) {
             String[] params = property.split("[:]");
             if (params[0].equals(".")) {
-                resultMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
+                if (!propertyMap.containsKey(params[1]))
+                    propertyMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
             }
         }
-        log.warn("initPropertyMap={}", resultMap);
-        return resultMap;
     }
 
     public int getId() {
@@ -75,6 +74,7 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
 
     public void setType(DataFileType type) {
         this.type = type;
+        initPropertyMap();
     }
 
     public String getImage() {

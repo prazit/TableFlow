@@ -16,7 +16,8 @@ import java.util.List;
  * </p>
  */
 public enum Properties {
-    /*TODO= how to use DynamicExpression within filename, may be need specific type = Expression(String)*/
+    /*TODO= how to update/redraw property sheet*/
+    /*TODO= how to specify some actions/events*/
 
     DATA_BASE(
             "name:Name:String",
@@ -58,25 +59,25 @@ public enum Properties {
     ),
 
     INPUT_SQL(
-            "type:Type:FileType",
+            "type:Type:FileType:refreshProperties();",
             ".:dataSource:name:DB Connection:DBConnection",
             "name:Filename:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
     ),
     INPUT_MARKDOWN(
-            "type:Type:FileType",
+            "type:Type:FileType:refreshProperties();",
             "dataSource:FTP/SFTP:SFTP",
 
             /*TODO: change String of name to Upload. //"name:Filename:Upload:md,txt",*/
             "name:Filename:String"
     ),
     INPUT_ENVIRONMENT(
-            "type:Type:FileType",
+            "type:Type:FileType:refreshProperties();",
             "name:Environment:System"
     ),
     INPUT_DIRECTORY(
-            "type:Type:FileType",
+            "type:Type:FileType:refreshProperties();",
             "path:Directory:String"
     ),
 
@@ -166,6 +167,7 @@ public enum Properties {
     ;
 
     private List<String> prototypeList;
+    private List<PropertyView> propertyList;
 
     Properties(String... properties) {
         prototypeList = Arrays.asList(properties);
@@ -176,7 +178,9 @@ public enum Properties {
     }
 
     public List<PropertyView> getPropertyList() {
-        List<PropertyView> propertyList = new ArrayList<>();
+        if (propertyList != null) return propertyList;
+
+        propertyList = new ArrayList<>();
         PropertyView propView;
         String[] prototypes;
         String[] params;
@@ -186,6 +190,7 @@ public enum Properties {
             propView = new PropertyView();
             params = new String[]{};
             length = prototypes.length;
+
             if (prototypes[0].equals(".")) {
                 if (length > 5)
                     params = Arrays.copyOfRange(prototypes, 5, length);
@@ -201,6 +206,24 @@ public enum Properties {
                 propView.setVar(prototypes[0]);
                 propView.setVarParent(null);
             }
+
+            int paramCount = params.length;
+            for (int i = paramCount - 1; i >= 0; i--) {
+                if (params[i].contains("@")) {
+                    paramCount = i;
+                    propView.setUpdate(params[i].substring(1));
+                } else if(params[i].endsWith(";")) {
+                    paramCount = i;
+                    propView.setJavaScript(params[i]);
+                }
+            }
+
+            if (paramCount > 0) {
+                params = Arrays.copyOfRange(params, 0, paramCount);
+            } else {
+                params = new String[]{};
+            }
+
             propView.setParams(params);
             propertyList.add(propView);
         }

@@ -2,6 +2,10 @@ function refershFlowChart() {
     document.getElementById('flowchart').src += '?refresh=1';
 }
 
+function refreshProperties() {
+    contentWindow.selectObject(contentWindow.$('.active'));
+}
+
 function toggleLeft() {
     if (leftPanel.css('display') === 'none') {
         //to show
@@ -49,6 +53,8 @@ function zoom() {
 
     var flowchart = $(contentWindow.document.getElementsByTagName('html'));
     flowchart.css('zoom', zoomVal());
+
+    scrollToActive(contentWindow.$('.active'));
 }
 
 function zoomEnd(submit) {
@@ -102,7 +108,6 @@ function scrollToActive(active) {
 
 function updateEm(selectable) {
     contentWindow['update' + selectable]();
-    console.log('calling update' + selectable + '()');
 }
 
 function propertyCreated() {

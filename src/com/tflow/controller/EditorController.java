@@ -124,19 +124,19 @@ public class EditorController extends Controller {
 
             case FILETYPE:
                 for (DataFileType value : DataFileType.values()) {
-                    selectItemList.add(new SelectItem(value, value.name()));
+                    selectItemList.add(new SelectItem(value, value.getName()));
                 }
                 break;
 
             case COLUMNFUNCTION:
                 for (ColumnFunction value : ColumnFunction.values()) {
-                    selectItemList.add(new SelectItem(value, value.name()));
+                    selectItemList.add(new SelectItem(value, value.getName()));
                 }
                 break;
 
             case TABLEFUNCTION:
                 for (TableFunction value : TableFunction.values()) {
-                    selectItemList.add(new SelectItem(value, value.name()));
+                    selectItemList.add(new SelectItem(value, value.getName()));
                 }
                 break;
 

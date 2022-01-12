@@ -1,7 +1,7 @@
 function hideLines() {
-    for (var i = 0; i < lines.length; i++) {
+    /*for (var i = 0; i < lines.length; i++) {
         lines[i].hide();
-    }
+    }*/
 }
 
 function showLines() {
@@ -15,7 +15,6 @@ function showLines() {
  * @param selectable = jQuery-Element or Selectable-ID
  */
 function register(selectable) {
-
     if (selectable.jquery === undefined) {
         var isTable = selectable.startsWith('dt');
         console.log('register(selectableId:' + selectable + ') isTable=' + isTable);
@@ -26,34 +25,33 @@ function register(selectable) {
         ]);
 
         /*change selectable-id to selectable-object*/
-        selectable = $('input[name=selectableId][value=' + selectable + ']').parent();
+        selectable = $('input[name=selectableId][value=' + selectable + ']').parents('.selectable');
 
         if (isTable) {
-            var child = $(selectable).find('.selectable');
-            console.log('has '+ child.length +' child')
-            register(child);
+            register(selectable.find('.selectable'));
         }
     }
 
-    selectable.on('click', function (ev) {
-        $('.active').removeClass('active');
-
-        var e = $(ev.currentTarget);
-        e.addClass('active');
-
-        var id = e.find('input[name=selectableId]').attr('value');
-        var parentWindow = window.parent;
-        parentWindow.setActiveObj([
-            {name: 'selectableId', value: id}
-        ]);
-        parentWindow.scrollToActive(e);
-
-        /*stopPropagation*/
+    $(selectable).on('click', function (ev) {
+        selectObject($(ev.currentTarget));
         return false;
     });
 }
 
+function selectObject($e) {
+    $('.active').removeClass('active');
+    $e.addClass('active');
+
+    var id = $e.find('input[name=selectableId]').attr('value');
+    var parentWindow = window.parent;
+    parentWindow.setActiveObj([
+        {name: 'selectableId', value: id}
+    ]);
+    parentWindow.scrollToActive($e);
+}
+
 function startup() {
+    LeaderLine.positionByWindowResize = false;
 
     /*make more height*/
     var parentWindow = window.parent;
