@@ -4,8 +4,7 @@
         xmlns:f="http://java.sun.com/jsf/core"
         xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui"
-        xmlns:ui="http://java.sun.com/jsf/facelets"
-        xmlns:c="http://java.sun.com/jsp/jstl/core">
+        xmlns:ui="http://java.sun.com/jsf/facelets">
 
     <h:head>
         <title>TFlow Editor</title>
@@ -31,7 +30,7 @@
                                                  styleClass="left-panel-toggle close"
                                                  icon="pi pi-times"/>
                             </f:facet>
-                            <h:form id="menuForm">
+                            <h:form id="stepForm" style="width: 100%;height: 100%;">
                                 <p:accordionPanel widgetVar="basic">
                                     <p:tab title="#{editorCtl.projectName}">
                                         <p:menu model="#{editorCtl.stepMenu}"/>
@@ -50,15 +49,16 @@
 
                                     <p:menubar>
                                         <p:submenu label="Add">
-                                            <p:menuitem value="DB Connection..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="propertyForm"/>
-                                            <p:menuitem value="SFTP Connection..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="propertyForm"/>
-                                            <p:menuitem value="Data File..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="propertyForm"/>
+                                            <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addStep}" update="stepForm,propertyForm"/>
+                                            <p:menuitem value="DB Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="propertyForm"/>
+                                            <p:menuitem value="SFTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="propertyForm"/>
+                                            <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="propertyForm"/>
                                             <p:divider/>
-                                            <p:menuitem value="Data Table..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataTable}" update="propertyForm"/>
-                                            <p:menuitem value="Column..." icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                            <p:menuitem value="Output..." icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                            <p:menuitem value="Transform Table..." icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addTransformTable}" update="propertyForm"/>
-                                            <p:menuitem value="Transformation..." icon="pi pi-fw pi-plus" update="propertyForm"/>
+                                            <p:menuitem value="Data Table" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataTable}" update="propertyForm"/>
+                                            <p:menuitem value="Column" icon="pi pi-fw pi-plus" update="propertyForm"/>
+                                            <p:menuitem value="Output" icon="pi pi-fw pi-plus" update="propertyForm"/>
+                                            <p:menuitem value="Transform Table" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addTransformTable}" update="propertyForm"/>
+                                            <p:menuitem value="Transformation" icon="pi pi-fw pi-plus" update="propertyForm"/>
                                             <p:divider/>
                                             <p:menuitem value="Write Serialize (test)" icon="pi pi-fw pi-plus"
                                                         actionListener="#{editorCtl.testWriteSerialize}"/>
@@ -116,7 +116,13 @@
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
                                     <h3>#{editorCtl.activeObject.properties}</h3>
                                     <sup>#{editorCtl.activeObject.getClass().getTypeName()}</sup>
+                                    <p:divider/>
+
                                     <p:repeat value="#{editorCtl.propertyList}" var="prop">
+
+                                        <p:divider rendered="#{PropertyType.SEPARATOR==prop.type}" align="left">
+                                            <span>#{prop.label}</span>
+                                        </p:divider>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.READONLY==prop.type}">
                                             <div class="ui-g-4 property-label">#{prop.label}</div>

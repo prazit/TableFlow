@@ -33,7 +33,7 @@ public class Application {
     public void onCreation() {
         /*log.trace("onCreation.");*/
 
-        // TODO: load configuration first then remove initialize below
+        // TODO: do this after Configuration File Module is completed, load configuration first then remove initialize below
         cssForceReload = true;
         forceReloadResources = "";
 

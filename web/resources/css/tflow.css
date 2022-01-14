@@ -122,6 +122,7 @@ body .tool-panel .ui-accordion .ui-accordion-content {
 }
 body .tool-panel .ui-accordion .ui-accordion-content .ui-menu {
     border: 0;
+    width: 100%;
 }
 
 .tool-panel.ui-panel .ui-panel-titlebar {

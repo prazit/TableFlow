@@ -47,7 +47,14 @@ function selectObject($e) {
     parentWindow.setActiveObj([
         {name: 'selectableId', value: id}
     ]);
-    parentWindow.scrollToActive($e);
+
+    if ($e.hasClass('step')) {
+        var ds = $('.data-source');
+        if (ds.length() > 0)
+            parentWindow.scrollToActive(ds.first());
+    } else {
+        parentWindow.scrollToActive($e);
+    }
 }
 
 function startup() {

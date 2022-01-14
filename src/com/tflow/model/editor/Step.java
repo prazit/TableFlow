@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Step {
+public class Step implements Selectable {
 
     private int id;
     private String name;
@@ -32,10 +32,8 @@ public class Step {
 
     private Map<String, Selectable> selectableMap;
 
-    public Step(int id, String name, int index, Project owner) {
-        this.id = id;
+    public Step(String name, Project owner) {
         this.name = name;
-        this.index = index;
         history = new ArrayList<>();
         dataList = new ArrayList<>();
         transformList = new ArrayList<>();
@@ -198,12 +196,10 @@ public class Step {
         newLine.setType(getLineType(startSelectable));
         newLine.setStartPlug(startSelectable.getStartPlug());
 
-        HasEndPlug hasEndPlug = (HasEndPlug) selectableMap.get(endSelectableId);
-        if (hasEndPlug == null) {
-            LoggerFactory.getLogger(Step.class).error("selectableMap not contains selectableId={}", endSelectableId);
-            return;
+        if (endSelectableId != null) {
+            HasEndPlug hasEndPlug = (HasEndPlug) selectableMap.get(endSelectableId);
+            newLine.setEndPlug(hasEndPlug.getEndPlug());
         }
-        newLine.setEndPlug(hasEndPlug.getEndPlug());
 
         lineList.add(newLine);
     }
@@ -239,14 +235,14 @@ public class Step {
     }
 
     public void collectSelectableToMap() {
-        List<Selectable> selectableList = dataTower.getSelectableList();
-        Selectable activeObject = getActiveObject();
-        if (activeObject == null && selectableList.size() > 0) {
-            activeObject = selectableList.get(0);
-            setActiveObject(activeObject);
+        selectableMap = new HashMap<>();
+        selectableMap.put(this.getSelectableId(), this);
+
+        if (getActiveObject() == null) {
+            setActiveObject(this);
         }
 
-        selectableMap = new HashMap<>();
+        List<Selectable> selectableList = dataTower.getSelectableList();
         collectSelectableTo(selectableMap, selectableList);
 
         selectableList = transformTower.getSelectableList();
@@ -281,4 +277,23 @@ public class Step {
         }
     }
 
+    @Override
+    public Properties getProperties() {
+        return Properties.STEP;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return "step" + id;
+    }
+
+    @Override
+    public String getStartPlug() {
+        return "step";
+    }
+
+    @Override
+    public void setStartPlug(String startPlug) {
+        /*nothing*/
+    }
 }

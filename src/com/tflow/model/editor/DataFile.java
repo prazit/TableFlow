@@ -18,7 +18,6 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
     private int id;
     private DataSource dataSource;
     private DataFileType type;
-    private String image;
     private String name;
     private String path;
 
@@ -34,7 +33,6 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
         this.type = type;
         this.name = name;
         this.path = path;
-        this.image = type.getImage();
         this.propertyMap = new HashMap<>();
         initPropertyMap();
         this.endPlug = endPlug;
@@ -75,14 +73,6 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
     public void setType(DataFileType type) {
         this.type = type;
         initPropertyMap();
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
     }
 
     public String getName() {

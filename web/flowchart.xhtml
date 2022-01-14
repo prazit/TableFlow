@@ -34,9 +34,15 @@
                     addLine()
                 });</script>
 
-                <h1 style="color: var(--surface-c);position: fixed;padding: var(--padding);margin: var(--margin)">#{flowchartCtl.step.name}</h1>
+                <p:outputPanel styleClass="step selectable#{flowchartCtl.active(flowchartCtl.step)}" style="position: fixed;padding: var(--padding);margin: var(--margin);">
+                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
+                    <p:remoteCommand name="update#{flowchartCtl.step.selectableId}" update="@parent" oncomplete="register('#{flowchartCtl.step.selectableId}')"/>
+                    <h1 style="color: var(--surface-c);">#{flowchartCtl.step.name}</h1>
+                </p:outputPanel>
 
-                <p:outputPanel styleClass="source section" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">
+                <p:outputPanel styleClass="source section selectable" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">
+                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
+
                     <table>
                         <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">
                             <tr>
@@ -51,7 +57,11 @@
                                         <span>#{floor.roomList[0].type}</span>
                                         <p:importEnum type="com.tflow.model.editor.datasource.DataSourceType" var="DataSourceType"/>
                                         <p:outputLabel rendered="#{DataSourceType.DATABASE==floor.roomList[0].type}">#{floor.roomList[0].dbms}</p:outputLabel>
-                                        <div class="start-plug#{null == flowchartCtl.step.activeObject?' active':''}" id="#{floor.roomList[0].plug}"></div>
+                                        <div class="start-plug" id="#{floor.roomList[0].plug}">
+                                            <!--<p:outputPanel class="start-plug" id="#{floor.roomList[0].plug}"/>-->
+                                            <!-- TODO: <p:draggable for="sp#{floor.roomList[0].plug}" containment="editorForm"/>-->
+                                        </div>
+
                                     </p:outputPanel>
                                     <p:spacer rendered="#{floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
                                 </td>
@@ -67,7 +77,7 @@
 
                                         <div class="end-plug" id="#{floor.roomList[1].endPlug}"></div>
                                         <p>#{floor.roomList[1].name}</p>
-                                        <p:graphicImage library="images" name="#{floor.roomList[1].image}"/>
+                                        <p:graphicImage library="images" name="#{floor.roomList[1].type.image}"/>
                                         <span>#{floor.roomList[1].type.name}</span>
                                         <div class="start-plug" id="#{floor.roomList[1].startPlug}"></div>
                                     </p:outputPanel>
@@ -87,7 +97,7 @@
                                             <div class="end-plug" id="#{floor.roomList[2].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images"
-                                                                name="#{floor.roomList[2].getDataFile().image}"/>
+                                                                name="#{floor.roomList[2].getDataFile().type.image}"/>
                                                 <b>#{floor.roomList[2].name}</b>
                                                 <p:commandButton type="button"
                                                                  styleClass="ui-button-secondary"
@@ -115,7 +125,7 @@
                                             <div class="output column selectable#{flowchartCtl.active(output)}">
                                                 <input name="selectableId" type="hidden" value="#{output.selectableId}"/>
                                                 <p:remoteCommand name="update#{output.selectableId}" update="@parent" oncomplete="register('#{output.selectableId}')"/>
-                                                <p:graphicImage library="images" name="#{output.image}"/>
+                                                <p:graphicImage library="images" name="#{output.type.image}"/>
                                                 <label>#{output.dataSource.name} - (#{output.name})</label>
                                                 <div class="start-plug" id="#{output.startPlug}"></div>
                                             </div>
@@ -142,7 +152,9 @@
                     </table>
                 </p:outputPanel>
 
-                <p:outputPanel styleClass="transform section" rendered="#{!flowchartCtl.step.transformTower.isEmpty()}">
+                <p:outputPanel styleClass="transform section selectable" rendered="#{!flowchartCtl.step.transformTower.isEmpty()}">
+                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
+
                     <table>
                         <p:repeat value="#{flowchartCtl.step.transformTower.floorList}" var="tfloor">
                             <tr>
@@ -218,7 +230,7 @@
                                             <div class="output column selectable#{flowchartCtl.active(toutput)}">
                                                 <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
                                                 <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="register('#{toutput.selectableId}')"/>
-                                                <p:graphicImage library="images" name="#{toutput.image}"/>
+                                                <p:graphicImage library="images" name="#{toutput.type.image}"/>
                                                 <label>#{toutput.dataSource.name} - (#{toutput.name})</label>
                                                 <div class="start-plug" id="#{toutput.startPlug}"></div>
                                             </div>
@@ -243,7 +255,9 @@
                     </table>
                 </p:outputPanel>
 
-                <p:outputPanel styleClass="output section" rendered="#{!flowchartCtl.step.outputTower.isEmpty()}">
+                <p:outputPanel styleClass="output section selectable" rendered="#{!flowchartCtl.step.outputTower.isEmpty()}">
+                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
+
                     <p:panelGrid columns="4">
 
                         <p:spacer width="50px"/>

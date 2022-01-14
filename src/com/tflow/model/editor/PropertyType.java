@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 public enum PropertyType {
 
+    SEPARATOR(""),
+
     EXPRESSION(""),
 
     READONLY(""),
@@ -20,7 +22,11 @@ public enum PropertyType {
     FILETYPE(DataFileType.IN_MD, true),
     COLUMNFUNCTION(ColumnFunction.LOOKUP, true),
     TABLEFUNCTION(TableFunction.SORT, true),
-    SYSTEM("", true),
+    SYSTEM(SystemEnvironment.JVM_ENVIRONMENT, true),
+
+    CHARSET(DataCharset.UTF8, true),
+    TXTLENGTHMODE(TxtLengthMode.CHARACTER, true),
+    TXTFORMAT("", true), /*TODO: do this in xhtml file, show full list of column with format type and width*/
 
     DBCONNECTION(/*data-base-id*/0, true),
     DBTABLE(/*table-name*/"", true),

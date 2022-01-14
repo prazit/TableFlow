@@ -106,7 +106,7 @@ public abstract class Action implements Serializable {
 
         /*add this Action to history*/
         @SuppressWarnings("unchecked")
-        List<Action> history = paramMap.containsKey(CommandParamKey.HISTORY) ? ((List<Action>) paramMap.get(CommandParamKey.HISTORY)) : ((Step) paramMap.get(CommandParamKey.STEP)).getHistory();
+        List<Action> history = getHistory();
         history.add(this);
     }
 
@@ -114,11 +114,21 @@ public abstract class Action implements Serializable {
         if (commandList == null) initUndoCommandsWrapper();
         requiredParam(undoParamList, paramMap, true);
 
-        /*TODO: check allowed to undo or not (last action in the history)*/
+        List<Action> history = getHistory();
+        int lastActionIndex = history.size() - 1;
+        if(!history.get(lastActionIndex).equals(this))
+            throw new UnsupportedOperationException("Action '" + getName() + "' is not last action in the history. " + toString());
+        if (!isCanUndo())
+            throw new UnsupportedOperationException("Action '" + getName() + "' is not support UNDO. " + toString());
 
         for (Command command : undoCommandList) command.execute(paramMap);
 
-        /*TODO: remove Action from history (FILO)*/
+        /*remove Action from history (FILO)*/
+        history.remove(lastActionIndex);
+    }
+
+    private List<Action> getHistory() {
+        return paramMap.containsKey(CommandParamKey.HISTORY) ? ((List<Action>) paramMap.get(CommandParamKey.HISTORY)) : ((Step) paramMap.get(CommandParamKey.STEP)).getHistory();
     }
 
     private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap,
@@ -137,7 +147,7 @@ public abstract class Action implements Serializable {
 
     @Override
     public String toString() {
-        return "ActionBase{" +
+        return getClass().getName() + "{" +
                 "icon='" + image + '\'' +
                 ", code='" + code + '\'' +
                 ", name='" + name + '\'' +

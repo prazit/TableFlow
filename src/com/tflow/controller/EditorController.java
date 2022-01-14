@@ -110,6 +110,24 @@ public class EditorController extends Controller {
         List<SelectItem> selectItemList = new ArrayList<>();
 
         switch (type) {
+            case SYSTEM:
+                for (SystemEnvironment value : SystemEnvironment.values()) {
+                    selectItemList.add(new SelectItem(value, value.name().replaceAll("[_]", " ")));
+                }
+                break;
+
+            case CHARSET:
+                for (DataCharset value : DataCharset.values()) {
+                    selectItemList.add(new SelectItem(value, value.getCharset()));
+                }
+                break;
+
+            case TXTLENGTHMODE:
+                for (TxtLengthMode value : TxtLengthMode.values()) {
+                    selectItemList.add(new SelectItem(value, value.name()));
+                }
+                break;
+
             case DBMS:
                 for (Dbms value : Dbms.values()) {
                     selectItemList.add(new SelectItem(value, value.name()));
@@ -123,8 +141,14 @@ public class EditorController extends Controller {
                 break;
 
             case FILETYPE:
-                for (DataFileType value : DataFileType.values()) {
-                    selectItemList.add(new SelectItem(value, value.getName()));
+                if (params[0].toUpperCase().equals("IN")) {
+                    for (DataFileType value : DataFileType.values()) {
+                        if (value.isInput()) selectItemList.add(new SelectItem(value, value.getName()));
+                    }
+                } else {
+                    for (DataFileType value : DataFileType.values()) {
+                        if (value.isOutput()) selectItemList.add(new SelectItem(value, value.getName()));
+                    }
                 }
                 break;
 
@@ -299,6 +323,27 @@ public class EditorController extends Controller {
         activeStep.setZoom(Double.valueOf(zoom));
     }
 
+    public void addStep() {
+        Project project = workspace.getProject();
+        Step step = new Step( "Untitled", project);
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.STEP, step);
+
+        try {
+            new AddStep(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add Step Failed!", e);
+            FacesUtil.addError("Add Step Failed with Internal Command Error!");
+            return;
+        }
+
+        selectStep(step.getIndex());
+
+        FacesUtil.addInfo("Step[" + step.getName() + "] added.");
+        FacesUtil.runClientScript("refershFlowChart();");
+    }
+
     public void addDBConnection() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
@@ -388,12 +433,11 @@ public class EditorController extends Controller {
         );
 
         List<DataColumn> columnList = dataTable.getColumnList();
-        columnList.add(new DataColumn(1, DataType.STRING, "String", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(4, DataType.DATE, "Date", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(1, DataType.STRING, "String Column", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", project.newElementId(), dataTable));
 
-        /*TODO: split code below to the Action AddDataOutput*/
         Local myComputer = new Local("MyComputer", "C:/myData/", project.newElementId());
         DataFile outputCSVFile = new DataFile(
                 myComputer,
@@ -414,13 +458,9 @@ public class EditorController extends Controller {
      * Create mockup data in activeStep and refresh the flowchart.
      */
     public void addDataTable(DataFile dataFile) {
-        /*TODO: need to show parameters dialog and remove Mockup-Data below*/
-
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
-
         DataTable dataTable = getDataTable(project, dataFile);
-        /* TODO: need more data-cases for DataTable (local-file, sftp-file) */
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
@@ -438,8 +478,6 @@ public class EditorController extends Controller {
     }
 
     public void addTransformTable() {
-        /*TODO: need to show parameters dialog and remove Mockup-Data below*/
-
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
@@ -452,8 +490,6 @@ public class EditorController extends Controller {
                 project.newElementId(),
                 project.newElementId()
         );
-
-        /* TODO: need more source-type for TransformTable (SourceType.TRANSFORM_TABLE) */
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
@@ -488,7 +524,7 @@ public class EditorController extends Controller {
         Step activeStep = workspace.getProject().getActiveStep();
         Selectable activeObject = activeStep.getSelectableMap().get(selectableId);
         if (activeObject == null) {
-            log.error("selectableMap not contains selectableId={}", selectableId);
+            log.error("selectableMap not contains selectableId='{}'", selectableId);
             /*throw new IllegalStateException("selectableMap not contains selectableId=" + selectableId);*/
             return;
         }

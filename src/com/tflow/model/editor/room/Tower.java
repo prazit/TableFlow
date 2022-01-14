@@ -127,7 +127,7 @@ public class Tower implements Serializable {
         return selectableList;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return floorList.isEmpty();
     }
 }

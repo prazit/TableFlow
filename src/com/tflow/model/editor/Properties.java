@@ -8,25 +8,38 @@ import java.util.List;
 
 /**
  * This Enum use Prototype String like this<br/>
- * <p style:"color:#6666FF">
- * <br/>0-Variable-Name:1-Property-Label:2-Property-Type:3-param[,4-param]..
- * <br/><br/>.:1-Variable-Name:2-Variable-Name:3-Property-Label:4-Property-Type:5-param[,6-param]..
- * <br/><br/>Variable-Name. used for UI Binding(ActiveObject[Variable-Name.][Variable-Name])
- * <br/>Variable-Name used for UI Binding(ActiveObject[Variable])
+ * <p>
+ * 0-Variable-Name:1-Property-Label:2-Property-Type:3-param[,4-param]..[,@Update-ID][,Java-Script;]
+ * <br/>.:1-Variable-Name:2-Sub-Variable-Name:3-Property-Label:4-Property-Type:5-param[,6-param]..[,@Update-ID][,Java-Script;]
+ * <br/><br/><b>Description:</b>
+ * <br/>Variable-Name used for UI Value Binding(ActiveObject[Variable-Name.][Sub-Variable-Name])
+ * <br/>Update-ID used to update component after the value is changed.
+ * <br/>Java-Script will run at the end of event 'value-changed'
  * </p>
  */
 public enum Properties {
-    /*TODO= how to update/redraw property sheet*/
-    /*TODO= how to specify some actions/events*/
+    /*TODO: property description is needed*/
+    /*TODO: selectable object need lock/unlock status to enable/disable some properties with lock marked*/
 
+    STEP(
+            "name:Name:String",
+            "--:Environment Settings:--",
+            "zoom:Zoom:ReadOnly",
+            "--:Debug Only:--",
+            "id:ID:ReadOnly",
+            ".:activeObject:selectableId:Active Object:ReadOnly"
+    ),
     DATA_BASE(
             "name:Name:String",
+            "--:Connection:--",
             "dbms:DBMS:DBMS",
             "url:Connection String:String",
             "driver:Driver:String",
             "user:User:String:20",
             "password:Password:String:20::true",
-            "retry:Connection Retry:Int:9:0"
+            "retry:Connection Retry:Int:9:0",
+            "--:Debug Only:--",
+            "startPlug:Start Plug:String"
     ),
     SFTP(
             "name:Name:String",
@@ -59,54 +72,88 @@ public enum Properties {
     ),
 
     INPUT_SQL(
-            "type:Type:FileType:refreshProperties();",
+            "type:Type:FileType:in:refreshProperties();",
             ".:dataSource:name:DB Connection:DBConnection",
-            "name:Filename:String",
+            "name:File name:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
     ),
     INPUT_MARKDOWN(
-            "type:Type:FileType:refreshProperties();",
+            "type:Type:FileType:in:refreshProperties();",
             "dataSource:FTP/SFTP:SFTP",
-
-            /*TODO: change String of name to Upload. //"name:Filename:Upload:md,txt",*/
-            "name:Filename:String"
+            "name:File name:String" /*TODO: do this after file structure is completed, change String of name to Upload. //"name:Filename:Upload:md,txt",*/
     ),
     INPUT_ENVIRONMENT(
-            "type:Type:FileType:refreshProperties();",
-            "name:Environment:System"
+            "type:Type:FileType:in:refreshProperties();",
+            "name:System Environment:System"
     ),
     INPUT_DIRECTORY(
-            "type:Type:FileType:refreshProperties();",
-            "path:Directory:String"
+            "type:Type:FileType:in:refreshProperties();",
+            "path:Path:String",
+            ".:propertyMap:sub:Include sub-directory:Boolean",
+            ".:propertyMap:fileOnly:Show file only:Boolean"
     ),
 
     OUTPUT_TXT(
-            /*TODO: need complete list for Output properties*/
+            "type:Type:FileType:out:refreshProperties();",
             "dataSource:FTP/SFTP:SFTP",
             "name:File Name:String",
-            "path:File Path:String"
+            "path:File Path:String",
+            ".:propertyMap:append:Append:Boolean",
+            ".:propertyMap:charset:Charset:Charset",
+            ".:propertyMap:eol:EOL:String",
+            ".:propertyMap:eof:EOF:String",
+            ".:propertyMap:separator:Separator:String",
+            ".:propertyMap:lengthMode:Length Mode:TxtLengthMode",
+            ".:propertyMap:dateFormat:Date Format:String",
+            ".:propertyMap:dateTimeFormat:DateTime Format:String",
+            ".:propertyMap:fillString:String Filler:String",
+            ".:propertyMap:fillNumber:Number Filler:String",
+            ".:propertyMap:fillDate:Date Filler:String",
+            ".:propertyMap:format:Format:TxtFormat"
     ),
     OUTPUT_CSV(
-            /*TODO: need complete list for Output properties*/
+            "type:Type:FileType:out:refreshProperties();",
             "dataSource:FTP/SFTP:SFTP",
             "name:File Name:String",
             "path:File Path:String",
-            /*TODO: remove all vars below (test data-type)*/
-            ".:propertyMap:columnArray:Columns:ColumnArray:owner:id"
+            ".:propertyMap:append:Append:Boolean",
+            ".:propertyMap:charset:Charset:Charset",
+            ".:propertyMap:bof:BOF:String",
+            ".:propertyMap:eol:EOL:String",
+            ".:propertyMap:eof:EOF:String",
+            ".:propertyMap:header:Column Header:Boolean",
+            ".:propertyMap:separator:Separator:String",
+            ".:propertyMap:lengthMode:Length Mode:TxtLengthMode",
+            ".:propertyMap:integerFormat:Integer Format:String",
+            ".:propertyMap:decimalFormat:Decimal Format:String",
+            ".:propertyMap:dateFormat:Date Format:String",
+            ".:propertyMap:dateTimeFormat:DateTime Format:String"
     ),
     OUTPUT_MARKDOWN(
-            /*TODO: need complete list for Output properties*/
-            "dataSource:FTP/SFTP:SFTP",
-            "name:File Name:String",
-            "path:File Path:String"
-    ),
-    OUTPUT_SQL(
+            "type:Type:FileType:out:refreshProperties();",
             "dataSource:FTP/SFTP:SFTP",
             "name:File Name:String",
             "path:File Path:String",
-            ".:propertyMap:append:Append:Boolean",  //TODO: Boolean maybe need predefined list of items.
-            ".:propertyMap:charset:Charset:String", //TODO: Charset need predefined list of items.
+            ".:propertyMap:append:Append:Boolean",
+            ".:propertyMap:charset:Charset:Charset",
+            ".:propertyMap:eol:EOL:String",
+            ".:propertyMap:eof:EOF:String",
+            ".:propertyMap:showComment:Show File Comment:Boolean",
+            ".:propertyMap:showDataSource:With DataSource:Boolean",
+            ".:propertyMap:showQuery:With Query:Boolean",
+            ".:propertyMap:showTableTitle:Show Table Name:Boolean",
+            ".:propertyMap:showRowNumber:Show Row Number:Boolean",
+            ".:propertyMap:showFlowChart:Show Flowchart:Boolean",
+            ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean"
+    ),
+    OUTPUT_SQL(
+            "type:Type:FileType:out:refreshProperties();",
+            "dataSource:FTP/SFTP:SFTP",
+            "name:File Name:String",
+            "path:File Path:String",
+            ".:propertyMap:append:Append:Boolean",
+            ".:propertyMap:charset:Charset:Charset",
             ".:propertyMap:eol:EOL:String",
             ".:propertyMap:eof:EOF:String",
             ".:propertyMap:quotesOfName:Quotes for Name:String",
@@ -120,16 +167,24 @@ public enum Properties {
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBINSERT(
-            /*TODO: need complete list for Output properties*/
-            /*TODO: need options to log all SQL before execute.*/
+            "type:Type:FileType:out:refreshProperties();",
             "dataSource:DB Connection:DBConnection",
-            ".:propertyMap:dbTable:Table Name:DBTable:propMap[dbConnection]"
+            ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
+            ".:propertyMap:columnList:Column List:ColumnList",
+            ".:propertyMap:quotesOfName:Quotes for Name:String",
+            ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
+            ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBUPDATE(
-            /*TODO: need complete list for Output properties*/
-            /*TODO: need options to log all SQL before execute.*/
+            "type:Type:FileType:out:refreshProperties();",
             "dataSource:DB Connection:DBConnection",
-            ".:propertyMap:dbTable:Table Name:DBTable:propMap[dbConnection]"
+            ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
+            ".:propertyMap:columnList:Column List:ColumnList",
+            ".:propertyMap:quotesOfName:Quotes for Name:String",
+            ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
+            ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
 
     /*TODO: need complete list for Parameters or Function Prototypes*/
@@ -191,7 +246,14 @@ public enum Properties {
             params = new String[]{};
             length = prototypes.length;
 
-            if (prototypes[0].equals(".")) {
+            if (prototypes[0].equals("--")) {
+                /*separator*/
+                propView.setType(PropertyType.SEPARATOR);
+                propView.setLabel(prototypes[1]);
+                propView.setParams(params);
+                propertyList.add(propView);
+                continue;
+            } else if (prototypes[0].equals(".")) {
                 if (length > 5)
                     params = Arrays.copyOfRange(prototypes, 5, length);
                 propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
@@ -212,7 +274,7 @@ public enum Properties {
                 if (params[i].contains("@")) {
                     paramCount = i;
                     propView.setUpdate(params[i].substring(1));
-                } else if(params[i].endsWith(";")) {
+                } else if (params[i].endsWith(";")) {
                     paramCount = i;
                     propView.setJavaScript(params[i]);
                 }

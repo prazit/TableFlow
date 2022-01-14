@@ -272,3 +272,8 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
 .output .end-plug {
     background-color: var(--table-color);
 }
+
+.start-plug:hover {
+    zoom: 2;
+    margin: 0 calc(var(--margin) * -1) calc(var(--margin) * -1) 0;
+}
