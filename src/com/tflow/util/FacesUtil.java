@@ -73,6 +73,9 @@ public class FacesUtil implements Serializable {
         return FacesContext.getCurrentInstance();
     }
 
+    /**
+     * @return null when parameter not found.
+     */
     public static String getRequestParam(String param) {
         Map<String, String> requestParameterMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         return requestParameterMap.get(param);

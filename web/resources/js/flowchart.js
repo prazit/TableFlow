@@ -17,7 +17,6 @@ function showLines() {
 function register(selectable) {
     if (selectable.jquery === undefined) {
         var isTable = selectable.startsWith('dt');
-        console.log('register(selectableId:' + selectable + ') isTable=' + isTable);
 
         /*call register only come from update function of selectable object*/
         updateLines([
@@ -47,14 +46,7 @@ function selectObject($e) {
     parentWindow.setActiveObj([
         {name: 'selectableId', value: id}
     ]);
-
-    if ($e.hasClass('step')) {
-        var ds = $('.data-source');
-        if (ds.length() > 0)
-            parentWindow.scrollToActive(ds.first());
-    } else {
-        parentWindow.scrollToActive($e);
-    }
+    parentWindow.scrollToObj($e);
 }
 
 function startup() {

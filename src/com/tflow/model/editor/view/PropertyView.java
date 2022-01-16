@@ -90,12 +90,14 @@ public class PropertyView {
 
     @Override
     public String toString() {
-        return "{" +
-                "type:'" + type + '\'' +
-                ", label:'" + label + '\'' +
-                ", var:'" + var + '\'' +
-                ", varParent:'" + varParent + '\'' +
-                ", params:'" + Arrays.toString(params) + '\'' +
+        return "PropertyView{" +
+                "type=" + type +
+                ", label='" + label + '\'' +
+                ", var='" + var + '\'' +
+                ", varParent='" + varParent + '\'' +
+                ", params=" + Arrays.toString(params) +
+                ", update='" + update + '\'' +
+                ", javaScript='" + javaScript + '\'' +
                 '}';
     }
 }

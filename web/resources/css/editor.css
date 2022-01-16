@@ -48,10 +48,22 @@ body .ui-panelgrid .ui-panelgrid-cell {
     padding: 0;
 }
 
+.tool-panel form {
+    width: 100%;
+    height: 100%;
+}
+
 .tool-panel .properties {
     padding: 0;
     margin: 0;
     border: 0;
+}
+
+.tool-panel .ui-divider.ui-divider-horizontal {
+    color: var(--surface-d);
+    height: calc(1em + 4px);
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 iframe {

@@ -15,7 +15,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
     </h:head>
-    <h:body style="background-color: var(--surface-a)">
+    <h:body style="background-color: var(--surface-a)" styleClass="selectable step#{flowchartCtl.active(flowchartCtl.step)}">
+        <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
+        <p:remoteCommand name="update#{flowchartCtl.step.selectableId}" oncomplete="register('#{flowchartCtl.step.selectableId}')"/>
 
         <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
@@ -34,15 +36,11 @@
                     addLine()
                 });</script>
 
-                <p:outputPanel styleClass="step selectable#{flowchartCtl.active(flowchartCtl.step)}" style="position: fixed;padding: var(--padding);margin: var(--margin);">
-                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
-                    <p:remoteCommand name="update#{flowchartCtl.step.selectableId}" update="@parent" oncomplete="register('#{flowchartCtl.step.selectableId}')"/>
+                <p:outputPanel style="position: fixed;padding: var(--padding);margin: var(--margin);">
                     <h1 style="color: var(--surface-c);">#{flowchartCtl.step.name}</h1>
                 </p:outputPanel>
 
-                <p:outputPanel styleClass="source section selectable" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">
-                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
-
+                <p:outputPanel styleClass="source section" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">
                     <table>
                         <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">
                             <tr>
@@ -152,9 +150,7 @@
                     </table>
                 </p:outputPanel>
 
-                <p:outputPanel styleClass="transform section selectable" rendered="#{!flowchartCtl.step.transformTower.isEmpty()}">
-                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
-
+                <p:outputPanel styleClass="transform section" rendered="#{!flowchartCtl.step.transformTower.isEmpty()}">
                     <table>
                         <p:repeat value="#{flowchartCtl.step.transformTower.floorList}" var="tfloor">
                             <tr>
@@ -255,9 +251,7 @@
                     </table>
                 </p:outputPanel>
 
-                <p:outputPanel styleClass="output section selectable" rendered="#{!flowchartCtl.step.outputTower.isEmpty()}">
-                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
-
+                <p:outputPanel styleClass="output section" rendered="#{!flowchartCtl.step.outputTower.isEmpty()}">
                     <p:panelGrid columns="4">
 
                         <p:spacer width="50px"/>

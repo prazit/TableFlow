@@ -29,6 +29,8 @@ public class Step implements Selectable {
 
     private Selectable activeObject;
     private Double zoom;
+    private boolean showStepList;
+    private boolean showPropertyList;
 
     private Map<String, Selectable> selectableMap;
 
@@ -45,6 +47,8 @@ public class Step implements Selectable {
         zoom = Double.valueOf(100);
         this.owner = owner;
         selectableMap = new HashMap<>();
+        showStepList = true;
+        showPropertyList = true;
     }
 
     public int getId() {
@@ -180,8 +184,40 @@ public class Step implements Selectable {
         return selectableMap;
     }
 
-    public void setSelectableMap(Map<String, Selectable> selectableMap) {
-        this.selectableMap = selectableMap;
+    public boolean isShowStepList() {
+        return showStepList;
+    }
+
+    public void setShowStepList(boolean showStepList) {
+        this.showStepList = showStepList;
+    }
+
+    public boolean isShowPropertyList() {
+        return showPropertyList;
+    }
+
+    public void setShowPropertyList(boolean showPropertyList) {
+        this.showPropertyList = showPropertyList;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.STEP;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return "step" + id;
+    }
+
+    @Override
+    public String getStartPlug() {
+        return "step";
+    }
+
+    @Override
+    public void setStartPlug(String startPlug) {
+        /*nothing*/
     }
 
     /*== Public Methods ==*/
@@ -275,25 +311,5 @@ public class Step implements Selectable {
 
             }
         }
-    }
-
-    @Override
-    public Properties getProperties() {
-        return Properties.STEP;
-    }
-
-    @Override
-    public String getSelectableId() {
-        return "step" + id;
-    }
-
-    @Override
-    public String getStartPlug() {
-        return "step";
-    }
-
-    @Override
-    public void setStartPlug(String startPlug) {
-        /*nothing*/
     }
 }

@@ -1,3 +1,7 @@
+function refreshStepList() {
+    showStepList(leftPanel.css('display') === 'block');
+}
+
 function refershFlowChart() {
     document.getElementById('flowchart').src += '?refresh=1';
 }
@@ -7,31 +11,31 @@ function refreshProperties() {
 }
 
 function toggleLeft() {
-    if (leftPanel.css('display') === 'none') {
-        //to show
-        leftGutter.show();
-        leftPanel.show();
-        leftToggle.removeClass('pi-angle-right').addClass('pi-angle-left');
-    } else {
-        //to hide
-        leftGutter.hide();
-        leftPanel.hide();
-        leftToggle.removeClass('pi-angle-left').addClass('pi-angle-right');
-    }
+    showStepList(leftPanel.css('display') === 'none');
 }
 
 function toggleRight() {
-    if (rightPanel.css('display') === 'none') {
-        //to show
-        rightGutter.show();
-        rightPanel.show();
-        rightToggle.removeClass('pi-angle-left').addClass('pi-angle-right');
-    } else {
-        //to hide
-        rightGutter.hide();
-        rightPanel.hide();
-        rightToggle.removeClass('pi-angle-right').addClass('pi-angle-left');
-    }
+    showPropertyList(rightPanel.css('display') === 'none');
+}
+
+function showStepList(show) {
+    var display = show ? 'block' : 'none';
+    leftGutter.css('display', display);
+    leftPanel.css('display', display);
+    /*leftToggle.removeClass('pi-angle-right').addClass('pi-angle-left');*/
+    setToolPanel([
+        {name: 'stepList', value: '' + show}
+    ]);
+}
+
+function showPropertyList(show) {
+    var display = show ? 'block' : 'none';
+    rightGutter.css('display', display);
+    rightPanel.css('display', display);
+    /*rightToggle.removeClass('pi-angle-left').addClass('pi-angle-right');*/
+    setToolPanel([
+        {name: 'propertyList', value: '' + show}
+    ]);
 }
 
 function zoomStart() {
@@ -54,7 +58,7 @@ function zoom() {
     var flowchart = $(contentWindow.document.getElementsByTagName('html'));
     flowchart.css('zoom', zoomVal());
 
-    scrollToActive(contentWindow.$('.active'));
+    scrollToObj(contentWindow.$('.active'));
 }
 
 function zoomEnd(submit) {
@@ -73,7 +77,7 @@ function zoomEnd(submit) {
     if (active.length === 0) {
         contentWindow.scrollTo(scrollX, scrollY);
     } else {
-        scrollToActive(active);
+        scrollToObj(active);
     }
 
     if (submit === undefined) return;
@@ -90,13 +94,20 @@ function zoomEnd(submit) {
     ]);
 }
 
-function scrollToActive(active) {
-    /*scroll to active object*/
+function scrollToObj(active) {
+    if (active.hasClass('step')) {
+        /*scroll to active object*/
+        var ds = contentWindow.$('.data-source');
+        if (ds.length === 0) return;
+        active = ds.first();
+    }
+
     var zoomed = zoomVal().replace('%', '') / 100.0;
     var innerHeight = contentWindow.innerHeight;
     var innerWidth = contentWindow.innerWidth;
     var outerHeight = active.outerHeight();
     var outerWidth = active.outerWidth();
+
     contentWindow.scrollTo(0, 0);
     var pos = active.offset();
     pos.top *= zoomed;
@@ -112,6 +123,7 @@ function updateEm(selectable) {
 
 function propertyCreated() {
     /* init all behaviors of all input boxes such as auto-select-text */
+    $('.ui-g-12').hide();
 }
 
 $(function () {
@@ -119,7 +131,7 @@ $(function () {
     leftGutter = $('.left-panel + .ui-splitter-gutter');
     leftToggle = $('.left-panel-toggle').click(toggleLeft).children('.ui-button-icon-left');
     rightPanel = $('.right-panel');
-    rightGutter = $('.right-panel + .ui-splitter-gutter');
+    rightGutter = $('.main-panel + .ui-splitter-gutter');
     rightToggle = $('.right-panel-toggle').click(toggleRight).children('.ui-button-icon-left');
     contentWindow = document.getElementById('flowchart').contentWindow;
 });

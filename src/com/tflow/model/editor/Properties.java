@@ -22,11 +22,10 @@ public enum Properties {
     /*TODO: selectable object need lock/unlock status to enable/disable some properties with lock marked*/
 
     STEP(
-            "name:Name:String",
-            "--:Environment Settings:--",
-            "zoom:Zoom:ReadOnly",
+            "name:Name:String:refreshStepList();",
             "--:Debug Only:--",
             "id:ID:ReadOnly",
+            "zoom:Zoom:ReadOnly",
             ".:activeObject:selectableId:Active Object:ReadOnly"
     ),
     DATA_BASE(

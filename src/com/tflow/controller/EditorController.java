@@ -35,6 +35,9 @@ public class EditorController extends Controller {
     private List<PropertyView> propertyList;
     private Selectable activeObject;
 
+    private boolean showStepList;
+    private boolean showPropertyList;
+
     @PostConstruct
     public void onCreation() {
         initStepList();
@@ -42,9 +45,12 @@ public class EditorController extends Controller {
 
     private void initStepList() {
         Project project = workspace.getProject();
-        List<Step> stepList = project.getStepList();
         projectName = project.getName();
+        refreshStepList(project.getStepList());
+        selectStep(project.getActiveStepIndex(), false);
+    }
 
+    private void refreshStepList(List<Step> stepList) {
         stepMenu = new DefaultMenuModel();
         List<MenuElement> menuItemList = stepMenu.getElements();
         for (Step step : stepList) {
@@ -56,8 +62,6 @@ public class EditorController extends Controller {
                     .build()
             );
         }
-
-        selectStep(project.getActiveStepIndex(), false);
     }
 
     public String getProjectName() {
@@ -100,6 +104,21 @@ public class EditorController extends Controller {
         this.activeObject = activeObject;
     }
 
+    public boolean isShowStepList() {
+        return showStepList;
+    }
+
+    public void setShowStepList(boolean showStepList) {
+        this.showStepList = showStepList;
+    }
+
+    public boolean isShowPropertyList() {
+        return showPropertyList;
+    }
+
+    public void setShowPropertyList(boolean showPropertyList) {
+        this.showPropertyList = showPropertyList;
+    }
     /*== Public Methods ==*/
 
     public void log(String msg) {
@@ -303,6 +322,8 @@ public class EditorController extends Controller {
         project.setActiveStepIndex(stepIndex);
         Step activeStep = project.getActiveStep();
         zoom = activeStep.getZoom();
+        showStepList = activeStep.isShowStepList();
+        showPropertyList = activeStep.isShowPropertyList();
 
         Selectable activeObject = activeStep.getActiveObject();
         if (activeObject == null) {
@@ -311,7 +332,9 @@ public class EditorController extends Controller {
             selectObject(activeObject.getSelectableId());
         }
 
-        if (refresh) FacesUtil.runClientScript("refershFlowChart();");
+        String javascript = "showPropertyList(" + showPropertyList + ");";
+        if (refresh) javascript += "refershFlowChart();";
+        FacesUtil.runClientScript(javascript);
     }
 
     public void submitZoom() {
@@ -325,7 +348,7 @@ public class EditorController extends Controller {
 
     public void addStep() {
         Project project = workspace.getProject();
-        Step step = new Step( "Untitled", project);
+        Step step = new Step("Untitled", project);
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.STEP, step);
@@ -338,6 +361,7 @@ public class EditorController extends Controller {
             return;
         }
 
+        refreshStepList(project.getStepList());
         selectStep(step.getIndex());
 
         FacesUtil.addInfo("Step[" + step.getName() + "] added.");
@@ -542,6 +566,34 @@ public class EditorController extends Controller {
 
         this.activeObject = activeObject;
         propertyList = activeObject.getProperties().getPropertyList();
+    }
+
+    public void setToolPanel() {
+        Project project = workspace.getProject();
+        Step step = project.getActiveStep();
+        String refresh = FacesUtil.getRequestParam("refresh");
+        if (refresh != null) {
+            String javascript = "showStepList(" + showStepList + ");"
+                    + "showPropertyList(" + showPropertyList + ");";
+            FacesUtil.runClientScript(javascript);
+            log.warn("setToolPanel(refresh) invoked, runClientScript({})", javascript);
+            return;
+        }
+
+        String stepList = FacesUtil.getRequestParam("stepList");
+        if (stepList != null) {
+            showStepList = Boolean.parseBoolean(stepList);
+            step.setShowStepList(showStepList);
+            refreshStepList(project.getStepList());
+            log.warn("setToolPanel(stepList:{}) invoked", showStepList);
+        }
+
+        String propertyList = FacesUtil.getRequestParam("propertyList");
+        if (propertyList != null) {
+            showPropertyList = Boolean.parseBoolean(propertyList);
+            step.setShowPropertyList(showPropertyList);
+            log.warn("setToolPanel(propertyList:{}) invoked", showPropertyList);
+        }
     }
 
 }
