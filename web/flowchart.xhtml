@@ -21,6 +21,7 @@
 
         <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="plain-draggable.min.js" target="head"/>
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
         <h:outputScript library="js" name="flowchart.js#{app.forceReloadResources}" target="head"/>
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
@@ -277,6 +278,8 @@
                 </p:outputPanel>
 
             </h:form>
+
+            <span id="android" class="pi pi-android" style="z-index: 90000;position:absolute;color:yellow;font-size:calc(var(--font-size-1) *2);"/>
         </div>
 
     </h:body>

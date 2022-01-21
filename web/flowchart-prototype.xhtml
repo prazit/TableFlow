@@ -18,10 +18,22 @@
         <h:outputStylesheet library="css" name="tflow.css${app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css${app.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
+        <h:outputScript library="js" name="plain-draggable.min.js" target="head"/>
         <h:outputScript library="js" name="flowchart.js${app.forceReloadResources}" target="head"/>
 
-        <div class="flow-chart">
+        <style>
+            .droppable {
+                background-color: var(--primary-color);
+            }
+            .drop-target {
+                background-color: var(--surface-e);
+            }
+        </style>
+        <script>
+            $(function(){draggableStartup()});
+        </script>
 
+        <div class="flow-chart">
             <div class="source section">
                 <p:panelGrid columns="5">
 
@@ -29,12 +41,13 @@
                         <p>Trade Finance</p>
                         <p:graphicImage library="images" name="database.png"/>
                         <span>Database</span>
-                        <div class="start-plug"></div>
+                        <div class="start-plug">
+                        </div>
                     </p:outputPanel>
 
                     <p:spacer width="50"/>
 
-                    <p:outputPanel styleClass="data-source active">
+                    <p:outputPanel styleClass="data-source">
                         <div class="end-plug"></div>
                         <p>ADJINTR</p>
                         <p:graphicImage library="images" name="sql.png"/>
@@ -47,7 +60,7 @@
                     <p:panel header="" styleClass="data-table">
                         <f:facet name="actions">
                             <div class="end-plug"></div>
-                            <div>
+                            <div class="">
                                 <p:graphicImage library="images" name="sql.png"/>
                                 <b>Fixed Account</b>
                                 <p:commandButton type="button"
@@ -342,6 +355,7 @@
                 </p:panelGrid>
             </div>
 
+            <span id="android" class="pi pi-android" style="z-index: 90000;position:absolute;color:yellow;font-size:calc(var(--font-size-1) *2);"/>
         </div>
 
         <script>

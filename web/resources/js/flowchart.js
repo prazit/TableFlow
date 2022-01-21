@@ -49,6 +49,115 @@ function selectObject($e) {
     parentWindow.scrollToObj($e);
 }
 
+function dragableEnter($dragTarget, dropTargetSelector) {
+    var offset = $dragTarget.first().offset();
+
+    $draggableJQ.first().show();
+
+    draggable = new PlainDraggable($draggableJQ[0], {
+        snap: true,
+        autoScroll: true,
+        width: 9000,
+        left: (offset.left - (($draggableJQ.outerWidth() - $dragTarget.outerWidth()) / 2)),
+        top: (offset.top - (($draggableJQ.outerHeight() - $dragTarget.outerHeight()) / 2)),
+        /*-- custom --*/
+        startLog: false,
+        startPlug: $dragTarget.hasClass('start-plug') ? $dragTarget : null,
+        endPlug: $dragTarget.hasClass('end-plug') ? $dragTarget : null,
+        onDragStart: function (pos) {
+            this.startLog = true;
+            dragging = true;
+            $(dropTargetSelector).addClass('droppable');
+        },
+        onDrag: function (pos) {
+            var offset = $draggableJQ.offset();
+
+            $draggableJQ.hide();
+            var x = offset.left - window.scrollX,
+                y = offset.top - window.scrollY,
+                e = document.elementFromPoint(x, y);
+            $draggableJQ.show();
+
+            if (this.startLog) {
+                console.log('onDragStart(left:' + x + ', top:' + y + ')');
+                this.startLog = false;
+            }
+
+            if ($dropTarget !== undefined) {
+                $dropTarget.removeClass('drop-target');
+            }
+
+            var $e = $(e);
+            if (!$e.hasClass('droppable')) {
+                var $parent = $e.parents('.droppable');
+                if ($parent.length > 0) {
+                    $e = $parent;
+                } else {
+                    $e = $(undefined);
+                }
+            }
+            if ($e.length > 0) {
+                $dropTarget = $e;
+                $dropTarget.addClass('drop-target');
+            } else {
+                $dropTarget = undefined;
+            }
+        },
+        onDragEnd: function (pos) {
+            dragging = false;
+            if (this.startPlug == null) {
+                this.startPlug = $dropTarget;
+            } else {
+                this.endPlug = $dropTarget;
+            }
+
+            $draggableJQ.hide();
+            $('.droppable').removeClass('droppable');
+
+            console.log('onDragEnd: \'' + $draggableJQ.attr('id') + '\' dropped at pos(x:' + pos.left + ', y:' + pos.top + ') on target(' + ($dropTarget !== undefined ? $dropTarget.attr('id') : 'none') + ')');
+
+            addLink(this.startPlug, this.endPlug);
+        }
+    });
+}
+
+function addLink($startPlug, $endPlug) {
+    /*TODO: need to find selectableId of $startPlug*/
+    /*TODO: need to find selectableId of $endPlug*/
+    /*TODO: send them to server addLine function*/
+}
+
+function draggableStartup() {
+    var draggableElement = document.getElementById('android');
+    $draggableJQ = $(draggableElement).hide();
+
+    /*TODO: flow-chart element need to resize to cover all 3 sections.*/
+    $('.flow-chart').css('width', '2000px');
+
+    /*Mapping between draggable selector and droppable selector.*/
+    var draggableList = [
+        {draggable: '.start-plug', droppable: '.column'},
+        {draggable: '.end-plug', droppable: '.data-source'}
+    ]
+
+    /*move draggableElement to cover a plug at the mouse position*/
+    $(draggableList).each(function (i, e) {
+        $(e.draggable).on('mouseenter', function (ev) {
+            if (dragging) return;
+            dragableEnter($(ev.currentTarget), $(e.droppable));
+        });
+    });
+    /*$('.end-plug').on('mouseenter', function (ev) {
+        if (dragging) return;
+        mouseenter(ev, '.data-source');
+    });*/
+    $draggableJQ.on('mouseleave', function (ev) {
+        if (dragging) return;
+        $draggableJQ.hide();
+    });
+
+}
+
 function startup() {
     LeaderLine.positionByWindowResize = false;
 
@@ -68,6 +177,7 @@ function startup() {
     /*need to show after all works*/
     $('.flow-chart').css('visibility', 'visible');
 
+    draggableStartup();
 }
 
 var lines = [];
@@ -87,6 +197,9 @@ var pLine = {
     iLine = Object.assign({color: 'green', path: 'fluid'}, pLine),
     dLine = Object.assign({color: 'blue', path: 'fluid'}, pLine),
     dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine);
+var $draggableJQ, draggable,
+    dragging = false,
+    $dropTarget;
 
 /*
 // PlainDraggable SAMPLE

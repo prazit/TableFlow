@@ -285,7 +285,10 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
     background-color: var(--table-color);
 }
 
-.start-plug:hover {
-    zoom: 2;
-    margin: 0 calc(var(--margin) * -1) calc(var(--margin) * -1) 0;
+.droppable {
+    background-color: var(--primary-color);
+}
+
+.drop-target {
+    background-color: var(--surface-e);
 }
