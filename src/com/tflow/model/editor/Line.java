@@ -9,8 +9,8 @@ public class Line implements Serializable {
     private String endSelectableId;
 
     private int clientIndex;
-    private String startPlug;
-    private String endPlug;
+    private LinePlug startPlug;
+    private LinePlug endPlug;
     private LineType type;
 
     public Line(String startSelectableId, String endSelectableId) {
@@ -42,19 +42,19 @@ public class Line implements Serializable {
         this.endSelectableId = endSelectableId;
     }
 
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return startPlug;
     }
 
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
         this.startPlug = startPlug;
     }
 
-    public String getEndPlug() {
+    public LinePlug getEndPlug() {
         return endPlug;
     }
 
-    public void setEndPlug(String endPlug) {
+    public void setEndPlug(LinePlug endPlug) {
         this.endPlug = endPlug;
     }
 

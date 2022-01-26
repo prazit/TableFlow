@@ -11,12 +11,14 @@ public class TransformTable extends DataTable {
     private SourceType sourceType;
     private int sourceId;
     private List<TableFx> fxList;
+    private ColumnFxTable columnFxTable;
 
     public TransformTable(String name, int sourceId, SourceType sourceType, String idColName, String endPlug, String startPlug) {
         super(name, null, null, idColName, false, endPlug, startPlug);
         this.sourceId = sourceId;
         this.sourceType = sourceType;
         fxList = new ArrayList<>();
+        columnFxTable = new ColumnFxTable(this);
         this.setRoomType(RoomType.TRANSFORM_TABLE);
     }
 
@@ -42,6 +44,14 @@ public class TransformTable extends DataTable {
 
     public void setFxList(List<TableFx> fxList) {
         this.fxList = fxList;
+    }
+
+    public ColumnFxTable getColumnFxTable() {
+        return columnFxTable;
+    }
+
+    public void setColumnFxTable(ColumnFxTable columnFxTable) {
+        this.columnFxTable = columnFxTable;
     }
 
     @Override

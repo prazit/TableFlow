@@ -23,8 +23,8 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
 
     private Map<String, Object> propertyMap;
 
-    private String endPlug;
-    private String startPlug;
+    private LinePlug endPlug;
+    private LinePlug startPlug;
 
     private HasDataFile owner;
 
@@ -34,20 +34,10 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
         this.name = name;
         this.path = path;
         this.propertyMap = new HashMap<>();
-        initPropertyMap();
-        this.endPlug = endPlug;
-        this.startPlug = startPlug;
+        type.getProperties().initPropertyMap(propertyMap);
+        this.endPlug = new EndPlug(endPlug);
+        this.startPlug = new StartPlug(startPlug);
         this.setRoomType(RoomType.DATA_FILE);
-    }
-
-    private void initPropertyMap() {
-        for (String property : type.getProperties().getPrototypeList()) {
-            String[] params = property.split("[:]");
-            if (params[0].equals(".")) {
-                if (!propertyMap.containsKey(params[1]))
-                    propertyMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
-            }
-        }
     }
 
     public int getId() {
@@ -72,7 +62,7 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
 
     public void setType(DataFileType type) {
         this.type = type;
-        initPropertyMap();
+        type.getProperties().initPropertyMap(propertyMap);
     }
 
     public String getName() {
@@ -92,22 +82,22 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
     }
 
     @Override
-    public String getEndPlug() {
+    public LinePlug getEndPlug() {
         return endPlug;
     }
 
     @Override
-    public void setEndPlug(String endPlug) {
+    public void setEndPlug(LinePlug endPlug) {
         this.endPlug = endPlug;
     }
 
     @Override
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return startPlug;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
         this.startPlug = startPlug;
     }
 
@@ -119,12 +109,9 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
         this.owner = owner;
     }
 
+    @Override
     public Map<String, Object> getPropertyMap() {
         return propertyMap;
-    }
-
-    public void setPropertyMap(Map<String, Object> propertyMap) {
-        this.propertyMap = propertyMap;
     }
 
     @Override

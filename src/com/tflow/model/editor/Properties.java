@@ -5,6 +5,7 @@ import com.tflow.model.editor.view.PropertyView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This Enum use Prototype String like this<br/>
@@ -188,12 +189,14 @@ public enum Properties {
 
     /*TODO: need complete list for Parameters or Function Prototypes*/
     CFX_LOOKUP(
-            "name:File Name:String"
-            /*"SourceTable:TableName",
-            "Condition:Condition(ColumnName==ColumnName(TargetTableLookup))",
-            "Conditions:ConditionList(ColumnName==ColumnName(TargetTableLookup))",
-            "SourceColumn:ColumnName(TargetTableLookup)",
-            "DefaultValue:ColumnType(TargetColumnValue)"*/
+            "name:File Name:String",
+            "--:Lookup:--",
+            ".:propertyMap:sourceTable:Source Table:SourceTable",
+            ".:propertyMap:sourceColumn:Source Column:Column:sourceTable",
+            ".:propertyMap:nullValue:Null Value:String",
+            "--:Conditions:--"
+            /*"Condition:Condition(ColumnName==ColumnName(TargetTableLookup))",*/
+            /*"Conditions:ConditionList(ColumnName==ColumnName(TargetTableLookup))",*/
     ),
     CFX_GET(
             "name:File Name:String"
@@ -290,4 +293,15 @@ public enum Properties {
         }
         return propertyList;
     }
+
+    public void initPropertyMap(Map<String, Object> propertyMap) {
+        for (String property : getPrototypeList()) {
+            String[] params = property.split("[:]");
+            if (params[0].equals(".")) {
+                if (!propertyMap.containsKey(params[1]))
+                    propertyMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
+            }
+        }
+    }
+
 }

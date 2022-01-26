@@ -32,6 +32,7 @@ function register(selectable) {
     }
 
     $(selectable).on('click', function (ev) {
+        console.log('click on selectable object');
         selectObject($(ev.currentTarget));
         return false;
     });
@@ -41,119 +42,216 @@ function selectObject($e) {
     $('.active').removeClass('active');
     $e.addClass('active');
 
-    var id = $e.find('input[name=selectableId]').attr('value');
     var parentWindow = window.parent;
     parentWindow.setActiveObj([
-        {name: 'selectableId', value: id}
+        {name: 'selectableId', value: getSelectableId($e)}
     ]);
     parentWindow.scrollToObj($e);
 }
 
-function dragableEnter($dragTarget, dropTargetSelector) {
-    var offset = $dragTarget.first().offset();
+var draggableCount = 0;
 
-    $draggableJQ.first().show();
+function dragableEnter($dragTarget, $dropTargets) {
+    console.log('dragableEnter');
 
-    draggable = new PlainDraggable($draggableJQ[0], {
-        snap: true,
-        autoScroll: true,
-        width: 9000,
-        left: (offset.left - (($draggableJQ.outerWidth() - $dragTarget.outerWidth()) / 2)),
-        top: (offset.top - (($draggableJQ.outerHeight() - $dragTarget.outerHeight()) / 2)),
-        /*-- custom --*/
-        startLog: false,
-        startPlug: $dragTarget.hasClass('start-plug') ? $dragTarget : null,
-        endPlug: $dragTarget.hasClass('end-plug') ? $dragTarget : null,
-        onDragStart: function (pos) {
-            this.startLog = true;
-            dragging = true;
-            $(dropTargetSelector).addClass('droppable');
-        },
-        onDrag: function (pos) {
-            var offset = $draggableJQ.offset();
+    var bgColor = $dragTarget.css('background-color'),
+        isDraggable = $dragTarget.hasClass('draggable'),
+        offset = $dragTarget.first().offset();
 
-            $draggableJQ.hide();
-            var x = offset.left - window.scrollX,
-                y = offset.top - window.scrollY,
-                e = document.elementFromPoint(x, y);
-            $draggableJQ.show();
+    $draggable.buttons.removeLine.toggle($dragTarget.hasClass('remove-line'));
+    $draggable.buttons.extractData.toggle($dragTarget.hasClass('extract-data'));
+    $draggable.buttons.draggable.toggle(isDraggable)
+        .css('background-color', bgColor)
+        .css('color', bgColor)
+        .on('click', function (ev) {
+            /* cancel the event 'click on selectable object' */
+            return false;
+        });
 
-            if (this.startLog) {
-                console.log('onDragStart(left:' + x + ', top:' + y + ')');
-                this.startLog = false;
-            }
+    /*position need to calculate after the size of buttons is not change*/
+    var position = {
+        /*--spot at center of draggable stack--*/
+        left: (offset.left - (($draggable.outerWidth() - $dragTarget.outerWidth()) / 2)),
+        top: (offset.top - (($draggable.outerHeight() - $dragTarget.outerHeight()) / 2))
+        /*--spot at top of draggable stack--*/
+        /*left: (offset.left - (($draggable.outerWidth() - $dragTarget.outerWidth()) / 2)),
+        top: (offset.top - 10)*/
+    };
 
-            if ($dropTarget !== undefined) {
-                $dropTarget.removeClass('drop-target');
-            }
+    if (isDraggable) {
+        $draggable.show().dragging = Object.assign(new PlainDraggable($draggable[0], Object.assign({
+                snap: true,
+                autoScroll: true,
+                width: 9000,
+                onMove: function () {
+                    if (this.line != null) {
+                        var x = window.scrollX,
+                            y = window.scrollY;
+                        window.scrollTo(0, 0);
+                        this.line.position();
+                        window.scrollTo(x, y);
+                    }
+                },
+                onDragStart: function (pos) {
+                    console.log('onDragStart: draggableId=' + this.draggableId);
+                    this.startLog = true;
 
-            var $e = $(e);
-            if (!$e.hasClass('droppable')) {
-                var $parent = $e.parents('.droppable');
-                if ($parent.length > 0) {
-                    $e = $parent;
-                } else {
-                    $e = $(undefined);
+                    $draggable.buttons.removeLine.hide();
+                    $draggable.buttons.extractData.hide();
+                    $dropTargets.addClass('droppable');
+
+                    this.line = new LeaderLine(this.dragTarget[0], this.element, this.lineOptions);
+                    this.onMove();
+                },
+                onDrag: function (pos) {
+                    var offset = $draggable.offset();
+
+                    $draggable.hide();
+                    var x = offset.left - window.scrollX,
+                        y = offset.top - window.scrollY,
+                        e = document.elementFromPoint(x, y);
+                    $draggable.show();
+
+                    if (this.startLog) {
+                        console.log('onDragStart(left:' + x + ', top:' + y + ')');
+                        this.startLog = false;
+                    }
+
+                    if (this.dropTarget != null) {
+                        this.dropTarget.removeClass('drop-target');
+                    }
+
+                    var $e = $(e);
+                    if (!$e.hasClass('droppable')) {
+                        var $parent = $e.parents('.droppable');
+                        if ($parent.length > 0) {
+                            $e = $parent;
+                        } else {
+                            $e = $(undefined);
+                        }
+                    }
+                    if ($e.length > 0) {
+                        this.dropTarget = $e;
+                        this.dropTarget.addClass('drop-target');
+                    } else {
+                        this.dropTarget = null;
+                    }
+                },
+                onDragEnd: function (pos) {
+                    console.log('onDragEnd: draggableId=' + this.draggableId);
+                    this.line.remove();
+                    this.line = null;
+
+                    $draggable.dragging.remove();
+                    $draggable.dragging = undefined;
+                    $draggable.hide();
+                    $('.droppable').removeClass('droppable');
+
+                    console.log('onDragEnd: \'' + $draggable.attr('id') + '\' dropped at pos(x:' + pos.left + ', y:' + pos.top + ') on target(' + (this.dropTarget !== null ? this.dropTarget.attr('id') : 'none') + ')');
+
+                    if (this.startPlug != null && this.endPlug != null) {
+                        if (this.startPlug == null) {
+                            this.startPlug = this.dropTarget;
+                        } else {
+                            this.endPlug = this.dropTarget;
+                        }
+                        addLink(this.startPlug, this.endPlug);
+                    }
+
+                    /*TODO: need to find from this point, why the flowchart has refreshed!*/
                 }
-            }
-            if ($e.length > 0) {
-                $dropTarget = $e;
-                $dropTarget.addClass('drop-target');
-            } else {
-                $dropTarget = undefined;
-            }
-        },
-        onDragEnd: function (pos) {
-            dragging = false;
-            if (this.startPlug == null) {
-                this.startPlug = $dropTarget;
-            } else {
-                this.endPlug = $dropTarget;
-            }
-
-            $draggableJQ.hide();
-            $('.droppable').removeClass('droppable');
-
-            console.log('onDragEnd: \'' + $draggableJQ.attr('id') + '\' dropped at pos(x:' + pos.left + ', y:' + pos.top + ') on target(' + ($dropTarget !== undefined ? $dropTarget.attr('id') : 'none') + ')');
-
-            addLink(this.startPlug, this.endPlug);
-        }
-    });
+            }, position)),
+            {
+                draggableId: ++draggableCount,
+                startLog: false,
+                startPlug: $dragTarget.hasClass('start-plug') ? $dragTarget : null,
+                endPlug: $dragTarget.hasClass('end-plug') ? $dragTarget : null,
+                line: null,
+                lineOptions: dgLine,
+                dragTarget: $dragTarget,
+                dropTarget: null
+            });
+        $draggable.dragging.lineOptions.color = bgColor;
+    } else {
+        $draggable.show().offset(position);
+    }
 }
 
 function addLink($startPlug, $endPlug) {
-    /*TODO: need to find selectableId of $startPlug*/
-    /*TODO: need to find selectableId of $endPlug*/
-    /*TODO: send them to server addLine function*/
+    console.log('--:addLink():--');
+    console.log('startPlug:' + $startPlug);
+    console.log('endPlug:' + $endPlug);
+}
+
+function addLinkReal($startPlug, $endPlug) {
+    window.parent.addLine([
+        {name: "startSelectableId", value: getSelectableId($startPlug)},
+        {name: "endSelectableId", value: getSelectableId($endPlug)}
+    ]);
+}
+
+function getSelectableId($e) {
+    return $e.find('input[name=selectableId]').attr('value');
 }
 
 function draggableStartup() {
-    var draggableElement = document.getElementById('android');
-    $draggableJQ = $(draggableElement).hide();
+
+    /*TODO: need more type of Draggable-button for any type of plug*/
+    /*use styleClass to knows any plug already connected or not.
+     * no-connection
+     * connected
+     * selector for data-source without connection = .data-source .start-plug.no-connection
+     **/
+
+    var draggableElement = document.getElementById('plugButtons');
+    $draggable = $(draggableElement).hide();
+    $draggable.buttons = {
+        removeLine: $draggable.find('#removeLine'),
+        extractData: $draggable.find('#extractData'),
+        draggable: $draggable.find('#draggable')
+    };
 
     /*TODO: flow-chart element need to resize to cover all 3 sections.*/
     $('.flow-chart').css('width', '2000px');
 
     /*Mapping between draggable selector and droppable selector.*/
     var draggableList = [
-        {draggable: '.start-plug', droppable: '.column'},
-        {draggable: '.end-plug', droppable: '.data-source'}
-    ]
+        /*data-source to data-file*/
+        {draggable: '.data-source.local .start-plug', droppable: '.data-file.local:has(.end-plug.no-connection)'},
+        {draggable: '.data-file.local .end-plug.no-connection', droppable: '.data-source.local'},
+        {draggable: '.data-source.sftp .start-plug', droppable: '.data-file.sftp:has(.end-plug.no-connection)'},
+        {draggable: '.data-file.sftp .end-plug.no-connection', droppable: '.data-source.sftp'},
+        {draggable: '.data-source.database .start-plug', droppable: '.data-file.database:has(.end-plug.no-connection)'},
+        {draggable: '.data-file.database .end-plug.no-connection', droppable: '.data-source.database'},
+
+        /*TODO: data-file to data-table*/
+
+        /*TODO: data-table to data-table*/
+
+        /*column to column*/
+        {draggable: '.string.column .start-plug.no-connection', droppable: '.string.column:has(.end-plug.no-connection)'},
+        {draggable: '.integer.column .start-plug.no-connection', droppable: '.integer.column:has(.end-plug.no-connection)'},
+        {draggable: '.decimal.column .start-plug.no-connection', droppable: '.decimal.column:has(.end-plug.no-connection)'},
+        {draggable: '.date.column .start-plug.no-connection', droppable: '.date.column:has(.end-plug.no-connection)'}
+
+        /*TODO: column to column-fx*/
+
+    ];
 
     /*move draggableElement to cover a plug at the mouse position*/
     $(draggableList).each(function (i, e) {
         $(e.draggable).on('mouseenter', function (ev) {
-            if (dragging) return;
-            dragableEnter($(ev.currentTarget), $(e.droppable));
+            if ($draggable.dragging === undefined) {
+                dragableEnter($(ev.currentTarget), $(e.droppable));
+            }
         });
     });
-    /*$('.end-plug').on('mouseenter', function (ev) {
-        if (dragging) return;
-        mouseenter(ev, '.data-source');
-    });*/
-    $draggableJQ.on('mouseleave', function (ev) {
-        if (dragging) return;
-        $draggableJQ.hide();
+    $draggable.on('mouseleave', function (ev) {
+        if (/*avoid error when drag with high speed move*/$draggable.dragging !== undefined && $draggable.dragging.line == null) {
+            $draggable.dragging.remove();
+            $draggable.dragging = undefined;
+            $draggable.hide();
+        }
     });
 
 }
@@ -196,10 +294,9 @@ var pLine = {
     sLine = Object.assign({color: 'red', path: 'fluid'}, pLine),
     iLine = Object.assign({color: 'green', path: 'fluid'}, pLine),
     dLine = Object.assign({color: 'blue', path: 'fluid'}, pLine),
-    dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine);
-var $draggableJQ, draggable,
-    dragging = false,
-    $dropTarget;
+    dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine),
+    dgLine = Object.assign({color: 'silver', path: 'fluid'}, pLine);
+var $draggable;
 
 /*
 // PlainDraggable SAMPLE

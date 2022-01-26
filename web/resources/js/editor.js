@@ -2,7 +2,7 @@ function refreshStepList() {
     showStepList(leftPanel.css('display') === 'block');
 }
 
-function refershFlowChart() {
+function refreshFlowChart() {
     document.getElementById('flowchart').src += '?refresh=1';
 }
 
@@ -95,8 +95,9 @@ function zoomEnd(submit) {
 }
 
 function scrollToObj(active) {
+    console.log('scrollToObj(active:' + active.attr('class') + ')');
     if (active.hasClass('step')) {
-        /*scroll to active object*/
+        /*scroll to first data-source*/
         var ds = contentWindow.$('.data-source');
         if (ds.length === 0) return;
         active = ds.first();

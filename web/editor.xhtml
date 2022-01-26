@@ -38,6 +38,7 @@
                                 </p:accordionPanel>
                                 <p:remoteCommand name="setActiveObj" action="#{editorCtl.selectObject}" update="propertyForm"/>
                                 <p:remoteCommand name="setToolPanel" action="#{editorCtl.setToolPanel}" update="stepForm,propertyForm"/>
+                                <p:remoteCommand name="addLine" action="#{editorCtl.addLine}" update="propertyForm"/>
                             </h:form>
                         </p:panel>
                     </p:splitterPanel>
@@ -164,18 +165,6 @@
                                                 <p:inputNumber value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
                                                     <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                 </p:inputNumber>
-                                            </div>
-                                            <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>
-                                        </p:outputPanel>
-
-                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.COLUMN==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
-                                            <div class="ui-g-8">
-                                                <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <f:selectItem itemLabel="-- select one --"/>
-                                                    <f:selectItems value="#{editorCtl.getColumnList(editorCtl.activeObject[prop.params[0]])}" var="column" itemLabel="#{column.label}" itemValue="#{column.value}"/>
-                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                                </p:selectOneMenu>
                                             </div>
                                             <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>
                                         </p:outputPanel>

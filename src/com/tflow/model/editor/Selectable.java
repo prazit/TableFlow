@@ -1,13 +1,17 @@
 package com.tflow.model.editor;
 
+import java.util.Map;
+
 public interface Selectable {
 
     public Properties getProperties();
 
     public String getSelectableId();
 
-    public String getStartPlug();
+    public LinePlug getStartPlug();
 
-    public void setStartPlug(String startPlug);
+    public void setStartPlug(LinePlug startPlug);
+
+    public Map<String, Object> getPropertyMap();
 
 }

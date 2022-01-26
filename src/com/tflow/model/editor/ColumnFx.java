@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ColumnFx implements Serializable, Selectable, HasEndPlug {
@@ -9,12 +10,22 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug {
     private int id;
     private String name;
     private ColumnFunction function;
-    private Map<String, Object> paramMap;
+    private Map<String, Object> propertyMap;
 
-    private String endPlug;
-    private String startPlug;
+    private LinePlug endPlug;
+    private LinePlug startPlug;
 
     private DataColumn owner;
+
+    public ColumnFx(DataColumn owner, ColumnFunction function, String name, String startPlug, String endPlug) {
+        this.name = name;
+        this.function = function;
+        this.endPlug = new EndPlug(endPlug);
+        this.startPlug = new StartPlug(startPlug);
+        this.owner = owner;
+        propertyMap = new HashMap<>();
+        function.getProperties().initPropertyMap(propertyMap);
+    }
 
     public int getId() {
         return id;
@@ -40,31 +51,31 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug {
         this.function = function;
     }
 
-    public Map<String, Object> getParamMap() {
-        return paramMap;
+    public Map<String, Object> getPropertyMap() {
+        return propertyMap;
     }
 
-    public void setParamMap(Map<String, Object> paramMap) {
-        this.paramMap = paramMap;
+    public void setPropertyMap(Map<String, Object> propertyMap) {
+        this.propertyMap = propertyMap;
     }
 
     @Override
-    public String getEndPlug() {
+    public LinePlug getEndPlug() {
         return endPlug;
     }
 
     @Override
-    public void setEndPlug(String endPlug) {
+    public void setEndPlug(LinePlug endPlug) {
         this.endPlug = endPlug;
     }
 
     @Override
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return startPlug;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
         this.startPlug = startPlug;
     }
 

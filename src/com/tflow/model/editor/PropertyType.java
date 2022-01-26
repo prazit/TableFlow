@@ -31,7 +31,8 @@ public enum PropertyType {
     DBCONNECTION(/*data-base-id*/0, true),
     DBTABLE(/*table-name*/"", true),
 
-    COLUMN(/*column-id(name)*/0),
+    SOURCETABLE(/*table-selectable-id*/ "", true),
+    COLUMN(/*column-selectable-id*/"", true),
     SFTP(/*sftp-id*/0, true),
 
     COLUMNARRAY(/*column-ids(names)*/new ArrayList<Integer>()),

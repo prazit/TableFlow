@@ -5,7 +5,6 @@
         xmlns:f="http://java.sun.com/jsf/core"
         xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui"
-        xmlns:c="http://java.sun.com/jsp/jstl/core"
 >
 
     <h:head>
@@ -46,7 +45,7 @@
                         <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">
                             <tr>
                                 <td>
-                                    <p:outputPanel rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}" styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])}">
+                                    <p:outputPanel rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}" styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])} #{floor.roomList[0].type.name().toLowerCase()}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[0].selectableId}"/>
                                         <p:remoteCommand name="update#{floor.roomList[0].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[0].selectableId}')"/>
 
@@ -56,8 +55,8 @@
                                         <span>#{floor.roomList[0].type}</span>
                                         <p:importEnum type="com.tflow.model.editor.datasource.DataSourceType" var="DataSourceType"/>
                                         <p:outputLabel rendered="#{DataSourceType.DATABASE==floor.roomList[0].type}">#{floor.roomList[0].dbms}</p:outputLabel>
-                                        <div class="start-plug" id="#{floor.roomList[0].plug}">
-                                            <!--<p:outputPanel class="start-plug" id="#{floor.roomList[0].plug}"/>-->
+                                        <div class="#{floor.roomList[0].plug.styleClass}" id="#{floor.roomList[0].plug}">
+                                            <!--<p:outputPanel class="#{floor.roomList[0].plug.styleClass}" id="#{floor.roomList[0].plug}"/>-->
                                             <!-- TODO: <p:draggable for="sp#{floor.roomList[0].plug}" containment="editorForm"/>-->
                                         </div>
 
@@ -70,15 +69,15 @@
                                 </td>
 
                                 <td>
-                                    <p:outputPanel rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}" styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[1])}">
+                                    <p:outputPanel rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}" styleClass="data-source data-file selectable#{flowchartCtl.active(floor.roomList[1])}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[1].selectableId}"/>
                                         <p:remoteCommand name="update#{floor.roomList[1].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[1].selectableId}')"/>
 
-                                        <div class="end-plug" id="#{floor.roomList[1].endPlug}"></div>
+                                        <div class="#{floor.roomList[1].endPlug.styleClass}" id="#{floor.roomList[1].endPlug}"></div>
                                         <p>#{floor.roomList[1].name}</p>
                                         <p:graphicImage library="images" name="#{floor.roomList[1].type.image}"/>
                                         <span>#{floor.roomList[1].type.name}</span>
-                                        <div class="start-plug" id="#{floor.roomList[1].startPlug}"></div>
+                                        <div class="#{floor.roomList[1].startPlug.styleClass}" id="#{floor.roomList[1].startPlug}"></div>
                                     </p:outputPanel>
                                     <p:spacer rendered="#{floor.roomList[1].roomType!=RoomType.DATA_FILE}"/>
                                 </td>
@@ -93,7 +92,7 @@
                                         <p:remoteCommand name="update#{floor.roomList[2].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[2].selectableId}')"/>
 
                                         <f:facet name="actions">
-                                            <div class="end-plug" id="#{floor.roomList[2].endPlug}"></div>
+                                            <div class="#{floor.roomList[2].endPlug.styleClass}" id="#{floor.roomList[2].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images"
                                                                 name="#{floor.roomList[2].getDataFile().type.image}"/>
@@ -102,7 +101,7 @@
                                                                  styleClass="ui-button-secondary"
                                                                  icon="pi pi-ellipsis-h"/>
                                             </div>
-                                            <div class="start-plug" id="#{floor.roomList[2].startPlug}"></div>
+                                            <div class="#{floor.roomList[2].startPlug.styleClass}" id="#{floor.roomList[2].startPlug}"></div>
                                         </f:facet>
 
                                         <p:repeat value="#{floor.roomList[2].columnList}" var="column">
@@ -112,7 +111,7 @@
                                                 <p:remoteCommand name="update#{column.selectableId}" update="@parent" oncomplete="register('#{column.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{column.type.image}"/>
                                                 <label>#{column.name}</label>
-                                                <div class="start-plug" id="#{column.startPlug}"></div>
+                                                <div class="#{column.startPlug.styleClass}" id="#{column.startPlug}"></div>
                                             </p:outputPanel>
 
                                         </p:repeat>
@@ -126,7 +125,7 @@
                                                 <p:remoteCommand name="update#{output.selectableId}" update="@parent" oncomplete="register('#{output.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{output.type.image}"/>
                                                 <label>#{output.dataSource.name} - (#{output.name})</label>
-                                                <div class="start-plug" id="#{output.startPlug}"></div>
+                                                <div class="#{output.startPlug.styleClass}" id="#{output.startPlug}"></div>
                                             </div>
 
                                         </p:repeat>
@@ -163,10 +162,10 @@
                                                 <input name="selectableId" type="hidden" value="#{tcolumn.fx.selectableId}"/>
                                                 <p:remoteCommand name="update#{tcolumn.fx.selectableId}" update="@parent" oncomplete="register('#{tcolumn.fx.selectableId}')"/>
 
-                                                <div class="end-plug" id="#{tcolumn.fx.endPlug}"></div>
+                                                <div class="#{tcolumn.fx.endPlug.styleClass}" id="#{tcolumn.fx.endPlug}"></div>
                                                 <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
                                                 <label>#{tcolumn.fx.name}</label>
-                                                <div class="start-plug" id="#{tcolumn.fx.startPlug}"></div>
+                                                <div class="#{tcolumn.fx.startPlug.styleClass}" id="#{tcolumn.fx.startPlug}"></div>
                                             </p:outputPanel>
 
                                         </p:repeat>
@@ -183,7 +182,7 @@
                                         <f:facet name="actions">
                                             <input name="selectableId" type="hidden" value="#{tfloor.roomList[1].selectableId}"/>
                                             <p:remoteCommand name="update#{tfloor.roomList[1].selectableId}" update="@parent" oncomplete="register('#{tfloor.roomList[1].selectableId}')"/>
-                                            <div class="end-plug" id="#{tfloor.roomList[1].endPlug}"></div>
+                                            <div class="#{tfloor.roomList[1].endPlug.styleClass}" id="#{tfloor.roomList[1].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images" name="transfer.png"/>
                                                 <b>#{tfloor.roomList[1].name}</b>
@@ -191,7 +190,7 @@
                                                                  styleClass="ui-button-secondary"
                                                                  icon="pi pi-ellipsis-h"/>
                                             </div>
-                                            <div class="start-plug" id="#{tfloor.roomList[1].endPlug}"></div>
+                                            <div class="#{tfloor.roomList[1].endPlug.styleClass}" id="#{tfloor.roomList[1].endPlug}"></div>
                                         </f:facet>
 
                                         <p:repeat value="#{tfloor.roomList[1].columnList}" var="tcolumn">
@@ -199,10 +198,10 @@
                                             <div class="#{tcolumn.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumn)}">
                                                 <input name="selectableId" type="hidden" value="#{tcolumn.selectableId}"/>
                                                 <p:remoteCommand name="update#{tcolumn.selectableId}" update="@parent" oncomplete="register('#{tcolumn.selectableId}')"/>
-                                                <div class="end-plug" id="#{tcolumn.endPlug}"></div>
+                                                <div class="#{tcolumn.endPlug.styleClass}" id="#{tcolumn.endPlug}"></div>
                                                 <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
                                                 <label>#{tcolumn.name}</label>
-                                                <div class="start-plug" id="#{tcolumn.startPlug}"></div>
+                                                <div class="#{tcolumn.startPlug.styleClass}" id="#{tcolumn.startPlug}"></div>
                                             </div>
 
                                         </p:repeat>
@@ -229,7 +228,7 @@
                                                 <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="register('#{toutput.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{toutput.type.image}"/>
                                                 <label>#{toutput.dataSource.name} - (#{toutput.name})</label>
-                                                <div class="start-plug" id="#{toutput.startPlug}"></div>
+                                                <div class="#{toutput.startPlug.styleClass}" id="#{toutput.startPlug}"></div>
                                             </div>
 
                                         </p:repeat>
@@ -279,7 +278,14 @@
 
             </h:form>
 
-            <span id="android" class="pi pi-android" style="z-index: 90000;position:absolute;color:yellow;font-size:calc(var(--font-size-1) *2);"/>
+            <div id="plugButtons" style="z-index:90000;position:absolute;font-size:var(--font-size-1);background-color:rgba(0,0,0,.6);border-radius: 10px;padding:var(--padding);">
+                <!--<p:tooltip for="draggable" value="Drag and drop onto compatible plug."/>
+                <p:tooltip for="removeLine" value="Remove linked line."/>
+                <p:tooltip for="extractData" value="Extract data structure to new data-table."/>-->
+                <p:button id="draggable" icon="pi pi-circle" style="color:yellow;" styleClass="plug-button"/>
+                <p:button id="removeLine" icon="pi pi-minus-circle" style="color:red;cursor:default;" styleClass="plug-button" onclick="removeLine();"/>
+                <p:button id="extractData" icon="pi pi-plus-circle" style="color:green;cursor:default;" styleClass="plug-button" onclick="extractData();"/>
+            </div>
         </div>
 
     </h:body>

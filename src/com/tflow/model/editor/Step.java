@@ -2,8 +2,6 @@ package com.tflow.model.editor;
 
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Tower;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +23,8 @@ public class Step implements Selectable {
     private Tower outputTower;
     private List<Line> lineList;
 
+    private LinePlug startPlug;
+
     private Project owner;
 
     private Selectable activeObject;
@@ -44,6 +44,7 @@ public class Step implements Selectable {
         transformTower = new Tower(2, this);
         outputTower = new Tower(2, this);
         lineList = new ArrayList<>();
+        startPlug = new StartPlug("step");
         zoom = Double.valueOf(100);
         this.owner = owner;
         selectableMap = new HashMap<>();
@@ -211,13 +212,18 @@ public class Step implements Selectable {
     }
 
     @Override
-    public String getStartPlug() {
-        return "step";
+    public LinePlug getStartPlug() {
+        return startPlug;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
-        /*nothing*/
+    public void setStartPlug(LinePlug startPlug) {
+        this.startPlug = startPlug;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return new HashMap<>();
     }
 
     /*== Public Methods ==*/
@@ -227,17 +233,21 @@ public class Step implements Selectable {
 
         int index = lineList.size();
         newLine.setClientIndex(index);
+        lineList.add(newLine);
 
         Selectable startSelectable = selectableMap.get(startSelectableId);
+        Selectable endSelectable = selectableMap.get(endSelectableId);
+
         newLine.setType(getLineType(startSelectable));
-        newLine.setStartPlug(startSelectable.getStartPlug());
 
-        if (endSelectableId != null) {
-            HasEndPlug hasEndPlug = (HasEndPlug) selectableMap.get(endSelectableId);
-            newLine.setEndPlug(hasEndPlug.getEndPlug());
-        }
+        LinePlug startPlug = startSelectable.getStartPlug();
+        startPlug.setPlugged(true);
+        newLine.setStartPlug(startPlug);
 
-        lineList.add(newLine);
+        HasEndPlug hasEndPlug = (HasEndPlug) endSelectable;
+        LinePlug endPlug = hasEndPlug.getEndPlug();
+        endPlug.setPlugged(true);
+        newLine.setEndPlug(endPlug);
     }
 
     private LineType getLineType(Selectable selectable) {

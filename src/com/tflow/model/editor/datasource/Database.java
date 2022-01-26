@@ -1,7 +1,9 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;
+import com.tflow.model.editor.StartPlug;
 import com.tflow.model.editor.room.RoomType;
 
 import java.util.HashMap;
@@ -32,7 +34,7 @@ public class Database extends DataSource implements Selectable {
         setType(DataSourceType.DATABASE);
         setImage("database.png");
         setName(name);
-        setPlug(plug);
+        setPlug(new StartPlug(plug));
         userEncrypted = true;
         passwordEncrypted = true;
         propList = new HashMap<>();
@@ -128,13 +130,18 @@ public class Database extends DataSource implements Selectable {
     }
 
     @Override
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return plug;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
         this.plug = startPlug;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return new HashMap<>();
     }
 
     @Override

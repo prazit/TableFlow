@@ -5,7 +5,9 @@ import com.tflow.model.editor.room.RoomType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DataTable extends Room implements Serializable, Selectable, HasDataFile, HasEndPlug {
     private static final long serialVersionUID = 2021121709996660030L;
@@ -22,8 +24,8 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     /*noTransform can use Auto Generated Value*/
     private boolean noTransform;
 
-    private String endPlug;
-    private String startPlug;
+    private LinePlug endPlug;
+    private LinePlug startPlug;
 
     public DataTable(String name, DataFile dataFile, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
         this.name = name;
@@ -35,8 +37,8 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.query = query;
         this.idColName = idColName;
         this.noTransform = noTransform;
-        this.endPlug = endPlug;
-        this.startPlug = startPlug;
+        this.endPlug = new EndPlug(endPlug);
+        this.startPlug = new StartPlug(startPlug);
         this.columnList = new ArrayList<>();
         this.outputList = new ArrayList<>();
         this.setRoomType(RoomType.DATA_TABLE);
@@ -120,23 +122,28 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     }
 
     @Override
-    public String getEndPlug() {
+    public LinePlug getEndPlug() {
         return endPlug;
     }
 
     @Override
-    public void setEndPlug(String endPlug) {
+    public void setEndPlug(LinePlug endPlug) {
         this.endPlug = endPlug;
     }
 
     @Override
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return startPlug;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
         this.startPlug = startPlug;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return new HashMap<>();
     }
 
     @Override

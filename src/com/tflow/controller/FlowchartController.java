@@ -1,15 +1,15 @@
 package com.tflow.controller;
 
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.room.Tower;
+import com.tflow.model.editor.action.AddColumnFx;
+import com.tflow.model.editor.action.RequiredParamException;
+import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.util.FacesUtil;
-import org.jboss.weld.manager.Transform;
 
 import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,31 +50,17 @@ public class FlowchartController extends Controller {
 
     /**
      * Draw lines on the client when page loaded.
-     * Or add new line from the client.
      */
     public void addLine() {
-        Line newLine = getRequestedLine();
         StringBuilder jsBuilder = new StringBuilder();
 
-        if (newLine == null) {
-            for (Line line : step.getLineList()) {
-                jsBuilder.append(line.getJsAdd());
-            }
-        } else {
-            step.addLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
-            jsBuilder.append(newLine.getJsAdd());
+        for (Line line : step.getLineList()) {
+            jsBuilder.append(line.getJsAdd());
         }
+        jsBuilder.append("startup();");
 
-        String javaScript = "$(function(){" + jsBuilder.toString() + ";startup();});";
+        String javaScript = "$(function(){" + jsBuilder.toString() + "});";
         FacesUtil.runClientScript(javaScript);
-    }
-
-    private Line getRequestedLine() {
-        String startSelectableId = FacesUtil.getRequestParam("startSelectableId");
-        if (startSelectableId == null) return null;
-
-        String endSelectableId = FacesUtil.getRequestParam("endSelectableId");
-        return new Line(startSelectableId, endSelectableId);
     }
 
     /**

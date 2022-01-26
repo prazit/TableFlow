@@ -128,6 +128,9 @@ public class EditorController extends Controller {
     public List<SelectItem> getItemList(PropertyType type, String[] params) throws ClassNotFoundException {
         List<SelectItem> selectItemList = new ArrayList<>();
 
+        Step activeStep = workspace.getProject().getActiveStep();
+        Selectable activeObject = activeStep.getActiveObject();
+
         switch (type) {
             case SYSTEM:
                 for (SystemEnvironment value : SystemEnvironment.values()) {
@@ -150,6 +153,25 @@ public class EditorController extends Controller {
             case DBMS:
                 for (Dbms value : Dbms.values()) {
                     selectItemList.add(new SelectItem(value, value.name()));
+                }
+                break;
+
+            case SOURCETABLE:
+                /* TODO: list all tables before current table */
+                /* TODO: remove test list below*/
+                for (DataTable dataTable : activeStep.getDataList()) {
+                    selectItemList.add(new SelectItem(dataTable.getId(), dataTable.getName()));
+                }
+                break;
+
+            case COLUMN:
+                /* params[0] is property-map-name of table-selectable-id */
+                Object tableSelectableId = getPropertyValue(activeObject, params[0]);
+                DataTable sourceTable = (DataTable) activeStep.getSelectableMap().get(tableSelectableId.toString());
+                if (sourceTable != null) {
+                    for (DataColumn sourceColumn : sourceTable.getColumnList()) {
+                        selectItemList.add(new SelectItem(sourceColumn.getSelectableId(), sourceColumn.getName()));
+                    }
                 }
                 break;
 
@@ -192,9 +214,7 @@ public class EditorController extends Controller {
                 break;
 
             case DBTABLE:
-                for (DataTable dataTable : workspace.getProject().getActiveStep().getDataList()) {
-                    selectItemList.add(new SelectItem(dataTable.getId(), dataTable.getName()));
-                }
+                /*TODO: get table list from database connection*/
                 break;
 
             case SFTP:
@@ -211,6 +231,19 @@ public class EditorController extends Controller {
         }
 
         return selectItemList;
+    }
+
+    private Object getPropertyValue(Selectable selectable, String propertyName) {
+        Object value = selectable.getPropertyMap().get(propertyName);
+        if (value == null) {
+            try {
+                value = selectable.getClass().getField(propertyName).get(selectable);
+            } catch (Exception e) {
+                value = "";
+                log.error("getPropertyValue(selectable:{}, propertyName:{}) - {}", selectable.getSelectableId(), propertyName, e.getMessage());
+            }
+        }
+        return value == null ? "" : value;
     }
 
     public List<SelectItem> getColumnList(int dataTableId) {
@@ -333,7 +366,7 @@ public class EditorController extends Controller {
         }
 
         String javascript = "showPropertyList(" + showPropertyList + ");";
-        if (refresh) javascript += "refershFlowChart();";
+        if (refresh) javascript += "refreshFlowChart();";
         FacesUtil.runClientScript(javascript);
     }
 
@@ -365,7 +398,7 @@ public class EditorController extends Controller {
         selectStep(step.getIndex());
 
         FacesUtil.addInfo("Step[" + step.getName() + "] added.");
-        FacesUtil.runClientScript("refershFlowChart();");
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
 
     public void addDBConnection() {
@@ -389,7 +422,7 @@ public class EditorController extends Controller {
         selectObject(database.getSelectableId());
 
         FacesUtil.addInfo("Database[" + database.getName() + "] added.");
-        FacesUtil.runClientScript("refershFlowChart();");
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
 
     public void addSFTPConnection() {
@@ -413,7 +446,7 @@ public class EditorController extends Controller {
         selectObject(sftp.getSelectableId());
 
         FacesUtil.addInfo("SFTP[" + sftp.getName() + "] added.");
-        FacesUtil.runClientScript("refershFlowChart();");
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
 
     public void addDataFile() {
@@ -439,7 +472,7 @@ public class EditorController extends Controller {
         selectObject(dataFile.getSelectableId());
 
         /*FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
-        FacesUtil.runClientScript("refershFlowChart();");*/
+        FacesUtil.runClientScript("refreshFlowChart();");*/
         addDataTable(dataFile);
     }
 
@@ -498,7 +531,7 @@ public class EditorController extends Controller {
             return;
         }
 
-        FacesUtil.runClientScript("refershFlowChart();");
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
 
     public void addTransformTable() {
@@ -527,7 +560,73 @@ public class EditorController extends Controller {
             return;
         }
 
-        FacesUtil.runClientScript("refershFlowChart();");
+        FacesUtil.runClientScript("refreshFlowChart();");
+    }
+
+    private Line getRequestedLine() {
+        String startSelectableId = FacesUtil.getRequestParam("startSelectableId");
+        if (startSelectableId == null) return null;
+
+        String endSelectableId = FacesUtil.getRequestParam("endSelectableId");
+        return new Line(startSelectableId, endSelectableId);
+    }
+
+    public void addLine() {
+        Line newLine = getRequestedLine();
+        addLine(newLine);
+    }
+
+    private void addLine(Line newLine) {
+        Step step = workspace.getProject().getActiveStep();
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
+
+        Selectable startSelectable = selectableMap.get(newLine.getStartSelectableId());
+        Selectable endSelectable = selectableMap.get(newLine.getEndSelectableId());
+
+        if (endSelectable instanceof TransformColumn) {
+            /*add line from Column to Column*/
+            addLookup((DataColumn) startSelectable, (TransformColumn) endSelectable);
+
+        } else if (endSelectable instanceof DataFile) {
+            /*add line from DataSource to DataFile*/
+            addDataSourceLine((DataSource) startSelectable, (DataFile) endSelectable);
+
+        } else {
+            log.error("addLine by unknown types(start:{},end:{})", startSelectable.getClass().getName(), endSelectable.getClass().getName());
+        }
+
+        FacesUtil.runClientScript("refreshFlowChart();");
+    }
+
+    private void addDataSourceLine(DataSource dataSource, DataFile dataFile) {
+
+    }
+
+    private void addLookup(DataColumn sourceColumn, TransformColumn transformColumn) {
+        /*
+         * 1. create ColumnFx and add to this step using Action
+         * 2. create new line between sourceColumn and columnFx (call addLine again)
+         * 3. remain line between columnFx and transformColumn to add by next statements
+         */
+        Project project = workspace.getProject();
+
+        ColumnFx columnFx = new ColumnFx((DataColumn) transformColumn, ColumnFunction.LOOKUP, "Untitled", project.newElementId(), project.newElementId());
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
+        paramMap.put(CommandParamKey.STEP, this);
+
+        try {
+            new AddColumnFx(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add ColumnFx Failed!", e);
+            FacesUtil.addError("Add ColumnFx Failed with Internal Command Error!");
+            return;
+        }
+
+        selectObject(columnFx.getSelectableId());
+
+        FacesUtil.addInfo("ColumnFx[" + columnFx.getName() + "] added.");
     }
 
     /**

@@ -54,13 +54,18 @@ public class TableFx implements Serializable, Selectable {
     }
 
     @Override
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return null;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
+        /*nothing*/
+    }
 
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return new HashMap<>();
     }
 
     @Override

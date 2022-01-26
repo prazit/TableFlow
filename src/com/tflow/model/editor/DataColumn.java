@@ -1,6 +1,8 @@
 package com.tflow.model.editor;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataColumn implements Serializable, Selectable {
     private static final long serialVersionUID = 2021121709996660031L;
@@ -10,7 +12,7 @@ public class DataColumn implements Serializable, Selectable {
     protected DataType type;
     protected String name;
 
-    protected String startPlug;
+    protected LinePlug startPlug;
 
     private DataTable owner;
 
@@ -18,7 +20,7 @@ public class DataColumn implements Serializable, Selectable {
         this.index = index;
         this.type = type;
         this.name = name;
-        this.startPlug = startPlug;
+        this.startPlug = new StartPlug(startPlug);
         this.owner = owner;
     }
 
@@ -55,13 +57,18 @@ public class DataColumn implements Serializable, Selectable {
     }
 
     @Override
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return startPlug;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
         this.startPlug = startPlug;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return new HashMap<>();
     }
 
     @Override

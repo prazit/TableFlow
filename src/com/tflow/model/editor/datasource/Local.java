@@ -1,12 +1,12 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;
+import com.tflow.model.editor.StartPlug;
 import com.tflow.model.editor.room.RoomType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Local extends DataSource implements Selectable {
     private static final long serialVersionUID = 2021121709996660013L;
@@ -18,7 +18,7 @@ public class Local extends DataSource implements Selectable {
         setName(name);
         setType(DataSourceType.LOCAL);
         setImage("local.png");
-        setPlug(plug);
+        setPlug(new StartPlug(plug));
         this.rootPath = rootPath;
         pathHistory = new ArrayList<>();
         this.setRoomType(RoomType.DATA_SOURCE);
@@ -49,13 +49,18 @@ public class Local extends DataSource implements Selectable {
     }
 
     @Override
-    public String getStartPlug() {
+    public LinePlug getStartPlug() {
         return plug;
     }
 
     @Override
-    public void setStartPlug(String startPlug) {
+    public void setStartPlug(LinePlug startPlug) {
         this.plug = startPlug;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return new HashMap<>();
     }
 
     @Override

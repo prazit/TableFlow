@@ -6,12 +6,12 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     private String dataColName;
     private ColumnFx fx;
 
-    private String endPlug;
+    private LinePlug endPlug;
 
     public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug, DataTable owner) {
         super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug, owner);
         dataColName = "" + name;
-        this.endPlug = endPlug;
+        this.endPlug = new EndPlug(endPlug);
     }
 
     public String getDataColName() {
@@ -31,12 +31,12 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     }
 
     @Override
-    public String getEndPlug() {
+    public LinePlug getEndPlug() {
         return endPlug;
     }
 
     @Override
-    public void setEndPlug(String endPlug) {
+    public void setEndPlug(LinePlug endPlug) {
         this.endPlug = endPlug;
     }
 
