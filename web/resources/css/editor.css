@@ -297,16 +297,18 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
     background-color: var(--surface-e);
 }
 
-body .ui-button.ui-button-icon-only.plug-button {
+
+body .ui-outputlabel.ui-widget.plug-button {
     border-radius: 50% !important;
     padding: 0 !important;
     width: var(--font-size-1);
     height: var(--font-size-1);
     font-size: var(--font-size-1) !important;
     display: block;
+    overflow: hidden;
 }
 
-body .ui-button.ui-button-icon-only.plug-button .ui-icon {
+body .ui-outputlabel.ui-widget.plug-button .ui-icon {
     left: 30% !important;
     top: 30% !important;
 }

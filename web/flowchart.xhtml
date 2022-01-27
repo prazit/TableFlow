@@ -34,6 +34,7 @@
                 <p:remoteCommand name="updateLines" action="#{flowchartCtl.updateLines}"/>
                 <script>$(function () {
                     addLine()
+                    console.log('addLine(): flowchart refreshed.');
                 });</script>
 
                 <p:outputPanel style="position: fixed;padding: var(--padding);margin: var(--margin);">
@@ -279,12 +280,18 @@
             </h:form>
 
             <div id="plugButtons" style="z-index:90000;position:absolute;font-size:var(--font-size-1);background-color:rgba(0,0,0,.6);border-radius: 10px;padding:var(--padding);">
-                <!--<p:tooltip for="draggable" value="Drag and drop onto compatible plug."/>
+                <p:outputLabel id="draggable" styleClass="plug-button">
+                    <span class="ui-icon pi pi-circle" style="color:yellow;"/>
+                </p:outputLabel>
+                <p:outputLabel id="removeLine" styleClass="plug-button" onclick="removeLine();">
+                    <span class="ui-icon pi pi-minus-circle" style="color:red;cursor:default;"/>
+                </p:outputLabel>
+                <p:outputLabel id="extractData" styleClass="plug-button" onclick="extractData();">
+                    <span class="ui-icon pi pi-plus-circle" style="color:green;cursor:default;"/>
+                </p:outputLabel>
+                <p:tooltip for="draggable" value="Drag and drop onto compatible plug."/>
                 <p:tooltip for="removeLine" value="Remove linked line."/>
-                <p:tooltip for="extractData" value="Extract data structure to new data-table."/>-->
-                <p:button id="draggable" icon="pi pi-circle" style="color:yellow;" styleClass="plug-button"/>
-                <p:button id="removeLine" icon="pi pi-minus-circle" style="color:red;cursor:default;" styleClass="plug-button" onclick="removeLine();"/>
-                <p:button id="extractData" icon="pi pi-plus-circle" style="color:green;cursor:default;" styleClass="plug-button" onclick="extractData();"/>
+                <p:tooltip for="extractData" value="Extract data structure to new data-table."/>
             </div>
         </div>
 

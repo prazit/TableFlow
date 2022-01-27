@@ -157,8 +157,6 @@ function dragableEnter($dragTarget, $dropTargets) {
                         }
                         addLink(this.startPlug, this.endPlug);
                     }
-
-                    /*TODO: need to find from this point, why the flowchart has refreshed!*/
                 }
             }, position)),
             {
@@ -178,12 +176,6 @@ function dragableEnter($dragTarget, $dropTargets) {
 }
 
 function addLink($startPlug, $endPlug) {
-    console.log('--:addLink():--');
-    console.log('startPlug:' + $startPlug);
-    console.log('endPlug:' + $endPlug);
-}
-
-function addLinkReal($startPlug, $endPlug) {
     window.parent.addLine([
         {name: "startSelectableId", value: getSelectableId($startPlug)},
         {name: "endSelectableId", value: getSelectableId($endPlug)}
@@ -195,13 +187,6 @@ function getSelectableId($e) {
 }
 
 function draggableStartup() {
-
-    /*TODO: need more type of Draggable-button for any type of plug*/
-    /*use styleClass to knows any plug already connected or not.
-     * no-connection
-     * connected
-     * selector for data-source without connection = .data-source .start-plug.no-connection
-     **/
 
     var draggableElement = document.getElementById('plugButtons');
     $draggable = $(draggableElement).hide();
@@ -295,50 +280,5 @@ var pLine = {
     iLine = Object.assign({color: 'green', path: 'fluid'}, pLine),
     dLine = Object.assign({color: 'blue', path: 'fluid'}, pLine),
     dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine),
-    dgLine = Object.assign({color: 'silver', path: 'fluid'}, pLine);
+    dgLine = Object.assign(pLine, {color: 'silver', path: 'fluid', endSocket: 'auto', size: 2});
 var $draggable;
-
-/*
-// PlainDraggable SAMPLE
-window.addEventListener('load', function () {
-    'use strict';
-
-    var ELEMENT_SIZE = 60,
-        startElement = document.getElementById('ex-191-0'),
-        line = new LeaderLine(startElement, document.getElementById('ex-191-1'), {
-            startPlug: 'disc',
-            endPlug: 'disc'
-        }),
-        islandBBox = document.getElementById('ex-191-island').getBoundingClientRect();
-
-    islandBBox = {
-        left: islandBBox.left + window.pageXOffset - ELEMENT_SIZE,
-        top: islandBBox.top + window.pageYOffset - ELEMENT_SIZE,
-        right: islandBBox.right + window.pageXOffset,
-        bottom: islandBBox.bottom + window.pageYOffset
-    };
-
-    new PlainDraggable(startElement, {
-        onDrag: function (newPosition) {
-            if (newPosition.left > islandBBox.left && newPosition.left < islandBBox.right &&
-                newPosition.top > islandBBox.top && newPosition.top < islandBBox.bottom) {
-                if (this.left <= islandBBox.left) {
-                    newPosition.left = islandBBox.left;
-                } else if (this.left >= islandBBox.right) {
-                    newPosition.left = islandBBox.right;
-                }
-                if (this.top <= islandBBox.top) {
-                    newPosition.top = islandBBox.top;
-                } else if (this.top >= islandBBox.bottom) {
-                    newPosition.top = islandBBox.bottom;
-                }
-            }
-        },
-        onMove: function () {
-            line.position();
-        },
-        zIndex: false
-    });
-
-});
-*/
