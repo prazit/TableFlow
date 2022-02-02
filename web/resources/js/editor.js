@@ -39,7 +39,6 @@ function showPropertyList(show) {
 }
 
 function zoomStart() {
-    /*document.getElementById('flowchart').*/
     contentWindow.hideLines();
     if (sections === undefined)
         sections = contentWindow.$('.section');
@@ -77,6 +76,8 @@ function zoomEnd(submit) {
     if (active.length === 0) {
         contentWindow.scrollTo(scrollX, scrollY);
     } else {
+        /*TODO: need to calculate new scrollXY by zoomFactor and then remove scrollToActive below,
+           keep scrollXY before zoom(previous-zoom) and the calculate after zoom(new-zoom) */
         scrollToObj(active);
     }
 
@@ -94,8 +95,33 @@ function zoomEnd(submit) {
     ]);
 }
 
+
+function lineStart() {
+    /*start of line creation*/
+    lines.lineStart = {
+        left: window.scrollX,
+        top: window.scrollY
+    };
+    window.scrollTo(0, 0);
+}
+
+function lineEnd() {
+    /*end of line creation*/
+    lines.lineEnd = {
+        left: lines.lineStart,
+        top: window.scrollY
+    };
+    window.scrollTo(lines.lineEnd);
+}
+
 function scrollToObj(active) {
-    console.log('scrollToObj(active:' + active.attr('class') + ')');
+    var thisScroll = Date.now(),
+        diff = thisScroll - tflow.lastScroll;
+    if (tflow.lastScroll != null && diff < tflow.allowScrollDuration) {
+        //console.log('detected multiple scroll at once (duration:' + diff + ', allowDuration:' + allowScrollDuration + ') cancel scrollToObj(object:' + active.attr('class') + ')');
+        /*return;*/
+    }
+
     if (active.hasClass('step')) {
         /*scroll to first data-source*/
         var ds = contentWindow.$('.data-source');
@@ -116,15 +142,47 @@ function scrollToObj(active) {
     pos.top -= (innerHeight - (outerHeight * zoomed)) / 2;
     pos.left -= (innerWidth - (outerWidth * zoomed)) / 2;
     contentWindow.scrollTo(pos);
+
+    //console.log('scrollToObj(object:' + active.attr('class') + ', top:' + pos.top + ', left:' + pos.left + ')');
+    tflow.lastScroll = Date.now();
 }
 
-function updateEm(selectable) {
-    contentWindow['update' + selectable]();
+function updateEm(selectableId) {
+    contentWindow['update' + selectableId]();
+    /*need to handle event of this selectable at the complete phase of update process above*/
 }
 
-function propertyCreated() {
-    /* init all behaviors of all input boxes such as auto-select-text */
+function propertyCreated($scrollPanel) {
+    /* init all behaviors of input boxes*/
+
     $('.ui-g-12').hide();
+
+    /*TODO: scroll panel need to resize when the window resized or the splitter resized*/
+
+    /*TODO: all input boxes: need the same width*/
+
+    /*TODO: input-text: select all text when got the focus*/
+
+    /*TODO: setFocus to the default field or first field*/
+    if (tflow.setFocus != null) clearTimeout(tflow.setFocus);
+    tflow.setFocus = setTimeout(setFocus, 1000);
+}
+
+function setFocus() {
+    tflow.setFocus = null;
+
+    var inputs = $('.properties').find('input');
+    if (inputs.length > 0) {
+        inputs[0].focus(function (ev) {
+            console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
+        });
+
+        /*TODO: after set focus issue: dead loop will occurred after selectObj(step)*/
+
+        /*TODO: after set focus issue: while refreshing the flowchart, lets try to click in the flowchart area that will stop the refresh process*/
+
+        /*TODO: after set focus issue: selectObj( data-table ) then selectObj( column ) in the same table is not function correctly*/
+    }
 }
 
 $(function () {
@@ -137,7 +195,11 @@ $(function () {
     contentWindow = document.getElementById('flowchart').contentWindow;
 });
 
-var leftPanel, leftGutter, leftToggle;
-var rightPanel, rightGutter, rightToggle;
-var zoomValue;
-var sections, contentWindow;
+var tflow = {
+        allowScrollDuration: 1000,
+        lastScroll: Date.now()
+    },
+    leftPanel, leftGutter, leftToggle,
+    rightPanel, rightGutter, rightToggle,
+    zoomValue,
+    sections, contentWindow;

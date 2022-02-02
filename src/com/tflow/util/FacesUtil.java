@@ -82,6 +82,8 @@ public class FacesUtil implements Serializable {
     }
 
     public static void runClientScript(String javaScript) {
+        /*TODO: remove log now*/
+        log.warn("runClientScript:{}", javaScript);
         PrimeFaces.current().executeScript(javaScript);
     }
 

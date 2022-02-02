@@ -17,7 +17,7 @@
     </h:head>
     <h:body>
         <h:outputScript library="js" name="editor.js#{editorCtl.forceReloadResources}" target="head"/>
-
+        <script>console.log('-- first-line of editor --');</script>
         <div class="container">
             <ui:include src="resources/exceptionMessage.xhtml"/>
             <ui:include src="resources/topMenu.xhtml"/>
@@ -38,7 +38,6 @@
                                 </p:accordionPanel>
                                 <p:remoteCommand name="setActiveObj" action="#{editorCtl.selectObject}" update="propertyForm"/>
                                 <p:remoteCommand name="setToolPanel" action="#{editorCtl.setToolPanel}" update="stepForm,propertyForm"/>
-                                <p:remoteCommand name="addLine" action="#{editorCtl.addLine}" update="propertyForm"/>
                             </h:form>
                         </p:panel>
                     </p:splitterPanel>
@@ -143,7 +142,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                 </p:inputText>
                                             </div>
                                             <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>
@@ -153,7 +152,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputTextarea value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" converter="StringArray" converterParam="#{prop.params[0]}">
-                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                 </p:inputTextarea>
                                             </div>
                                             <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>
@@ -163,7 +162,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div>
                                             <div class="ui-g-8">
                                                 <p:inputNumber value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}">
-                                                    <p:ajax event="blur" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                    <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                 </p:inputNumber>
                                             </div>
                                             <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>
@@ -194,7 +193,7 @@
 
                                     </p:repeat>
                                 </p:scrollPanel>
-                                <script>propertyCreated();</script>
+                                <script>$(propertyCreated($('.properties')));</script>
                             </h:form>
                         </p:panel>
                     </p:splitterPanel>
@@ -205,7 +204,9 @@
             setToolPanel([
                 {name: 'refresh', value: 'all'}
             ]);
-        });</script>
+            console.log('-- last-line of editor --');
+        });
+        </script>
     </h:body>
 </f:view>
 </html>

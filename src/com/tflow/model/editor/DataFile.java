@@ -35,9 +35,50 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
         this.path = path;
         this.propertyMap = new HashMap<>();
         type.getProperties().initPropertyMap(propertyMap);
-        this.endPlug = new EndPlug(endPlug);
-        this.startPlug = new StartPlug(startPlug);
+        this.endPlug = createEndPlug(endPlug);
+        this.startPlug = createStartPlug(startPlug);
         this.setRoomType(RoomType.DATA_FILE);
+    }
+
+    private EndPlug createEndPlug(String plugId) {
+        EndPlug endPlug = new EndPlug(plugId);
+
+        endPlug.setListener(new PlugListener(endPlug) {
+            @Override
+            public void plugged(Line line) {
+                plug.setPlugged(true);
+                plug.setRemoveButton(true);
+            }
+
+            @Override
+            public void unplugged(Line line) {
+                plug.setPlugged(false);
+                plug.setRemoveButton(false);
+            }
+        });
+
+        return endPlug;
+    }
+
+    private StartPlug createStartPlug(String plugId) {
+        StartPlug startPlug = new StartPlug(plugId);
+
+        startPlug.setListener(new PlugListener(startPlug) {
+            @Override
+            public void plugged(Line line) {
+                plug.setPlugged(true);
+                plug.setExtractButton(true);
+            }
+
+            @Override
+            public void unplugged(Line line) {
+                boolean plugged = plug.getLineList().size() > 0;
+                plug.setPlugged(plugged);
+                plug.setExtractButton(plugged);
+            }
+        });
+
+        return startPlug;
     }
 
     public int getId() {

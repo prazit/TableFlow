@@ -4,6 +4,7 @@ public enum DataSourceType {
 
     DATABASE,
     SFTP,
-    LOCAL
-
+    LOCAL,
+    SYSTEM,
+    ;
 }

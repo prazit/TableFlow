@@ -16,6 +16,20 @@ public enum CommandParamKey {
 
     DATA_TEST1,
     DATA_TEST2,
-    STEP;
+    STEP,
 
+    JAVASCRIPT_BUILDER(true);
+
+    boolean optional;
+
+    CommandParamKey() {
+    }
+
+    CommandParamKey(boolean optional) {
+        this.optional = optional;
+    }
+
+    public boolean isOptional() {
+        return optional;
+    }
 }

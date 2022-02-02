@@ -21,7 +21,9 @@ public class Step implements Selectable {
     private Tower dataTower;
     private Tower transformTower;
     private Tower outputTower;
+
     private List<Line> lineList;
+    private int lastIndex;
 
     private LinePlug startPlug;
 
@@ -44,6 +46,7 @@ public class Step implements Selectable {
         transformTower = new Tower(2, this);
         outputTower = new Tower(2, this);
         lineList = new ArrayList<>();
+        lastIndex = 0;
         startPlug = new StartPlug("step");
         zoom = Double.valueOf(100);
         this.owner = owner;
@@ -228,10 +231,10 @@ public class Step implements Selectable {
 
     /*== Public Methods ==*/
 
-    public void addLine(String startSelectableId, String endSelectableId) {
+    public Line addLine(String startSelectableId, String endSelectableId) {
         Line newLine = new Line(startSelectableId, endSelectableId);
 
-        int index = lineList.size();
+        int index = ++lastIndex;
         newLine.setClientIndex(index);
         lineList.add(newLine);
 
@@ -242,12 +245,42 @@ public class Step implements Selectable {
 
         LinePlug startPlug = startSelectable.getStartPlug();
         startPlug.setPlugged(true);
+        startPlug.getLineList().add(newLine);
+        PlugListener listener = startPlug.getListener();
+        if (listener != null) {
+            listener.plugged(newLine);
+        }
         newLine.setStartPlug(startPlug);
 
         HasEndPlug hasEndPlug = (HasEndPlug) endSelectable;
         LinePlug endPlug = hasEndPlug.getEndPlug();
         endPlug.setPlugged(true);
+        endPlug.getLineList().add(newLine);
+        listener = endPlug.getListener();
+        if (listener != null) {
+            listener.plugged(newLine);
+        }
         newLine.setEndPlug(endPlug);
+
+        return newLine;
+    }
+
+    public void removeLine(Line line) {
+        lineList.remove(line);
+
+        LinePlug startPlug = line.getStartPlug();
+        startPlug.getLineList().remove(line);
+        PlugListener listener = startPlug.getListener();
+        if (listener != null) {
+            listener.unplugged(line);
+        }
+
+        LinePlug endPlug = line.getEndPlug();
+        endPlug.getLineList().remove(line);
+        listener = endPlug.getListener();
+        if (listener != null) {
+            listener.unplugged(line);
+        }
     }
 
     private LineType getLineType(Selectable selectable) {

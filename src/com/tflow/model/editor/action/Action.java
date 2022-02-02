@@ -134,7 +134,7 @@ public abstract class Action implements Serializable {
     private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap,
                                boolean undo) throws RequiredParamException {
         for (CommandParamKey required : paramList) {
-            if (!paramMap.containsKey(required)) {
+            if (!required.isOptional() && !paramMap.containsKey(required)) {
                 throw new RequiredParamException(required, this, undo);
             }
         }

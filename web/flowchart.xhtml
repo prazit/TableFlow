@@ -15,8 +15,10 @@
 
     </h:head>
     <h:body style="background-color: var(--surface-a)" styleClass="selectable step#{flowchartCtl.active(flowchartCtl.step)}">
+        <script>console.log('-- first-line of flow-chart --');</script>
+
         <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
-        <p:remoteCommand name="update#{flowchartCtl.step.selectableId}" oncomplete="register('#{flowchartCtl.step.selectableId}')"/>
+        <p:remoteCommand name="update#{flowchartCtl.step.selectableId}" oncomplete="updateComplete('#{flowchartCtl.step.selectableId}')"/>
 
         <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
@@ -30,11 +32,15 @@
                 <p:growl id="growl" showDetail="true" escape="false"/>
                 <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
 
-                <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine}"/>
+                <p:remoteCommand name="drawLines" action="#{flowchartCtl.drawLines}"/>
                 <p:remoteCommand name="updateLines" action="#{flowchartCtl.updateLines}"/>
+                <p:remoteCommand name="addLine" action="#{flowchartCtl.addLine}"/>
+                <p:remoteCommand name="removeLine" action="#{flowchartCtl.removeLine}"/>
+                <p:remoteCommand name="extractData" action="#{flowchartCtl.extractData}"/>
+                <p:remoteCommand name="transferData" action="#{flowchartCtl.transferData}"/>
                 <script>$(function () {
-                    addLine()
-                    console.log('addLine(): flowchart refreshed.');
+                    drawLines();
+                    console.log('drawLines(): flowchart refreshed.');
                 });</script>
 
                 <p:outputPanel style="position: fixed;padding: var(--padding);margin: var(--margin);">
@@ -48,7 +54,7 @@
                                 <td>
                                     <p:outputPanel rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}" styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])} #{floor.roomList[0].type.name().toLowerCase()}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[0].selectableId}"/>
-                                        <p:remoteCommand name="update#{floor.roomList[0].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[0].selectableId}')"/>
+                                        <p:remoteCommand name="update#{floor.roomList[0].selectableId}" update="@parent" oncomplete="updateComplete('#{floor.roomList[0].selectableId}')"/>
 
                                         <p>#{floor.roomList[0].name}</p>
                                         <p:graphicImage library="images" name="#{floor.roomList[0].image}"/>
@@ -70,9 +76,9 @@
                                 </td>
 
                                 <td>
-                                    <p:outputPanel rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}" styleClass="data-source data-file selectable#{flowchartCtl.active(floor.roomList[1])}">
+                                    <p:outputPanel rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}" styleClass="data-file selectable#{flowchartCtl.active(floor.roomList[1])} #{floor.roomList[1].type.dataSourceType.name().toLowerCase()}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[1].selectableId}"/>
-                                        <p:remoteCommand name="update#{floor.roomList[1].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[1].selectableId}')"/>
+                                        <p:remoteCommand name="update#{floor.roomList[1].selectableId}" update="@parent" oncomplete="updateComplete('#{floor.roomList[1].selectableId}')"/>
 
                                         <div class="#{floor.roomList[1].endPlug.styleClass}" id="#{floor.roomList[1].endPlug}"></div>
                                         <p>#{floor.roomList[1].name}</p>
@@ -90,7 +96,7 @@
                                 <td>
                                     <p:panel rendered="#{floor.roomList[2].roomType==RoomType.DATA_TABLE}" header="" styleClass="data-table selectable#{flowchartCtl.active(floor.roomList[2])}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[2].selectableId}"/>
-                                        <p:remoteCommand name="update#{floor.roomList[2].selectableId}" update="@parent" oncomplete="register('#{floor.roomList[2].selectableId}')"/>
+                                        <p:remoteCommand name="update#{floor.roomList[2].selectableId}" update="@parent" oncomplete="updateComplete('#{floor.roomList[2].selectableId}')"/>
 
                                         <f:facet name="actions">
                                             <div class="#{floor.roomList[2].endPlug.styleClass}" id="#{floor.roomList[2].endPlug}"></div>
@@ -109,7 +115,7 @@
 
                                             <p:outputPanel styleClass="#{column.type.name().toLowerCase()} column selectable#{flowchartCtl.active(column)}">
                                                 <input name="selectableId" type="hidden" value="#{column.selectableId}"/>
-                                                <p:remoteCommand name="update#{column.selectableId}" update="@parent" oncomplete="register('#{column.selectableId}')"/>
+                                                <p:remoteCommand name="update#{column.selectableId}" update="@parent" oncomplete="updateComplete('#{column.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{column.type.image}"/>
                                                 <label>#{column.name}</label>
                                                 <div class="#{column.startPlug.styleClass}" id="#{column.startPlug}"></div>
@@ -123,7 +129,7 @@
 
                                             <div class="output column selectable#{flowchartCtl.active(output)}">
                                                 <input name="selectableId" type="hidden" value="#{output.selectableId}"/>
-                                                <p:remoteCommand name="update#{output.selectableId}" update="@parent" oncomplete="register('#{output.selectableId}')"/>
+                                                <p:remoteCommand name="update#{output.selectableId}" update="@parent" oncomplete="updateComplete('#{output.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{output.type.image}"/>
                                                 <label>#{output.dataSource.name} - (#{output.name})</label>
                                                 <div class="#{output.startPlug.styleClass}" id="#{output.startPlug}"></div>
@@ -161,7 +167,7 @@
 
                                             <p:outputPanel styleClass="#{tcolumn.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumn.fx)}" rendered="#{tcolumn.fx != null}">
                                                 <input name="selectableId" type="hidden" value="#{tcolumn.fx.selectableId}"/>
-                                                <p:remoteCommand name="update#{tcolumn.fx.selectableId}" update="@parent" oncomplete="register('#{tcolumn.fx.selectableId}')"/>
+                                                <p:remoteCommand name="update#{tcolumn.fx.selectableId}" update="@parent" oncomplete="updateComplete('#{tcolumn.fx.selectableId}')"/>
 
                                                 <div class="#{tcolumn.fx.endPlug.styleClass}" id="#{tcolumn.fx.endPlug}"></div>
                                                 <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
@@ -182,7 +188,7 @@
                                     <p:panel header="" styleClass="data-table selectable#{flowchartCtl.active(tfloor.roomList[1])}" rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
                                         <f:facet name="actions">
                                             <input name="selectableId" type="hidden" value="#{tfloor.roomList[1].selectableId}"/>
-                                            <p:remoteCommand name="update#{tfloor.roomList[1].selectableId}" update="@parent" oncomplete="register('#{tfloor.roomList[1].selectableId}')"/>
+                                            <p:remoteCommand name="update#{tfloor.roomList[1].selectableId}" update="@parent" oncomplete="updateComplete('#{tfloor.roomList[1].selectableId}')"/>
                                             <div class="#{tfloor.roomList[1].endPlug.styleClass}" id="#{tfloor.roomList[1].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images" name="transfer.png"/>
@@ -198,7 +204,7 @@
 
                                             <div class="#{tcolumn.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumn)}">
                                                 <input name="selectableId" type="hidden" value="#{tcolumn.selectableId}"/>
-                                                <p:remoteCommand name="update#{tcolumn.selectableId}" update="@parent" oncomplete="register('#{tcolumn.selectableId}')"/>
+                                                <p:remoteCommand name="update#{tcolumn.selectableId}" update="@parent" oncomplete="updateComplete('#{tcolumn.selectableId}')"/>
                                                 <div class="#{tcolumn.endPlug.styleClass}" id="#{tcolumn.endPlug}"></div>
                                                 <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
                                                 <label>#{tcolumn.name}</label>
@@ -213,7 +219,7 @@
 
                                             <div class="transform column selectable#{flowchartCtl.active(tfx)}">
                                                 <input name="selectableId" type="hidden" value="#{tfx.selectableId}"/>
-                                                <p:remoteCommand name="update#{tfx.selectableId}" update="@parent" oncomplete="register('#{tfx.selectableId}')"/>
+                                                <p:remoteCommand name="update#{tfx.selectableId}" update="@parent" oncomplete="updateComplete('#{tfx.selectableId}')"/>
                                                 <p:graphicImage library="images" name="transform.png"/>
                                                 <label>#{tfx.name}</label>
                                             </div>
@@ -226,7 +232,7 @@
 
                                             <div class="output column selectable#{flowchartCtl.active(toutput)}">
                                                 <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
-                                                <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="register('#{toutput.selectableId}')"/>
+                                                <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="updateComplete('#{toutput.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{toutput.type.image}"/>
                                                 <label>#{toutput.dataSource.name} - (#{toutput.name})</label>
                                                 <div class="#{toutput.startPlug.styleClass}" id="#{toutput.startPlug}"></div>
@@ -283,10 +289,10 @@
                 <p:outputLabel id="draggable" styleClass="plug-button">
                     <span class="ui-icon pi pi-circle" style="color:yellow;"/>
                 </p:outputLabel>
-                <p:outputLabel id="removeLine" styleClass="plug-button" onclick="removeLine();">
+                <p:outputLabel id="removeLine" styleClass="plug-button">
                     <span class="ui-icon pi pi-minus-circle" style="color:red;cursor:default;"/>
                 </p:outputLabel>
-                <p:outputLabel id="extractData" styleClass="plug-button" onclick="extractData();">
+                <p:outputLabel id="extractData" styleClass="plug-button">
                     <span class="ui-icon pi pi-plus-circle" style="color:green;cursor:default;"/>
                 </p:outputLabel>
                 <p:tooltip for="draggable" value="Drag and drop onto compatible plug."/>
@@ -295,6 +301,7 @@
             </div>
         </div>
 
+        <script>console.log('-- last-line of flow-chart --');</script>
     </h:body>
 </f:view>
 </html>
