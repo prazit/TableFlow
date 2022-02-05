@@ -1,6 +1,7 @@
 package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Add TransformTable to TOWER and TransformTable List.
+ * Create TransformTable and copy all column from the source DataTable, add it to the TOWER and TransformTable List.
  */
 public class AddTransformTable extends Command {
 
@@ -19,32 +20,17 @@ public class AddTransformTable extends Command {
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        TransformTable transformTable = (TransformTable) paramMap.get(CommandParamKey.TRANSFORM_TABLE);
+        DataTable sourceTable = (DataTable) paramMap.get(CommandParamKey.DATA_TABLE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
+        Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Tower tower = step.getTransformTower();
         Project project = step.getOwner();
 
+        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getId(), SourceType.DATA_TABLE, sourceTable.getIdColName(), project.newElementId(), project.newElementId());
         transformTable.setId(project.newUniqueId());
 
-        DataTable sourceTable;
-        SourceType sourceType = transformTable.getSourceType();
-        int sourceId = transformTable.getSourceId();
-        List<DataColumn> sourceColumnList;
-        Room sourceRoom;
-        switch (sourceType) {
-            case DATA_TABLE:
-                sourceTable = step.getDataTable(sourceId);
-                break;
-
-            case TRANSFORM_TABLE:
-                sourceTable = step.getTransformTable(sourceId);
-                break;
-
-            default: /*case MAPPING_TABLE:*/
-                throw new UnsupportedOperationException("Unsupported source type " + sourceType + "(Id:" + sourceId + ") used by Transform Table(\" + transformTable.getName() + \")");
-        }
-        sourceRoom = (Room) sourceTable;
-        sourceColumnList = sourceTable.getColumnList();
+        Room sourceRoom = (Room) sourceTable;
+        List<DataColumn> sourceColumnList = sourceTable.getColumnList();
 
         /*copy column from source-table*/
         List<DataColumn> columnList = transformTable.getColumnList();
@@ -79,6 +65,8 @@ public class AddTransformTable extends Command {
         /*link from SourceTable to TransformTable*/
         step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
 
+        /*Action Result*/
+        action.getResultMap().put("transformTable", transformTable);
     }
 
 }

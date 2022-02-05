@@ -1,23 +1,27 @@
 package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.datasource.DataSource;
+import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.room.Floor;
-import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Add DataTable to TOWER and DataTable List.
+ * Extract Data File, Create DataTable and then add to DATA TOWER and DataTable List.
  */
 public class AddDataTable extends Command {
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {
-        DataTable dataTable = (DataTable) paramMap.get(CommandParamKey.DATA_TABLE);
+        DataFile dataFile = (DataFile) paramMap.get(CommandParamKey.DATA_FILE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
+        Action action = (Action) paramMap.get(CommandParamKey.ACTION);
+        Project project = step.getOwner();
+
+        DataTable dataTable = extractData(dataFile, project);
 
         dataTable.setId(step.getOwner().newUniqueId());
         assignChildId(dataTable, step.getOwner());
@@ -29,7 +33,6 @@ public class AddDataTable extends Command {
 
         updateSelectableMap(step.getSelectableMap(), dataTable);
 
-        DataFile dataFile = dataTable.getDataFile();
         step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
 
         /*Add to DataTable List*/
@@ -37,11 +40,10 @@ public class AddDataTable extends Command {
         dataTable.setIndex(dataList.size());
         dataList.add(dataTable);
 
+        /*Action Result*/
+        action.getResultMap().put("dataTable", dataTable);
     }
 
-    /**
-     * Mockup Data and Template only.
-     */
     private void assignChildId(DataTable dataTable, Project project) {
 
         for (DataColumn column : dataTable.getColumnList()) {
@@ -90,6 +92,36 @@ public class AddDataTable extends Command {
                 selectableMap.put(fx.getSelectableId(), fx);
             }
         }
+    }
+
+    private DataTable extractData(DataFile dataFile, Project project) {
+
+        /*TODO: create compatible Extractor (dataFile.type) | DConvers lib need to make some changes to accept configuration in config class instant*/
+        /*TODO: call Extractor.extract*/
+
+        /*-- TODO: remove mockup data below, used to test the command --*/
+        DataTable dataTable = new DataTable("Untitled", dataFile, "", "", false, project.newElementId(), project.newElementId());
+
+        List<DataColumn> columnList = dataTable.getColumnList();
+        columnList.add(new DataColumn(1, DataType.STRING, "String Column", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", project.newElementId(), dataTable));
+
+        Local myComputer = new Local("MyComputer", "C:/myData/", project.newElementId());
+        DataFile outputCSVFile = new DataFile(
+                myComputer,
+                DataFileType.OUT_CSV,
+                "output.csv",
+                "out/",
+                project.newElementId(),
+                project.newElementId()
+        );
+
+        List<DataFile> outputList = dataTable.getOutputList();
+        outputList.add(outputCSVFile);
+
+        return dataTable;
     }
 
 }

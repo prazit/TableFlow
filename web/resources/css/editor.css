@@ -310,8 +310,27 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
     background-color: var(--text-color-secondary);
 }
 
+body div#plugButtons {
+    z-index: 90000;
+    position: absolute;
+    font-size: var(--font-size-1);
+    background-color: rgba(128, 128, 128, .6);
+    border-radius: var(--font-size-1);
+    padding: var(--padding);
+}
 
-body .ui-outputlabel.ui-widget.plug-button {
+body div#plugButtons .plug-button-state {
+    display: none;
+}
+
+body div#plugButtons.locked label#locked,
+body .dragging label#dragging,
+body .dropping label#dropping {
+    display: block !important;
+}
+
+body .ui-outputlabel.ui-widget.plug-button,
+body .ui-outputlabel.ui-widget.plug-button-state {
     border-radius: 50% !important;
     padding: 0 !important;
     width: var(--font-size-1);
@@ -321,6 +340,11 @@ body .ui-outputlabel.ui-widget.plug-button {
     overflow: hidden;
 }
 
-body .ui-outputlabel.ui-widget.plug-button .ui-icon {
+body .ui-outputlabel.ui-widget.plug-button .ui-icon,
+body .ui-outputlabel.ui-widget.plug-button-state .ui-icon {
     display: block;
+}
+
+body .ui-outputlabel.ui-widget.plug-button-state {
+
 }

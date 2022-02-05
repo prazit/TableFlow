@@ -6,6 +6,7 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,8 @@ public abstract class Action implements Serializable {
     private List<Command> commandList;
     private List<Command> undoCommandList;
 
+    private Map<String, Object> resultMap;
+
     protected abstract void initAction();
 
     protected abstract void initCommands();
@@ -32,11 +35,13 @@ public abstract class Action implements Serializable {
     protected abstract void initUndoCommands();
 
     public Action() {
+        resultMap = new HashMap<>();
         initAction();
     }
 
     public void setActionParameters(Map<CommandParamKey, Object> paramMap) {
         this.paramMap = paramMap;
+        this.paramMap.put(CommandParamKey.ACTION, this);
     }
 
     private void initCommandsWrapper() {
@@ -98,6 +103,15 @@ public abstract class Action implements Serializable {
         if (commandList == null) initUndoCommandsWrapper();
         return canUndo;
     }
+
+    /**
+     * Some commands create result in the Action-Result-Map, use this function to get the map after execution completed.
+     */
+    public Map<String, Object> getResultMap() {
+        return resultMap;
+    }
+
+    /*-- Public Methods --*/
 
     public void execute() throws RequiredParamException, UnsupportedOperationException {
         if (commandList == null) initCommandsWrapper();

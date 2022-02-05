@@ -241,6 +241,7 @@ public class EditorController extends Controller {
             } catch (Exception e) {
                 value = "";
                 log.error("getPropertyValue(selectable:{}, propertyName:{}) - {}", selectable.getSelectableId(), propertyName, e.getMessage());
+                e.printStackTrace();
             }
         }
         return value == null ? "" : value;
@@ -401,6 +402,30 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript("refreshFlowChart();");
     }
 
+    public void addLocal() {
+        Project project = workspace.getProject();
+        Step step = project.getActiveStep();
+
+        Local local = new Local("Untitled", "/", project.newElementId());
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_SOURCE, local);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        try {
+            new AddDataSource(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add File Directory Failed!", e);
+            FacesUtil.addError("Add File Directory Failed with Internal Command Error!");
+            return;
+        }
+
+        selectObject(local.getSelectableId());
+
+        FacesUtil.addInfo("Local[" + local.getName() + "] added.");
+        FacesUtil.runClientScript("refreshFlowChart();");
+    }
+
     public void addDBConnection() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
@@ -471,9 +496,8 @@ public class EditorController extends Controller {
 
         selectObject(dataFile.getSelectableId());
 
-        /*FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
-        FacesUtil.runClientScript("refreshFlowChart();");*/
-        addDataTable(dataFile);
+        FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
 
     private DataTable getDataTable(Project project, DataFile dataFile) {

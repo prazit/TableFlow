@@ -39,6 +39,7 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.noTransform = noTransform;
         this.endPlug = new EndPlug(endPlug);
         this.startPlug = new StartPlug(startPlug);
+        this.startPlug.setTransferButton(true);
         this.columnList = new ArrayList<>();
         this.outputList = new ArrayList<>();
         this.setRoomType(RoomType.DATA_TABLE);

@@ -1,7 +1,23 @@
 'use strict';
 
-function getSelectableId($e) {
-    return $e.find('input[name=selectableId]').attr('value');
+function refreshFlowChart() {
+    console.log(document.location);
+    document.location += '?refresh=2';
+    console.log(document.location);
+}
+
+function getSelectableId($selectable) {
+    return $selectable.find('input[name=selectableId]').attr('value');
+}
+
+function getSelectable($child) {
+    if ($child.hasClass('selectable')) return $child;
+
+    var $parent = $child.parent('.selectable').not('.step');
+    if ($parent.length > 0) return $parent;
+
+    var $parents = $child.parents('.selectable').not('.step');
+    return $parents.first();
 }
 
 function hideLines() {
@@ -18,20 +34,20 @@ function showLines() {
     }
 }
 
-function addLink($startPlug, $endPlug, $activeObject) {
+function addLink($startSelectable, $endSelectable, $activeObject) {
     $('.active').removeClass('active');
 
     addLine([
-        {name: "startSelectableId", value: getSelectableId($startPlug)},
-        {name: "endSelectableId", value: getSelectableId($endPlug)}
+        {name: "startSelectableId", value: getSelectableId($startSelectable)},
+        {name: "endSelectableId", value: getSelectableId($endSelectable)}
     ]);
 
     noActiveScrollTo($activeObject);
 }
 
-function removeLink() {
+function buttonPerform(remoteFunction) {
     var dragTarget = $draggable.dragging.dragTarget,
-        selectable = dragTarget.parent('.selectable'),
+        selectable = getSelectable(dragTarget),
         id = getSelectableId(selectable),
         isStartPlug = dragTarget.hasClass('start-plug');
 
@@ -40,7 +56,7 @@ function removeLink() {
 
     $('.active').removeClass('active');
 
-    removeLine([
+    window[remoteFunction]([
         {name: "selectableId", value: id},
         {name: "startPlug", value: isStartPlug}
     ]);
@@ -50,6 +66,15 @@ function removeLink() {
     draggableHandle();
 
     noActiveScrollTo(selectable);
+}
+
+function buttonHandle(buttonName) {
+    $draggable.buttons[buttonName] = $draggable.find('#' + buttonName).on('click', function (ev) {
+        tflow.lastEvent = ev;
+        buttonPerform(buttonName);
+        ev.stopPropagation();
+        return false; /* cancel the event 'click on selectable object' */
+    })
 }
 
 function updateComplete(selectableId) {
@@ -110,12 +135,12 @@ function setActiveObj($e) {
     }
 
     /*set active*/
-    console.log('setActiveObj:before(object:' + $e.attr('class') + ')');
+    /*console.log('setActiveObj:before(object:' + $e.attr('class') + ')');*/
     $('.active').removeClass('active');
     $e.addClass('active');
     window.parent.scrollToObj($e);
     tflow.lastChangeActive = Date.now();
-    console.log('setActiveObj:after(object:' + $e.attr('class') + ')');
+    /*console.log('setActiveObj:after(object:' + $e.attr('class') + ')');*/
 }
 
 function selectObject($e) {
@@ -149,20 +174,18 @@ function lineEnd() {
     window.scrollTo(lines.lineScroll);
 }
 
-function dragableEnter($dragTarget, $droppable) {
-    /*console.log('dragableEnter(dragTarget:' + getSelectableId($dragTarget.parent('.selectable')) + '.' + $dragTarget.attr('id') + ')');*/
+function draggableEnter($dragTarget, $droppable) {
+    console.log('draggableEnter(dragTarget:' + getSelectableId(getSelectable($dragTarget)) + '.' + $dragTarget.attr('id') + ')');
 
     var bgColor = $dragTarget.css('background-color'),
         isDraggable = $dragTarget.hasClass('draggable'),
         offset = $dragTarget.first().offset();
 
-    $draggable.buttons.removeLine.toggle($dragTarget.hasClass('remove-line'))
-        .css('background-color', bgColor);
-    $draggable.buttons.extractData.toggle($dragTarget.hasClass('extract-data'))
-        .css('background-color', bgColor);
-    $draggable.buttons.draggable.toggle(isDraggable)
-        .css('background-color', bgColor)
-        .css('color', bgColor);
+    $draggable.buttons.removeLine.toggle($dragTarget.hasClass('remove-line')).css('background-color', bgColor);
+    $draggable.buttons.extractData.toggle($dragTarget.hasClass('extract-data')).css('background-color', bgColor);
+    $draggable.buttons.transferData.toggle($dragTarget.hasClass('transfer-data')).css('background-color', bgColor);
+    $draggable.buttons.draggable.toggle(isDraggable).css('background-color', bgColor).css('color', bgColor);
+    $dragTarget.hasClass('locked') ? $draggable.addClass('locked') : $draggable.removeClass('locked');
 
     /*position need to calculate after the size of buttons is not change*/
     var position = {
@@ -175,14 +198,16 @@ function dragableEnter($dragTarget, $droppable) {
         },
         dragging = {
             draggableId: ++$draggable.count,
-            startPlug: $dragTarget.hasClass('start-plug') ? $dragTarget.parent('.selectable') : null,
-            endPlug: $dragTarget.hasClass('end-plug') ? $dragTarget.parent('.selectable') : null,
+            startPlug: $dragTarget.hasClass('start-plug') ? getSelectable($dragTarget) : null,
+            endPlug: $dragTarget.hasClass('end-plug') ? getSelectable($dragTarget) : null,
             line: null,
             lineOptions: dgLine,
             droppable: $droppable,
             dragTarget: $dragTarget,
             dropTarget: null
         };
+
+    console.log(dragging);
 
     if (isDraggable) {
         $draggable.show().dragging = Object.assign(new PlainDraggable($draggable[0], Object.assign({
@@ -203,6 +228,7 @@ function dragableEnter($dragTarget, $droppable) {
                 $draggable.buttons.removeLine.hide();
                 $draggable.buttons.extractData.hide();
 
+                $draggable.addClass('dragging');
                 $(this.droppable).addClass('droppable');
 
                 this.line = new LeaderLine(this.dragTarget[0], this.element, this.lineOptions);
@@ -226,12 +252,12 @@ function dragableEnter($dragTarget, $droppable) {
                 }
 
                 if ($e.length > 0) {
-                    this.dropTarget = $e.hasClass('selectable') ? $e : $e.parent('.selectable');
+                    this.dropTarget = getSelectable($e);
                     this.dropTarget.addClass('drop-target');
-                    /*TODO: need to change mouse pointer to know able to drop*/
+                    $draggable.removeClass('dragging').addClass('dropping');
                 } else {
                     this.dropTarget = null;
-                    /*TODO: need to change mouse pointer to know can't drop*/
+                    $draggable.removeClass('dropping').addClass('dragging');
                 }
 
                 /*TODO: need to scope the draggable area here*/
@@ -240,6 +266,7 @@ function dragableEnter($dragTarget, $droppable) {
                 this.line.remove();
                 this.line = null;
 
+                $draggable.removeClass('dragging').removeClass('dropping');
                 $('.droppable').removeClass('droppable');
 
                 //console.log('onDragEnd: dropped on target(' + (this.dropTarget !== null ? getSelectableId(this.dropTarget) : 'null') + ')');
@@ -281,7 +308,7 @@ function draggableHandle() {
         $plug.off('mouseenter').on('mouseenter', function (ev) {
             if ($draggable.dragging === undefined) {
                 tflow.lastEvent = ev;
-                dragableEnter($(ev.currentTarget), $(e.droppable));
+                draggableEnter($(ev.currentTarget), $(e.droppable));
             }
         });
     });
@@ -292,23 +319,15 @@ function draggableStartup() {
     $draggable = $(draggableElement).hide();
     $draggable.count = 0;
     $draggable.buttons = {
-        removeLine: $draggable.find('#removeLine').on('click', function (ev) {
-            tflow.lastEvent = ev;
-            removeLink();
-            ev.stopPropagation();
-            return false; /* cancel the event 'click on selectable object' */
-        }),
-        extractData: $draggable.find('#extractData').on('click', function (ev) {
-            tflow.lastEvent = ev;
-            ev.stopPropagation();
-            return false; /* cancel the event 'click on selectable object' */
-        }),
         draggable: $draggable.find('#draggable').on('click', function (ev) {
             tflow.lastEvent = ev;
             ev.stopPropagation();
             return false; /* cancel the event 'click on selectable object' */
         })
     };
+    buttonHandle('removeLine');
+    buttonHandle('extractData');
+    buttonHandle('transferData');
 
     /*TODO: flow-chart element need to resize to cover all 3 sections.*/
     $('.flow-chart').css('width', '2000px');
@@ -326,17 +345,20 @@ function draggableStartup() {
         {draggable: '.data-source.database .start-plug', droppable: '.data-file.database:has(.end-plug.no-connection)'},
         {draggable: '.data-file.database .end-plug', droppable: '.data-source.database'},
 
-        /*TODO: data-file to data-table*/
+        /*-- data-file to data-table, TODO: need action AddDataTable after ExtractData --*/
+        {draggable: '.data-file .start-plug', droppable: '.data-table .ui-panel-titlebar:has(.end-plug.no-connection)'},
+        {draggable: '.data-table .ui-panel-titlebar .end-plug', droppable: '.data-file:has(.start-plug.no-connection)'},
 
-        /*TODO: data-table to data-table*/
+        /*TODO: data-table to data-table, need action AddTransformTable*/
 
         /*column to column*/
-        {draggable: '.string.column .start-plug.no-connection', droppable: '.string.column:has(.end-plug.no-connection)'},
-        {draggable: '.integer.column .start-plug.no-connection', droppable: '.integer.column:has(.end-plug.no-connection)'},
-        {draggable: '.decimal.column .start-plug.no-connection', droppable: '.decimal.column:has(.end-plug.no-connection)'},
-        {draggable: '.date.column .start-plug.no-connection', droppable: '.date.column:has(.end-plug.no-connection)'}
+        {draggable: '.string.column .start-plug', droppable: '.string.column:has(.end-plug.no-connection)'},
+        {draggable: '.integer.column .start-plug', droppable: '.integer.column:has(.end-plug.no-connection)'},
 
-        /*TODO: column to column-fx*/
+        {draggable: '.decimal.column .start-plug', droppable: '.decimal.column:has(.end-plug.no-connection)'},
+        {draggable: '.date.column .start-plug', droppable: '.date.column:has(.end-plug.no-connection)'}
+
+        /*TODO: column to column-fx, need action AddTransformTable*/
 
     ]);
 

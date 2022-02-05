@@ -1,8 +1,7 @@
 package com.tflow.controller;
 
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.action.AddColumnFx;
-import com.tflow.model.editor.action.RequiredParamException;
+import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.room.Room;
@@ -141,6 +140,7 @@ public class FlowchartController extends Controller {
         if (startSelectableId == null) return null;
 
         String endSelectableId = FacesUtil.getRequestParam("endSelectableId");
+        log.warn("getRequestedLine(startSelectableId:{}, endSelectableId:{})", startSelectableId, endSelectableId);
         return new Line(startSelectableId, endSelectableId);
     }
 
@@ -155,6 +155,10 @@ public class FlowchartController extends Controller {
 
         Selectable startSelectable = selectableMap.get(newLine.getStartSelectableId());
         Selectable endSelectable = selectableMap.get(newLine.getEndSelectableId());
+        if (startSelectable == null || endSelectable == null) {
+            log.error("addLine by null(start:{},end:{})", startSelectable, endSelectable);
+            return;
+        }
 
         jsBuilder.append("lineStart();");
         if (endSelectable instanceof TransformColumn) {
@@ -166,7 +170,9 @@ public class FlowchartController extends Controller {
             addDataSourceLine((DataSource) startSelectable, (DataFile) endSelectable, jsBuilder);
 
         } else {
-            log.error("addLine by unknown types(start:{},end:{})", startSelectable.getClass().getName(), endSelectable.getClass().getName());
+            newLine = step.addLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
+            jsBuilder.append(newLine.getJsAdd());
+            log.warn("addLine by unknown types(start:{},end:{})", startSelectable.getClass().getName(), endSelectable.getClass().getName());
         }
         jsBuilder.append("lineEnd();");
 
@@ -199,7 +205,7 @@ public class FlowchartController extends Controller {
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
-        paramMap.put(CommandParamKey.STEP, this);
+        paramMap.put(CommandParamKey.STEP, step);
         paramMap.put(CommandParamKey.JAVASCRIPT_BUILDER, jsBuilder);
 
         try {
@@ -217,7 +223,6 @@ public class FlowchartController extends Controller {
 
     /**
      * Remove line when the client plug button is clicked.
-     * ( the remove-button only shown on the single line plugged )
      * <p>
      * <br/><br/>
      * <b><i>Param:</i></b><br/>
@@ -258,11 +263,88 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript(javaScript);
     }
 
+    /**
+     * Extract Data Structure from DataFile when the client plug button is clicked.
+     */
     public void extractData() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
 
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        if (selectable == null) {
+            log.error("selectableId({}) not found in current step", selectableId);
+            return;
+        }
+
+        if (!(selectable instanceof DataFile)) {
+            log.error("extractData only work on DataFile, {} is not allowed", selectable.getClass().getName());
+            return;
+        }
+
+        DataFile dataFile = (DataFile) selectable;
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        Action action;
+        DataTable dataTable;
+        try {
+            action = new AddDataTable(paramMap);
+            action.execute();
+            dataTable = (DataTable) action.getResultMap().get("dataTable");
+        } catch (Exception e) {
+            log.error("Extract Data Failed!", e);
+            FacesUtil.addError("Extract Data Failed with Internal Command Error!");
+            return;
+        }
+
+        step.setActiveObject(dataTable);
+
+        /*TODO: issue: activeObject is not changed here*/
+
+        FacesUtil.addInfo("Table[" + dataTable.getName() + "] added.");
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
 
+    /**
+     * Transfer Data from another Data-Table when the client plug button is clicked.
+     * Note: this look like duplicate the table.
+     */
     public void transferData() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
 
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        if (selectable == null) {
+            log.error("selectableId({}) not found in current step", selectableId);
+            return;
+        }
+
+        if (!(selectable instanceof DataTable)) {
+            log.error("transferData only work on DataTable, {} is not allowed", selectable.getClass().getName());
+            return;
+        }
+
+        DataTable dataTable = (DataTable) selectable;
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        TransformTable transformTable;
+        try {
+            Action action = new AddTransformTable(paramMap);
+            action.execute();
+            transformTable = (TransformTable) action.getResultMap().get("transformTable");
+        } catch (RequiredParamException e) {
+            log.error("Transfer Data Failed!", e);
+            FacesUtil.addError("Transfer Data Failed with Internal Command Error!");
+            return;
+        }
+
+        step.setActiveObject(transformTable);
+
+        FacesUtil.addInfo("Table[" + transformTable.getName() + "] added.");
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
+
 }

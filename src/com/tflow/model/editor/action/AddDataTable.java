@@ -13,16 +13,16 @@ public class AddDataTable extends Action {
 
     @Override
     protected void initAction() {
-        this.name = "Add Data Table";
-        this.description = "add data table to current step";
-        this.code = "ADT";
+        this.name = "Extract Data File";
+        this.description = "Extract data file and then create data table to current step";
+        this.code = "EDF";
         this.image = "action.png";
     }
 
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.DATA_TABLE,
+                CommandParamKey.DATA_FILE,
                 CommandParamKey.STEP
         );
         setCommands(new com.tflow.model.editor.cmd.AddDataTable());

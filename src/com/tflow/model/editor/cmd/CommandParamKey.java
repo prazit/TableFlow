@@ -4,6 +4,7 @@ public enum CommandParamKey {
 
     PROJECT,
     HISTORY,
+    ACTION,
 
     DATA_SOURCE,
     DATA_FILE,

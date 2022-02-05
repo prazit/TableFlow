@@ -22,7 +22,7 @@ public class AddTransformTable extends Action {
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.TRANSFORM_TABLE,
+                CommandParamKey.DATA_TABLE,
                 CommandParamKey.STEP
         );
         setCommands(new com.tflow.model.editor.cmd.AddTransformTable());
@@ -31,8 +31,8 @@ public class AddTransformTable extends Action {
     @Override
     protected void initUndoCommands() {
         /*setUndoParams(
-                CommandParamKey.DATA_TABLE,
-                CommandParamKey.TOWER,
+                CommandParamKey.TRANSFORM_TABLE,
+                CommandParamKey.STEP,
         );*/
         /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveTransformTable());*/
     }

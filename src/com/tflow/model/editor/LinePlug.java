@@ -12,6 +12,8 @@ public class LinePlug {
 
     private boolean removeButton;
     private boolean extractButton;
+    private boolean transferButton;
+    private boolean locked;
 
     private boolean startPlug;
 
@@ -23,17 +25,22 @@ public class LinePlug {
         defaultPlugListener();
     }
 
+    /**
+     * This is default listener for End Plug only.
+     */
     private void defaultPlugListener() {
-        /*TODO: need to remove this function when all plugs already handled*/
         listener = new PlugListener(this) {
             @Override
             public void plugged(Line line) {
                 plug.setPlugged(true);
+                plug.setRemoveButton(true);
             }
 
             @Override
             public void unplugged(Line line) {
-                plug.setPlugged(plug.getLineList().size() > 0);
+                boolean plugged = plug.getLineList().size() > 0;
+                plug.setPlugged(plugged);
+                plug.setRemoveButton(plugged);
             }
         };
     }
@@ -87,6 +94,24 @@ public class LinePlug {
         this.extractButton = extractButton;
     }
 
+    public boolean isTransferButton() {
+        return transferButton;
+    }
+
+    public void setTransferButton(boolean transferButton) {
+        styleClass = null;
+        this.transferButton = transferButton;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        styleClass = null;
+        this.locked = locked;
+    }
+
     public boolean isStartPlug() {
         return startPlug;
     }
@@ -104,7 +129,9 @@ public class LinePlug {
                     (plugged ? " connected" : " no-connection") +
                     (removeButton ? " remove-line" : "") +
                     (extractButton ? " extract-data" : "") +
-                    (removeButton || extractButton ? "" : " draggable");
+                    (transferButton ? " transfer-data" : "") +
+                    (locked ? " locked" : "") +
+                    (locked || removeButton || extractButton ? "" : " draggable");
         return styleClass;
     }
 

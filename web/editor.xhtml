@@ -51,15 +51,16 @@
                                     <p:menubar>
                                         <p:submenu label="Add">
                                             <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addStep}" update="stepForm,propertyForm"/>
+                                            <p:divider/>
+                                            <p:menuitem value="File Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="propertyForm"/>
                                             <p:menuitem value="DB Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="propertyForm"/>
                                             <p:menuitem value="SFTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="propertyForm"/>
+                                            <p:divider/>
                                             <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="propertyForm"/>
                                             <p:divider/>
-                                            <p:menuitem value="Data Table" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataTable}" update="propertyForm"/>
                                             <p:menuitem value="Column" icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                            <p:menuitem value="Output" icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                            <p:menuitem value="Transform Table" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addTransformTable}" update="propertyForm"/>
                                             <p:menuitem value="Transformation" icon="pi pi-fw pi-plus" update="propertyForm"/>
+                                            <p:menuitem value="Output" icon="pi pi-fw pi-plus" update="propertyForm"/>
                                             <p:divider/>
                                             <p:menuitem value="Write Serialize (test)" icon="pi pi-fw pi-plus"
                                                         actionListener="#{editorCtl.testWriteSerialize}"/>

@@ -285,7 +285,7 @@
 
             </h:form>
 
-            <div id="plugButtons" style="z-index:90000;position:absolute;font-size:var(--font-size-1);background-color:rgba(0,0,0,.6);border-radius: 10px;padding:var(--padding);">
+            <div id="plugButtons">
                 <p:outputLabel id="draggable" styleClass="plug-button">
                     <span class="ui-icon pi pi-circle" style="color:yellow;"/>
                 </p:outputLabel>
@@ -293,11 +293,26 @@
                     <span class="ui-icon pi pi-minus-circle" style="color:red;cursor:default;"/>
                 </p:outputLabel>
                 <p:outputLabel id="extractData" styleClass="plug-button">
-                    <span class="ui-icon pi pi-plus-circle" style="color:green;cursor:default;"/>
+                    <span class="ui-icon pi pi-plus-circle" style="color:yellowgreen;cursor:default;"/>
                 </p:outputLabel>
-                <p:tooltip for="draggable" value="Drag and drop onto compatible plug."/>
-                <p:tooltip for="removeLine" value="Remove linked line."/>
-                <p:tooltip for="extractData" value="Extract data structure to new data-table."/>
+                <p:outputLabel id="transferData" styleClass="plug-button">
+                    <span class="ui-icon pi pi-plus-circle" style="color:yellowgreen;cursor:default;"/>
+                </p:outputLabel>
+
+                <p:outputLabel id="locked" styleClass="plug-button-state">
+                    <span class="ui-icon pi pi-lock" style="color:red;cursor:default;"/>
+                </p:outputLabel>
+                <p:outputLabel id="dragging" styleClass="plug-button-state">
+                    <span class="ui-icon pi pi-circle" style="color:yellow;"/>
+                </p:outputLabel>
+                <p:outputLabel id="dropping" styleClass="plug-button-state">
+                    <span class="ui-icon pi pi-check-circle" style="color:green;"/>
+                </p:outputLabel>
+
+                <p:tooltip for="draggable" value="Drag and drop onto compatible object."/>
+                <p:tooltip for="removeLine" value="Remove line."/>
+                <p:tooltip for="extractData" value="Extract data structure to new table."/>
+                <p:tooltip for="transferData" value="Transfer data to new table."/>
             </div>
         </div>
 
