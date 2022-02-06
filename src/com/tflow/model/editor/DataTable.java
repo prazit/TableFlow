@@ -37,12 +37,52 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.query = query;
         this.idColName = idColName;
         this.noTransform = noTransform;
-        this.endPlug = new EndPlug(endPlug);
-        this.startPlug = new StartPlug(startPlug);
+        this.endPlug = createEndPlug(endPlug);
+        this.startPlug = createStartPlug(startPlug);
         this.startPlug.setTransferButton(true);
         this.columnList = new ArrayList<>();
         this.outputList = new ArrayList<>();
         this.setRoomType(RoomType.DATA_TABLE);
+    }
+
+    private EndPlug createEndPlug(String plugId) {
+        EndPlug startPlug = new EndPlug(plugId);
+        startPlug.setLocked(true);
+
+        startPlug.setListener(new PlugListener(startPlug) {
+            @Override
+            public void plugged(Line line) {
+                plug.setPlugged(true);
+            }
+
+            @Override
+            public void unplugged(Line line) {
+                boolean plugged = plug.getLineList().size() > 0;
+                plug.setPlugged(plugged);
+            }
+        });
+
+        return startPlug;
+    }
+
+    private StartPlug createStartPlug(String plugId) {
+        StartPlug startPlug = new StartPlug(plugId);
+        startPlug.setTransferButton(true);
+
+        startPlug.setListener(new PlugListener(startPlug) {
+            @Override
+            public void plugged(Line line) {
+                plug.setPlugged(true);
+            }
+
+            @Override
+            public void unplugged(Line line) {
+                boolean plugged = plug.getLineList().size() > 0;
+                plug.setPlugged(plugged);
+            }
+        });
+
+        return startPlug;
     }
 
     public int getId() {

@@ -38,6 +38,9 @@
                 <p:remoteCommand name="removeLine" action="#{flowchartCtl.removeLine}"/>
                 <p:remoteCommand name="extractData" action="#{flowchartCtl.extractData}"/>
                 <p:remoteCommand name="transferData" action="#{flowchartCtl.transferData}"/>
+                <p:remoteCommand name="addColumn" action="#{flowchartCtl.addColumn}"/>
+                <p:remoteCommand name="addOutputFile" action="#{flowchartCtl.addOutputFile}"/>
+                <p:remoteCommand name="addTransformation" action="#{flowchartCtl.addTransformation}"/>
                 <script>$(function () {
                     drawLines();
                     console.log('drawLines(): flowchart refreshed.');
@@ -104,12 +107,13 @@
                                                 <p:graphicImage library="images"
                                                                 name="#{floor.roomList[2].getDataFile().type.image}"/>
                                                 <b>#{floor.roomList[2].name}</b>
-                                                <p:commandButton type="button"
-                                                                 styleClass="ui-button-secondary"
-                                                                 icon="pi pi-ellipsis-h"/>
                                             </div>
                                             <div class="#{floor.roomList[2].startPlug.styleClass}" id="#{floor.roomList[2].startPlug}"></div>
                                         </f:facet>
+
+                                        <p:outputPanel rendered="#{floor.roomList[2].columnList.size()==0}" styleClass="column">
+                                            <label>(no column)</label>
+                                        </p:outputPanel>
 
                                         <p:repeat value="#{floor.roomList[2].columnList}" var="column">
 
@@ -137,12 +141,16 @@
 
                                         </p:repeat>
 
+                                        <p:outputPanel styleClass="action column">
+                                            <p:commandButton value="Add Output File" onclick="tableAction('addOutputFile','#{floor.roomList[2].selectableId}')" update="@this"/>
+                                        </p:outputPanel>
+
                                     </p:panel>
                                     <p:spacer rendered="false"/>
                                 </td>
 
                                 <td>
-                                    <p:spacer width="100"/>
+                                    <p:spacer width="50"/>
                                 </td>
                             </tr>
                             <tr style="height: 50px">
@@ -185,19 +193,17 @@
                                 </td>
 
                                 <td>
-                                    <p:panel header="" styleClass="data-table selectable#{flowchartCtl.active(tfloor.roomList[1])}" rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}">
+                                    <p:panel rendered="#{tfloor.roomList[1].roomType==RoomType.TRANSFORM_TABLE}" header="" styleClass="data-table selectable#{flowchartCtl.active(tfloor.roomList[1])}">
+                                        <input name="selectableId" type="hidden" value="#{tfloor.roomList[1].selectableId}"/>
+                                        <p:remoteCommand name="update#{tfloor.roomList[1].selectableId}" update="@parent" oncomplete="updateComplete('#{tfloor.roomList[1].selectableId}')"/>
+
                                         <f:facet name="actions">
-                                            <input name="selectableId" type="hidden" value="#{tfloor.roomList[1].selectableId}"/>
-                                            <p:remoteCommand name="update#{tfloor.roomList[1].selectableId}" update="@parent" oncomplete="updateComplete('#{tfloor.roomList[1].selectableId}')"/>
                                             <div class="#{tfloor.roomList[1].endPlug.styleClass}" id="#{tfloor.roomList[1].endPlug}"></div>
                                             <div>
                                                 <p:graphicImage library="images" name="transfer.png"/>
                                                 <b>#{tfloor.roomList[1].name}</b>
-                                                <p:commandButton type="button"
-                                                                 styleClass="ui-button-secondary"
-                                                                 icon="pi pi-ellipsis-h"/>
                                             </div>
-                                            <div class="#{tfloor.roomList[1].endPlug.styleClass}" id="#{tfloor.roomList[1].endPlug}"></div>
+                                            <div class="#{tfloor.roomList[1].startPlug.styleClass}" id="#{tfloor.roomList[1].startPlug}"></div>
                                         </f:facet>
 
                                         <p:repeat value="#{tfloor.roomList[1].columnList}" var="tcolumn">
@@ -213,6 +219,10 @@
 
                                         </p:repeat>
 
+                                        <p:outputPanel styleClass="action column">
+                                            <p:commandButton value="Add Column" onclick="tableAction('addColumn','#{tfloor.roomList[1].selectableId}')" update="@this"/>
+                                        </p:outputPanel>
+
                                         <p:separator title="transform"/>
 
                                         <p:repeat value="#{tfloor.roomList[1].fxList}" var="tfx">
@@ -225,6 +235,10 @@
                                             </div>
 
                                         </p:repeat>
+
+                                        <p:outputPanel styleClass="action column">
+                                            <p:commandButton value="Add Transformation" onclick="tableAction('addTransformation','#{tfloor.roomList[1].selectableId}')" update="@this"/>
+                                        </p:outputPanel>
 
                                         <p:separator title="output"/>
 
@@ -239,6 +253,10 @@
                                             </div>
 
                                         </p:repeat>
+
+                                        <p:outputPanel styleClass="action column">
+                                            <p:commandButton value="Add Output File" onclick="tableAction('addOutputFile','#{tfloor.roomList[1].selectableId}')" update="@this"/>
+                                        </p:outputPanel>
 
                                     </p:panel>
                                     <p:spacer rendered="#{tfloor.roomList[1].roomType!=RoomType.TRANSFORM_TABLE}"/>

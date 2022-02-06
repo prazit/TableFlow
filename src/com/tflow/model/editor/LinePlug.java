@@ -131,7 +131,7 @@ public class LinePlug {
                     (extractButton ? " extract-data" : "") +
                     (transferButton ? " transfer-data" : "") +
                     (locked ? " locked" : "") +
-                    (locked || removeButton || extractButton ? "" : " draggable");
+                    (locked || removeButton || extractButton || transferButton ? "" : " draggable");
         return styleClass;
     }
 

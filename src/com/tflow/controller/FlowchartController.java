@@ -4,15 +4,12 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
-import com.tflow.model.editor.room.Room;
-import com.tflow.model.editor.room.RoomType;
 import com.tflow.util.FacesUtil;
 
 import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -300,10 +297,10 @@ public class FlowchartController extends Controller {
 
         step.setActiveObject(dataTable);
 
-        /*TODO: issue: activeObject is not changed here*/
-
         FacesUtil.addInfo("Table[" + dataTable.getName() + "] added.");
         FacesUtil.runClientScript("refreshFlowChart();");
+
+        /*TODO: issue: after refresh, the activeObject is not dataTable*/
     }
 
     /**
@@ -345,6 +342,35 @@ public class FlowchartController extends Controller {
 
         FacesUtil.addInfo("Table[" + transformTable.getName() + "] added.");
         FacesUtil.runClientScript("refreshFlowChart();");
+
+        /*TODO: issue: try to transferData from transform-table,
+         * server error: selectableMap not contains selectableId='dt21'
+         * client error: leader-line show error about 'start' and 'stop' are needed
+         * ? what is differences between data-table and transform-table, make sure they can use the same command.
+         * - check command already add to selectableMap
+         * - check command already add to lineList
+         **/
+    }
+
+    public void addColumn() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        log.warn("addColumn(dataTable:{})", selectable.getSelectableId());
+        /*TODO: addColumn for data-table & transofm-table*/
+    }
+
+    public void addTransformation() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        log.warn("addTransformation(dataTable:{})", selectable.getSelectableId());
+        /*TODO: addTransformation for transform-table*/
+    }
+
+    public void addOutputFile() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        log.warn("addOutputFile(dataTable:{})", selectable.getSelectableId());
+        /*TODO: addOutputFile for data-table and transform-table*/
     }
 
 }

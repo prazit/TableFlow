@@ -42,7 +42,6 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
 
     private StartPlug createStartPlug(String plugId) {
         StartPlug startPlug = new StartPlug(plugId);
-        startPlug.setRemoveButton(false);
         startPlug.setExtractButton(true);
 
         startPlug.setListener(new PlugListener(startPlug) {

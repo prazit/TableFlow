@@ -61,11 +61,6 @@
                                             <p:menuitem value="Column" icon="pi pi-fw pi-plus" update="propertyForm"/>
                                             <p:menuitem value="Transformation" icon="pi pi-fw pi-plus" update="propertyForm"/>
                                             <p:menuitem value="Output" icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                            <p:divider/>
-                                            <p:menuitem value="Write Serialize (test)" icon="pi pi-fw pi-plus"
-                                                        actionListener="#{editorCtl.testWriteSerialize}"/>
-                                            <p:menuitem value="Read Serialize (test)" icon="pi pi-fw pi-plus"
-                                                        actionListener="#{editorCtl.testReadSerialize}"/>
                                         </p:submenu>
 
                                         <p:submenu label="Edit">
@@ -80,6 +75,13 @@
                                         <p:submenu label="View">
                                             <p:menuitem value="Step List" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
                                             <p:menuitem value="Property List" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+                                        </p:submenu>
+
+                                        <p:submenu label="Test">
+                                            <p:menuitem value="Write Serialize (test)" icon="pi pi-fw pi-plus"
+                                                        actionListener="#{editorCtl.testWriteSerialize}"/>
+                                            <p:menuitem value="Read Serialize (test)" icon="pi pi-fw pi-plus"
+                                                        actionListener="#{editorCtl.testReadSerialize}"/>
                                         </p:submenu>
 
                                         <p:divider layout="vertical"/>

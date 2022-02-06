@@ -156,6 +156,24 @@ body .ui-panel.data-table.active .ui-panel-titlebar,
     background-color: var(--surface-d);
 }
 
+.data-table .column.action .ui-button {
+    width: 100%;
+    background-color: var(--surface-b);
+    color: var(--text-color-secondary);
+    border-color: var(--surface-b);
+}
+
+.data-table .column.action .ui-button:hover {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    border-color: var(--surface-e);
+}
+
+.hide-actions .data-table .column.action {
+    /*TODO: need controller to support 'hide-actions' (hide action buttons in flow-chart)*/
+    display: none;
+}
+
 body .flow-chart .ui-panel .ui-panel-titlebar .ui-panel-actions {
     width: 100%;
     white-space: nowrap;

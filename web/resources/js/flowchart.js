@@ -82,6 +82,12 @@ function updateComplete(selectableId) {
     draggableHandle();
 }
 
+function tableAction(remoteFunction, selectableId) {
+    window[remoteFunction]([
+        {name: "selectableId", value: selectableId}
+    ]);
+}
+
 /**
  * @param selectable = jQuery-Element or Selectable-ID
  */
@@ -345,11 +351,12 @@ function draggableStartup() {
         {draggable: '.data-source.database .start-plug', droppable: '.data-file.database:has(.end-plug.no-connection)'},
         {draggable: '.data-file.database .end-plug', droppable: '.data-source.database'},
 
-        /*-- data-file to data-table, TODO: need action AddDataTable after ExtractData --*/
+        /*-- data-file to data-table --*/
         {draggable: '.data-file .start-plug', droppable: '.data-table .ui-panel-titlebar:has(.end-plug.no-connection)'},
         {draggable: '.data-table .ui-panel-titlebar .end-plug', droppable: '.data-file:has(.start-plug.no-connection)'},
 
-        /*TODO: data-table to data-table, need action AddTransformTable*/
+        /*-- data-table to data-table --*/
+        {draggable: '.data-table .start-plug', droppable: '.data-table .ui-panel-titlebar:has(.end-plug.no-connection)'},
 
         /*column to column*/
         {draggable: '.string.column .start-plug', droppable: '.string.column:has(.end-plug.no-connection)'},

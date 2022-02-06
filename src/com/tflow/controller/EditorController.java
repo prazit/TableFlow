@@ -19,7 +19,10 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @ViewScoped
 @Named("editorCtl")
@@ -233,15 +236,21 @@ public class EditorController extends Controller {
         return selectItemList;
     }
 
+    private String propertyToMethod(String propertyName) {
+        return "get" +
+                propertyName.substring(0, 1).toUpperCase()
+                + propertyName.substring(1);
+    }
+
     private Object getPropertyValue(Selectable selectable, String propertyName) {
         Object value = selectable.getPropertyMap().get(propertyName);
         if (value == null) {
             try {
-                value = selectable.getClass().getField(propertyName).get(selectable);
+                value = selectable.getClass().getMethod(propertyToMethod(propertyName)).invoke(selectable);
             } catch (Exception e) {
                 value = "";
-                log.error("getPropertyValue(selectable:{}, propertyName:{}) - {}", selectable.getSelectableId(), propertyName, e.getMessage());
-                e.printStackTrace();
+                log.error("getPropertyValue(selectable:{}, propertyName:{})", selectable.getSelectableId(), propertyName);
+                log.error("Unexpected exception ", e);
             }
         }
         return value == null ? "" : value;
