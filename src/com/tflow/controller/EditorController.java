@@ -509,15 +509,16 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript("refreshFlowChart();");
     }
 
+    /**
+     * TODO: remove this function, this is mockup data.
+     */
     private DataTable getDataTable(Project project, DataFile dataFile) {
         /*create DataSource, Data File, DataTable (Commmand: AddDataTable)*/
 
         DataTable dataTable = new DataTable(
                 "Untitled Data Table",
                 dataFile,
-                "",
                 "String",
-                false,
                 project.newElementId(),
                 project.newElementId()
         );
@@ -545,7 +546,7 @@ public class EditorController extends Controller {
     }
 
     /**
-     * Create mockup data in activeStep and refresh the flowchart.
+     * TODO: remove this function, this is mockup data.
      */
     public void addDataTable(DataFile dataFile) {
         Project project = workspace.getProject();
@@ -567,6 +568,9 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript("refreshFlowChart();");
     }
 
+    /**
+     * TODO: remove this function, this is mockup data.
+     */
     public void addTransformTable() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();

@@ -5,7 +5,7 @@ public enum RoomType {
     DATA_SOURCE,
     DATA_FILE,
     DATA_TABLE,
-    COLUMN_FX,
+    COLUMN_FX_TABLE,
     TRANSFORM_TABLE,
     EMPTY;
 

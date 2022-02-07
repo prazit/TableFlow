@@ -54,12 +54,11 @@ public class Room implements Serializable {
 
     @Override
     public String toString() {
-        return "Room{" +
-                "selectableId='" + ((Selectable)this).getSelectableId() + '\'' +
-                "elementId='" + elementId + '\'' +
-                ", roomIndex=" + roomIndex +
-                ", roomType=" + roomType +
-                ", floor=" + floor +
+        return "{" +
+                (this instanceof Selectable ? "selectableId:'" + ((Selectable) this).getSelectableId() + '\'' : "selectableId: false") +
+                ", elementId:'" + elementId + '\'' +
+                ", roomIndex:" + roomIndex +
+                ", roomType:" + roomType +
                 '}';
     }
 }

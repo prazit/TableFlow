@@ -81,4 +81,16 @@ public class Line implements Serializable {
                 clientIndex
         );
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "startSelectableId:'" + startSelectableId + '\'' +
+                ", endSelectableId:'" + endSelectableId + '\'' +
+                ", type:" + type +
+                ", clientIndex:" + clientIndex +
+                ", startPlug:" + startPlug +
+                ", endPlug:" + endPlug +
+                '}';
+    }
 }

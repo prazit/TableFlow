@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.room.Room;
+import com.tflow.model.editor.room.RoomType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class ColumnFxTable extends Room implements Serializable {
     public ColumnFxTable(TransformTable ownerTable) {
         this.ownerTable = ownerTable;
         columnFxList = new ArrayList<>();
+        this.setRoomType(RoomType.COLUMN_FX_TABLE);
     }
 
     public List<ColumnFx> getColumnFxList() {

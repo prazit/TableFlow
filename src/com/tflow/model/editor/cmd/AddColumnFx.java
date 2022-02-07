@@ -10,6 +10,7 @@ public class AddColumnFx extends Command {
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
+        /*TODO: need to pass the Column as owner of columnFx instead, and need to create the ColumnFx inside this command instead*/
         ColumnFx columnFx = (ColumnFx) paramMap.get(CommandParamKey.COLUMN_FX);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Project project = step.getOwner();

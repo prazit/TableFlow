@@ -26,7 +26,9 @@ public class AddTransformTable extends Command {
         Tower tower = step.getTransformTower();
         Project project = step.getOwner();
 
-        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getId(), SourceType.DATA_TABLE, sourceTable.getIdColName(), project.newElementId(), project.newElementId());
+        SourceType sourceType = getSourceType(sourceTable);
+
+        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getId(), sourceType, sourceTable.getIdColName(), project.newElementId(), project.newElementId());
         transformTable.setId(project.newUniqueId());
 
         Room sourceRoom = (Room) sourceTable;
@@ -36,6 +38,7 @@ public class AddTransformTable extends Command {
         List<DataColumn> columnList = transformTable.getColumnList();
         for (DataColumn dataColumn : sourceColumnList) {
             columnList.add(new TransformColumn(dataColumn, project.newElementId(), project.newElementId(), transformTable));
+            /*TODO: in the future need explicitly relation, need to add line between columns as DirectTransferFx*/
         }
 
         /*put this transform-table on the same floor of source table*/
@@ -48,16 +51,20 @@ public class AddTransformTable extends Command {
                 floor = tower.getAvailableFloor(-1, true);
             }
         } else if (!floor.isEmpty()) {
-            if (floor.getRoomList().get(1).equals(sourceRoom)) {
+            List<Room> roomList = floor.getRoomList();
+            if (roomList.get(roomList.size() - 1).equals(sourceRoom)) {
                 /*case: floor already used by source table then add 2 rooms to the right*/
                 tower.addRoom(2, null);
-                roomIndex += 2;
+                roomIndex = roomList.size() - 1;
             } else {
                 /*case: floor already used by another table then add new floor to the next*/
                 floor = tower.getAvailableFloor(-1, true, ++floorIndex);
             }
         }
         assert floor != null;
+
+        /*need to add ColumnFxTable to the room before Transform Table*/
+        floor.setRoom(roomIndex - 1, transformTable.getColumnFxTable());
         floor.setRoom(roomIndex, transformTable);
 
         step.getSelectableMap().put(transformTable.getSelectableId(), transformTable);
@@ -67,6 +74,11 @@ public class AddTransformTable extends Command {
 
         /*Action Result*/
         action.getResultMap().put("transformTable", transformTable);
+    }
+
+    private SourceType getSourceType(DataTable sourceTable) {
+        if (sourceTable instanceof TransformTable) return SourceType.TRANSFORM_TABLE;
+        return SourceType.DATA_TABLE;
     }
 
 }

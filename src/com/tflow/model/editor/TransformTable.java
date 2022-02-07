@@ -14,7 +14,7 @@ public class TransformTable extends DataTable {
     private ColumnFxTable columnFxTable;
 
     public TransformTable(String name, int sourceId, SourceType sourceType, String idColName, String endPlug, String startPlug) {
-        super(name, null, null, idColName, false, endPlug, startPlug);
+        super(name, null,  idColName,  endPlug, startPlug);
         this.sourceId = sourceId;
         this.sourceType = sourceType;
         fxList = new ArrayList<>();

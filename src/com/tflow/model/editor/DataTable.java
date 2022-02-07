@@ -27,16 +27,16 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     private LinePlug endPlug;
     private LinePlug startPlug;
 
-    public DataTable(String name, DataFile dataFile, String query, String idColName, boolean noTransform, String endPlug, String startPlug) {
+    public DataTable(String name, DataFile dataFile, String idColName, String endPlug, String startPlug) {
         this.name = name;
         this.index = -1;
         this.dataFile = dataFile;
         if(dataFile != null) {
             dataFile.setOwner(this);
         }
-        this.query = query;
+        this.query = "";
         this.idColName = idColName;
-        this.noTransform = noTransform;
+        this.noTransform = false;
         this.endPlug = createEndPlug(endPlug);
         this.startPlug = createStartPlug(startPlug);
         this.startPlug.setTransferButton(true);

@@ -145,6 +145,7 @@ public class LinePlug {
 
     @Override
     public String toString() {
+        /*Don't change: used in UI, UI need elementId*/
         return plug;
     }
 }

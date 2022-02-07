@@ -6,6 +6,10 @@ public interface Selectable {
 
     /*TODO: need Locked-Status(locked mode, unlocked mode) to disable some properties, as example: File-Type cannot change after extract data structure*/
 
+    /*TODO: need Properties Listener for property event 'changed'
+     * public PropertiesListener getPropertiesListener();
+     **/
+
     public Properties getProperties();
 
     public String getSelectableId();

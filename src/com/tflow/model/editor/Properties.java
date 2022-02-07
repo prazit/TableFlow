@@ -22,6 +22,8 @@ public enum Properties {
     /*TODO: property description is needed*/
     /*TODO: selectable object need lock/unlock status to enable/disable some properties with lock marked*/
 
+    /*TODO: client side: lets call the properties listener after value-changed*/
+
     STEP(
             "name:Name:String:refreshStepList();",
             "--:Debug Only:--",

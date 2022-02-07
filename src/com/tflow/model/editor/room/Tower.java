@@ -43,6 +43,7 @@ public class Tower implements Serializable {
     }
 
     /**
+     * @param count number of rooms to add
      * @param floor if null means add rooms to all floors in this tower, otherwise add rooms to the specified floor.
      */
     public void addRoom(int count, Floor floor) {
@@ -56,9 +57,11 @@ public class Tower implements Serializable {
         Project project = floorList.get(0).getTower().getOwner().getOwner();
         for (Floor fl : floorList) {
             List<Room> roomList = fl.getRoomList();
-            for (int r = 0; r < count; r++) {
-                EmptyRoom emptyRoom = new EmptyRoom(r, floor, project.newElementId());
-                roomList.add(r, emptyRoom);
+            int roomIndex = roomList.size();
+            for (int c = 0; c < count; c++) {
+                EmptyRoom emptyRoom = new EmptyRoom(roomIndex, floor, project.newElementId());
+                roomList.add(emptyRoom);
+                roomIndex++;
             }
         }
     }
@@ -129,5 +132,15 @@ public class Tower implements Serializable {
 
     public boolean isEmpty() {
         return floorList.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "floorList:" + Arrays.toString(floorList.toArray()) +
+                ", roomsOnAFloor:" + roomsOnAFloor +
+                ", activeRoom:" + activeRoom +
+                ", owner:" + owner +
+                '}';
     }
 }
