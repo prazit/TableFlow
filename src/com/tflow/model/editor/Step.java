@@ -355,4 +355,16 @@ public class Step implements Selectable {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", index:" + index +
+                ", name:'" + name + '\'' +
+                ", zoom:" + zoom +
+                ", showStepList:" + showStepList +
+                ", showPropertyList:" + showPropertyList +
+                '}';
+    }
 }

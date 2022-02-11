@@ -163,7 +163,7 @@ function propertyCreated($scrollPanel) {
 
     /*TODO: input-text: select all text when got the focus*/
 
-    /*TODO: setFocus to the default field or first field*/
+    /*setFocus to the default field or first field*/
     if (tflow.setFocus != null) clearTimeout(tflow.setFocus);
     tflow.setFocus = setTimeout(setFocus, 1000);
 }
@@ -176,12 +176,6 @@ function setFocus() {
         inputs[0].focus(function (ev) {
             console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
         });
-
-        /*TODO: after set focus issue: dead loop will occurred after selectObj(step)*/
-
-        /*TODO: after set focus issue: while refreshing the flowchart, lets try to click in the flowchart area that will stop the refresh process*/
-
-        /*TODO: after set focus issue: selectObj( data-table ) then selectObj( column ) in the same table is not function correctly*/
     }
 }
 

@@ -5,6 +5,7 @@ import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.util.DataTableUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,6 @@ public class AddTransformTable extends Command {
         SourceType sourceType = getSourceType(sourceTable);
 
         TransformTable transformTable = new TransformTable("Untitled", sourceTable.getId(), sourceType, sourceTable.getIdColName(), project.newElementId(), project.newElementId());
-        transformTable.setId(project.newUniqueId());
 
         Room sourceRoom = (Room) sourceTable;
         List<DataColumn> sourceColumnList = sourceTable.getColumnList();
@@ -67,7 +67,7 @@ public class AddTransformTable extends Command {
         floor.setRoom(roomIndex - 1, transformTable.getColumnFxTable());
         floor.setRoom(roomIndex, transformTable);
 
-        step.getSelectableMap().put(transformTable.getSelectableId(), transformTable);
+        DataTableUtil.renewChild(step.getSelectableMap(), transformTable, project);
 
         /*link from SourceTable to TransformTable*/
         step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());

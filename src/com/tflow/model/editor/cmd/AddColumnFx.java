@@ -1,8 +1,9 @@
 package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.room.Tower;
+import com.tflow.model.editor.action.Action;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -10,42 +11,49 @@ public class AddColumnFx extends Command {
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        /*TODO: need to pass the Column as owner of columnFx instead, and need to create the ColumnFx inside this command instead*/
-        ColumnFx columnFx = (ColumnFx) paramMap.get(CommandParamKey.COLUMN_FX);
+        DataColumn sourceColumn = (DataColumn) paramMap.get(CommandParamKey.DATA_COLUMN);
+        TransformColumn targetColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
+        ColumnFunction columnFunction = (ColumnFunction) paramMap.get(CommandParamKey.COLUMN_FUNCTION);
+        Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Project project = step.getOwner();
 
+        /*optional JAVASCRIPT_BUILDER*/
         StringBuilder jsBuilder = null;
         Object obj = paramMap.get(CommandParamKey.JAVASCRIPT_BUILDER);
         if (obj != null) {
             jsBuilder = (StringBuilder) obj;
         }
 
-        int id = project.newUniqueId();
-        columnFx.setId(id);
+        ColumnFx columnFx = new ColumnFx((DataColumn) targetColumn, columnFunction, columnFunction.getName(), project.newElementId(), project.newElementId());
 
-        TransformTable transformTable = (TransformTable) columnFx.getOwner().getOwner();
+        Map<String, Object> propertyMap = columnFx.getPropertyMap();
+        propertyMap.put("sourceTable", sourceColumn.getOwner().getSelectableId());
+        propertyMap.put("sourceColumn", sourceColumn.getSelectableId());
+
+        columnFx.setId(project.newUniqueId());
+
+        TransformTable transformTable = (TransformTable) targetColumn.getOwner();
         List<ColumnFx> columnFxList = transformTable.getColumnFxTable().getColumnFxList();
         columnFxList.add(columnFx);
+        columnFxList.sort(Comparator.comparingInt(columnFx2 -> columnFx2.getOwner().getIndex()));
 
-        Map<String, Selectable> selectableMap = step.getSelectableMap();
-        selectableMap.put(columnFx.getSelectableId(), columnFx);
+        step.getSelectableMap().put(columnFx.getSelectableId(), columnFx);
 
-        /*draw lines, this is a case of lookup for example only, TODO: need to find solution to support all ColumnFunction by itself*/
-        if (ColumnFunction.LOOKUP == columnFx.getFunction()) {
-            /*line between sourceTable and columnFx*/
-            String columnSelectableId = (String) columnFx.getPropertyMap().get("sourceColumn");
-            DataColumn sourceColumn = (DataColumn) selectableMap.get(columnSelectableId);
-            DataTable sourceTable = sourceColumn.getOwner();
-            Line line1 = step.addLine(sourceTable.getSelectableId(), columnFx.getSelectableId());
+        /*Notice: draw lines below tested on ColumnFunction.LOOKUP and expect to work for all ColumnFunction*/
 
-            /*line between columnFx and tranformTable*/
-            Line line2 = step.addLine(columnFx.getSelectableId(), transformTable.getSelectableId());
+        /*line between sourceColumn and columnFx*/
+        Line line1 = step.addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
 
-            if (jsBuilder != null) {
-                jsBuilder.append(line1.getJsAdd());
-                jsBuilder.append(line2.getJsAdd());
-            }
+        /*line between columnFx and targetColumn*/
+        Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
+
+        if (jsBuilder != null) {
+            jsBuilder.append(line1.getJsAdd());
+            jsBuilder.append(line2.getJsAdd());
         }
+
+        /*Action Result*/
+        action.getResultMap().put("columnFx", columnFx);
     }
 }

@@ -91,11 +91,11 @@ public class DataColumn implements Serializable, Selectable {
 
     @Override
     public String toString() {
-        return "DataColumn{" +
-                "selectableId=" + ((Selectable) this).getSelectableId() +
-                "index=" + index +
-                ", type=" + type +
-                ", name='" + name + '\'' +
+        return "{" +
+                "index:" + index +
+                ", selectableId:'" + ((Selectable) this).getSelectableId() + '\'' +
+                ", type:'" + type + '\'' +
+                ", name:'" + name + '\'' +
                 '}';
     }
 }

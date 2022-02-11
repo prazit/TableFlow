@@ -170,7 +170,7 @@ body .ui-panel.data-table.active .ui-panel-titlebar,
 }
 
 .hide-actions .data-table .column.action {
-    /*TODO: need controller to support 'hide-actions' (hide action buttons in flow-chart)*/
+    /*TODO: need controller to support 'hide-actions' using CSS Class (hide action buttons in flow-chart)*/
     display: none;
 }
 

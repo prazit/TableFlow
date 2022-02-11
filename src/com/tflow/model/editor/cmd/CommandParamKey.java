@@ -9,8 +9,11 @@ public enum CommandParamKey {
     DATA_SOURCE,
     DATA_FILE,
     DATA_TABLE,
-    COLUMN_FX,
+    COLUMN_FUNCTION,
     TRANSFORM_TABLE,
+
+    DATA_COLUMN,
+    TRANSFORM_COLUMN,
 
     TOWER,
     LINE_LIST,

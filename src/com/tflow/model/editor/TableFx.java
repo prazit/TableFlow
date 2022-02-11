@@ -53,6 +53,14 @@ public class TableFx implements Serializable, Selectable {
         this.paramMap = paramMap;
     }
 
+    public TransformTable getOwner() {
+        return owner;
+    }
+
+    public void setOwner(TransformTable owner) {
+        this.owner = owner;
+    }
+
     @Override
     public LinePlug getStartPlug() {
         return null;

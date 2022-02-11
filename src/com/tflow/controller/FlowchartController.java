@@ -5,6 +5,7 @@ import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.util.FacesUtil;
+import org.primefaces.component.column.Column;
 
 import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
@@ -191,31 +192,30 @@ public class FlowchartController extends Controller {
 
     private void addLookup(DataColumn sourceColumn, TransformColumn transformColumn, StringBuilder jsBuilder) {
         log.warn("addLookup(sourceColumn:{}, targetColumn:{})", sourceColumn.getSelectableId(), transformColumn.getSelectableId());
-        /*
-         * 1. create ColumnFx and add to this step using Action
-         * 2. create new line between sourceColumn and columnFx (call addLine again)
-         * 3. remain line between columnFx and transformColumn to add by next statements
-         */
-        Project project = workspace.getProject();
-
-        ColumnFx columnFx = new ColumnFx((DataColumn) transformColumn, ColumnFunction.LOOKUP, "Untitled", project.newElementId(), project.newElementId());
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
+        paramMap.put(CommandParamKey.DATA_COLUMN, sourceColumn);
+        paramMap.put(CommandParamKey.TRANSFORM_COLUMN, transformColumn);
+        paramMap.put(CommandParamKey.COLUMN_FUNCTION, ColumnFunction.LOOKUP);
         paramMap.put(CommandParamKey.STEP, step);
-        paramMap.put(CommandParamKey.JAVASCRIPT_BUILDER, jsBuilder);
+        //paramMap.put(CommandParamKey.JAVASCRIPT_BUILDER, jsBuilder);
 
+        Action action = new AddColumnFx(paramMap);
         try {
-            new AddColumnFx(paramMap).execute();
+            action.execute();
         } catch (RequiredParamException e) {
             log.error("Add ColumnFx Failed!", e);
             FacesUtil.addError("Add ColumnFx Failed with Internal Command Error!");
             return;
         }
 
-        /*editorCtl.selectObject(columnFx.getSelectableId());*/
+        ColumnFx columnFx = (ColumnFx) action.getResultMap().get("columnFx");
+        step.setActiveObject(columnFx);
 
         FacesUtil.addInfo("ColumnFx[" + columnFx.getName() + "] added.");
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        FacesUtil.runClientScript("refreshFlowChart();");
     }
 
     /**
@@ -298,6 +298,8 @@ public class FlowchartController extends Controller {
         step.setActiveObject(dataTable);
 
         FacesUtil.addInfo("Table[" + dataTable.getName() + "] added.");
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.runClientScript("refreshFlowChart();");
 
         /*TODO: issue: after refresh, the activeObject is not dataTable*/
@@ -341,6 +343,8 @@ public class FlowchartController extends Controller {
         step.setActiveObject(transformTable);
 
         FacesUtil.addInfo("Table[" + transformTable.getName() + "] added.");
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.runClientScript("refreshFlowChart();");
     }
 

@@ -22,7 +22,7 @@ public class AddColumnFx extends Action {
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.COLUMN_FX,
+                CommandParamKey.COLUMN_FUNCTION,
                 CommandParamKey.STEP
         );
         setCommands(new com.tflow.model.editor.cmd.AddColumnFx());

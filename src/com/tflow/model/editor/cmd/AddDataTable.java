@@ -5,6 +5,7 @@ import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.util.DataTableUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -19,19 +20,13 @@ public class AddDataTable extends Command {
         DataFile dataFile = (DataFile) paramMap.get(CommandParamKey.DATA_FILE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
-        Project project = step.getOwner();
 
-        DataTable dataTable = extractData(dataFile, project);
-
-        dataTable.setId(step.getOwner().newUniqueId());
-        assignChildId(dataTable, step.getOwner());
+        DataTable dataTable = extractData(dataFile, step);
 
         Tower tower = step.getDataTower();
 
         Floor floor = tower.getAvailableFloor(2, false);
         floor.setRoom(2, dataTable);
-
-        updateSelectableMap(step.getSelectableMap(), dataTable);
 
         step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
 
@@ -44,57 +39,9 @@ public class AddDataTable extends Command {
         action.getResultMap().put("dataTable", dataTable);
     }
 
-    private void assignChildId(DataTable dataTable, Project project) {
+    private DataTable extractData(DataFile dataFile, Step step) {
 
-        for (DataColumn column : dataTable.getColumnList()) {
-            column.setId(project.newUniqueId());
-        }
-
-        for (DataFile output : dataTable.getOutputList()) {
-            output.setId(project.newUniqueId());
-        }
-
-        if (!(dataTable instanceof TransformTable)) return;
-
-        TransformTable transformTable = (TransformTable) dataTable;
-
-        for (DataColumn column : dataTable.getColumnList()) {
-            ColumnFx fx = ((TransformColumn) column).getFx();
-            if (fx != null) fx.setId(project.newUniqueId());
-        }
-
-        for (TableFx tableFx : transformTable.getFxList()) {
-            tableFx.setId(project.newUniqueId());
-        }
-
-    }
-
-    private void updateSelectableMap(Map<String, Selectable> selectableMap, DataTable dataTable) {
-        selectableMap.put(dataTable.getSelectableId(), dataTable);
-
-        for (DataColumn column : dataTable.getColumnList()) {
-            selectableMap.put(column.getSelectableId(), column);
-        }
-
-        for (DataFile output : dataTable.getOutputList()) {
-            selectableMap.put(output.getSelectableId(), output);
-        }
-
-        if (dataTable instanceof TransformTable) {
-            TransformTable tt = (TransformTable) dataTable;
-
-            for (DataColumn column : tt.getColumnList()) {
-                ColumnFx fx = ((TransformColumn) column).getFx();
-                if (fx != null) selectableMap.put(column.getSelectableId(), fx);
-            }
-
-            for (TableFx fx : tt.getFxList()) {
-                selectableMap.put(fx.getSelectableId(), fx);
-            }
-        }
-    }
-
-    private DataTable extractData(DataFile dataFile, Project project) {
+        Project project = step.getOwner();
 
         /*TODO: create compatible Extractor (dataFile.type) | DConvers lib need to make some changes to accept configuration in config class instant*/
         /*TODO: call Extractor.extract*/
@@ -120,6 +67,8 @@ public class AddDataTable extends Command {
 
         List<DataFile> outputList = dataTable.getOutputList();
         outputList.add(outputCSVFile);
+
+        DataTableUtil.renewChild(step.getSelectableMap(), dataTable, project);
 
         return dataTable;
     }

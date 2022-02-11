@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.view.PropertyView;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +72,9 @@ public enum Properties {
     TRANSFORM_COLUMN(
             "type:Data Type:ReadOnly",
             "name:Column Name:String"
+    ),
+    FX_PARAM(
+            "name:Parameter Name:String"
     ),
 
     INPUT_SQL(
@@ -191,14 +195,16 @@ public enum Properties {
 
     /*TODO: need complete list for Parameters or Function Prototypes*/
     CFX_LOOKUP(
-            "name:File Name:String",
-            "--:Lookup:--",
+            "name:Title:String",
+            "--:Source:--",
             ".:propertyMap:sourceTable:Source Table:SourceTable",
-            ".:propertyMap:sourceColumn:Source Column:Column:sourceTable",
-            ".:propertyMap:nullValue:Null Value:String",
-            "--:Conditions:--"
+            "--:Conditions:--",
+            /*TODO: PropertyType for 'Condition' is needed*/
             /*"Condition:Condition(ColumnName==ColumnName(TargetTableLookup))",*/
             /*"Conditions:ConditionList(ColumnName==ColumnName(TargetTableLookup))",*/
+            "--:Value:--",
+            ".:propertyMap:sourceColumn:Value from:Column:sourceTable",
+            ".:propertyMap:nullValue:Replace Null:String"
     ),
     CFX_GET(
             "name:File Name:String"
@@ -239,61 +245,96 @@ public enum Properties {
     public List<PropertyView> getPropertyList() {
         if (propertyList != null) return propertyList;
 
+        PropertyView property;
         propertyList = new ArrayList<>();
-        PropertyView propView;
-        String[] prototypes;
-        String[] params;
-        int length;
         for (String prototypeString : prototypeList) {
-            prototypes = prototypeString.split("[:]");
-            propView = new PropertyView();
-            params = new String[]{};
-            length = prototypes.length;
+            property = toPropertyView(prototypeString);
+            if (property == null) continue;
 
-            if (prototypes[0].equals("--")) {
-                /*separator*/
-                propView.setType(PropertyType.SEPARATOR);
-                propView.setLabel(prototypes[1]);
-                propView.setParams(params);
-                propertyList.add(propView);
-                continue;
-            } else if (prototypes[0].equals(".")) {
-                if (length > 5)
-                    params = Arrays.copyOfRange(prototypes, 5, length);
-                propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
-                propView.setLabel(prototypes[3]);
-                propView.setVar(prototypes[2]);
-                propView.setVarParent(prototypes[1]);
-            } else {
-                if (length > 3)
-                    params = Arrays.copyOfRange(prototypes, 3, length);
-                propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
-                propView.setLabel(prototypes[1]);
-                propView.setVar(prototypes[0]);
-                propView.setVarParent(null);
-            }
+            propertyList.add(property);
+        }
 
-            int paramCount = params.length;
-            for (int i = paramCount - 1; i >= 0; i--) {
-                if (params[i].contains("@")) {
-                    paramCount = i;
-                    propView.setUpdate(params[i].substring(1));
-                } else if (params[i].endsWith(";")) {
-                    paramCount = i;
-                    propView.setJavaScript(params[i]);
-                }
-            }
+        return propertyList;
+    }
 
-            if (paramCount > 0) {
-                params = Arrays.copyOfRange(params, 0, paramCount);
-            } else {
-                params = new String[]{};
-            }
+    public PropertyView getPropertyView(String propertyVar) {
+        List<PropertyView> propertyList = getPropertyList();
 
+        for (PropertyView propertyView : propertyList) {
+            if (propertyVar.equals(propertyView.getVar()))
+                return propertyView;
+        }
+
+        return new PropertyView();
+    }
+
+    /**
+     * List of property who is Plug (contains 'var' ended with "Column").<br/>
+     * Used for endPlugList of ColumnFX.
+     */
+    public List<PropertyView> getPlugPropertyList() {
+        List<PropertyView> propertyList = getPropertyList();
+        List<PropertyView> plugPropertyList = new ArrayList<>();
+        if (propertyList.size() == 0) return plugPropertyList;
+
+        String var;
+        for (PropertyView property : propertyList) {
+            var = property.getVar();
+            if (var != null && var.endsWith("Column"))
+                plugPropertyList.add(property);
+        }
+
+        return plugPropertyList;
+    }
+
+    private PropertyView toPropertyView(String prototypeString) {
+        String[] prototypes = prototypeString.split("[:]");
+        PropertyView propView = new PropertyView();
+        String[] params = new String[]{};
+        int length = prototypes.length;
+
+        if (prototypes[0].equals("--")) {
+            /*separator*/
+            propView.setType(PropertyType.SEPARATOR);
+            propView.setLabel(prototypes[1]);
             propView.setParams(params);
             propertyList.add(propView);
+            return null;
+        } else if (prototypes[0].equals(".")) {
+            if (length > 5)
+                params = Arrays.copyOfRange(prototypes, 5, length);
+            propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
+            propView.setLabel(prototypes[3]);
+            propView.setVar(prototypes[2]);
+            propView.setVarParent(prototypes[1]);
+        } else {
+            if (length > 3)
+                params = Arrays.copyOfRange(prototypes, 3, length);
+            propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
+            propView.setLabel(prototypes[1]);
+            propView.setVar(prototypes[0]);
+            propView.setVarParent(null);
         }
-        return propertyList;
+
+        int paramCount = params.length;
+        for (int i = paramCount - 1; i >= 0; i--) {
+            if (params[i].contains("@")) {
+                paramCount = i;
+                propView.setUpdate(params[i].substring(1));
+            } else if (params[i].endsWith(";")) {
+                paramCount = i;
+                propView.setJavaScript(params[i]);
+            }
+        }
+
+        if (paramCount > 0) {
+            params = Arrays.copyOfRange(params, 0, paramCount);
+        } else {
+            params = new String[]{};
+        }
+
+        propView.setParams(params);
+        return propView;
     }
 
     public void initPropertyMap(Map<String, Object> propertyMap) {

@@ -12,6 +12,7 @@ public class Line implements Serializable {
     private LinePlug startPlug;
     private LinePlug endPlug;
     private LineType type;
+    private String text;
 
     public Line(String startSelectableId, String endSelectableId) {
         this.startSelectableId = startSelectableId;
@@ -66,13 +67,31 @@ public class Line implements Serializable {
         this.type = type;
     }
 
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
     public String getJsAdd() {
         return String.format("lines[%d] = new LeaderLine(document.getElementById('%s'), document.getElementById('%s'), %s);",
                 clientIndex,
                 startPlug,
                 endPlug,
-                type.getJsVar()
+                getJsAddOptions()
         );
+    }
+
+    private String getJsAddOptions() {
+        String options;
+        if (text == null) {
+            options = type.getJsVar();
+        } else {
+            options = "Object.assign({middleLabel:'" + text + "'}," + type.getJsVar() + ")";
+        }
+        return options;
     }
 
     public String getJsRemove() {
@@ -88,6 +107,7 @@ public class Line implements Serializable {
                 "startSelectableId:'" + startSelectableId + '\'' +
                 ", endSelectableId:'" + endSelectableId + '\'' +
                 ", type:" + type +
+                ", text:" + text +
                 ", clientIndex:" + clientIndex +
                 ", startPlug:" + startPlug +
                 ", endPlug:" + endPlug +

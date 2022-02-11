@@ -160,15 +160,14 @@ public class EditorController extends Controller {
                 break;
 
             case SOURCETABLE:
-                /* TODO: list all tables before current table */
-                /* TODO: remove test list below*/
+                /* TODO: need filter to list all tables before current table only*/
                 for (DataTable dataTable : activeStep.getDataList()) {
-                    selectItemList.add(new SelectItem(dataTable.getId(), dataTable.getName()));
+                    selectItemList.add(new SelectItem(dataTable.getSelectableId(), dataTable.getName()));
                 }
                 break;
 
             case COLUMN:
-                /* params[0] is property-map-name of table-selectable-id */
+                /* params[0] is property-name that contains selectable-id of source-table*/
                 Object tableSelectableId = getPropertyValue(activeObject, params[0]);
                 DataTable sourceTable = (DataTable) activeStep.getSelectableMap().get(tableSelectableId.toString());
                 if (sourceTable != null) {
@@ -244,15 +243,35 @@ public class EditorController extends Controller {
 
     private Object getPropertyValue(Selectable selectable, String propertyName) {
         Object value = selectable.getPropertyMap().get(propertyName);
-        if (value == null) {
-            try {
-                value = selectable.getClass().getMethod(propertyToMethod(propertyName)).invoke(selectable);
-            } catch (Exception e) {
-                value = "";
-                log.error("getPropertyValue(selectable:{}, propertyName:{})", selectable.getSelectableId(), propertyName);
-                log.error("Unexpected exception ", e);
-            }
+        if (value != null) return value;
+
+        try {
+            /*by getValue() method*/
+            value = selectable.getClass().getMethod(propertyToMethod(propertyName)).invoke(selectable);
+        } catch (Exception e) {
+            /*by property.var*/
+            value = getPropertyValue(selectable, selectable.getProperties().getPropertyView(propertyName));
         }
+
+        return value == null ? "" : value;
+    }
+
+    private Object getPropertyValue(Selectable selectable, PropertyView property) {
+        Object value = null;
+
+        if (property.hasParent())
+            /*by getParent().getValue() method, the parent always be the PropertyMap*/
+            value = selectable.getPropertyMap().get(projectName);
+        else
+            try {
+                /*by getValue() method without parent*/
+                value = selectable.getClass().getMethod(propertyToMethod(property.getVar())).invoke(selectable);
+            } catch (Exception e) {
+                /*no property*/
+                log.warn("getPropertyValue: no compatible method to get value from property({})", property);
+                log.error("this is debug information", e);
+            }
+
         return value == null ? "" : value;
     }
 
@@ -316,7 +335,7 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.DATA_SOURCE, "String");
         paramMap.put(CommandParamKey.DATA_FILE, "Integer");
         paramMap.put(CommandParamKey.DATA_TABLE, "Date");
-        paramMap.put(CommandParamKey.COLUMN_FX, "Decimal");
+        paramMap.put(CommandParamKey.COLUMN_FUNCTION, "Decimal");
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, DateTimeUtil.now());
         paramMap.put(CommandParamKey.DATA_TEST1, 35000);
         paramMap.put(CommandParamKey.DATA_TEST2, 35000.00053);
@@ -616,10 +635,20 @@ public class EditorController extends Controller {
         }
 
         Step activeStep = workspace.getProject().getActiveStep();
-        Selectable activeObject = activeStep.getSelectableMap().get(selectableId);
+
+        Map<String, Selectable> selectableMap = activeStep.getSelectableMap();
+        log.warn("selectObject(selectableID:{}):selectableMap={}", selectableId, selectableMap);
+        Selectable activeObject = selectableMap.get(selectableId);
         if (activeObject == null) {
-            log.error("selectableMap not contains selectableId='{}'", selectableId);
-            /*throw new IllegalStateException("selectableMap not contains selectableId=" + selectableId);*/
+            /**
+             * TODO: fix issue:
+             * 1. Try to create Lookup function, drag from a column and drop on a column in another table.
+             * 2. Change to 'light mode' or Refresh main editor page
+             * 3. and then select 'Lookup Function' as active object
+             * 4. that's it, you got this log message 'selectableMap not contains selectableId='cfx14'
+             * the cfx14 is removed after change to 'light mode', why?
+             **/
+            log.error("selectableMap not contains selectableId='{}'", selectableId, new Exception());
             return;
         }
 
@@ -646,7 +675,6 @@ public class EditorController extends Controller {
             String javascript = "showStepList(" + showStepList + ");"
                     + "showPropertyList(" + showPropertyList + ");";
             FacesUtil.runClientScript(javascript);
-            log.warn("setToolPanel(refresh) invoked, runClientScript({})", javascript);
             return;
         }
 
@@ -655,14 +683,12 @@ public class EditorController extends Controller {
             showStepList = Boolean.parseBoolean(stepList);
             step.setShowStepList(showStepList);
             refreshStepList(project.getStepList());
-            log.warn("setToolPanel(stepList:{}) invoked", showStepList);
         }
 
         String propertyList = FacesUtil.getRequestParam("propertyList");
         if (propertyList != null) {
             showPropertyList = Boolean.parseBoolean(propertyList);
             step.setShowPropertyList(showPropertyList);
-            log.warn("setToolPanel(propertyList:{}) invoked", showPropertyList);
         }
     }
 

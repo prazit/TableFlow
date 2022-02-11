@@ -171,7 +171,7 @@
                             <tr>
                                 <p:repeat value="#{tfloor.roomList}" var="troom">
                                     <td>
-                                        <p:panel styleClass="function" rendered="#{troom.roomType==RoomType.COLUMN_FX_TABLE and troom.columnFxList.size() > 0}">
+                                        <p:panel rendered="#{troom.roomType==RoomType.COLUMN_FX_TABLE and troom.columnFxList.size() > 0}" styleClass="function">
                                             <p:repeat value="#{troom.columnFxList}" var="tcolumnfx">
                                                 <p:outputPanel styleClass="#{tcolumnfx.owner.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumnfx)}">
                                                     <input name="selectableId" type="hidden" value="#{tcolumnfx.selectableId}"/>
@@ -181,10 +181,12 @@
                                                     <p:graphicImage library="images" name="#{tcolumnfx.owner.type.image}"/>
                                                     <label>#{tcolumnfx.name}</label>
                                                     <div class="#{tcolumnfx.startPlug.styleClass}" id="#{tcolumnfx.startPlug}"></div>
+
+                                                    <!--TODO: list of pluggable property-->
+
                                                 </p:outputPanel>
                                             </p:repeat>
                                         </p:panel>
-                                        <p:spacer width="50" rendered="#{troom.roomType==RoomType.COLUMN_FX_TABLE and troom.columnFxList.size() > 0}"/>
 
                                         <p:panel rendered="#{troom.roomType==RoomType.TRANSFORM_TABLE}" header="" styleClass="data-table transfered selectable#{flowchartCtl.active(troom)}">
                                             <input name="selectableId" type="hidden" value="#{troom.selectableId}"/>
@@ -201,14 +203,14 @@
 
                                             <p:repeat value="#{troom.columnList}" var="tcolumn">
 
-                                                <div class="#{tcolumn.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumn)}">
+                                                <p:outputPanel class="#{tcolumn.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumn)}">
                                                     <input name="selectableId" type="hidden" value="#{tcolumn.selectableId}"/>
                                                     <p:remoteCommand name="update#{tcolumn.selectableId}" update="@parent" oncomplete="updateComplete('#{tcolumn.selectableId}')"/>
                                                     <div class="#{tcolumn.endPlug.styleClass}" id="#{tcolumn.endPlug}"></div>
                                                     <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
                                                     <label>#{tcolumn.name}</label>
                                                     <div class="#{tcolumn.startPlug.styleClass}" id="#{tcolumn.startPlug}"></div>
-                                                </div>
+                                                </p:outputPanel>
 
                                             </p:repeat>
 
@@ -252,7 +254,9 @@
                                             </p:outputPanel>
 
                                         </p:panel>
-                                        <p:spacer rendered="#{troom.roomType!=RoomType.TRANSFORM_TABLE}"/>
+                                    </td>
+                                    <td>
+                                        <p:spacer width="50"/>
                                     </td>
                                 </p:repeat>
                             </tr>

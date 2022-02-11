@@ -358,15 +358,18 @@ function draggableStartup() {
         /*-- data-table to data-table --*/
         {draggable: '.data-table .start-plug', droppable: '.data-table .ui-panel-titlebar:has(.end-plug.no-connection)'},
 
-        /*column to column*/
+        /*column to column, columnfx to column*/
         {draggable: '.string.column .start-plug', droppable: '.string.column:has(.end-plug.no-connection)'},
+        {draggable: '.string.column .end-plug', droppable: '.string.column:has(.start-plug)'},
+
         {draggable: '.integer.column .start-plug', droppable: '.integer.column:has(.end-plug.no-connection)'},
+        {draggable: '.integer.column .end-plug', droppable: '.integer.column:has(.start-plug)'},
 
         {draggable: '.decimal.column .start-plug', droppable: '.decimal.column:has(.end-plug.no-connection)'},
-        {draggable: '.date.column .start-plug', droppable: '.date.column:has(.end-plug.no-connection)'}
+        {draggable: '.decimal.column .end-plug', droppable: '.decimal.column:has(.start-plug)'},
 
-        /*TODO: column to column-fx, need action AddTransformTable*/
-
+        {draggable: '.date.column .start-plug', droppable: '.date.column:has(.end-plug.no-connection)'},
+        {draggable: '.date.column .end-plug', droppable: '.date.column:has(.start-plug)'}
     ]);
 
     $draggable.on('mouseleave', function (ev) {
@@ -410,7 +413,6 @@ function startup() {
 
 var pLine = {
         outline: false,
-        size: 1,
 
         startSocket: 'right',
         startPlug: 'behind',
@@ -419,13 +421,14 @@ var pLine = {
         /*endPlug: 'behind'*/
         endPlugSize: 2
     },
-    tLine = Object.assign({color: 'gray', path: 'fluid'}, pLine),
-    sLine = Object.assign({color: 'red', path: 'fluid'}, pLine),
-    iLine = Object.assign({color: 'green', path: 'fluid'}, pLine),
-    dLine = Object.assign({color: 'blue', path: 'fluid'}, pLine),
-    dtLine = Object.assign({color: 'yellow', path: 'fluid'}, pLine),
-    dgLine = Object.assign(pLine, {
-        color: 'silver', path: 'fluid', startSocket: 'auto', endSocket: 'auto', size: 2
+    tLine = Object.assign({color: 'gray', path: 'fluid', size: 2}, pLine),
+    cLine = Object.assign({path: 'straight', size: 1, dash: {len: 7, gap: 7}}, pLine),
+    sLine = Object.assign({color: 'red'}, cLine),
+    iLine = Object.assign({color: 'green'}, cLine),
+    dLine = Object.assign({color: 'blue'}, cLine),
+    dtLine = Object.assign({color: 'yellow'}, cLine),
+    dgLine = Object.assign(cLine, {
+        color: 'silver', startSocket: 'auto', endSocket: 'auto', size: 2
     }),
     lines = [],
     $draggable,
