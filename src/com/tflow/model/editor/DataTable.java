@@ -27,7 +27,10 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     private LinePlug endPlug;
     private LinePlug startPlug;
 
-    public DataTable(String name, DataFile dataFile, String idColName, String endPlug, String startPlug) {
+    private Step owner;
+
+    public DataTable(String name, DataFile dataFile, String idColName, String endPlug, String startPlug, Step owner) {
+        this.owner = owner;
         this.name = name;
         this.index = -1;
         this.dataFile = dataFile;
@@ -160,6 +163,14 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
     public void setNoTransform(boolean noTransform) {
         this.noTransform = noTransform;
+    }
+
+    public Step getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Step owner) {
+        this.owner = owner;
     }
 
     @Override

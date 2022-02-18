@@ -24,7 +24,7 @@
             <div class="screen-area">
                 <p:splitter styleClass="p-mb-3" gutterSize="5">
                     <p:splitterPanel styleClass="left-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="15">
-                        <p:panel header="Step List" styleClass="tool-panel">
+                        <p:panel header="#{editorCtl.leftPanelTitle}" styleClass="tool-panel">
                             <f:facet name="actions">
                                 <p:commandButton id="leftToggle" type="button"
                                                  styleClass="left-panel-toggle close"
@@ -39,6 +39,13 @@
                                 <p:remoteCommand name="setActiveObj" action="#{editorCtl.selectObject}" update="propertyForm"/>
                                 <p:remoteCommand name="setToolPanel" action="#{editorCtl.setToolPanel}" update="stepForm,propertyForm"/>
                             </h:form>
+                            <!-- TODO: show actionList here.
+                            <p:scrollPanel>
+                                <p:dataList>
+
+                                </p:dataList>
+                            </p:scrollPanel>
+                            -->
                         </p:panel>
                     </p:splitterPanel>
 

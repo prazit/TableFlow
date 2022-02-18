@@ -47,7 +47,7 @@ public class AddDataTable extends Command {
         /*TODO: call Extractor.extract*/
 
         /*-- TODO: remove mockup data below, used to test the command --*/
-        DataTable dataTable = new DataTable("Untitled", dataFile, "", project.newElementId(), project.newElementId());
+        DataTable dataTable = new DataTable("Untitled", dataFile, "", project.newElementId(), project.newElementId(), step);
 
         List<DataColumn> columnList = dataTable.getColumnList();
         columnList.add(new DataColumn(1, DataType.STRING, "String Column", project.newElementId(), dataTable));

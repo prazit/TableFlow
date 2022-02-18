@@ -269,8 +269,8 @@ public enum Properties {
     }
 
     /**
-     * List of property who is Plug (contains 'var' ended with "Column").<br/>
-     * Used for endPlugList of ColumnFX.
+     * List of property of Column Plug (PropertyType == "Column").<br/>
+     * Used by endPlugList of ColumnFX.
      */
     public List<PropertyView> getPlugPropertyList() {
         List<PropertyView> propertyList = getPropertyList();
@@ -279,9 +279,8 @@ public enum Properties {
 
         String var;
         for (PropertyView property : propertyList) {
-            var = property.getVar();
-            if (var != null && var.endsWith("Column"))
-                plugPropertyList.add(property);
+            PropertyType type = property.getType();
+            if (PropertyType.COLUMN == type) plugPropertyList.add(property);
         }
 
         return plugPropertyList;

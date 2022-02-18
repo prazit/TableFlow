@@ -22,6 +22,8 @@ public class AddColumnFx extends Action {
     @Override
     protected void initCommands() {
         setParams(
+                CommandParamKey.DATA_COLUMN,
+                CommandParamKey.TRANSFORM_COLUMN,
                 CommandParamKey.COLUMN_FUNCTION,
                 CommandParamKey.STEP
         );
@@ -30,10 +32,10 @@ public class AddColumnFx extends Action {
 
     @Override
     protected void initUndoCommands() {
-        /*setUndoParams(
+        setUndoParams(
                 CommandParamKey.COLUMN_FX,
                 CommandParamKey.STEP
-        );*/
-        /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveColumnFx());*/
+        );
+        setUndoCommands(new com.tflow.model.editor.cmd.RemoveColumnFx());
     }
 }

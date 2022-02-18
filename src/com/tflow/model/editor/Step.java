@@ -331,6 +331,9 @@ public class Step implements Selectable {
         collectSelectableTo(selectableMap, selectableList);
     }
 
+    /**
+     * TODO: when selectable object is added, need to add script to collect them in this function.
+     */
     private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
         for (Selectable selectable : selectableList) {
             map.put(selectable.getSelectableId(), selectable);
@@ -347,8 +350,16 @@ public class Step implements Selectable {
 
                 if (selectable instanceof TransformTable) {
                     TransformTable tt = (TransformTable) selectable;
-                    for (TableFx fx : tt.getFxList()) {
-                        map.put(fx.getSelectableId(), fx);
+                    for (ColumnFx columnFx : tt.getColumnFxTable().getColumnFxList()) {
+                        map.put(columnFx.getSelectableId(), columnFx);
+
+                        for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
+                            map.put(columnFxPlug.getSelectableId(), columnFxPlug);
+                        }
+                    }
+
+                    for (TableFx tableFx : tt.getFxList()) {
+                        map.put(tableFx.getSelectableId(), tableFx);
                     }
                 }
 

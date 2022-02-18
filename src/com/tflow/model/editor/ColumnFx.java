@@ -1,12 +1,16 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.view.PropertyView;
-import org.slf4j.LoggerFactory;
+import com.tflow.HasEvent;
 
 import java.io.Serializable;
 import java.util.*;
 
-public class ColumnFx implements Serializable, Selectable, HasEndPlug {
+/**
+ * <b>Event</b><br/>
+ * <li>REMOVE</li> occurs when the Remove-Button on startPlug is clicked.
+ * <li>PROPERTY_CHANGED</li>  occurs after the value of property is changed.
+ */
+public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent {
     private static final long serialVersionUID = 2021121709996660042L;
 
     private int id;
@@ -19,27 +23,37 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug {
 
     private DataColumn owner;
 
-    public ColumnFx(DataColumn owner, ColumnFunction function, String name, String startPlug, String endPlug) {
+    private EventManager eventManager;
+
+    public ColumnFx(DataColumn owner, ColumnFunction function, String name, String startPlug) {
         this.name = name;
         this.function = function;
-        this.startPlug = new StartPlug(startPlug);
+        this.startPlug = createStartPlug(startPlug);
         this.owner = owner;
+        endPlugList = new ArrayList<>();
+        eventManager = new EventManager();
         propertyMap = new HashMap<>();
         function.getProperties().initPropertyMap(propertyMap);
-        endPlugList = createEndPlugList(endPlug);
     }
 
-    private List<ColumnFxPlug> createEndPlugList(String endPlug) {
-        List<ColumnFxPlug> plugList = new ArrayList<>();
+    private StartPlug createStartPlug(String plugId) {
+        StartPlug startPlug = new StartPlug(plugId);
+        startPlug.setExtractButton(true);
 
-        String endPlugId;
-        for (PropertyView propertyView : function.getProperties().getPlugPropertyList()) {
-            endPlugId = propertyView.getVar().equals("sourceColumn") ? endPlug : "";
-            plugList.add(new ColumnFxPlug(endPlugId, propertyView.getLabel()));
-        }
+        startPlug.setListener(new PlugListener(startPlug) {
+            @Override
+            public void plugged(Line line) {
+                plug.setPlugged(true);
+                plug.setRemoveButton(true);
+            }
 
-        LoggerFactory.getLogger(getClass()).warn("createEndPlugList:plugList={}", Arrays.toString(plugList.toArray()));
-        return plugList;
+            @Override
+            public void unplugged(Line line) {
+                eventManager.fireEvent(EventName.REMOVE);
+            }
+        });
+
+        return startPlug;
     }
 
     public int getId() {
@@ -80,6 +94,11 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug {
 
     public void setEndPlugList(List<ColumnFxPlug> endPlugList) {
         this.endPlugList = endPlugList;
+    }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     @Override

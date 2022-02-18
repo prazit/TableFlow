@@ -1,9 +1,11 @@
 package com.tflow.model.editor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LinePlug {
+public class LinePlug implements Serializable {
+    private static final long serialVersionUID = 2021121709996660050L;
 
     private String plug;
 

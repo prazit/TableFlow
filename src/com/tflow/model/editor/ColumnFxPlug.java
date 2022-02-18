@@ -1,15 +1,39 @@
 package com.tflow.model.editor;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
-/*TODO: need solution to show plugs of sourceColumns (more than one plug)*/
-public class ColumnFxPlug extends LinePlug implements Selectable {
+public class ColumnFxPlug extends LinePlug implements Serializable, Selectable, HasEndPlug {
+    private static final long serialVersionUID = 2021121709996660045L;
 
+    private int id;
+    private DataType type;
     private String name;
+    private ColumnFx owner;
 
-    public ColumnFxPlug(String plug, String name) {
-        super(plug);
+    public ColumnFxPlug(int id, DataType type, String name, String plugId, ColumnFx owner) {
+        super(plugId);
+        this.id = id;
+        this.type = type;
         this.name = name;
+        this.owner = owner;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public DataType getType() {
+        return type;
+    }
+
+    public void setType(DataType type) {
+        this.type = type;
     }
 
     public String getName() {
@@ -20,6 +44,14 @@ public class ColumnFxPlug extends LinePlug implements Selectable {
         this.name = name;
     }
 
+    public ColumnFx getOwner() {
+        return owner;
+    }
+
+    public void setOwner(ColumnFx owner) {
+        this.owner = owner;
+    }
+
     @Override
     public Properties getProperties() {
         return Properties.FX_PARAM;
@@ -27,22 +59,31 @@ public class ColumnFxPlug extends LinePlug implements Selectable {
 
     @Override
     public String getSelectableId() {
-        return null;
+        return "cfxp" + id;
     }
 
     @Override
     public LinePlug getStartPlug() {
-        return null;
+        return this;
     }
 
     @Override
     public void setStartPlug(LinePlug startPlug) {
-
+        /*nothing*/
     }
 
     @Override
     public Map<String, Object> getPropertyMap() {
-        return null;
+        return new HashMap<>();
     }
 
+    @Override
+    public LinePlug getEndPlug() {
+        return this;
+    }
+
+    @Override
+    public void setEndPlug(LinePlug endPlug) {
+        /*nothing*/
+    }
 }

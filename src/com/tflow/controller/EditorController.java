@@ -4,6 +4,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
+import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
@@ -35,22 +36,36 @@ public class EditorController extends Controller {
     private MenuModel stepMenu;
     private Double zoom;
 
+    private List<ActionView> actionList;
+
     private List<PropertyView> propertyList;
     private Selectable activeObject;
 
+    private String leftPanelTitle;
     private boolean showStepList;
     private boolean showPropertyList;
 
     @PostConstruct
     public void onCreation() {
-        initStepList();
+        Project project = workspace.getProject();
+        initStepList(project);
+        initHistoryList(project);
     }
 
-    private void initStepList() {
-        Project project = workspace.getProject();
+    private void initStepList(Project project) {
         projectName = project.getName();
         refreshStepList(project.getStepList());
         selectStep(project.getActiveStepIndex(), false);
+    }
+
+    private void initHistoryList(Project project) {
+        Step activeStep = project.getActiveStep();
+        if(activeStep == null) return;
+
+        actionList = new ArrayList<>();
+        for (Action action : activeStep.getHistory()) {
+            actionList.add(new ActionView(action));
+        }
     }
 
     private void refreshStepList(List<Step> stepList) {
@@ -89,6 +104,14 @@ public class EditorController extends Controller {
 
     public void setZoom(Double zoom) {
         this.zoom = zoom;
+    }
+
+    public List<ActionView> getActionList() {
+        return actionList;
+    }
+
+    public void setActionList(List<ActionView> actionList) {
+        this.actionList = actionList;
     }
 
     public List<PropertyView> getPropertyList() {
@@ -529,97 +552,6 @@ public class EditorController extends Controller {
     }
 
     /**
-     * TODO: remove this function, this is mockup data.
-     */
-    private DataTable getDataTable(Project project, DataFile dataFile) {
-        /*create DataSource, Data File, DataTable (Commmand: AddDataTable)*/
-
-        DataTable dataTable = new DataTable(
-                "Untitled Data Table",
-                dataFile,
-                "String",
-                project.newElementId(),
-                project.newElementId()
-        );
-
-        List<DataColumn> columnList = dataTable.getColumnList();
-        columnList.add(new DataColumn(1, DataType.STRING, "String Column", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", project.newElementId(), dataTable));
-
-        Local myComputer = new Local("MyComputer", "C:/myData/", project.newElementId());
-        DataFile outputCSVFile = new DataFile(
-                myComputer,
-                DataFileType.OUT_CSV,
-                "output.csv",
-                "out/",
-                project.newElementId(),
-                project.newElementId()
-        );
-
-        List<DataFile> outputList = dataTable.getOutputList();
-        outputList.add(outputCSVFile);
-
-        return dataTable;
-    }
-
-    /**
-     * TODO: remove this function, this is mockup data.
-     */
-    public void addDataTable(DataFile dataFile) {
-        Project project = workspace.getProject();
-        Step step = project.getActiveStep();
-        DataTable dataTable = getDataTable(project, dataFile);
-
-        Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
-        paramMap.put(CommandParamKey.STEP, step);
-
-        try {
-            new AddDataTable(paramMap).execute();
-        } catch (RequiredParamException e) {
-            log.error("Add DataTable Failed!", e);
-            FacesUtil.addError("msg", "Add DataTable Failed with Internal Error!");
-            return;
-        }
-
-        FacesUtil.runClientScript("refreshFlowChart();");
-    }
-
-    /**
-     * TODO: remove this function, this is mockup data.
-     */
-    public void addTransformTable() {
-        Project project = workspace.getProject();
-        Step step = project.getActiveStep();
-
-        DataTable sourceTable = step.getDataList().get(0);
-        TransformTable transformTable = new TransformTable(
-                "Transformation Table",
-                sourceTable.getId(),
-                SourceType.DATA_TABLE,
-                sourceTable.getIdColName(),
-                project.newElementId(),
-                project.newElementId()
-        );
-
-        Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
-        paramMap.put(CommandParamKey.STEP, step);
-
-        try {
-            new AddTransformTable(paramMap).execute();
-        } catch (RequiredParamException e) {
-            log.error("Add TransformTable Failed!", e);
-            FacesUtil.addError("msg", "Add TransformTable Failed with Internal Error!");
-            return;
-        }
-
-        FacesUtil.runClientScript("refreshFlowChart();");
-    }
-
-    /**
      * Set active object from client script in flowchart.
      */
     public void selectObject() {
@@ -634,25 +566,17 @@ public class EditorController extends Controller {
             return;
         }
 
-        Step activeStep = workspace.getProject().getActiveStep();
+        Step step = workspace.getProject().getActiveStep();
 
-        Map<String, Selectable> selectableMap = activeStep.getSelectableMap();
-        log.warn("selectObject(selectableID:{}):selectableMap={}", selectableId, selectableMap);
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
+
         Selectable activeObject = selectableMap.get(selectableId);
         if (activeObject == null) {
-            /**
-             * TODO: fix issue:
-             * 1. Try to create Lookup function, drag from a column and drop on a column in another table.
-             * 2. Change to 'light mode' or Refresh main editor page
-             * 3. and then select 'Lookup Function' as active object
-             * 4. that's it, you got this log message 'selectableMap not contains selectableId='cfx14'
-             * the cfx14 is removed after change to 'light mode', why?
-             **/
             log.error("selectableMap not contains selectableId='{}'", selectableId, new Exception());
             return;
         }
 
-        activeStep.setActiveObject(activeObject);
+        step.setActiveObject(activeObject);
         setPropertySheet(activeObject);
     }
 
@@ -692,4 +616,11 @@ public class EditorController extends Controller {
         }
     }
 
+    public String getLeftPanelTitle() {
+        return leftPanelTitle;
+    }
+
+    public void setLeftPanelTitle(String leftPanelTitle) {
+        this.leftPanelTitle = leftPanelTitle;
+    }
 }

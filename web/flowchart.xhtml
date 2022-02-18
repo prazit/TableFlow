@@ -171,22 +171,32 @@
                             <tr>
                                 <p:repeat value="#{tfloor.roomList}" var="troom">
                                     <td>
-                                        <p:panel rendered="#{troom.roomType==RoomType.COLUMN_FX_TABLE and troom.columnFxList.size() > 0}" styleClass="function">
+                                        <p:outputPanel rendered="#{troom.roomType==RoomType.COLUMN_FX_TABLE and troom.columnFxList.size() > 0}">
                                             <p:repeat value="#{troom.columnFxList}" var="tcolumnfx">
-                                                <p:outputPanel styleClass="#{tcolumnfx.owner.type.name().toLowerCase()} column selectable#{flowchartCtl.active(tcolumnfx)}">
+                                                <p:panel header="" styleClass="#{tcolumnfx.owner.type.name().toLowerCase()} function selectable#{flowchartCtl.active(tcolumnfx)}">
                                                     <input name="selectableId" type="hidden" value="#{tcolumnfx.selectableId}"/>
                                                     <p:remoteCommand name="update#{tcolumnfx.selectableId}" update="@parent" oncomplete="updateComplete('#{tcolumnfx.selectableId}')"/>
 
-                                                    <div class="#{tcolumnfx.endPlug.styleClass}" id="#{tcolumnfx.endPlug}"></div>
-                                                    <p:graphicImage library="images" name="#{tcolumnfx.owner.type.image}"/>
-                                                    <label>#{tcolumnfx.name}</label>
-                                                    <div class="#{tcolumnfx.startPlug.styleClass}" id="#{tcolumnfx.startPlug}"></div>
+                                                    <f:facet name="actions">
+                                                        <div>
+                                                            <p:graphicImage library="images" name="#{tcolumnfx.owner.type.image}"/>
+                                                            <b>#{tcolumnfx.name}</b>
+                                                        </div>
+                                                        <div class="#{tcolumnfx.startPlug.styleClass}" id="#{tcolumnfx.startPlug}"></div>
+                                                    </f:facet>
 
-                                                    <!--TODO: list of pluggable property-->
-
-                                                </p:outputPanel>
+                                                    <p:repeat value="#{tcolumnfx.endPlugList}" var="endPlug">
+                                                        <p:outputPanel styleClass="#{endPlug.type.name().toLowerCase()} column selectable#{flowchartCtl.active(endPlug)}">
+                                                            <input name="selectableId" type="hidden" value="#{endPlug.selectableId}"/>
+                                                            <p:remoteCommand name="update#{endPlug.selectableId}" update="@parent" oncomplete="updateComplete('#{tcolumnfx.selectableId}')"/>
+                                                            <div class="#{endPlug.styleClass}" id="#{endPlug.plug}"></div>
+                                                            <p:graphicImage library="images" name="#{endPlug.type.image}"/>
+                                                            <label>#{endPlug.name}</label>
+                                                        </p:outputPanel>
+                                                    </p:repeat>
+                                                </p:panel>
                                             </p:repeat>
-                                        </p:panel>
+                                        </p:outputPanel>
 
                                         <p:panel rendered="#{troom.roomType==RoomType.TRANSFORM_TABLE}" header="" styleClass="data-table transfered selectable#{flowchartCtl.active(troom)}">
                                             <input name="selectableId" type="hidden" value="#{troom.selectableId}"/>

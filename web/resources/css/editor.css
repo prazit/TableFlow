@@ -134,7 +134,12 @@ iframe {
 }
 
 body .ui-panel.data-table .ui-panel-titlebar,
-body .ui-panel.data-table .ui-panel-content {
+body .ui-panel.function .ui-panel-titlebar {
+    background-color: var(--surface-b);
+}
+
+body .ui-panel.data-table .ui-panel-content,
+body .ui-panel.function .ui-panel-content {
     background-color: var(--surface-e);
 }
 
@@ -143,6 +148,8 @@ body .ui-panel.data-table .ui-panel-content {
 .step-output.active, .step-output.selectable.active:hover,
 body .ui-panel.data-table.active .ui-panel-titlebar,
 .data-table.selectable.active .ui-panel-titlebar:hover,
+body .ui-panel.function.active .ui-panel-titlebar,
+.function.selectable.active .ui-panel-titlebar:hover,
 .column.active, .column.selectable.active:hover {
     background-color: var(--surface-c);
 }
@@ -151,6 +158,7 @@ body .ui-panel.data-table.active .ui-panel-titlebar,
 .data-file.selectable:hover,
 .step-output.selectable:hover,
 .data-table.selectable .ui-panel-titlebar:hover,
+.function.selectable .ui-panel-titlebar:hover,
 .column.selectable:hover {
     cursor: pointer;
     background-color: var(--surface-d);
@@ -172,6 +180,10 @@ body .ui-panel.data-table.active .ui-panel-titlebar,
 .hide-actions .data-table .column.action {
     /*TODO: need controller to support 'hide-actions' using CSS Class (hide action buttons in flow-chart)*/
     display: none;
+}
+
+.function + .function {
+    margin-top: 1em;
 }
 
 body .flow-chart .ui-panel .ui-panel-titlebar .ui-panel-actions {
