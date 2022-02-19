@@ -14,6 +14,12 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
         this.endPlug = new EndPlug(endPlug);
     }
 
+    public TransformColumn(int index, DataType type, String name, String endPlug, String startPlug, DataTable owner) {
+        super(index, type, name, startPlug, owner);
+        dataColName = "" + name;
+        this.endPlug = new EndPlug(endPlug);
+    }
+
     public String getDataColName() {
         return dataColName;
     }

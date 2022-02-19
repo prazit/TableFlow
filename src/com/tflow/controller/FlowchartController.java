@@ -132,7 +132,6 @@ public class FlowchartController extends Controller {
             }
         }
         jsBuilder.append("lineEnd();");
-        jsBuilder.append("console.log('update lines connected to [" + selectableId + "] is successful.');");
 
         String javaScript = "$(function(){" + jsBuilder.toString() + "});";
         FacesUtil.runClientScript(javaScript);
@@ -190,7 +189,7 @@ public class FlowchartController extends Controller {
         jsBuilder.append("lineStart();");
         if (endSelectable instanceof TransformColumn) {
             /*add line from Column to Column*/
-            addLookup((DataColumn) startSelectable, (TransformColumn) endSelectable, jsBuilder);
+            addColumnFx((DataColumn) startSelectable, (TransformColumn) endSelectable, jsBuilder);
             return;
 
         } else if (endSelectable instanceof DataFile) {
@@ -212,6 +211,49 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript(jsBuilder.toString());
     }
 
+    /**
+     * Remove line when the client plug button is clicked.
+     * <p>
+     * <br/><br/>
+     * <b><i>Param:</i></b><br/>
+     * String  selectableId<br/>
+     * boolean isStartPlug | true = remove first line from start-plug, false = remove line from end-plug<br/>
+     */
+    public void removeLine() {
+        String selectableId = FacesUtil.getRequestParam("selectableId");
+        boolean isStartPlug = Boolean.parseBoolean(FacesUtil.getRequestParam("startPlug"));
+        Step step = getStep();
+
+        log.warn("removeLine(selectableId:{}, isStartPlug:{})", selectableId, isStartPlug);
+        log.warn("lineList before remove = {}", step.getLineList().toArray());
+
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        if (selectable == null) {
+            log.error("selectableId({}) not found in current step", selectableId);
+            return;
+        }
+
+        String friendSelectableId = "";
+        Line line = null;
+        if (isStartPlug) {
+            line = selectable.getStartPlug().getLine();
+            friendSelectableId = line.getEndSelectableId();
+        } else {
+            HasEndPlug hasEndPlug = (HasEndPlug) selectable;
+            line = hasEndPlug.getEndPlug().getLine();
+            friendSelectableId = line.getStartSelectableId();
+        }
+
+        log.warn("call step.removeLine()");
+        step.removeLine(line);
+        log.warn("lineList after remove = {}", step.getLineList().toArray());
+
+        String javaScript = line.getJsRemove()
+                + "window.parent.updateEm('" + selectableId + "');"
+                + "window.parent.updateEm('" + friendSelectableId + "');";
+        FacesUtil.runClientScript(javaScript);
+    }
+
     private void addDataSourceLine(DataSource dataSource, DataFile dataFile, StringBuilder jsBuilder) {
         String dataSourceId = ((Selectable) dataSource).getSelectableId();
         String dataFileId = dataFile.getSelectableId();
@@ -222,7 +264,7 @@ public class FlowchartController extends Controller {
         jsBuilder.append(newLine.getJsAdd());
     }
 
-    private void addLookup(DataColumn sourceColumn, TransformColumn transformColumn, StringBuilder jsBuilder) {
+    private void addColumnFx(DataColumn sourceColumn, TransformColumn transformColumn, StringBuilder jsBuilder) {
         log.warn("addLookup(sourceColumn:{}, targetColumn:{})", sourceColumn.getSelectableId(), transformColumn.getSelectableId());
         Step step = getStep();
 
@@ -277,49 +319,6 @@ public class FlowchartController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.runClientScript("refreshFlowChart();");
-    }
-
-    /**
-     * Remove line when the client plug button is clicked.
-     * <p>
-     * <br/><br/>
-     * <b><i>Param:</i></b><br/>
-     * String  selectableId<br/>
-     * boolean isStartPlug | true = remove first line from start-plug, false = remove line from end-plug<br/>
-     */
-    public void removeLine() {
-        String selectableId = FacesUtil.getRequestParam("selectableId");
-        boolean isStartPlug = Boolean.parseBoolean(FacesUtil.getRequestParam("startPlug"));
-        Step step = getStep();
-
-        log.warn("removeLine(selectableId:{}, isStartPlug:{})", selectableId, isStartPlug);
-        log.warn("lineList before remove = {}", step.getLineList().toArray());
-
-        Selectable selectable = step.getSelectableMap().get(selectableId);
-        if (selectable == null) {
-            log.error("selectableId({}) not found in current step", selectableId);
-            return;
-        }
-
-        String friendSelectableId = "";
-        Line line = null;
-        if (isStartPlug) {
-            line = selectable.getStartPlug().getLine();
-            friendSelectableId = line.getEndSelectableId();
-        } else {
-            HasEndPlug hasEndPlug = (HasEndPlug) selectable;
-            line = hasEndPlug.getEndPlug().getLine();
-            friendSelectableId = line.getStartSelectableId();
-        }
-
-        log.warn("call step.removeLine()");
-        step.removeLine(line);
-        log.warn("lineList after remove = {}", step.getLineList().toArray());
-
-        String javaScript = line.getJsRemove()
-                + "window.parent.updateEm('" + selectableId + "');"
-                + "window.parent.updateEm('" + friendSelectableId + "');";
-        FacesUtil.runClientScript(javaScript);
     }
 
     /**
@@ -415,13 +414,42 @@ public class FlowchartController extends Controller {
     public void addColumn() {
         Step step = getStep();
         String selectableId = FacesUtil.getRequestParam("selectableId");
-        Selectable selectable = step.getSelectableMap().get(selectableId);
-        log.warn("addColumn(dataTable:{})", selectable.getSelectableId());
-        /*TODO: addColumn for data-table & transofm-table*/
-    }
+        log.warn("addColumn(selectableId:{})", selectableId);
 
-    public void addColumnFx() {
-        /*TODO: addColumnFx for transofm-table*/
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        if (selectable == null) {
+            log.error("selectableId({}) is not found in current step", selectableId);
+            return;
+        }
+
+        if (!(selectable instanceof DataTable)) {
+            log.error("addColumn only work on DataTable, {} is not allowed", selectable.getClass().getName());
+            return;
+        }
+
+        TransformTable transformTable = (TransformTable) selectable;
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        TransformColumn transformColumn;
+        try {
+            Action action = new AddTransformColumn(paramMap);
+            action.execute();
+            transformColumn = (TransformColumn) action.getResultMap().get("transformColumn");
+        } catch (RequiredParamException e) {
+            log.error("Add Transform Column Failed!", e);
+            FacesUtil.addError("Add Transform Column Failed with Internal Command Error!");
+            return;
+        }
+
+        step.setActiveObject(transformColumn);
+
+        FacesUtil.addInfo("Column[" + transformColumn.getSelectableId() + "] added.");
+
+        FacesUtil.runClientScript("postUpdate(function(){selectObject('" + transformColumn.getSelectableId() + "');});");
+        FacesUtil.runClientScript("update" + transformTable.getSelectableId() + "();");
     }
 
     public void addTransformation() {

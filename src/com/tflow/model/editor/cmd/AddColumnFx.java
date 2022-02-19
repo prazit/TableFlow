@@ -62,7 +62,7 @@ public class AddColumnFx extends Command {
             jsBuilder.append(line2.getJsAdd());
         }
 
-        /*Can Undo*/
+        /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
 
         /*Action Result*/

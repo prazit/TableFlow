@@ -20,6 +20,10 @@ function getSelectable($child) {
     return $parents.first();
 }
 
+function getSelectableById(selectableId) {
+    return $('input[name=selectableId][value=' + selectableId + ']').parents('.selectable');
+}
+
 function hideLines() {
     /*for (var i = 0; i < lines.length; i++) {
         lines[i].hide();
@@ -80,6 +84,20 @@ function buttonHandle(buttonName) {
 function updateComplete(selectableId) {
     selectableHandle(selectableId);
     draggableHandle();
+    doPostUpdate();
+}
+
+function postUpdate(func) {
+    var i = tflow.postUpdate.length;
+    tflow.postUpdate[i] = func;
+}
+
+function doPostUpdate() {
+    $(tflow.postUpdate).each(function (i, e) {
+        e();
+        console.log('doPostUpdate(i:' + i + ') completed.');
+    });
+    tflow.postUpdate = [];
 }
 
 function tableAction(remoteFunction, selectableId) {
@@ -104,7 +122,7 @@ function selectableHandle(selectable) {
         ]);
 
         /*change selectable-id to selectable-object*/
-        selectable = $('input[name=selectableId][value=' + selectable + ']').parents('.selectable');
+        selectable = getSelectableById(selectable);
 
         if (isTable) {
             selectableHandle(selectable.find('.selectable'));
@@ -130,12 +148,13 @@ function selectableHandle(selectable) {
 
 function setActiveObj($e) {
     /*this function take effect to client side only*/
+    $e = $e.first();
 
     if ($e.hasClass('step')) {
         var thisActive = Date.now(),
             diff = thisActive - tflow.lastChangeActive;
         if (tflow.lastChangeActive != null && diff < tflow.allowChangeActiveDuration) {
-            console.log('detected multiple set active at once (duration:' + diff + ', allowDuration:' + tflow.allowChangeActiveDuration + ') cancel setActiveObj(object:' + $e.attr('class') + ')');
+            console.log('detected multiple set active at once (duration:' + diff + ', allowDuration:' + tflow.allowChangeActiveDuration + ', cancelledObject:' + $e.attr('class') + ')');
             return;
         }
     }
@@ -150,10 +169,18 @@ function setActiveObj($e) {
 }
 
 function selectObject($e) {
+    var selectableId;
+    if ($e.jquery === undefined) {
+        selectableId = $e;
+        $e = getSelectableById(selectableId);
+    } else {
+        selectableId = getSelectableId($e);
+    }
+
     setActiveObj($e);
 
     window.parent.setActiveObj([
-        {name: 'selectableId', value: getSelectableId($e)}
+        {name: 'selectableId', value: selectableId}
     ]);
 }
 
@@ -435,6 +462,7 @@ var pLine = {
     tflow = {
         ready: false,
         lastEvent: 'load',
+        postUpdate: [],
 
         allowChangeActiveDuration: 1000,
         lastChangeActive: Date.now()
