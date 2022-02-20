@@ -33,6 +33,7 @@ public class Step implements Selectable {
     private Double zoom;
     private boolean showStepList;
     private boolean showPropertyList;
+    private boolean showActionButtons;
 
     private Map<String, Selectable> selectableMap;
 
@@ -53,6 +54,7 @@ public class Step implements Selectable {
         selectableMap = new HashMap<>();
         showStepList = true;
         showPropertyList = true;
+        showActionButtons = true;
     }
 
     public int getId() {
@@ -202,6 +204,14 @@ public class Step implements Selectable {
 
     public void setShowPropertyList(boolean showPropertyList) {
         this.showPropertyList = showPropertyList;
+    }
+
+    public boolean isShowActionButtons() {
+        return showActionButtons;
+    }
+
+    public void setShowActionButtons(boolean showActionButtons) {
+        this.showActionButtons = showActionButtons;
     }
 
     @Override
@@ -376,6 +386,7 @@ public class Step implements Selectable {
                 ", zoom:" + zoom +
                 ", showStepList:" + showStepList +
                 ", showPropertyList:" + showPropertyList +
+                ", showActionButtons:" + showActionButtons +
                 '}';
     }
 }

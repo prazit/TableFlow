@@ -1,9 +1,10 @@
 'use strict';
 
+/*TODO: this is temporary function,
+   remove this function when server-side functions are updated to refresh a room or a floor already.*/
 function refreshFlowChart() {
-    console.log(document.location);
-    document.location += '?refresh=2';
-    console.log(document.location);
+    document.location += '?refresh=flowchart';
+    window.parent.refreshToolbars();
 }
 
 function getSelectableId($selectable) {

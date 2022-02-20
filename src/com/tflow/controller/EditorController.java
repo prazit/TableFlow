@@ -44,6 +44,7 @@ public class EditorController extends Controller {
     private String leftPanelTitle;
     private boolean showStepList;
     private boolean showPropertyList;
+    private boolean showActionButtons;
 
     @PostConstruct
     public void onCreation() {
@@ -60,7 +61,7 @@ public class EditorController extends Controller {
 
     private void initHistoryList(Project project) {
         Step activeStep = project.getActiveStep();
-        if(activeStep == null) return;
+        if (activeStep == null) return;
 
         actionList = new ArrayList<>();
         for (Action action : activeStep.getHistory()) {
@@ -145,6 +146,15 @@ public class EditorController extends Controller {
     public void setShowPropertyList(boolean showPropertyList) {
         this.showPropertyList = showPropertyList;
     }
+
+    public boolean isShowActionButtons() {
+        return showActionButtons;
+    }
+
+    public void setShowActionButtons(boolean showActionButtons) {
+        this.showActionButtons = showActionButtons;
+    }
+
     /*== Public Methods ==*/
 
     public void log(String msg) {
@@ -409,6 +419,7 @@ public class EditorController extends Controller {
         zoom = activeStep.getZoom();
         showStepList = activeStep.isShowStepList();
         showPropertyList = activeStep.isShowPropertyList();
+        showActionButtons = activeStep.isShowActionButtons();
 
         Selectable activeObject = activeStep.getActiveObject();
         if (activeObject == null) {
@@ -417,9 +428,11 @@ public class EditorController extends Controller {
             selectObject(activeObject.getSelectableId());
         }
 
-        String javascript = "showPropertyList(" + showPropertyList + ");";
-        if (refresh) javascript += "refreshFlowChart();";
-        FacesUtil.runClientScript(javascript);
+        StringBuilder jsBuilder = new StringBuilder();
+        if (refresh) {
+            jsBuilder.append("refreshFlowChart();");
+        }
+        FacesUtil.runClientScript(jsBuilder.toString());
     }
 
     public void submitZoom() {
@@ -597,7 +610,8 @@ public class EditorController extends Controller {
         String refresh = FacesUtil.getRequestParam("refresh");
         if (refresh != null) {
             String javascript = "showStepList(" + showStepList + ");"
-                    + "showPropertyList(" + showPropertyList + ");";
+                    + "showPropertyList(" + showPropertyList + ");"
+                    + "showActionButtons(" + showActionButtons + ");";
             FacesUtil.runClientScript(javascript);
             return;
         }
@@ -613,6 +627,13 @@ public class EditorController extends Controller {
         if (propertyList != null) {
             showPropertyList = Boolean.parseBoolean(propertyList);
             step.setShowPropertyList(showPropertyList);
+        }
+
+        String actionButtons = FacesUtil.getRequestParam("actionButtons");
+        if (actionButtons != null) {
+            showActionButtons = Boolean.parseBoolean(actionButtons);
+            step.setShowActionButtons(showActionButtons);
+            log.warn("setToolPanel(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
         }
     }
 

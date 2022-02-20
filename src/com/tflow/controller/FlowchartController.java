@@ -20,9 +20,6 @@ import java.util.Map;
 public class FlowchartController extends Controller {
 
     @Inject
-    private EditorController editorCtl;
-
-    @Inject
     private Workspace workspace;
 
     @PostConstruct

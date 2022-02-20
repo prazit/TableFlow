@@ -82,6 +82,7 @@
                                         <p:submenu label="View">
                                             <p:menuitem value="Step List" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
                                             <p:menuitem value="Property List" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+                                            <p:menuitem value="Table Buttons" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
                                         </p:submenu>
 
                                         <p:submenu label="Test">
@@ -210,13 +211,7 @@
                 </p:splitter>
             </div>
         </div>
-        <script>$(function () {
-            setToolPanel([
-                {name: 'refresh', value: 'all'}
-            ]);
-            console.log('-- last-line of editor --');
-        });
-        </script>
+        <script>console.log('-- last-line of editor --');</script>
     </h:body>
 </f:view>
 </html>

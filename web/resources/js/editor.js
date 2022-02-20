@@ -4,10 +4,19 @@ function refreshStepList() {
 
 function refreshFlowChart() {
     document.getElementById('flowchart').src += '?refresh=1';
+    refreshToolbars();
 }
 
 function refreshProperties() {
     contentWindow.selectObject(contentWindow.$('.active'));
+}
+
+function refreshToolbars() {
+    contentReady(function () {
+        setToolPanel([
+            {name: 'refresh', value: 'all'}
+        ]);
+    });
 }
 
 function toggleLeft() {
@@ -16,6 +25,10 @@ function toggleLeft() {
 
 function toggleRight() {
     showPropertyList(rightPanel.css('display') === 'none');
+}
+
+function toggleActionButtons() {
+    showActionButtons(contentWindow.$('.flow-chart').hasClass('hide-actions'));
 }
 
 function showStepList(show) {
@@ -35,6 +48,21 @@ function showPropertyList(show) {
     /*rightToggle.removeClass('pi-angle-left').addClass('pi-angle-right');*/
     setToolPanel([
         {name: 'propertyList', value: '' + show}
+    ]);
+}
+
+function showActionButtons(show) {
+    var display = 'hide-actions';
+
+    if (show) {
+        contentWindow.$('.flow-chart').removeClass('hide-actions');
+    } else {
+        contentWindow.$('.flow-chart').addClass('hide-actions');
+    }
+    contentWindow.showLines();
+
+    setToolPanel([
+        {name: 'actionButtons', value: '' + show}
     ]);
 }
 
@@ -94,7 +122,6 @@ function zoomEnd(submit) {
         {name: 'zoom', value: zooming}
     ]);
 }
-
 
 function lineStart() {
     /*start of line creation*/
@@ -179,6 +206,18 @@ function setFocus() {
     }
 }
 
+function contentReady(func) {
+    var interval = setInterval(function () {
+        if (contentWindow.tflow !== undefined && contentWindow.tflow.ready) {
+            clearInterval(interval);
+            func();
+            console.log('contentReady is completed.');
+        }else{
+            console.log('contentReady is skipped.');
+        }
+    }, 100);
+}
+
 $(function () {
     leftPanel = $('.left-panel');
     leftGutter = $('.left-panel + .ui-splitter-gutter');
@@ -187,6 +226,7 @@ $(function () {
     rightGutter = $('.main-panel + .ui-splitter-gutter');
     rightToggle = $('.right-panel-toggle').click(toggleRight).children('.ui-button-icon-left');
     contentWindow = document.getElementById('flowchart').contentWindow;
+    refreshToolbars();
 });
 
 var tflow = {
