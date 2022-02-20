@@ -496,9 +496,42 @@ public class FlowchartController extends Controller {
     public void addOutputFile() {
         Step step = getStep();
         String selectableId = FacesUtil.getRequestParam("selectableId");
+        log.warn("addOutputFile(selectableId:{})", selectableId);
+
         Selectable selectable = step.getSelectableMap().get(selectableId);
-        log.warn("addOutputFile(dataTable:{})", selectable.getSelectableId());
-        /*TODO: addOutputFile for data-table and transform-table*/
+        if (selectable == null) {
+            log.error("selectableId({}) is not found in current step", selectableId);
+            return;
+        }
+
+        if (!(selectable instanceof DataTable)) {
+            log.error("addTableFx only work on TransformTable, {} is not allowed", selectable.getClass().getName());
+            return;
+        }
+
+        DataTable dataTable = (DataTable) selectable;
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        DataFile dataFile;
+        try {
+            Action action = new AddOutputFile(paramMap);
+            action.execute();
+            dataFile = (DataFile) action.getResultMap().get("dataFile");
+        } catch (RequiredParamException e) {
+            log.error("Add Table Function Failed!", e);
+            FacesUtil.addError("Add Table Function Failed with Internal Command Error!");
+            return;
+        }
+
+        step.setActiveObject(dataFile);
+
+        FacesUtil.addInfo("OutputFile[" + dataFile.getSelectableId() + "] added.");
+
+        FacesUtil.runClientScript("postUpdate(function(){selectObject('" + dataFile.getSelectableId() + "');});");
+        FacesUtil.runClientScript("update" + dataTable.getSelectableId() + "();");
     }
 
 }

@@ -11,9 +11,6 @@ import com.tflow.model.editor.room.Tower;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Add DataSource to TOWER and wait for Extraction Command.
- */
 public class AddDataFile extends Command {
 
     @SuppressWarnings("unchecked")

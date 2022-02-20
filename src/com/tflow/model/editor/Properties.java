@@ -137,10 +137,12 @@ public enum Properties {
             ".:propertyMap:dateTimeFormat:DateTime Format:String"
     ),
     OUTPUT_MARKDOWN(
+            /*TODO: issue: data(server side) has changed but ui(client side) stay no change.*/
             "type:Type:FileType:out:refreshProperties();",
             "dataSource:FTP/SFTP:SFTP",
             "name:File Name:String",
             "path:File Path:String",
+            "--:Extra Options:--",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
             ".:propertyMap:eol:EOL:String",
