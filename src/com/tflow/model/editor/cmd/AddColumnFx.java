@@ -27,7 +27,7 @@ public class AddColumnFx extends Command {
             jsBuilder = (StringBuilder) obj;
         }
 
-        ColumnFx columnFx = new ColumnFx((DataColumn) targetColumn, columnFunction, columnFunction.getName(), project.newElementId());
+        ColumnFx columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), (DataColumn) targetColumn);
         columnFx.setId(project.newUniqueId());
         initPropertyMap(columnFx.getPropertyMap(), sourceColumn);
 

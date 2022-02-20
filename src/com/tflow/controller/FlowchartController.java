@@ -422,7 +422,7 @@ public class FlowchartController extends Controller {
             return;
         }
 
-        if (!(selectable instanceof DataTable)) {
+        if (!(selectable instanceof TransformTable)) {
             log.error("addColumn only work on DataTable, {} is not allowed", selectable.getClass().getName());
             return;
         }
@@ -455,9 +455,42 @@ public class FlowchartController extends Controller {
     public void addTransformation() {
         Step step = getStep();
         String selectableId = FacesUtil.getRequestParam("selectableId");
+        log.warn("addTransformation(selectableId:{})", selectableId);
+
         Selectable selectable = step.getSelectableMap().get(selectableId);
-        log.warn("addTransformation(dataTable:{})", selectable.getSelectableId());
-        /*TODO: addTransformation for transform-table*/
+        if (selectable == null) {
+            log.error("selectableId({}) is not found in current step", selectableId);
+            return;
+        }
+
+        if (!(selectable instanceof TransformTable)) {
+            log.error("addTableFx only work on TransformTable, {} is not allowed", selectable.getClass().getName());
+            return;
+        }
+
+        TransformTable transformTable = (TransformTable) selectable;
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        TableFx tableFx;
+        try {
+            Action action = new AddTableFx(paramMap);
+            action.execute();
+            tableFx = (TableFx) action.getResultMap().get("tableFx");
+        } catch (RequiredParamException e) {
+            log.error("Add Table Function Failed!", e);
+            FacesUtil.addError("Add Table Function Failed with Internal Command Error!");
+            return;
+        }
+
+        step.setActiveObject(tableFx);
+
+        FacesUtil.addInfo("TableFx[" + tableFx.getSelectableId() + "] added.");
+
+        FacesUtil.runClientScript("postUpdate(function(){selectObject('" + tableFx.getSelectableId() + "');});");
+        FacesUtil.runClientScript("update" + transformTable.getSelectableId() + "();");
     }
 
     public void addOutputFile() {

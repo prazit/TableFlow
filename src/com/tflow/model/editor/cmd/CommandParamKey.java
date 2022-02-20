@@ -11,6 +11,7 @@ public enum CommandParamKey {
     DATA_TABLE,
     TRANSFORM_TABLE,
     COLUMN_FX,
+    TABLE_FX,
 
     COLUMN_FUNCTION,
 

@@ -25,7 +25,7 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent 
 
     private EventManager eventManager;
 
-    public ColumnFx(DataColumn owner, ColumnFunction function, String name, String startPlug) {
+    public ColumnFx(ColumnFunction function, String name, String startPlug, DataColumn owner) {
         this.name = name;
         this.function = function;
         this.startPlug = createStartPlug(startPlug);

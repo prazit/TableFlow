@@ -14,7 +14,7 @@ public class TableFx implements Serializable, Selectable {
 
     private TransformTable owner;
 
-    public TableFx(String name, TableFunction function, TransformTable owner) {
+    public TableFx(TableFunction function, String name, TransformTable owner) {
         this.name = name;
         this.function = function;
         paramMap = new HashMap<>();
