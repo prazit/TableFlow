@@ -145,6 +145,9 @@ function selectableHandle(selectable) {
         ev.stopPropagation();
         return false;
     });
+
+    /*reset TAB-Index to force recreate tab-index list in the editor.js.propertyCreated()*/
+    window.parent.resetTabIndex();
 }
 
 function setActiveObj($e) {

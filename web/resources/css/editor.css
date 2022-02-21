@@ -59,6 +59,24 @@ body .ui-panelgrid .ui-panelgrid-cell {
     border: 0;
 }
 
+.tool-panel .properties .ui-scrollpanel-container {
+    width: 100% !important;
+}
+
+.tool-panel .properties .hidden-input,
+.tool-panel .properties .prev-input,
+.tool-panel .properties .next-input {
+    margin: 0;
+    border-width: 0;
+    padding: 0;
+    width: 0;
+    height: 0;
+}
+
+.tool-panel .properties .ui-scrollpanel-container .ui-scrollpanel-content {
+    width: 97% !important;
+}
+
 .tool-panel .ui-divider.ui-divider-horizontal {
     color: var(--surface-d);
     height: calc(1em + 4px);

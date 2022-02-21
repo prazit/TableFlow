@@ -16,7 +16,7 @@ function refreshToolbars() {
         setToolPanel([
             {name: 'refresh', value: 'all'}
         ]);
-    });
+    }, 'refershToolbars');
 }
 
 function toggleLeft() {
@@ -179,41 +179,122 @@ function updateEm(selectableId) {
     /*need to handle event of this selectable at the complete phase of update process above*/
 }
 
-function propertyCreated($scrollPanel) {
+function propertyCreated() {
+    if (tflow.propertyCreatedEnding) return;
+    tflow.propertyCreatedEnding = true;
+
     /* init all behaviors of input boxes*/
+    var $scrollPanel = $('.properties');
+    tflow.propertyPanel = $scrollPanel;
 
-    $('.ui-g-12').hide();
+    if (!tflow.showDebugInfo) {
+        $scrollPanel.find('.ui-g-12').hide();
+    }
 
-    /*TODO: scroll panel need to resize when the window resized or the splitter resized*/
+    /*scroll panel need to resize when the window resized or the splitter resized*/
+    $scrollPanel.css('width', '100%');
 
-    /*TODO: all input boxes: need the same width*/
-
-    /*TODO: input-text: select all text when got the focus*/
+    /*input-text: select all text when got the focus*/
+    $scrollPanel.find('input[type=text]').each(function (i, e) {
+        $(e).on('focus', function (ev) {
+            ev.currentTarget.select();
+        });
+    });
 
     /*setFocus to the default field or first field*/
     if (tflow.setFocus != null) clearTimeout(tflow.setFocus);
-    tflow.setFocus = setTimeout(setFocus, 1000);
+    tflow.setFocus = setTimeout(setFocus, tflow.setFocusTimeout);
+
+    /*selectables used by Tab index system below*/
+    if (contentWindow.tflow.selectables == null) {
+        contentWindow.tflow.selectables = contentWindow.$('.selectable');
+    }
+
+    /*select next object when press TAB on the last property*/
+    $scrollPanel.find('.next-input').on('focus', function (ev) {
+        /*need to change focus to another input before refreshProperties() to avoid auto focus on this field again by Browser*/
+        tflow.propertyPanel.find('input')[0].focus(function () {/*nothing*/
+        });
+
+        var selectableId = contentWindow.getSelectableId(tflow.propertyPanel),
+            nextObject = null,
+            selectables = contentWindow.tflow.selectables,
+            last = selectables.length - 2,
+            id;
+        for (var i = 0; i <= last; i++) {
+            id = contentWindow.getSelectableId($(selectables[i]));
+            if (selectableId === id) {
+                nextObject = $(selectables[i + 1]);
+                break;
+            }
+        }
+        if (nextObject == null) {
+            nextObject = $(contentWindow.tflow.selectables[0]);
+        }
+        contentWindow.selectObject(nextObject);
+    });
+
+    /*select previous object when press Shift+TAB on the first property*/
+    $scrollPanel.find('.prev-input').on('focus', function (ev) {
+        /*need to change focus to another input before refreshProperties() to avoid auto focus on this field again by Browser*/
+        tflow.propertyPanel.find('input')[0].focus(function () {/*nothing*/
+        });
+
+        var selectableId = contentWindow.getSelectableId(tflow.propertyPanel),
+            nextObject = null,
+            selectables = contentWindow.tflow.selectables,
+            last = selectables.length - 1,
+            id;
+        for (var i = 1; i <= last; i++) {
+            id = contentWindow.getSelectableId($(selectables[i]));
+            if (selectableId === id) {
+                nextObject = $(selectables[i - 1]);
+                break;
+            }
+        }
+        if (nextObject == null) {
+            nextObject = $(contentWindow.tflow.selectables[last]);
+        }
+        contentWindow.selectObject(nextObject);
+    });
+
+    tflow.propertyCreatedEnding = false;
+}
+
+function resetTabIndex() {
+    /*reset tab-index system*/
+    if(tflow.propertyPanel == null) return;
+
+    tflow.propertyPanel.find('.next-object,.prev-object').off('focus');
+    tflow.selectables = null;
 }
 
 function setFocus() {
     tflow.setFocus = null;
 
     var inputs = $('.properties').find('input');
-    if (inputs.length > 0) {
-        inputs[0].focus(function (ev) {
+
+    if (inputs.length > tflow.propertyFirstIndex) {
+        inputs[tflow.propertyFirstIndex].focus(function (ev) {
             console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
         });
     }
 }
 
-function contentReady(func) {
+function contentReady(func, label) {
+    if (contentWindow !== undefined && contentWindow.tflow !== undefined && contentWindow.tflow.ready) {
+        func();
+        //console.log('contentReady(' + label + ') is immediately completed.');
+        return;
+    }
+
     var interval = setInterval(function () {
-        if (contentWindow.tflow !== undefined && contentWindow.tflow.ready) {
+        if (contentWindow !== undefined && contentWindow.tflow !== undefined && contentWindow.tflow.ready) {
             clearInterval(interval);
             func();
-            console.log('contentReady is completed.');
-        }else{
-            console.log('contentReady is skipped.');
+            //console.log('contentReady(' + label + ') is completed.');
+        } else {
+            //console.log('contentReady(' + label + ') is skipped.');
         }
     }, 100);
 }
@@ -231,7 +312,16 @@ $(function () {
 
 var tflow = {
         allowScrollDuration: 1000,
-        lastScroll: Date.now()
+        lastScroll: Date.now(),
+
+        setFocus: null,
+        setFocusTimeout: 500,
+
+        propertyPanel: null,
+        propertyCreatedEnding: false,
+        propertyFirstIndex: 2,
+
+        showDebugInfo: false
     },
     leftPanel, leftGutter, leftToggle,
     rightPanel, rightGutter, rightToggle,
