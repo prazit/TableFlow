@@ -5,6 +5,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
+import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.FacesUtil;
 
 import javax.annotation.PostConstruct;
@@ -220,6 +221,8 @@ public class FlowchartController extends Controller {
         String selectableId = FacesUtil.getRequestParam("selectableId");
         boolean isStartPlug = Boolean.parseBoolean(FacesUtil.getRequestParam("startPlug"));
         Step step = getStep();
+
+        /*TODO: need to convert this script into Action object that used to show in the action list.*/
 
         log.warn("removeLine(selectableId:{}, isStartPlug:{})", selectableId, isStartPlug);
         log.warn("lineList before remove = {}", step.getLineList().toArray());
@@ -534,6 +537,10 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript("postUpdate(function(){selectObject('" + dataFile.getSelectableId() + "');});");
         FacesUtil.runClientScript("update" + dataTable.getSelectableId() + "();");
         FacesUtil.runClientScript("refreshStepList();");
+    }
+
+    public void propertyChanged(PropertyView property, Object value) {
+        log.warn("propertyChanged(property:{}, value:{})", property, value);
     }
 
 }

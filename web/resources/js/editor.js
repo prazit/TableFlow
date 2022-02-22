@@ -1,3 +1,4 @@
+
 function refreshStepList() {
     showStepList(leftPanel.css('display') === 'block');
     console.log('refreshStepList completed.');
@@ -212,7 +213,6 @@ function propertyCreated() {
     }
 
     /*select next object when press TAB on the last property*/
-    /*TODO: issue: property changed after hold TAB a long time will made the object ignore scrollToObject() function.*/
     $scrollPanel.find('.next-input').on('focus', function (ev) {
         /*need to change focus to another input before refreshProperties() to avoid auto focus on this field again by Browser*/
         tflow.propertyPanel.find('input')[0].focus(function () {/*nothing*/
@@ -268,7 +268,7 @@ function resetTabIndex() {
     if (tflow.propertyPanel == null) return;
 
     tflow.propertyPanel.find('.next-object,.prev-object').off('focus');
-    tflow.selectables = null;
+    contentWindow.tflow.selectables = null;
 }
 
 function setFocus() {

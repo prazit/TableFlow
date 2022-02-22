@@ -91,6 +91,7 @@ function updateComplete(selectableId) {
     selectableHandle(selectableId);
     draggableHandle();
     doPostUpdate();
+    window.parent.resetTabIndex();
 }
 
 function postUpdate(func) {
