@@ -5,7 +5,7 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import java.util.Map;
 
 public class AddTableFx extends Action {
-    private static final long serialVersionUID = 2021122109996660008L;
+    private static final long serialVersionUID = 2021122109996660010L;
 
     public AddTableFx(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);

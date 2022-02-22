@@ -7011,3 +7011,8 @@ body .ui-wizard .ui-icon-arrowthick-1-e {
 body .ui-wizard .ui-icon-arrowthick-1-e:before {
   content: "\e91b";
 }
+
+body .tool-panel .ui-tabs .ui-tabs-panels {
+  height: calc(100% - 0.857rem - 0.857rem - 1rem) !important;
+}
+

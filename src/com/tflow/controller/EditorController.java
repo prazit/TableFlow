@@ -9,6 +9,7 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
+import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.MenuElement;
@@ -45,12 +46,14 @@ public class EditorController extends Controller {
     private boolean showStepList;
     private boolean showPropertyList;
     private boolean showActionButtons;
+    private int stepListActiveTab;
 
     @PostConstruct
     public void onCreation() {
         Project project = workspace.getProject();
+        leftPanelTitle = "Step List";
         initStepList(project);
-        initHistoryList(project);
+        refreshActionList(project);
     }
 
     private void initStepList(Project project) {
@@ -59,12 +62,12 @@ public class EditorController extends Controller {
         selectStep(project.getActiveStepIndex(), false);
     }
 
-    private void initHistoryList(Project project) {
-        Step activeStep = project.getActiveStep();
-        if (activeStep == null) return;
+    private void refreshActionList(Project project) {
+        Step step = project.getActiveStep();
+        if (step == null) return;
 
         actionList = new ArrayList<>();
-        for (Action action : activeStep.getHistory()) {
+        for (Action action : step.getHistory()) {
             actionList.add(new ActionView(action));
         }
     }
@@ -153,6 +156,22 @@ public class EditorController extends Controller {
 
     public void setShowActionButtons(boolean showActionButtons) {
         this.showActionButtons = showActionButtons;
+    }
+
+    public String getLeftPanelTitle() {
+        return leftPanelTitle;
+    }
+
+    public void setLeftPanelTitle(String leftPanelTitle) {
+        this.leftPanelTitle = leftPanelTitle;
+    }
+
+    public int getStepListActiveTab() {
+        return stepListActiveTab;
+    }
+
+    public void setStepListActiveTab(int stepListActiveTab) {
+        this.stepListActiveTab = stepListActiveTab;
     }
 
     /*== Public Methods ==*/
@@ -420,6 +439,7 @@ public class EditorController extends Controller {
         showStepList = activeStep.isShowStepList();
         showPropertyList = activeStep.isShowPropertyList();
         showActionButtons = activeStep.isShowActionButtons();
+        stepListActiveTab = activeStep.getStepListActiveTab();
 
         Selectable activeObject = activeStep.getActiveObject();
         if (activeObject == null) {
@@ -427,6 +447,8 @@ public class EditorController extends Controller {
         } else {
             selectObject(activeObject.getSelectableId());
         }
+
+        refreshActionList(project);
 
         StringBuilder jsBuilder = new StringBuilder();
         if (refresh) {
@@ -477,12 +499,14 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.STEP, step);
 
         try {
-            new AddDataSource(paramMap).execute();
+            new AddLocal(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add File Directory Failed!", e);
             FacesUtil.addError("Add File Directory Failed with Internal Command Error!");
             return;
         }
+
+        refreshActionList(project);
 
         selectObject(local.getSelectableId());
 
@@ -501,12 +525,14 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.STEP, step);
 
         try {
-            new AddDataSource(paramMap).execute();
+            new AddDataBase(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add Database Failed!", e);
             FacesUtil.addError("Add Database Failed with Internal Command Error!");
             return;
         }
+
+        refreshActionList(project);
 
         selectObject(database.getSelectableId());
 
@@ -525,12 +551,14 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.STEP, step);
 
         try {
-            new AddDataSource(paramMap).execute();
+            new AddSFTP(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add SFTP Failed!", e);
             FacesUtil.addError("Add SFTP Failed with Internal Command Error!");
             return;
         }
+
+        refreshActionList(project);
 
         selectObject(sftp.getSelectableId());
 
@@ -557,6 +585,8 @@ public class EditorController extends Controller {
             FacesUtil.addError("Add DataFile Failed with Internal Command Error!");
             return;
         }
+
+        refreshActionList(project);
 
         selectObject(dataFile.getSelectableId());
 
@@ -613,14 +643,14 @@ public class EditorController extends Controller {
                     + "showPropertyList(" + showPropertyList + ");"
                     + "showActionButtons(" + showActionButtons + ");";
             FacesUtil.runClientScript(javascript);
-            return;
         }
 
         String stepList = FacesUtil.getRequestParam("stepList");
-        if (stepList != null) {
+        if (stepList != null || refresh != null) {
             showStepList = Boolean.parseBoolean(stepList);
             step.setShowStepList(showStepList);
             refreshStepList(project.getStepList());
+            refreshActionList(project);
         }
 
         String propertyList = FacesUtil.getRequestParam("propertyList");
@@ -637,11 +667,11 @@ public class EditorController extends Controller {
         }
     }
 
-    public String getLeftPanelTitle() {
-        return leftPanelTitle;
-    }
-
-    public void setLeftPanelTitle(String leftPanelTitle) {
-        this.leftPanelTitle = leftPanelTitle;
+    public void stepListTabChanged(TabChangeEvent event) {
+        String id = event.getTab().getId();
+        log.warn("stepListTabChanged(event:{}, tabId:{})", event, id);
+        int activeTabIndex = 1;
+        stepListActiveTab = activeTabIndex;
+        workspace.getProject().getActiveStep().setStepListActiveTab(stepListActiveTab);
     }
 }

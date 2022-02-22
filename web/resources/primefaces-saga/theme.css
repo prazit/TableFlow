@@ -7012,3 +7012,9 @@ body .ui-carousel .ui-carousel-indicators .ui-carousel-indicator.ui-state-highli
 body .ui-galleria .ui-galleria-indicators .ui-galleria-indicator.ui-state-highlight button {
   background-color: #2196F3;
 }
+
+
+body .tool-panel .ui-tabs .ui-tabs-panels {
+  height: calc(100% - 3rem) !important;
+}
+

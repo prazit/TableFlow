@@ -24,28 +24,40 @@
             <div class="screen-area">
                 <p:splitter styleClass="p-mb-3" gutterSize="5">
                     <p:splitterPanel styleClass="left-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="15">
-                        <p:panel header="#{editorCtl.leftPanelTitle}" styleClass="tool-panel">
+                        <p:panel header="Step List" styleClass="tool-panel">
                             <f:facet name="actions">
                                 <p:commandButton id="leftToggle" type="button"
                                                  styleClass="left-panel-toggle close"
                                                  icon="pi pi-times"/>
                             </f:facet>
                             <h:form id="stepForm">
-                                <p:accordionPanel widgetVar="basic">
-                                    <p:tab title="#{editorCtl.projectName}">
+                                <p:tabView id="leftPanel" activeIndex="#{editorCtl.stepListActiveTab}">
+                                    <p:tab title="Step" id="stepList">
+                                        <div>
+                                            <span class="label">Project: </span>
+                                            <span class="value">#{editorCtl.projectName}</span>
+                                        </div>
+                                        <p:separator/>
                                         <p:menu model="#{editorCtl.stepMenu}"/>
                                     </p:tab>
-                                </p:accordionPanel>
+                                    <p:tab title="History" id="actionList">
+                                        <p:scrollPanel style="height: 100%;">
+                                            <p:repeat value="#{editorCtl.actionList}" var="action">
+                                                <p:outputPanel class="column">
+                                                    <p:graphicImage library="images" name="#{action.image}"/>
+                                                    <div style="display: inline-block">
+                                                        <p:outputLabel id="actionName" value="#{action.name} (#{action.id})"/>
+                                                        <p:tooltip for="actionName" value="#{action.description}"/>
+                                                    </div>
+                                                </p:outputPanel>
+                                            </p:repeat>
+                                        </p:scrollPanel>
+                                    </p:tab>
+                                    <p:ajax event="tabChange" listener="#{editorCtl.stepListTabChanged}"/>
+                                </p:tabView>
                                 <p:remoteCommand name="setActiveObj" action="#{editorCtl.selectObject}" update="propertyForm"/>
                                 <p:remoteCommand name="setToolPanel" action="#{editorCtl.setToolPanel}" update="stepForm,propertyForm"/>
                             </h:form>
-                            <!-- TODO: show actionList here.
-                            <p:scrollPanel>
-                                <p:dataList>
-
-                                </p:dataList>
-                            </p:scrollPanel>
-                            -->
                         </p:panel>
                     </p:splitterPanel>
 
@@ -59,22 +71,11 @@
                                         <p:submenu label="Add">
                                             <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addStep}" update="stepForm,propertyForm"/>
                                             <p:divider/>
-                                            <p:menuitem value="File Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="propertyForm"/>
-                                            <p:menuitem value="DB Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="propertyForm"/>
-                                            <p:menuitem value="SFTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="propertyForm"/>
+                                            <p:menuitem value="File Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="stepForm,propertyForm"/>
+                                            <p:menuitem value="DB Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="stepForm,propertyForm"/>
+                                            <p:menuitem value="SFTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="stepForm,propertyForm"/>
                                             <p:divider/>
-                                            <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="propertyForm"/>
-                                            <p:divider/>
-                                            <p:menuitem value="Column" icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                            <p:menuitem value="Transformation" icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                            <p:menuitem value="Output" icon="pi pi-fw pi-plus" update="propertyForm"/>
-                                        </p:submenu>
-
-                                        <p:submenu label="Edit">
-                                            <p:menuitem value="Undo" icon="pi pi-fw pi-undo"/>
-                                            <p:menuitem value="Redo" icon="pi pi-fw pi-redo"/>
-                                            <p:divider/>
-                                            <p:menuitem value="History..." icon="pi pi-fw pi-list"/>
+                                            <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="stepForm,propertyForm"/>
                                         </p:submenu>
 
                                         <p:divider layout="vertical"/>
@@ -82,6 +83,7 @@
                                         <p:submenu label="View">
                                             <p:menuitem value="Step List" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
                                             <p:menuitem value="Property List" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+                                            <p:divider/>
                                             <p:menuitem value="Table Buttons" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
                                         </p:submenu>
 

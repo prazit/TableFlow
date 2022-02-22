@@ -4,18 +4,18 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 
 import java.util.Map;
 
-public class AddDataSource extends Action {
-    private static final long serialVersionUID = 2021122109996660001L;
+public class AddLocal extends Action {
+    private static final long serialVersionUID = 2021122109996660012L;
 
-    public AddDataSource(Map<CommandParamKey, Object> paramMap) {
+    public AddLocal(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);
     }
 
     @Override
     protected void initAction() {
-        this.name = "Add DB Connection";
-        this.description = "add datasource/database connection to current step";
-        this.code = "ADB";
+        this.name = "Add Local Root Directory";
+        this.description = "add local root directory to current step";
+        this.code = "ALC";
         this.image = "action.png";
     }
 

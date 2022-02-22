@@ -65,11 +65,7 @@
                                         <span>#{floor.roomList[0].type}</span>
                                         <p:importEnum type="com.tflow.model.editor.datasource.DataSourceType" var="DataSourceType"/>
                                         <p:outputLabel rendered="#{DataSourceType.DATABASE==floor.roomList[0].type}">#{floor.roomList[0].dbms}</p:outputLabel>
-                                        <div class="#{floor.roomList[0].plug.styleClass}" id="#{floor.roomList[0].plug}">
-                                            <!--<p:outputPanel class="#{floor.roomList[0].plug.styleClass}" id="#{floor.roomList[0].plug}"/>-->
-                                            <!-- TODO: <p:draggable for="sp#{floor.roomList[0].plug}" containment="editorForm"/>-->
-                                        </div>
-
+                                        <div class="#{floor.roomList[0].plug.styleClass}" id="#{floor.roomList[0].plug}"></div>
                                     </p:outputPanel>
                                     <p:spacer rendered="#{floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
                                 </td>

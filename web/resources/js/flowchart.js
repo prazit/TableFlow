@@ -7,6 +7,11 @@ function refreshFlowChart() {
     window.parent.refreshToolbars();
 }
 
+function refreshStepList() {
+    /*forwarding only*/
+    window.parent.refreshStepList();
+}
+
 function getSelectableId($selectable) {
     return $selectable.find('input[name=selectableId]').attr('value');
 }

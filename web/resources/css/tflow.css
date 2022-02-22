@@ -20,6 +20,10 @@ html, body, .container {
     background-color: var(--surface-b);
 }
 
+form {
+    height: 100%;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -117,10 +121,13 @@ body .tool-panel.ui-panel {
     height: 100%;
 }
 
-body .tool-panel .ui-accordion .ui-accordion-content {
+body .tool-panel .ui-tabs.ui-widget-content,
+body .tool-panel .ui-tabs .ui-tabs-panel {
     padding: 0;
+    height: 100%;
 }
-body .tool-panel .ui-accordion .ui-accordion-content .ui-menu {
+
+body .tool-panel .ui-tabs .ui-menu {
     border: 0;
     width: 100%;
 }

@@ -359,6 +359,7 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("Table[" + dataTable.getName() + "] added.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        FacesUtil.runClientScript("refreshStepList();");
         FacesUtil.runClientScript("refreshFlowChart();");
 
         /*TODO: issue: after refresh, the activeObject is not dataTable*/
@@ -405,6 +406,7 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("Table[" + transformTable.getName() + "] added.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        FacesUtil.runClientScript("refreshStepList();");
         FacesUtil.runClientScript("refreshFlowChart();");
     }
 
@@ -447,6 +449,7 @@ public class FlowchartController extends Controller {
 
         FacesUtil.runClientScript("postUpdate(function(){selectObject('" + transformColumn.getSelectableId() + "');});");
         FacesUtil.runClientScript("update" + transformTable.getSelectableId() + "();");
+        FacesUtil.runClientScript("refreshStepList();");
     }
 
     public void addTransformation() {
@@ -488,6 +491,7 @@ public class FlowchartController extends Controller {
 
         FacesUtil.runClientScript("postUpdate(function(){selectObject('" + tableFx.getSelectableId() + "');});");
         FacesUtil.runClientScript("update" + transformTable.getSelectableId() + "();");
+        FacesUtil.runClientScript("refreshStepList();");
     }
 
     public void addOutputFile() {
@@ -529,6 +533,7 @@ public class FlowchartController extends Controller {
 
         FacesUtil.runClientScript("postUpdate(function(){selectObject('" + dataFile.getSelectableId() + "');});");
         FacesUtil.runClientScript("update" + dataTable.getSelectableId() + "();");
+        FacesUtil.runClientScript("refreshStepList();");
     }
 
 }

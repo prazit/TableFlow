@@ -34,6 +34,7 @@ public class Step implements Selectable {
     private boolean showStepList;
     private boolean showPropertyList;
     private boolean showActionButtons;
+    private int stepListActiveTab;
 
     private Map<String, Selectable> selectableMap;
 
@@ -212,6 +213,14 @@ public class Step implements Selectable {
 
     public void setShowActionButtons(boolean showActionButtons) {
         this.showActionButtons = showActionButtons;
+    }
+
+    public int getStepListActiveTab() {
+        return stepListActiveTab;
+    }
+
+    public void setStepListActiveTab(int stepListActiveTab) {
+        this.stepListActiveTab = stepListActiveTab;
     }
 
     @Override
