@@ -5,7 +5,6 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
-import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.FacesUtil;
 
 import javax.annotation.PostConstruct;
@@ -101,12 +100,12 @@ public class FlowchartController extends Controller {
         String selectableId = FacesUtil.getRequestParam("selectableId");
         Step step = getStep();
         Selectable selectable = step.getSelectableMap().get(selectableId);
-
         StringBuilder jsBuilder = new StringBuilder();
-        jsBuilder.append("lineStart();");
+
+        /*Update lines of selectable*/
         updateLines(jsBuilder, selectable);
 
-        /*in case of DataTable need to redraw lines of all columns and outputs*/
+        /*Update lines of Child in DataTable(include TransformTable)*/
         if (selectable instanceof DataTable) {
             DataTable dataTable = (DataTable) selectable;
             for (DataColumn column : dataTable.getColumnList()) {
@@ -115,10 +114,9 @@ public class FlowchartController extends Controller {
             for (DataFile output : dataTable.getOutputList()) {
                 updateLines(jsBuilder, output);
             }
-
         }
 
-        /*in case of TransformTable need to redraw lines of all columnFX and tableFX*/
+        /*Update lines of Child in TransformTable*/
         if (selectable instanceof TransformTable) {
             TransformTable transformTable = (TransformTable) selectable;
             for (DataColumn column : transformTable.getColumnList()) {
@@ -129,10 +127,12 @@ public class FlowchartController extends Controller {
                 updateLines(jsBuilder, tableFx);
             }
         }
-        jsBuilder.append("lineEnd();");
 
-        String javaScript = "$(function(){" + jsBuilder.toString() + "});";
-        FacesUtil.runClientScript(javaScript);
+        String javaScript = jsBuilder.toString();
+        if (!javaScript.isEmpty()) {
+            javaScript = "lineStart();" + javaScript + "lineEnd();";
+            FacesUtil.runClientScript(javaScript);
+        }
     }
 
     private void updateLines(StringBuilder jsBuilder, Selectable selectable) {
@@ -538,9 +538,4 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript("update" + dataTable.getSelectableId() + "();");
         FacesUtil.runClientScript("refreshStepList();");
     }
-
-    public void propertyChanged(PropertyView property, Object value) {
-        log.warn("propertyChanged(property:{}, value:{})", property, value);
-    }
-
 }

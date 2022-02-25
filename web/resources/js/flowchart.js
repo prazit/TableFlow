@@ -91,7 +91,6 @@ function updateComplete(selectableId) {
     selectableHandle(selectableId);
     draggableHandle();
     doPostUpdate();
-    window.parent.resetTabIndex();
 }
 
 function postUpdate(func) {
@@ -153,7 +152,7 @@ function selectableHandle(selectable) {
     });
 
     /*reset TAB-Index to force recreate tab-index list in the editor.js.propertyCreated()*/
-    window.parent.resetTabIndex();
+    window.parent.refreshTabIndex();
 }
 
 function setActiveObj($e) {
@@ -215,6 +214,8 @@ function lineStart() {
 function lineEnd() {
     /*end of line creation*/
     window.scrollTo(lines.lineScroll);
+
+    showLines();
 }
 
 function draggableEnter($dragTarget, $droppable) {

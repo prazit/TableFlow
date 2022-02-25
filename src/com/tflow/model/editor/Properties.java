@@ -137,7 +137,6 @@ public enum Properties {
             ".:propertyMap:dateTimeFormat:DateTime Format:String"
     ),
     OUTPUT_MARKDOWN(
-            /*TODO: issue: data(server side) has changed but ui(client side) stay no change.*/
             "type:Type:FileType:out:refreshProperties();",
             "dataSource:FTP/SFTP:SFTP",
             "name:File Name:String",
@@ -198,6 +197,7 @@ public enum Properties {
     /*TODO: need complete list for Parameters or Function Prototypes*/
     CFX_LOOKUP(
             "name:Title:String",
+            "function:Function:ColumnFunction",
             "--:Source:--",
             ".:propertyMap:sourceTable:Source Table:SourceTable",
             "--:Conditions:--",

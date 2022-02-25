@@ -178,7 +178,6 @@ function scrollToObj(active) {
 
 function updateEm(selectableId) {
     contentWindow['update' + selectableId]();
-    /*need to handle event of this selectable at the complete phase of update process above*/
 }
 
 function propertyCreated() {
@@ -187,7 +186,6 @@ function propertyCreated() {
 
     /* init all behaviors of input boxes*/
     var $scrollPanel = $('.properties');
-    tflow.propertyPanel = $scrollPanel;
 
     if (!tflow.showDebugInfo) {
         $scrollPanel.find('.ui-g-12').hide();
@@ -207,13 +205,19 @@ function propertyCreated() {
     if (tflow.setFocus != null) clearTimeout(tflow.setFocus);
     tflow.setFocus = setTimeout(setFocus, tflow.setFocusTimeout);
 
-    /*selectables used by Tab index system below*/
-    if (contentWindow.tflow.selectables == null) {
-        contentWindow.tflow.selectables = contentWindow.$('.selectable');
-    }
+    /*Tab index system*/
+    refreshTabIndex();
+
+    tflow.propertyCreatedEnding = false;
+}
+
+function refreshTabIndex() {
+    /*reset tab-index system*/
+    tflow.propertyPanel = $('.properties');
+    contentWindow.tflow.selectables = contentWindow.$('.selectable');
 
     /*select next object when press TAB on the last property*/
-    $scrollPanel.find('.next-input').on('focus', function (ev) {
+    tflow.propertyPanel.find('.next-input').off('focus').on('focus', function (ev) {
         /*need to change focus to another input before refreshProperties() to avoid auto focus on this field again by Browser*/
         tflow.propertyPanel.find('input')[0].focus(function () {/*nothing*/
         });
@@ -237,7 +241,7 @@ function propertyCreated() {
     });
 
     /*select previous object when press Shift+TAB on the first property*/
-    $scrollPanel.find('.prev-input').on('focus', function (ev) {
+    tflow.propertyPanel.find('.prev-input').off('focus').on('focus', function (ev) {
         /*need to change focus to another input before refreshProperties() to avoid auto focus on this field again by Browser*/
         tflow.propertyPanel.find('input')[0].focus(function () {/*nothing*/
         });
@@ -259,16 +263,6 @@ function propertyCreated() {
         }
         contentWindow.selectObject(nextObject);
     });
-
-    tflow.propertyCreatedEnding = false;
-}
-
-function resetTabIndex() {
-    /*reset tab-index system*/
-    if (tflow.propertyPanel == null) return;
-
-    tflow.propertyPanel.find('.next-object,.prev-object').off('focus');
-    contentWindow.tflow.selectables = null;
 }
 
 function setFocus() {

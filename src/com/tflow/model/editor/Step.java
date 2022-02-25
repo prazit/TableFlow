@@ -327,7 +327,9 @@ public class Step implements Selectable {
     public List<Line> getLineByEnd(String selectableId) {
         List<Line> found = new ArrayList<>();
         for (Line line : lineList) {
-            if (line.getEndSelectableId().equals(selectableId)) found.add(line);
+            if (line.getEndSelectableId().equals(selectableId)) {
+                found.add(line);
+            }
         }
         return found;
     }

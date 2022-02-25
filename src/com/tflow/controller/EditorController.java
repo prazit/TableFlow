@@ -1,5 +1,6 @@
 package com.tflow.controller;
 
+import com.tflow.HasEvent;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
@@ -674,4 +675,16 @@ public class EditorController extends Controller {
         stepListActiveTab = activeTabIndex;
         workspace.getProject().getActiveStep().setStepListActiveTab(stepListActiveTab);
     }
+
+    public void propertyChanged(PropertyView property) {
+        Selectable activeObject = workspace.getProject().getActiveStep().getActiveObject();
+        Object value = getPropertyValue(activeObject, property);
+        log.warn("propertyChanged(property:{}, value:{})", property, value);
+
+        if (activeObject instanceof HasEvent) {
+            HasEvent hasEvent = (HasEvent) activeObject;
+            hasEvent.getEventManager().fireEvent(EventName.PROPERTY_CHANGED, property);
+        }
+    }
+
 }

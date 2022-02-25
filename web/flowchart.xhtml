@@ -127,13 +127,13 @@
 
                                         <p:repeat value="#{floor.roomList[2].outputList}" var="output">
 
-                                            <div class="output column selectable#{flowchartCtl.active(output)}">
+                                            <p:outputPanel class="output column selectable#{flowchartCtl.active(output)}">
                                                 <input name="selectableId" type="hidden" value="#{output.selectableId}"/>
                                                 <p:remoteCommand name="update#{output.selectableId}" update="@parent" oncomplete="updateComplete('#{output.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{output.type.image}"/>
                                                 <label>#{output.dataSource.name} - (#{output.name})</label>
                                                 <div class="#{output.startPlug.styleClass}" id="#{output.startPlug}"></div>
-                                            </div>
+                                            </p:outputPanel>
 
                                         </p:repeat>
 
@@ -245,13 +245,13 @@
 
                                             <p:repeat value="#{troom.outputList}" var="toutput">
 
-                                                <div class="output column selectable#{flowchartCtl.active(toutput)}">
+                                                <p:outputPanel class="output column selectable#{flowchartCtl.active(toutput)}">
                                                     <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
                                                     <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="updateComplete('#{toutput.selectableId}')"/>
                                                     <p:graphicImage library="images" name="#{toutput.type.image}"/>
                                                     <label>#{toutput.dataSource.name} - (#{toutput.name})</label>
                                                     <div class="#{toutput.startPlug.styleClass}" id="#{toutput.startPlug}"></div>
-                                                </div>
+                                                </p:outputPanel>
 
                                             </p:repeat>
 
