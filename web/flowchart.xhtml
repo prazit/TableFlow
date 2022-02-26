@@ -98,7 +98,9 @@
                                         <p:remoteCommand name="update#{floor.roomList[2].selectableId}" update="@parent" oncomplete="updateComplete('#{floor.roomList[2].selectableId}')"/>
 
                                         <f:facet name="actions">
-                                            <div class="#{floor.roomList[2].endPlug.styleClass}" id="#{floor.roomList[2].endPlug}"></div>
+                                            <div class="#{floor.roomList[2].endPlug.styleClass}" id="#{floor.roomList[2].endPlug}">
+                                                <input name="removeButtonTip" type="hidden" value="#{floor.roomList[2].endPlug.removeButtonTip}"/>
+                                            </div>
                                             <div>
                                                 <p:graphicImage library="images"
                                                                 name="#{floor.roomList[2].getDataFile().type.image}"/>
@@ -199,7 +201,9 @@
                                             <p:remoteCommand name="update#{troom.selectableId}" update="@parent" oncomplete="updateComplete('#{troom.selectableId}')"/>
 
                                             <f:facet name="actions">
-                                                <div class="#{troom.endPlug.styleClass}" id="#{troom.endPlug}"></div>
+                                                <div class="#{troom.endPlug.styleClass}" id="#{troom.endPlug}">
+                                                    <input name="removeButtonTip" type="hidden" value="#{troom.endPlug.removeButtonTip}"/>
+                                                </div>
                                                 <div>
                                                     <p:graphicImage library="images" name="transfered.png"/>
                                                     <b>#{troom.name}</b>
@@ -328,7 +332,7 @@
                 </p:outputLabel>
 
                 <p:tooltip for="draggable" value="Drag and drop onto compatible object."/>
-                <p:tooltip for="removeLine" value="Remove line."/>
+                <p:tooltip id="removeLineTip" for="removeLine" value="Remove connected line."/>
                 <p:tooltip for="extractData" value="Extract data structure to new table."/>
                 <p:tooltip for="transferData" value="Transfer data to new table."/>
             </div>

@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.HasEvent;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 
@@ -9,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataTable extends Room implements Serializable, Selectable, HasDataFile, HasEndPlug {
+public class DataTable extends Room implements Serializable, Selectable, HasDataFile, HasEndPlug, HasEvent {
     private static final long serialVersionUID = 2021121709996660030L;
 
     private int id;
@@ -29,6 +30,8 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
     private Step owner;
 
+    private EventManager eventManager;
+
     public DataTable(String name, DataFile dataFile, String idColName, String endPlug, String startPlug, Step owner) {
         this.owner = owner;
         this.name = name;
@@ -46,22 +49,23 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.columnList = new ArrayList<>();
         this.outputList = new ArrayList<>();
         this.setRoomType(RoomType.DATA_TABLE);
+        eventManager = new EventManager(this);
     }
 
     private EndPlug createEndPlug(String plugId) {
         EndPlug startPlug = new EndPlug(plugId);
-        startPlug.setLocked(true);
 
         startPlug.setListener(new PlugListener(startPlug) {
             @Override
             public void plugged(Line line) {
                 plug.setPlugged(true);
+                plug.setRemoveButton(true);
+                plug.setRemoveButtonTip("Remove This Table");
             }
 
             @Override
             public void unplugged(Line line) {
-                boolean plugged = plug.getLineList().size() > 0;
-                plug.setPlugged(plugged);
+                eventManager.fireEvent(EventName.REMOVE);
             }
         });
 
@@ -171,6 +175,11 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
     public void setOwner(Step owner) {
         this.owner = owner;
+    }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     @Override

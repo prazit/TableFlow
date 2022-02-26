@@ -223,9 +223,11 @@ function draggableEnter($dragTarget, $droppable) {
 
     var bgColor = $dragTarget.css('background-color'),
         isDraggable = $dragTarget.hasClass('draggable'),
-        offset = $dragTarget.first().offset();
+        offset = $dragTarget.first().offset(),
+        removeButtonTip = $dragTarget.find('input[name=removeButtonTip]');
 
     $draggable.buttons.removeLine.toggle($dragTarget.hasClass('remove-line')).css('background-color', bgColor);
+    $draggable.buttons.removeLineTip[0].innerText = (removeButtonTip.length > 0) ? removeButtonTip.attr('value') : $draggable.buttons.removeLineTipText;
     $draggable.buttons.extractData.toggle($dragTarget.hasClass('extract-data')).css('background-color', bgColor);
     $draggable.buttons.transferData.toggle($dragTarget.hasClass('transfer-data')).css('background-color', bgColor);
     $draggable.buttons.draggable.toggle(isDraggable).css('background-color', bgColor).css('color', bgColor);
@@ -359,7 +361,9 @@ function draggableHandle() {
 }
 
 function draggableStartup() {
-    var draggableElement = document.getElementById('plugButtons');
+    var draggableElement = document.getElementById('plugButtons'),
+        removeButtonTip = $('#removeLineTip .ui-tooltip-text');
+
     $draggable = $(draggableElement).hide();
     $draggable.count = 0;
     $draggable.buttons = {
@@ -367,7 +371,9 @@ function draggableStartup() {
             tflow.lastEvent = ev;
             ev.stopPropagation();
             return false; /* cancel the event 'click on selectable object' */
-        })
+        }),
+        removeLineTip: removeButtonTip,
+        removeLineTipText: removeButtonTip[0].innerText
     };
     buttonHandle('removeLine');
     buttonHandle('extractData');

@@ -38,17 +38,6 @@ public class AddColumnFx extends Command {
 
         selectableMap.put(columnFx.getSelectableId(), columnFx);
 
-        /*when property 'function' is changed need to re-create endPlugList again*/
-        EventManager eventManager = columnFx.getEventManager();
-        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler(columnFx) {
-            @Override
-            public void handle(Event event) {
-                if (PropertyType.COLUMNFUNCTION != event.getProperty().getType()) return;
-                createEndPlugList((ColumnFx) event.getTarget());
-            }
-        });
-        createEndPlugList(columnFx);
-
         /*Notice: draw lines below tested on ColumnFunction.LOOKUP and expect to work for all ColumnFunction*/
 
         /*line between sourceColumn and columnFx*/
@@ -72,31 +61,6 @@ public class AddColumnFx extends Command {
     private void initPropertyMap(Map<String, Object> propertyMap, DataColumn sourceColumn) {
         propertyMap.put("sourceTable", sourceColumn.getOwner().getSelectableId());
         propertyMap.put("sourceColumn", sourceColumn.getSelectableId());
-    }
-
-    private void createEndPlugList(ColumnFx columnFx) {
-        List<ColumnFxPlug> plugList = columnFx.getEndPlugList();
-
-        Step step = columnFx.getOwner().getOwner().getOwner();
-        Map<String, Selectable> selectableMap = step.getSelectableMap();
-        Project project = step.getOwner();
-
-        if (plugList.size() > 0) {
-            /*need to remove old list from selectableMap before reset the list*/
-            for (ColumnFxPlug columnFxPlug : plugList) {
-                selectableMap.remove(columnFxPlug.getSelectableId());
-            }
-            plugList.clear();
-        }
-
-        String endPlugId;
-        for (PropertyView propertyView : columnFx.getFunction().getProperties().getPlugPropertyList()) {
-            endPlugId = project.newElementId();
-            ColumnFxPlug columnFxPlug = new ColumnFxPlug(project.newUniqueId(), propertyView.getType().getDataType(), propertyView.getLabel(), endPlugId, columnFx);
-            plugList.add(columnFxPlug);
-            /*need to update selectableMap for each*/
-            selectableMap.put(columnFxPlug.getSelectableId(), columnFxPlug);
-        }
     }
 
 }

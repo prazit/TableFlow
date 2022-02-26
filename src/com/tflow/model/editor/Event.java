@@ -1,12 +1,10 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.view.PropertyView;
-
 public class Event {
 
     private EventName eventName;
     private Selectable target;
-    private PropertyView property;
+    private Object data;
 
     public Event(EventName eventName, Selectable target) {
         this.eventName = eventName;
@@ -29,11 +27,11 @@ public class Event {
         this.target = target;
     }
 
-    public PropertyView getProperty() {
-        return property;
+    public Object getData() {
+        return data;
     }
 
-    public void setProperty(PropertyView property) {
-        this.property = property;
+    public void setData(Object data) {
+        this.data = data;
     }
 }

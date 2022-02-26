@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.HasEvent;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Tower;
 
@@ -8,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Step implements Selectable {
+public class Step implements Selectable, HasEvent {
 
     private int id;
     private String name;
@@ -38,6 +39,8 @@ public class Step implements Selectable {
 
     private Map<String, Selectable> selectableMap;
 
+    private EventManager eventManager;
+
     public Step(String name, Project owner) {
         this.name = name;
         history = new ArrayList<>();
@@ -56,6 +59,7 @@ public class Step implements Selectable {
         showStepList = true;
         showPropertyList = true;
         showActionButtons = true;
+        eventManager = new EventManager(this);
     }
 
     public int getId() {
@@ -248,6 +252,11 @@ public class Step implements Selectable {
         return new HashMap<>();
     }
 
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
     /*== Public Methods ==*/
 
     public Line addLine(String startSelectableId, String endSelectableId) {
@@ -281,6 +290,7 @@ public class Step implements Selectable {
         }
         newLine.setEndPlug(endPlug);
 
+        eventManager.fireEvent(EventName.LINE_ADDED, newLine);
         return newLine;
     }
 
@@ -300,6 +310,8 @@ public class Step implements Selectable {
         if (listener != null) {
             listener.unplugged(line);
         }
+
+        eventManager.fireEvent(EventName.LINE_REMOVED, line);
     }
 
     private LineType getLineType(Selectable selectable) {

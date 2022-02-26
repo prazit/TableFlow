@@ -18,6 +18,12 @@ body .ui-panelgrid .ui-panelgrid-cell {
     background-color: var(--surface-b);
 }
 
+.left-panel .tool-panel.ui-panel .ui-tabs .ui-tabs-header {
+    width: 50%;
+    justify-content: center;
+    align-items: center;
+}
+
 /*.main-panel .tool-panel.ui-panel .ui-panel-titlebar {
     background-color: var(--surface-a);
 }*/

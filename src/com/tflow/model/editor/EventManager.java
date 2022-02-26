@@ -1,6 +1,5 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.view.PropertyView;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
@@ -11,49 +10,57 @@ import java.util.Map;
 
 public class EventManager implements Serializable {
 
+    private Selectable target;
     private Map<EventName, List<EventHandler>> eventHandlerMap;
 
-    public EventManager() {
+    public EventManager(Selectable target) {
         eventHandlerMap = new HashMap<>();
+        this.target = target;
+        LoggerFactory.getLogger(getClass()).warn("EventManager(target:{})", target);
     }
 
-    public void addHandler(EventName event, EventHandler handler) {
+    public EventManager addHandler(EventName event, EventHandler handler) {
         List<EventHandler> eventHandlerList = eventHandlerMap.computeIfAbsent(event, k -> new ArrayList<>());
         eventHandlerList.add(handler);
+        handler.setManager(this);
+        return this;
     }
 
-    public void removeHandlers(EventName event) {
+    public EventManager removeHandlers(EventName event) {
         eventHandlerMap.remove(event);
+        return this;
     }
 
-    public void removeHandler(EventHandler handler) {
+    public EventManager removeHandler(EventHandler handler) {
         List<EventHandler> eventHandlerList = eventHandlerMap.get(handler.getEventName());
-        if(eventHandlerList == null) return;
+        if (eventHandlerList == null) return this;
         eventHandlerList.remove(handler);
+        return this;
     }
 
-    public void fireEvent(EventName event) {
-        fireEvent(event, null);
+    public EventManager fireEvent(EventName event) {
+        return fireEvent(event, null);
     }
 
-    public void fireEvent(EventName event, PropertyView property) {
+    public EventManager fireEvent(EventName event, Object data) {
         List<EventHandler> eventHandlerList = eventHandlerMap.get(event);
-        if(eventHandlerList == null || eventHandlerList.size() == 0) return;
+        if (eventHandlerList == null || eventHandlerList.size() == 0) return this;
 
         for (EventHandler handler : eventHandlerList) {
-            Selectable target = handler.getTarget();
-            if(handler.isHandling()) {
+            if (handler.isHandling()) {
                 LoggerFactory.getLogger(getClass()).warn("dead loop event occurred in fireEvent(event:{}, target:{})", event, target);
                 continue;
             }
 
             handler.setHandling(true);
             Event ev = new Event(event, target);
-            if(property != null) ev.setProperty(property);
-            LoggerFactory.getLogger(getClass()).warn("fireEvent(event:{}, target:{})", event, target);
+            if (data != null) ev.setData(data);
+            LoggerFactory.getLogger(getClass()).warn("fireEvent(event:{}, target:{}, data:{})", event, target, data);
             handler.handle(ev);
             handler.setHandling(false);
         }
+
+        return this;
     }
 
 }

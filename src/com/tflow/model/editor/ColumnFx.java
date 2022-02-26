@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.HasEvent;
+import com.tflow.model.editor.view.PropertyView;
 
 import java.io.Serializable;
 import java.util.*;
@@ -30,9 +31,10 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent 
         this.function = function;
         this.startPlug = createStartPlug(startPlug);
         this.owner = owner;
-        endPlugList = new ArrayList<>();
-        eventManager = new EventManager();
+        eventManager = new EventManager(this);
         propertyMap = new HashMap<>();
+        endPlugList = new ArrayList<>();
+        createEndPlugList();
         function.getProperties().initPropertyMap(propertyMap);
     }
 
@@ -56,6 +58,33 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent 
         return startPlug;
     }
 
+    /**
+     * Need to re-create endPlugList again after the function is changed.
+     */
+    private void createEndPlugList() {
+        Step step = owner.getOwner().getOwner();
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
+        Project project = step.getOwner();
+
+        if (endPlugList.size() > 0) {
+            /*need to remove old list from selectableMap before reset the list*/
+            for (ColumnFxPlug columnFxPlug : endPlugList) {
+                selectableMap.remove(columnFxPlug.getSelectableId());
+                step.removeLine(columnFxPlug.getLine());
+            }
+            endPlugList.clear();
+        }
+
+        String endPlugId;
+        for (PropertyView propertyView : function.getProperties().getPlugPropertyList()) {
+            endPlugId = project.newElementId();
+            ColumnFxPlug columnFxPlug = new ColumnFxPlug(project.newUniqueId(), propertyView.getType().getDataType(), propertyView.getLabel(), endPlugId, this);
+            endPlugList.add(columnFxPlug);
+            /*need to update selectableMap for each*/
+            selectableMap.put(columnFxPlug.getSelectableId(), columnFxPlug);
+        }
+    }
+
     public int getId() {
         return id;
     }
@@ -77,7 +106,9 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent 
     }
 
     public void setFunction(ColumnFunction function) {
+        if(this.function == function) return;
         this.function = function;
+        createEndPlugList();
     }
 
     public Map<String, Object> getPropertyMap() {

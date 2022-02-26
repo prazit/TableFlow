@@ -12,6 +12,7 @@ public class LinePlug implements Serializable {
     private boolean plugged;
     private List<Line> lineList;
 
+    private String removeButtonTip;
     private boolean removeButton;
     private boolean extractButton;
     private boolean transferButton;
@@ -24,6 +25,7 @@ public class LinePlug implements Serializable {
     public LinePlug(String plug) {
         this.plug = plug;
         lineList = new ArrayList<>();
+        removeButtonTip = "";
         defaultPlugListener();
     }
 
@@ -76,6 +78,14 @@ public class LinePlug implements Serializable {
     public Line getLine() {
         if (lineList.size() == 0) return null;
         return lineList.get(0);
+    }
+
+    public String getRemoveButtonTip() {
+        return removeButtonTip;
+    }
+
+    public void setRemoveButtonTip(String removeButtonTip) {
+        this.removeButtonTip = removeButtonTip;
     }
 
     public boolean isRemoveButton() {

@@ -22,37 +22,80 @@ public class FlowchartController extends Controller {
     @Inject
     private Workspace workspace;
 
+    private StringBuilder jsBuilder;
+
     @PostConstruct
     public void onCreation() {
+        jsBuilder = new StringBuilder();
         createEventHandlers();
     }
 
-    private void createEventHandlers() {
+    private String popJavaScript() {
+        String javascript = jsBuilder.toString();
+        jsBuilder = new StringBuilder();
+        return javascript;
+    }
 
-        /*TODO: need to sync height of floor in all towers (floor.minHeight = findRoomMaxHeightOnAFloor)*/
+    private void createEventHandlers() {
+        /*TODO: need to sync height of floor in all towers (floor.minHeight = findRoomMaxHeightOnAFloor)
+         * need "Tower.Event"
+         */
 
         /*-- Handle all events --*/
         Step step = getStep();
+        step.getEventManager()
+                .removeHandlers(EventName.LINE_ADDED)
+                .addHandler(EventName.LINE_ADDED, new EventHandler() {
+                    @Override
+                    public void handle(Event event) {
+                        Line line = (Line) event.getData();
+                        jsBuilder.append(line.getJsAdd());
+                    }
+                })
+                .removeHandlers(EventName.LINE_REMOVED)
+                .addHandler(EventName.LINE_REMOVED, new EventHandler() {
+                    @Override
+                    public void handle(Event event) {
+                        Line line = (Line) event.getData();
+                        jsBuilder.append(line.getJsRemove());
+                    }
+                });
+
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         for (Selectable selectable : selectableMap.values()) {
             if (!(selectable instanceof HasEvent)) continue;
             HasEvent target = (HasEvent) selectable;
 
             if (target instanceof ColumnFx) {
-                target.getEventManager().addHandler(EventName.REMOVE, new EventHandler(selectable) {
-                    @Override
-                    public void handle(Event event) {
-                        removeColumnFx((ColumnFx) this.target);
-                    }
-                });
+                target.getEventManager()
+                        .removeHandlers(EventName.REMOVE)
+                        .addHandler(EventName.REMOVE, new EventHandler() {
+                            @Override
+                            public void handle(Event event) {
+                                removeColumnFx((ColumnFx) event.getTarget());
+                            }
+                        });
 
             } else if (target instanceof DataTable) {
                 if (target instanceof TransformTable) {
-                    /*TODO: event TransformTable.REMOVE: execute action 'RemoveTransformTable'.*/
+                    target.getEventManager()
+                            .removeHandlers(EventName.REMOVE)
+                            .addHandler(EventName.REMOVE, new EventHandler() {
+                                @Override
+                                public void handle(Event event) {
+                                    removeTransformTable((TransformTable) event.getTarget());
+                                }
+                            });
 
                 } else {
-                    /*TODO: event DataTable.REMOVE: execute action 'RemoveDataTable'.*/
-
+                    target.getEventManager()
+                            .removeHandlers(EventName.REMOVE)
+                            .addHandler(EventName.REMOVE, new EventHandler() {
+                                @Override
+                                public void handle(Event event) {
+                                    removeDataTable((DataTable) event.getTarget());
+                                }
+                            });
                 }
             }
         }
@@ -60,6 +103,10 @@ public class FlowchartController extends Controller {
 
     public Step getStep() {
         return workspace.getProject().getActiveStep();
+    }
+
+    public StringBuilder getJsBuilder() {
+        return jsBuilder;
     }
 
     /*== Public Methods ==*/
@@ -248,8 +295,11 @@ public class FlowchartController extends Controller {
         step.removeLine(line);
         log.warn("lineList after remove = {}", step.getLineList().toArray());
 
-        String javaScript = line.getJsRemove()
-                + "window.parent.updateEm('" + selectableId + "');"
+        String javaScript = popJavaScript();
+        if (!javaScript.isEmpty()) {
+            javaScript = "lineStart();" + javaScript + "lineEnd();";
+        }
+        javaScript += "window.parent.updateEm('" + selectableId + "');"
                 + "window.parent.updateEm('" + friendSelectableId + "');";
         FacesUtil.runClientScript(javaScript);
     }
@@ -538,4 +588,15 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript("update" + dataTable.getSelectableId() + "();");
         FacesUtil.runClientScript("refreshStepList();");
     }
+
+    private void removeTransformTable(TransformTable target) {
+        /*TODO: remove transform table*/
+        log.warn("removeTransformTable(target:{})", target.getSelectableId());
+    }
+
+    private void removeDataTable(DataTable target) {
+        /*TODO: remove data table*/
+        log.warn("removeDataTable(target:{})", target.getSelectableId());
+    }
+
 }
