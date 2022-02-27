@@ -9,13 +9,13 @@ public class TransformTable extends DataTable {
     private static final long serialVersionUID = 2021121709996660040L;
 
     private SourceType sourceType;
-    private int sourceId;
+    private String sourceSelectableId;
     private List<TableFx> fxList;
     private ColumnFxTable columnFxTable;
 
-    public TransformTable(String name, int sourceId, SourceType sourceType, String idColName, String endPlug, String startPlug, Step owner) {
+    public TransformTable(String name, String sourceSelectableId, SourceType sourceType, String idColName, String endPlug, String startPlug, Step owner) {
         super(name, null,  idColName,  endPlug, startPlug, owner);
-        this.sourceId = sourceId;
+        this.sourceSelectableId = sourceSelectableId;
         this.sourceType = sourceType;
         fxList = new ArrayList<>();
         columnFxTable = new ColumnFxTable(this);
@@ -30,12 +30,12 @@ public class TransformTable extends DataTable {
         this.sourceType = sourceType;
     }
 
-    public int getSourceId() {
-        return sourceId;
+    public String getSourceSelectableId() {
+        return sourceSelectableId;
     }
 
-    public void setSourceId(int sourceId) {
-        this.sourceId = sourceId;
+    public void setSourceSelectableId(String sourceSelectableId) {
+        this.sourceSelectableId = sourceSelectableId;
     }
 
     public List<TableFx> getFxList() {

@@ -13,9 +13,9 @@ public class AddTransformTable extends Action {
 
     @Override
     protected void initAction() {
-        this.name = "Add Transform Table";
-        this.description = "add transform-table to current step";
-        this.code = "ATT";
+        this.name = "Transfer Table";
+        this.description = "Transfer to new table in current step";
+        this.code = "TTB";
         this.image = "action.png";
     }
 
@@ -30,10 +30,10 @@ public class AddTransformTable extends Action {
 
     @Override
     protected void initUndoCommands() {
-        /*setUndoParams(
+        setUndoParams(
                 CommandParamKey.TRANSFORM_TABLE,
-                CommandParamKey.STEP,
-        );*/
-        /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveTransformTable());*/
+                CommandParamKey.STEP
+        );
+        setUndoCommands(new com.tflow.model.editor.cmd.RemoveTransformTable());
     }
 }

@@ -6,12 +6,14 @@ public class ActionView {
 
     private int id;
     private String image;
+    private String code;
     private String name;
     private String description;
 
     public ActionView(Action action) {
         id = action.getId();
         image = action.getImage();
+        code = action.getCode();
         name = action.getName();
         description = action.getDescription();
     }
@@ -30,6 +32,14 @@ public class ActionView {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {

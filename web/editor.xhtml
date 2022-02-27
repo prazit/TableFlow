@@ -46,7 +46,7 @@
                                                 <p:outputPanel class="column">
                                                     <p:graphicImage library="images" name="#{action.image}"/>
                                                     <div style="display: inline-block">
-                                                        <p:outputLabel id="actionName" value="#{action.name} (#{action.id})"/>
+                                                        <p:outputLabel id="actionName" value="#{action.name} (#{action.code}:#{action.id})"/>
                                                         <p:tooltip for="actionName" value="#{action.description}"/>
                                                     </div>
                                                 </p:outputPanel>

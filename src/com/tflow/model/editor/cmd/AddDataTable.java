@@ -35,6 +35,9 @@ public class AddDataTable extends Command {
         dataTable.setIndex(dataList.size());
         dataList.add(dataTable);
 
+        /*for Action.executeUndo()*/
+        paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
+
         /*Action Result*/
         action.getResultMap().put("dataTable", dataTable);
     }

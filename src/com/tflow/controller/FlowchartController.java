@@ -146,8 +146,13 @@ public class FlowchartController extends Controller {
     public void updateLines() {
         String selectableId = FacesUtil.getRequestParam("selectableId");
         Step step = getStep();
-        Selectable selectable = step.getSelectableMap().get(selectableId);
         StringBuilder jsBuilder = new StringBuilder();
+
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        if (selectable == null) {
+            log.error("updateLines aborted: selectableId({}) not found in current step", selectableId);
+            return;
+        }
 
         /*Update lines of selectable*/
         updateLines(jsBuilder, selectable);
@@ -272,9 +277,9 @@ public class FlowchartController extends Controller {
         /*TODO: need to convert this script into Action object that used to show in the action list.*/
 
         log.warn("removeLine(selectableId:{}, isStartPlug:{})", selectableId, isStartPlug);
-        log.warn("lineList before remove = {}", step.getLineList().toArray());
 
-        Selectable selectable = step.getSelectableMap().get(selectableId);
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
+        Selectable selectable = selectableMap.get(selectableId);
         if (selectable == null) {
             log.error("selectableId({}) not found in current step", selectableId);
             return;
@@ -291,16 +296,21 @@ public class FlowchartController extends Controller {
             friendSelectableId = line.getStartSelectableId();
         }
 
-        log.warn("call step.removeLine()");
+        /*Remove object event may be occurred by unplugged listener. (Known event: RemoveColumnFx, RemoveDataTable, RemoveTransformTable)*/
         step.removeLine(line);
-        log.warn("lineList after remove = {}", step.getLineList().toArray());
 
         String javaScript = popJavaScript();
-        if (!javaScript.isEmpty()) {
-            javaScript = "lineStart();" + javaScript + "lineEnd();";
+        if (!javaScript.contains("refreshFlowChart")) {
+            if (!javaScript.isEmpty()) {
+                javaScript = "lineStart();" + javaScript + "lineEnd();";
+            }
+            if (selectableMap.containsKey(selectableId)) {
+                javaScript += "window.parent.updateEm('" + selectableId + "');";
+            }
+            if (selectableMap.containsKey(friendSelectableId)) {
+                javaScript += "window.parent.updateEm('" + friendSelectableId + "');";
+            }
         }
-        javaScript += "window.parent.updateEm('" + selectableId + "');"
-                + "window.parent.updateEm('" + friendSelectableId + "');";
         FacesUtil.runClientScript(javaScript);
     }
 
@@ -589,14 +599,69 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript("refreshStepList();");
     }
 
+    /**
+     * Call from line listener.unplugged()
+     */
     private void removeTransformTable(TransformTable target) {
-        /*TODO: remove transform table*/
-        log.warn("removeTransformTable(target:{})", target.getSelectableId());
+        String selectableId = target.getSelectableId();
+        log.warn("removeTransformTable(target:{})", selectableId);
+        Step step = getStep();
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.TRANSFORM_TABLE, target);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        try {
+            Action action = new RemoveTransformTable(paramMap);
+            action.execute();
+        } catch (RequiredParamException e) {
+            log.error("Remove TransformTable Failed!", e);
+            FacesUtil.addError("Remove Transformation Table Failed with Internal Command Error!");
+            return;
+        }
+
+        DataTable dataTable = (DataTable) step.getSelectableMap().get(target.getSourceSelectableId());
+        step.setActiveObject(dataTable);
+        log.warn("removeTransformTable.activeObject: {}", step.getActiveObject().getSelectableId());
+
+        FacesUtil.addInfo("Table[" + target.getName() + "] is removed.");
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        jsBuilder
+                .append("refreshStepList();")
+                .append("refreshFlowChart();");
     }
 
+    /**
+     * Call from line listener.unplugged()
+     */
     private void removeDataTable(DataTable target) {
-        /*TODO: remove data table*/
         log.warn("removeDataTable(target:{})", target.getSelectableId());
+        Step step = getStep();
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_TABLE, target);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        try {
+            Action action = new RemoveDataTable(paramMap);
+            action.execute();
+        } catch (RequiredParamException e) {
+            log.error("Remove DataTable Failed!", e);
+            FacesUtil.addError("Remove DataTable Failed with Internal Command Error!");
+            return;
+        }
+
+        if (step.getActiveObject().getSelectableId().equals(target.getSelectableId())) {
+            step.setActiveObject(target.getDataFile());
+        }
+
+        FacesUtil.addInfo("Table[" + target.getName() + "] is removed.");
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        jsBuilder
+                .append("refreshStepList();")
+                .append("refreshFlowChart();");
     }
 
 }

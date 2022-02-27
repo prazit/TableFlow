@@ -4,28 +4,28 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 
 import java.util.Map;
 
-public class AddDataTable extends Action {
+public class RemoveTransformTable extends Action {
     private static final long serialVersionUID = 2021122109996660002L;
 
-    public AddDataTable(Map<CommandParamKey, Object> paramMap) {
+    public RemoveTransformTable(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);
     }
 
     @Override
     protected void initAction() {
-        this.name = "Extract Data File";
-        this.description = "Extract data file and then create data table to current step";
-        this.code = "EDF";
+        this.name = "Remove Transformation Table";
+        this.description = "Remove transformation table from current step";
+        this.code = "RTT";
         this.image = "action.png";
     }
 
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.DATA_FILE,
+                CommandParamKey.TRANSFORM_TABLE,
                 CommandParamKey.STEP
         );
-        setCommands(new com.tflow.model.editor.cmd.AddDataTable());
+        setCommands(new com.tflow.model.editor.cmd.RemoveTransformTable());
     }
 
     @Override
@@ -34,6 +34,6 @@ public class AddDataTable extends Action {
                 CommandParamKey.DATA_TABLE,
                 CommandParamKey.STEP
         );
-        setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataTable());
+        setUndoCommands(new com.tflow.model.editor.cmd.AddTransformTable());
     }
 }

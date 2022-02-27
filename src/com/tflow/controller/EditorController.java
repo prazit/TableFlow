@@ -616,7 +616,7 @@ public class EditorController extends Controller {
 
         Selectable activeObject = selectableMap.get(selectableId);
         if (activeObject == null) {
-            log.error("selectableMap not contains selectableId='{}'", selectableId, new Exception());
+            setPropertySheet(null);
             return;
         }
 

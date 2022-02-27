@@ -29,7 +29,7 @@ public class AddTransformTable extends Command {
 
         SourceType sourceType = getSourceType(sourceTable);
 
-        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getId(), sourceType, sourceTable.getIdColName(), project.newElementId(), project.newElementId(), step);
+        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), project.newElementId(), project.newElementId(), step);
 
         Room sourceRoom = (Room) sourceTable;
         List<DataColumn> sourceColumnList = sourceTable.getColumnList();
@@ -71,6 +71,9 @@ public class AddTransformTable extends Command {
 
         /*link from SourceTable to TransformTable*/
         step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
+
+        /*for Action.executeUndo()*/
+        paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
 
         /*Action Result*/
         action.getResultMap().put("transformTable", transformTable);
