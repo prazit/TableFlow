@@ -3,6 +3,8 @@ package com.tflow.model.editor;
 import com.tflow.HasEvent;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
     private LinePlug endPlug;
     private LinePlug startPlug;
+    private int connectionCount;
 
     private Step owner;
 
@@ -37,7 +40,7 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.name = name;
         this.index = -1;
         this.dataFile = dataFile;
-        if(dataFile != null) {
+        if (dataFile != null) {
             dataFile.setOwner(this);
         }
         this.query = "";
@@ -46,6 +49,7 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         this.endPlug = createEndPlug(endPlug);
         this.startPlug = createStartPlug(startPlug);
         this.startPlug.setTransferButton(true);
+        connectionCount = 0;
         this.columnList = new ArrayList<>();
         this.outputList = new ArrayList<>();
         this.setRoomType(RoomType.DATA_TABLE);
@@ -80,12 +84,14 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
             @Override
             public void plugged(Line line) {
                 plug.setPlugged(true);
+                connectionCreated();
             }
 
             @Override
             public void unplugged(Line line) {
                 boolean plugged = plug.getLineList().size() > 0;
                 plug.setPlugged(plugged);
+                connectionRemoved();
             }
         });
 
@@ -175,6 +181,39 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
     public void setOwner(Step owner) {
         this.owner = owner;
+    }
+
+    /**
+     * every child need to call this function after plugged.
+     */
+    public void connectionCreated() {
+        connectionCount += 1;
+        connectionUpdated();
+    }
+
+    /**
+     * every child need to call this function after unplugged.
+     */
+    public void connectionRemoved() {
+        connectionCount -= 1;
+        connectionUpdated();
+    }
+
+    private void connectionUpdated() {
+        boolean locked = hasConnection();
+
+        /*endPlug need to lock when some connections are created*/
+        /*endPlug need to unlock/show-remove-button when all connections are removed*/
+        endPlug.setLocked(locked);
+        endPlug.setRemoveButton(!locked);
+
+        /*TODO: remove debug log*/
+        Logger log = LoggerFactory.getLogger(getClass());
+        log.warn("connectionUpdated(table:{}, connectionCount:{}).", getSelectableId(), connectionCount);
+    }
+
+    private boolean hasConnection() {
+        return connectionCount > 0;
     }
 
     @Override

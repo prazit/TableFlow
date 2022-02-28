@@ -620,9 +620,13 @@ public class FlowchartController extends Controller {
             return;
         }
 
-        DataTable dataTable = (DataTable) step.getSelectableMap().get(target.getSourceSelectableId());
-        step.setActiveObject(dataTable);
-        log.warn("removeTransformTable.activeObject: {}", step.getActiveObject().getSelectableId());
+        String sourceSelectableId = target.getSourceSelectableId();
+        DataTable dataTable = (DataTable) step.getSelectableMap().get(sourceSelectableId);
+        if (dataTable != null) {
+            step.setActiveObject(dataTable);
+        } else {
+            log.warn("removeTransformTable: successful with warning! transformTable({}) contains invalid sourceSelectableId({})", selectableId, sourceSelectableId);
+        }
 
         FacesUtil.addInfo("Table[" + target.getName() + "] is removed.");
 

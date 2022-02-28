@@ -51,7 +51,7 @@ public class Project {
 
     public void setActiveStepIndex(int activeStepIndex) {
         this.activeStepIndex = activeStepIndex;
-        getActiveStep().collectSelectableToMap();
+        getActiveStep().refresh();
     }
 
     public List<Step> getStepList() {

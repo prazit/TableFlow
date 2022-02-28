@@ -14,14 +14,35 @@ public class DataColumn implements Serializable, Selectable {
 
     protected LinePlug startPlug;
 
-    private DataTable owner;
+    protected DataTable owner;
 
     public DataColumn(int index, DataType type, String name, String startPlug, DataTable owner) {
         this.index = index;
         this.type = type;
         this.name = name;
-        this.startPlug = new StartPlug(startPlug);
+        this.startPlug = createStartPlug(startPlug);
         this.owner = owner;
+    }
+
+    private LinePlug createStartPlug(String stringPlug) {
+        LinePlug plug = new StartPlug(stringPlug);
+        plug.setListener(new PlugListener(plug) {
+            @Override
+            public void plugged(Line line) {
+                plug.setPlugged(true);
+                plug.setRemoveButton(true);
+                owner.connectionCreated();
+            }
+
+            @Override
+            public void unplugged(Line line) {
+                boolean plugged = plug.getLineList().size() > 0;
+                plug.setPlugged(plugged);
+                plug.setRemoveButton(plugged);
+                owner.connectionRemoved();
+            }
+        });
+        return plug;
     }
 
     public int getId() {

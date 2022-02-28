@@ -1,4 +1,3 @@
-
 function refreshStepList() {
     showStepList(leftPanel.css('display') === 'block');
     console.log('refreshStepList completed.');
@@ -10,7 +9,9 @@ function refreshFlowChart() {
 }
 
 function refreshProperties() {
-    contentWindow.selectObject(contentWindow.$('.active'));
+    contentReady(function () {
+        contentWindow.selectObject(contentWindow.$('.active'));
+    }, 'refreshProperties');
 }
 
 function refreshToolbars() {
@@ -30,7 +31,9 @@ function toggleRight() {
 }
 
 function toggleActionButtons() {
-    showActionButtons(contentWindow.$('.flow-chart').hasClass('hide-actions'));
+    contentReady(function () {
+        showActionButtons(contentWindow.$('.flow-chart').hasClass('hide-actions'));
+    }, 'toggleActionButtons');
 }
 
 function showStepList(show) {
@@ -54,18 +57,20 @@ function showPropertyList(show) {
 }
 
 function showActionButtons(show) {
-    var display = 'hide-actions';
+    contentReady(function () {
+        var display = 'hide-actions';
 
-    if (show) {
-        contentWindow.$('.flow-chart').removeClass('hide-actions');
-    } else {
-        contentWindow.$('.flow-chart').addClass('hide-actions');
-    }
-    contentWindow.showLines();
+        if (show) {
+            contentWindow.$('.flow-chart').removeClass('hide-actions');
+        } else {
+            contentWindow.$('.flow-chart').addClass('hide-actions');
+        }
+        contentWindow.showLines();
 
-    setToolPanel([
-        {name: 'actionButtons', value: '' + show}
-    ]);
+        setToolPanel([
+            {name: 'actionButtons', value: '' + show}
+        ]);
+    }, 'showActionButtons');
 }
 
 function zoomStart() {

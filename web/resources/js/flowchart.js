@@ -253,8 +253,6 @@ function draggableEnter($dragTarget, $droppable) {
             dropTarget: null
         };
 
-    console.log(dragging);
-
     if (isDraggable) {
         $draggable.show().dragging = Object.assign(new PlainDraggable($draggable[0], Object.assign({
             snap: true,

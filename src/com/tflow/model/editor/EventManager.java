@@ -16,7 +16,6 @@ public class EventManager implements Serializable {
     public EventManager(Selectable target) {
         eventHandlerMap = new HashMap<>();
         this.target = target;
-        LoggerFactory.getLogger(getClass()).warn("EventManager(target:{})", target);
     }
 
     public EventManager addHandler(EventName event, EventHandler handler) {

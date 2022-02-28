@@ -346,7 +346,19 @@ public class Step implements Selectable, HasEvent {
         return found;
     }
 
-    public void collectSelectableToMap() {
+    public void refresh() {
+        collectSelectableToMap();
+        assignLineIndexes();
+    }
+
+    private void assignLineIndexes() {
+        int clientIndex = 0;
+        for (Line line : lineList) {
+            line.setClientIndex(clientIndex++);
+        }
+    }
+
+    private void collectSelectableToMap() {
         selectableMap = new HashMap<>();
         selectableMap.put(this.getSelectableId(), this);
 

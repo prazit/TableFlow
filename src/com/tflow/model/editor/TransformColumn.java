@@ -11,13 +11,34 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug, DataTable owner) {
         super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug, owner);
         dataColName = "" + name;
-        this.endPlug = new EndPlug(endPlug);
+        this.endPlug = createEndPlug(endPlug);
     }
 
     public TransformColumn(int index, DataType type, String name, String endPlug, String startPlug, DataTable owner) {
         super(index, type, name, startPlug, owner);
         dataColName = "" + name;
-        this.endPlug = new EndPlug(endPlug);
+        this.endPlug = createEndPlug(endPlug);
+    }
+
+    private LinePlug createEndPlug(String endPlug) {
+        LinePlug plug = new EndPlug(endPlug);
+        plug.setListener(new PlugListener(plug) {
+            @Override
+            public void plugged(Line line) {
+                plug.setPlugged(true);
+                plug.setRemoveButton(true);
+                owner.connectionCreated();
+            }
+
+            @Override
+            public void unplugged(Line line) {
+                boolean plugged = plug.getLineList().size() > 0;
+                plug.setPlugged(plugged);
+                plug.setRemoveButton(plugged);
+                owner.connectionRemoved();
+            }
+        });
+        return plug;
     }
 
     public String getDataColName() {
