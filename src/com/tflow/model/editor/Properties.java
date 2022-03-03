@@ -59,7 +59,10 @@ public enum Properties {
     ),
     DATA_TABLE(
             "name:Table Name:String",
-            "idColName:Key Column:Column:id"
+            "idColName:Key Column:Column:id",
+            "--: more detail :--",
+            "level:Table Level:ReadOnly",
+            "connectionCount:Connection Count:ReadOnly"
     ),
     DATA_COLUMN(
             "type:Data Type:ReadOnly",

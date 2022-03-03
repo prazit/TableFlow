@@ -7,10 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataTable extends Room implements Serializable, Selectable, HasDataFile, HasEndPlug, HasEvent {
     private static final long serialVersionUID = 2021121709996660030L;
@@ -18,6 +15,7 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     private int id;
     private String name;
     private int index;
+    private int level;
     private DataFile dataFile;
     private String query;
     private String idColName;
@@ -120,6 +118,14 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     public DataFile getDataFile() {
@@ -254,5 +260,22 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
     @Override
     public String getSelectableId() {
         return "dt" + id;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", name:'" + name + '\'' +
+                ", index:" + index +
+                ", level:" + level +
+                ", idColName:'" + idColName + '\'' +
+                ", noTransform:" + noTransform +
+                ", endPlug:" + endPlug +
+                ", startPlug:" + startPlug +
+                ", connectionCount:" + connectionCount +
+                ", columnList:" + Arrays.toString(columnList.toArray()) +
+                ", outputList:" + Arrays.toString(outputList.toArray()) +
+                '}';
     }
 }

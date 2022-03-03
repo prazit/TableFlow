@@ -30,6 +30,7 @@ public class AddTransformTable extends Command {
         SourceType sourceType = getSourceType(sourceTable);
 
         TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), project.newElementId(), project.newElementId(), step);
+        transformTable.setLevel(sourceTable.getLevel() + 1);
 
         Room sourceRoom = (Room) sourceTable;
         List<DataColumn> sourceColumnList = sourceTable.getColumnList();

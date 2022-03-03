@@ -22,6 +22,7 @@ public class AddDataTable extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
         DataTable dataTable = extractData(dataFile, step);
+        dataTable.setLevel(0);
 
         Tower tower = step.getDataTower();
 

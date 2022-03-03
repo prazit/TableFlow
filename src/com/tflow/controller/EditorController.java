@@ -213,8 +213,9 @@ public class EditorController extends Controller {
                 break;
 
             case SOURCETABLE:
-                /* TODO: need filter to list all tables before current table only*/
+                int level = ((DataTable) activeObject).getLevel();
                 for (DataTable dataTable : activeStep.getDataList()) {
+                    if (dataTable.getLevel() >= level) /*list all tables before current table only*/ continue;
                     selectItemList.add(new SelectItem(dataTable.getSelectableId(), dataTable.getName()));
                 }
                 break;
