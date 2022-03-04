@@ -213,7 +213,6 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         endPlug.setLocked(locked);
         endPlug.setRemoveButton(!locked);
 
-        /*TODO: remove debug log*/
         Logger log = LoggerFactory.getLogger(getClass());
         log.warn("connectionUpdated(table:{}, connectionCount:{}).", getSelectableId(), connectionCount);
     }

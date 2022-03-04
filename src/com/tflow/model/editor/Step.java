@@ -377,7 +377,7 @@ public class Step implements Selectable, HasEvent {
     }
 
     /**
-     * TODO: when selectable object is added, need to add script to collect them in this function.
+     * IMPORTANT: when selectable object is added, need to add script to collect them in this function.
      */
     private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
         for (Selectable selectable : selectableList) {
