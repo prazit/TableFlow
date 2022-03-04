@@ -4,6 +4,8 @@ import com.tflow.model.editor.action.Action;
 
 public class ActionView {
 
+    /*TODO: need to add Log information such as Time, Duration...*/
+
     private int id;
     private String image;
     private String code;

@@ -28,7 +28,7 @@ public abstract class Action implements Serializable {
     private List<Command> commandList;
     private List<Command> undoCommandList;
 
-    private Map<String, Object> resultMap;
+    private Map<ActionResultKey, Object> resultMap;
 
     protected abstract void initAction();
 
@@ -37,7 +37,7 @@ public abstract class Action implements Serializable {
     protected abstract void initUndoCommands();
 
     public Action() {
-        resultMap = new HashMap<>();
+        resultMap = new HashMap<ActionResultKey, Object>();
         initAction();
     }
 
@@ -125,7 +125,7 @@ public abstract class Action implements Serializable {
     /**
      * Some commands create result in the Action-Result-Map, use this function to get the map after execution completed.
      */
-    public Map<String, Object> getResultMap() {
+    public Map<ActionResultKey, Object> getResultMap() {
         return resultMap;
     }
 
@@ -134,14 +134,17 @@ public abstract class Action implements Serializable {
     public void execute() throws RequiredParamException, UnsupportedOperationException {
         if (commandList == null) initCommandsWrapper();
         requiredParam(paramList, paramMap, false);
-        for (Command command : commandList) command.execute(paramMap);
 
         /*this action need ID before add to history*/
-        @SuppressWarnings("unchecked")
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Project project = step.getOwner();
         setId(project.newUniqueId());
         step.getHistory().add(this);
+
+        resultMap.clear();
+
+        /*notice: add to history before execute to avoid invalid order in history when the action create a chain*/
+        for (Command command : commandList) command.execute(paramMap);
     }
 
     public void executeUndo() throws RequiredParamException, UnsupportedOperationException {
@@ -156,6 +159,8 @@ public abstract class Action implements Serializable {
             throw new UnsupportedOperationException("Action '" + getName() + "' is not last action in the history. " + toString());
         if (!isCanUndo())
             throw new UnsupportedOperationException("Action '" + getName() + "' is not support UNDO. " + toString());
+
+        resultMap.clear();
 
         for (Command command : undoCommandList) command.execute(paramMap);
 

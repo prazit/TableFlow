@@ -10,6 +10,10 @@
 
 |        Done        | Task                                                         | Remark                                                       |
 | :----------------: | ------------------------------------------------------------ | ------------------------------------------------------------ |
+|                    | Action: clear resultMap before execute                       |                                                              |
+| :heavy_check_mark: | JavaScript: turn all script into Enum                        |                                                              |
+|                    | flowchart.js: trigger mouseleave after plug-button got clicked. | issue: remove button still shown on the plug                 |
+|                    |                                                              |                                                              |
 |                    | Show all objects in **Mockup Data Mode** using Commands      |                                                              |
 | :heavy_check_mark: | - Show Step List and Open Step Flowchart                     | (no undo)                                                    |
 | :heavy_check_mark: | - Show DataSource                                            | Command: AddDataSource<br />***Command Parameters**: need to change later (use Step as document object)* |

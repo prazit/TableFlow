@@ -222,6 +222,10 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
         return connectionCount > 0;
     }
 
+    public int getConnectionCount() {
+        return connectionCount;
+    }
+
     @Override
     public EventManager getEventManager() {
         return eventManager;

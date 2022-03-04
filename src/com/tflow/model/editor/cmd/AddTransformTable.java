@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
@@ -77,7 +78,7 @@ public class AddTransformTable extends Command {
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
 
         /*Action Result*/
-        action.getResultMap().put("transformTable", transformTable);
+        action.getResultMap().put(ActionResultKey.TRANSFORM_TABLE, transformTable);
     }
 
     private SourceType getSourceType(DataTable sourceTable) {

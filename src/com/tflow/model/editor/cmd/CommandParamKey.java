@@ -20,12 +20,13 @@ public enum CommandParamKey {
 
     TOWER,
     LINE_LIST,
+    LINE,
 
     DATA_TEST1,
     DATA_TEST2,
     STEP,
 
-    JAVASCRIPT_BUILDER(true);
+    ;
 
     boolean optional;
 

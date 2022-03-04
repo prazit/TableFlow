@@ -22,18 +22,12 @@ public class FlowchartController extends Controller {
     @Inject
     private Workspace workspace;
 
-    private StringBuilder jsBuilder;
+    private JavaScriptBuilder jsBuilder;
 
     @PostConstruct
     public void onCreation() {
-        jsBuilder = new StringBuilder();
+        jsBuilder = new JavaScriptBuilder();
         createEventHandlers();
-    }
-
-    private String popJavaScript() {
-        String javascript = jsBuilder.toString();
-        jsBuilder = new StringBuilder();
-        return javascript;
     }
 
     private void createEventHandlers() {
@@ -105,10 +99,6 @@ public class FlowchartController extends Controller {
         return workspace.getProject().getActiveStep();
     }
 
-    public StringBuilder getJsBuilder() {
-        return jsBuilder;
-    }
-
     /*== Public Methods ==*/
 
     /**
@@ -126,17 +116,14 @@ public class FlowchartController extends Controller {
      * Draw lines on the client when page loaded.
      */
     public void drawLines() {
-        StringBuilder jsBuilder = new StringBuilder();
-
-        jsBuilder.append("LeaderLine.positionByWindowResize = false;");
+        jsBuilder.pre(JavaScript.preStartup);
         Step step = getStep();
         for (Line line : step.getLineList()) {
             jsBuilder.append(line.getJsAdd());
         }
-        jsBuilder.append("startup();");
+        jsBuilder.post(JavaScript.postStartup);
 
-        String javaScript = "$(function(){" + jsBuilder.toString() + "});";
-        FacesUtil.runClientScript(javaScript);
+        FacesUtil.runClientScript(jsBuilder.toDeferString());
     }
 
     /**
@@ -146,7 +133,6 @@ public class FlowchartController extends Controller {
     public void updateLines() {
         String selectableId = FacesUtil.getRequestParam("selectableId");
         Step step = getStep();
-        StringBuilder jsBuilder = new StringBuilder();
 
         Selectable selectable = step.getSelectableMap().get(selectableId);
         if (selectable == null) {
@@ -180,14 +166,14 @@ public class FlowchartController extends Controller {
             }
         }
 
-        String javaScript = jsBuilder.toString();
-        if (!javaScript.isEmpty()) {
-            javaScript = "lineStart();" + javaScript + "lineEnd();";
-            FacesUtil.runClientScript(javaScript);
+        if (!jsBuilder.isEmpty()) {
+            jsBuilder.pre(JavaScript.lineStart);
+            jsBuilder.post(JavaScript.lineEnd);
+            FacesUtil.runClientScript(jsBuilder.toString());
         }
     }
 
-    private void updateLines(StringBuilder jsBuilder, Selectable selectable) {
+    private void updateLines(JavaScriptBuilder jsBuilder, Selectable selectable) {
         Step step = getStep();
         if (selectable.getStartPlug() != null) {
             List<Line> lineList = step.getLineByStart(selectable.getSelectableId());
@@ -225,7 +211,6 @@ public class FlowchartController extends Controller {
     }
 
     private void addLine(Line newLine) {
-        StringBuilder jsBuilder = new StringBuilder();
         Step step = getStep();
         Map<String, Selectable> selectableMap = step.getSelectableMap();
 
@@ -236,28 +221,39 @@ public class FlowchartController extends Controller {
             return;
         }
 
-        jsBuilder.append("lineStart();");
+        Action action;
         if (endSelectable instanceof TransformColumn) {
             /*add line from Column to Column*/
-            addColumnFx((DataColumn) startSelectable, (TransformColumn) endSelectable, jsBuilder);
-            return;
+            action = addColumnFx((DataColumn) startSelectable, (TransformColumn) endSelectable);
 
         } else if (endSelectable instanceof DataFile) {
             /*add line from DataSource to DataFile*/
-            addDataSourceLine((DataSource) startSelectable, (DataFile) endSelectable, jsBuilder);
+            action = addDataSourceLine((DataSource) startSelectable, (DataFile) endSelectable);
 
         } else {
-            newLine = step.addLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
-            jsBuilder.append(newLine.getJsAdd());
-            log.warn("addLine by unknown types(start:{},end:{})", startSelectable.getClass().getName(), endSelectable.getClass().getName());
-
-            jsBuilder.append("lineEnd();");
-
-            String updateEm = "window.parent.updateEm('" + newLine.getStartSelectableId() + "');"
-                    + "window.parent.updateEm('" + newLine.getEndSelectableId() + "');";
-            jsBuilder.append(updateEm);
+            /*add line from Column to ColumnFX*/
+            action = addDirectLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
         }
 
+        /*-- client-side javascript --*/
+
+        /*TODO: issue: got client script error when follow this steps
+         * 1. extract file
+         * 2. remove line between file and data-source
+         * 3. add line between file and data-source (removed line come back with error logs)
+         * notice: updateEm(server-side) need to print log to see all updateEm call is triggered correctly.
+         **/
+
+        List<Line> lineList = (List<Line>) action.getResultMap().get(ActionResultKey.LINE_LIST);
+        //if (lineList != null) {
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.pre(JavaScript.lineStart);
+        jsBuilder.post(JavaScript.lineEnd);
+        for (Line line : lineList) {
+            jsBuilder.post(JavaScript.updateEm, line.getStartSelectableId());
+            jsBuilder.post(JavaScript.updateEm, line.getEndSelectableId());
+        }
+        //}
         FacesUtil.runClientScript(jsBuilder.toString());
     }
 
@@ -273,8 +269,6 @@ public class FlowchartController extends Controller {
         String selectableId = FacesUtil.getRequestParam("selectableId");
         boolean isStartPlug = Boolean.parseBoolean(FacesUtil.getRequestParam("startPlug"));
         Step step = getStep();
-
-        /*TODO: need to convert this script into Action object that used to show in the action list.*/
 
         log.warn("removeLine(selectableId:{}, isStartPlug:{})", selectableId, isStartPlug);
 
@@ -297,34 +291,45 @@ public class FlowchartController extends Controller {
         }
 
         /*Remove object event may be occurred by unplugged listener. (Known event: RemoveColumnFx, RemoveDataTable, RemoveTransformTable)*/
-        step.removeLine(line);
+        removeDirectLine(line);
 
-        String javaScript = popJavaScript();
-        if (!javaScript.contains("refreshFlowChart")) {
-            if (!javaScript.isEmpty()) {
-                javaScript = "lineStart();" + javaScript + "lineEnd();";
-            }
-            if (selectableMap.containsKey(selectableId)) {
-                javaScript += "window.parent.updateEm('" + selectableId + "');";
-            }
-            if (selectableMap.containsKey(friendSelectableId)) {
-                javaScript += "window.parent.updateEm('" + friendSelectableId + "');";
-            }
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.pre(JavaScript.lineStart);
+        jsBuilder.append(JavaScript.lineEnd);
+        if (selectableMap.containsKey(selectableId)) {
+            jsBuilder.post(JavaScript.updateEm, selectableId);
         }
-        FacesUtil.runClientScript(javaScript);
+        if (selectableMap.containsKey(friendSelectableId)) {
+            jsBuilder.post(JavaScript.updateEm, friendSelectableId);
+        }
+        FacesUtil.runClientScript(jsBuilder.toString());
     }
 
-    private void addDataSourceLine(DataSource dataSource, DataFile dataFile, StringBuilder jsBuilder) {
+    private void removeDirectLine(Line line) {
+        log.warn("removeDirectLine(line:{})", line);
+        Step step = getStep();
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.LINE, line);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        Action action = new RemoveDirectLine(paramMap);
+        try {
+            action.execute();
+        } catch (RequiredParamException e) {
+            log.error("Remove Line Failed!", e);
+            FacesUtil.addError("Remove Line Failed with Internal Command Error!");
+        }
+    }
+
+    private Action addDataSourceLine(DataSource dataSource, DataFile dataFile) {
         String dataSourceId = ((Selectable) dataSource).getSelectableId();
         String dataFileId = dataFile.getSelectableId();
         log.warn("addDataSourceLine(dataSource:{}, dataFile:{})", dataSourceId, dataFileId);
-
-        Step step = getStep();
-        Line newLine = step.addLine(dataSourceId, dataFileId);
-        jsBuilder.append(newLine.getJsAdd());
+        return addDirectLine(dataSourceId, dataFileId);
     }
 
-    private void addColumnFx(DataColumn sourceColumn, TransformColumn transformColumn, StringBuilder jsBuilder) {
+    private Action addColumnFx(DataColumn sourceColumn, TransformColumn transformColumn) {
         log.warn("addLookup(sourceColumn:{}, targetColumn:{})", sourceColumn.getSelectableId(), transformColumn.getSelectableId());
         Step step = getStep();
 
@@ -335,23 +340,43 @@ public class FlowchartController extends Controller {
         paramMap.put(CommandParamKey.STEP, step);
         //paramMap.put(CommandParamKey.JAVASCRIPT_BUILDER, jsBuilder);
 
-        ColumnFx columnFx;
+        Action action = new AddColumnFx(paramMap);
         try {
-            Action action = new AddColumnFx(paramMap);
             action.execute();
-            columnFx = (ColumnFx) action.getResultMap().get("columnFx");
         } catch (RequiredParamException e) {
             log.error("Add ColumnFx Failed!", e);
             FacesUtil.addError("Add ColumnFx Failed with Internal Command Error!");
-            return;
         }
 
-        step.setActiveObject(columnFx);
-
-        FacesUtil.addInfo("ColumnFx[" + columnFx.getName() + "] added.");
+        ColumnFx columnFx = (ColumnFx) action.getResultMap().get(ActionResultKey.COLUMN_FX);
+        if (columnFx != null) {
+            step.setActiveObject(columnFx);
+            FacesUtil.addInfo("ColumnFx[" + columnFx.getName() + "] added.");
+        }
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.runClientScript("refreshFlowChart();");
+        jsBuilder.post(JavaScript.refreshFlowChart);
+
+        return action;
+    }
+
+    private Action addDirectLine(String startSelectableId, String endSelectableId) {
+        log.warn("addDirectLine(start:{}, end:{})", startSelectableId, endSelectableId);
+        Step step = getStep();
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.LINE, new Line(startSelectableId, endSelectableId));
+        paramMap.put(CommandParamKey.STEP, step);
+
+        Action action = new AddDirectLine(paramMap);
+        try {
+            action.execute();
+        } catch (RequiredParamException e) {
+            log.error("Add Line Failed!", e);
+            FacesUtil.addError("Add Line Failed with Internal Command Error!");
+        }
+
+        return action;
     }
 
     private void removeColumnFx(ColumnFx columnFx) {
@@ -378,7 +403,8 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("ColumnFx[" + columnFx.getName() + "] removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.runClientScript("refreshFlowChart();");
+        jsBuilder.post(JavaScript.refreshFlowChart);
+        FacesUtil.runClientScript(jsBuilder.toString());
     }
 
     /**
@@ -410,7 +436,7 @@ public class FlowchartController extends Controller {
         try {
             action = new AddDataTable(paramMap);
             action.execute();
-            dataTable = (DataTable) action.getResultMap().get("dataTable");
+            dataTable = (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
         } catch (Exception e) {
             log.error("Extract Data Failed!", e);
             FacesUtil.addError("Extract Data Failed with Internal Command Error!");
@@ -422,8 +448,9 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("Table[" + dataTable.getName() + "] added.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.runClientScript("refreshStepList();");
-        FacesUtil.runClientScript("refreshFlowChart();");
+        jsBuilder.pre(JavaScript.refreshStepList)
+                .post(JavaScript.refreshFlowChart);
+        FacesUtil.runClientScript(jsBuilder.toString());
 
         /*TODO: issue: after refresh, the activeObject is not dataTable*/
     }
@@ -457,7 +484,7 @@ public class FlowchartController extends Controller {
         try {
             Action action = new AddTransformTable(paramMap);
             action.execute();
-            transformTable = (TransformTable) action.getResultMap().get("transformTable");
+            transformTable = (TransformTable) action.getResultMap().get(ActionResultKey.TRANSFORM_TABLE);
         } catch (RequiredParamException e) {
             log.error("Transfer Data Failed!", e);
             FacesUtil.addError("Transfer Data Failed with Internal Command Error!");
@@ -469,8 +496,9 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("Table[" + transformTable.getName() + "] added.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.runClientScript("refreshStepList();");
-        FacesUtil.runClientScript("refreshFlowChart();");
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.post(JavaScript.refreshFlowChart);
+        FacesUtil.runClientScript(jsBuilder.toString());
     }
 
     public void addColumn() {
@@ -499,7 +527,7 @@ public class FlowchartController extends Controller {
         try {
             Action action = new AddTransformColumn(paramMap);
             action.execute();
-            transformColumn = (TransformColumn) action.getResultMap().get("transformColumn");
+            transformColumn = (TransformColumn) action.getResultMap().get(ActionResultKey.TRANSFORM_COLUMN);
         } catch (RequiredParamException e) {
             log.error("Add Transform Column Failed!", e);
             FacesUtil.addError("Add Transform Column Failed with Internal Command Error!");
@@ -510,9 +538,10 @@ public class FlowchartController extends Controller {
 
         FacesUtil.addInfo("Column[" + transformColumn.getSelectableId() + "] added.");
 
-        FacesUtil.runClientScript("postUpdate(function(){selectObject('" + transformColumn.getSelectableId() + "');});");
-        FacesUtil.runClientScript("update" + transformTable.getSelectableId() + "();");
-        FacesUtil.runClientScript("refreshStepList();");
+        jsBuilder.pre(JavaScript.selectAfterUpdateEm,transformColumn.getSelectableId());
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.post(JavaScript.updateEm, transformTable.getSelectableId());
+        FacesUtil.runClientScript(jsBuilder.toString());
     }
 
     public void addTransformation() {
@@ -541,7 +570,7 @@ public class FlowchartController extends Controller {
         try {
             Action action = new AddTableFx(paramMap);
             action.execute();
-            tableFx = (TableFx) action.getResultMap().get("tableFx");
+            tableFx = (TableFx) action.getResultMap().get(ActionResultKey.TABLE_FX);
         } catch (RequiredParamException e) {
             log.error("Add Table Function Failed!", e);
             FacesUtil.addError("Add Table Function Failed with Internal Command Error!");
@@ -552,9 +581,10 @@ public class FlowchartController extends Controller {
 
         FacesUtil.addInfo("TableFx[" + tableFx.getSelectableId() + "] added.");
 
-        FacesUtil.runClientScript("postUpdate(function(){selectObject('" + tableFx.getSelectableId() + "');});");
-        FacesUtil.runClientScript("update" + transformTable.getSelectableId() + "();");
-        FacesUtil.runClientScript("refreshStepList();");
+        jsBuilder.pre(JavaScript.selectAfterUpdateEm,tableFx.getSelectableId());
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.post(JavaScript.updateEm,  transformTable.getSelectableId());
+        FacesUtil.runClientScript(jsBuilder.toString());
     }
 
     public void addOutputFile() {
@@ -583,7 +613,7 @@ public class FlowchartController extends Controller {
         try {
             Action action = new AddOutputFile(paramMap);
             action.execute();
-            dataFile = (DataFile) action.getResultMap().get("dataFile");
+            dataFile = (DataFile) action.getResultMap().get(ActionResultKey.DATA_FILE);
         } catch (RequiredParamException e) {
             log.error("Add Table Function Failed!", e);
             FacesUtil.addError("Add Table Function Failed with Internal Command Error!");
@@ -594,9 +624,11 @@ public class FlowchartController extends Controller {
 
         FacesUtil.addInfo("OutputFile[" + dataFile.getSelectableId() + "] added.");
 
-        FacesUtil.runClientScript("postUpdate(function(){selectObject('" + dataFile.getSelectableId() + "');});");
-        FacesUtil.runClientScript("update" + dataTable.getSelectableId() + "();");
-        FacesUtil.runClientScript("refreshStepList();");
+        jsBuilder.pre(JavaScript.selectAfterUpdateEm, dataFile.getSelectableId());
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.post(JavaScript.updateEm,  dataTable.getSelectableId());
+
+        FacesUtil.runClientScript(jsBuilder.toString());
     }
 
     /**
@@ -631,9 +663,8 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("Table[" + target.getName() + "] is removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        jsBuilder
-                .append("refreshStepList();")
-                .append("refreshFlowChart();");
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.post(JavaScript.refreshFlowChart);
     }
 
     /**
@@ -663,9 +694,8 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("Table[" + target.getName() + "] is removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        jsBuilder
-                .append("refreshStepList();")
-                .append("refreshFlowChart();");
+        jsBuilder.pre(JavaScript.refreshStepList);
+        jsBuilder.post(JavaScript.refreshFlowChart);
     }
 
 }

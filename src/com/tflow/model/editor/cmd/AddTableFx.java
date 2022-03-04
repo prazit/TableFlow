@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class AddTableFx extends Command {
         paramMap.put(CommandParamKey.TABLE_FX, tableFx);
 
         /*Action Result*/
-        action.getResultMap().put("tableFx", tableFx);
+        action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
     }
 
 }

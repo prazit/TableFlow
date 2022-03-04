@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
@@ -40,7 +41,7 @@ public class AddDataTable extends Command {
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
 
         /*Action Result*/
-        action.getResultMap().put("dataTable", dataTable);
+        action.getResultMap().put(ActionResultKey.DATA_TABLE, dataTable);
     }
 
     private DataTable extractData(DataFile dataFile, Step step) {

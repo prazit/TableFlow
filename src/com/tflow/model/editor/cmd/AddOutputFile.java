@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.datasource.Local;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class AddOutputFile extends Command {
         paramMap.put(CommandParamKey.DATA_FILE, dataFile);
 
         /*Action Result*/
-        action.getResultMap().put("dataFile", dataFile);
+        action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
     }
 
 }

@@ -117,6 +117,7 @@ public class DataColumn implements Serializable, Selectable {
                 ", selectableId:'" + ((Selectable) this).getSelectableId() + '\'' +
                 ", type:'" + type + '\'' +
                 ", name:'" + name + '\'' +
+                ", startPlug:'" + startPlug + '\'' +
                 '}';
     }
 }

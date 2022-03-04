@@ -30,7 +30,8 @@ public enum Properties {
             "--:Debug Only:--",
             "id:ID:ReadOnly",
             "zoom:Zoom:ReadOnly",
-            ".:activeObject:selectableId:Active Object:ReadOnly"
+            ".:activeObject:selectableId:Active Object:ReadOnly",
+            "selectableMap:Selectable Map:ReadOnly"
     ),
     DATA_BASE(
             "name:Name:String",

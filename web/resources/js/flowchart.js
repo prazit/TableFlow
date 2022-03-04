@@ -12,6 +12,11 @@ function refreshStepList() {
     window.parent.refreshStepList();
 }
 
+function updateEm(selectableId) {
+    /*forwarding only*/
+    window.parent.updateEm(selectableId);
+}
+
 function getSelectableId($selectable) {
     return $selectable.find('input[name=selectableId]').attr('value');
 }
@@ -71,7 +76,9 @@ function buttonPerform(remoteFunction) {
         {name: "startPlug", value: isStartPlug}
     ]);
 
-    /*TODO: issue: remove button still shown on the plug*/
+    /*TODO: issue: remove button still shown on the plug, but
+     * reproduce: select the object that contains the remove-button and then click the remove-button.
+     **/
 
     draggableHandle();
 
@@ -377,7 +384,13 @@ function draggableStartup() {
     buttonHandle('extractData');
     buttonHandle('transferData');
 
-    /*TODO: flow-chart element need to resize to cover all 3 sections.*/
+    /*flow-chart element need to resize to cover all 3 sections.*/
+    /*var width = 0;
+    $('.section').each(function (i, e) {
+        // show it before get outerWidth
+        width += $(e).outerWidth();
+    });
+    $('.flow-chart').css('width', width + 'px');*/
     $('.flow-chart').css('width', '2000px');
 
     /*Mapping between draggable selector and droppable selector used in draggableRefreshed().*/
@@ -481,4 +494,7 @@ var pLine = {
 
         allowChangeActiveDuration: 1000,
         lastChangeActive: Date.now()
+    },
+    word = {
+        /*string constants*/
     };

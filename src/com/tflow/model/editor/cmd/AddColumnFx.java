@@ -2,8 +2,9 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
-import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.editor.action.ActionResultKey;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -19,13 +20,6 @@ public class AddColumnFx extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         Project project = step.getOwner();
-
-        /*optional JAVASCRIPT_BUILDER*/
-        StringBuilder jsBuilder = null;
-        Object obj = paramMap.get(CommandParamKey.JAVASCRIPT_BUILDER);
-        if (obj != null) {
-            jsBuilder = (StringBuilder) obj;
-        }
 
         ColumnFx columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), (DataColumn) targetColumn);
         columnFx.setId(project.newUniqueId());
@@ -46,16 +40,17 @@ public class AddColumnFx extends Command {
         /*line between columnFx and targetColumn*/
         Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
 
-        if (jsBuilder != null) {
-            jsBuilder.append(line1.getJsAdd());
-            jsBuilder.append(line2.getJsAdd());
-        }
+        List<Line> lineList = new ArrayList<>();
+        lineList.add(line1);
+        lineList.add(line2);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
 
         /*Action Result*/
-        action.getResultMap().put("columnFx", columnFx);
+        Map<ActionResultKey, Object> resultMap = action.getResultMap();
+        resultMap.put(ActionResultKey.LINE_LIST, lineList);
+        resultMap.put(ActionResultKey.COLUMN_FX, columnFx);
     }
 
     private void initPropertyMap(Map<String, Object> propertyMap, DataColumn sourceColumn) {

@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class AddTransformColumn extends Command {
         paramMap.put(CommandParamKey.TRANSFORM_COLUMN, transformColumn);
 
         /*Action Result*/
-        action.getResultMap().put("transformColumn", transformColumn);
+        action.getResultMap().put(ActionResultKey.TRANSFORM_COLUMN, transformColumn);
     }
 
 }

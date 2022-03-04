@@ -213,7 +213,10 @@ public class EditorController extends Controller {
                 break;
 
             case SOURCETABLE:
-                int level = ((DataTable) activeObject).getLevel();
+                DataTable activeDataTable = getActiveDataTable(activeObject);
+                if (activeDataTable == null) break;
+
+                int level = activeDataTable.getLevel();
                 for (DataTable dataTable : activeStep.getDataList()) {
                     if (dataTable.getLevel() >= level) /*list all tables before current table only*/ continue;
                     selectItemList.add(new SelectItem(dataTable.getSelectableId(), dataTable.getName()));
@@ -287,6 +290,16 @@ public class EditorController extends Controller {
         }
 
         return selectItemList;
+    }
+
+    private DataTable getActiveDataTable(Selectable activeObject) {
+        /*need to support SOURCETABLE on ColumnFx, DataColumn, TableFx and DataFile(output)*/
+        if (activeObject instanceof DataTable) return (DataTable) activeObject;
+        if (activeObject instanceof ColumnFx) return ((ColumnFx) activeObject).getOwner().getOwner();
+        if (activeObject instanceof DataColumn) return ((DataColumn) activeObject).getOwner();
+        if (activeObject instanceof TableFx) return ((TableFx) activeObject).getOwner();
+        if (activeObject instanceof DataFile) return (DataTable) ((DataFile) activeObject).getOwner();
+        return null;
     }
 
     private String propertyToMethod(String propertyName) {
@@ -454,7 +467,7 @@ public class EditorController extends Controller {
 
         StringBuilder jsBuilder = new StringBuilder();
         if (refresh) {
-            jsBuilder.append("refreshFlowChart();");
+            jsBuilder.append(JavaScript.refreshFlowChart.getScript());
         }
         FacesUtil.runClientScript(jsBuilder.toString());
     }
@@ -487,7 +500,7 @@ public class EditorController extends Controller {
         selectStep(step.getIndex());
 
         FacesUtil.addInfo("Step[" + step.getName() + "] added.");
-        FacesUtil.runClientScript("refreshFlowChart();");
+        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
     public void addLocal() {
@@ -512,8 +525,9 @@ public class EditorController extends Controller {
 
         selectObject(local.getSelectableId());
 
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("Local[" + local.getName() + "] added.");
-        FacesUtil.runClientScript("refreshFlowChart();");
+        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
     public void addDBConnection() {
@@ -538,8 +552,9 @@ public class EditorController extends Controller {
 
         selectObject(database.getSelectableId());
 
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("Database[" + database.getName() + "] added.");
-        FacesUtil.runClientScript("refreshFlowChart();");
+        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
     public void addSFTPConnection() {
@@ -564,8 +579,9 @@ public class EditorController extends Controller {
 
         selectObject(sftp.getSelectableId());
 
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("SFTP[" + sftp.getName() + "] added.");
-        FacesUtil.runClientScript("refreshFlowChart();");
+        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
     public void addDataFile() {
@@ -592,8 +608,9 @@ public class EditorController extends Controller {
 
         selectObject(dataFile.getSelectableId());
 
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
-        FacesUtil.runClientScript("refreshFlowChart();");
+        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
     /**
@@ -648,7 +665,7 @@ public class EditorController extends Controller {
         }
 
         String stepList = FacesUtil.getRequestParam("stepList");
-        if (stepList != null || refresh != null) {
+        if (stepList != null) {
             showStepList = Boolean.parseBoolean(stepList);
             step.setShowStepList(showStepList);
             refreshStepList(project.getStepList());
