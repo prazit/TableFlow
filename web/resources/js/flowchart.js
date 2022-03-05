@@ -76,13 +76,10 @@ function buttonPerform(remoteFunction) {
         {name: "startPlug", value: isStartPlug}
     ]);
 
-    /*TODO: issue: remove button still shown on the plug, but
-     * reproduce: select the object that contains the remove-button and then click the remove-button.
-     **/
-
-    draggableHandle();
-
     noActiveScrollTo(selectable);
+
+    /*must use postUpdate to void issue of remove-button still shown on the plug.*/
+    postUpdate(draggableHandle);
 }
 
 function buttonHandle(buttonName) {
@@ -226,8 +223,6 @@ function lineEnd() {
 }
 
 function draggableEnter($dragTarget, $droppable) {
-    console.log('draggableEnter(dragTarget:' + getSelectableId(getSelectable($dragTarget)) + '.' + $dragTarget.attr('id') + ')');
-
     var bgColor = $dragTarget.css('background-color'),
         isDraggable = $dragTarget.hasClass('draggable'),
         offset = $dragTarget.first().offset(),
