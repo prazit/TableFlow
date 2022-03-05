@@ -116,7 +116,7 @@ public class FlowchartController extends Controller {
      * Draw lines on the client when page loaded.
      */
     public void drawLines() {
-        jsBuilder.pre(JavaScript.preStartup);
+        jsBuilder.pre(JavaScript.lineStart).pre(JavaScript.preStartup);
         Step step = getStep();
         for (Line line : step.getLineList()) {
             jsBuilder.append(line.getJsAdd());
@@ -236,13 +236,6 @@ public class FlowchartController extends Controller {
         }
 
         /*-- client-side javascript --*/
-
-        /*TODO: issue: got client script error when follow this steps
-         * 1. extract file
-         * 2. remove line between file and data-source
-         * 3. add line between file and data-source (removed line come back with error logs)
-         * notice: updateEm(server-side) need to print log to see all updateEm call is triggered correctly.
-         **/
 
         List<Line> lineList = (List<Line>) action.getResultMap().get(ActionResultKey.LINE_LIST);
         //if (lineList != null) {
@@ -538,7 +531,7 @@ public class FlowchartController extends Controller {
 
         FacesUtil.addInfo("Column[" + transformColumn.getSelectableId() + "] added.");
 
-        jsBuilder.pre(JavaScript.selectAfterUpdateEm,transformColumn.getSelectableId());
+        jsBuilder.pre(JavaScript.selectAfterUpdateEm, transformColumn.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, transformTable.getSelectableId());
         FacesUtil.runClientScript(jsBuilder.toString());
@@ -581,9 +574,9 @@ public class FlowchartController extends Controller {
 
         FacesUtil.addInfo("TableFx[" + tableFx.getSelectableId() + "] added.");
 
-        jsBuilder.pre(JavaScript.selectAfterUpdateEm,tableFx.getSelectableId());
+        jsBuilder.pre(JavaScript.selectAfterUpdateEm, tableFx.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
-        jsBuilder.post(JavaScript.updateEm,  transformTable.getSelectableId());
+        jsBuilder.post(JavaScript.updateEm, transformTable.getSelectableId());
         FacesUtil.runClientScript(jsBuilder.toString());
     }
 
@@ -626,7 +619,7 @@ public class FlowchartController extends Controller {
 
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, dataFile.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
-        jsBuilder.post(JavaScript.updateEm,  dataTable.getSelectableId());
+        jsBuilder.post(JavaScript.updateEm, dataTable.getSelectableId());
 
         FacesUtil.runClientScript(jsBuilder.toString());
     }

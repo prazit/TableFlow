@@ -95,7 +95,8 @@ public class Line implements Serializable {
     }
 
     public String getJsRemove() {
-        return String.format("lines[%d].remove(); lines[%d] = null;",
+        return String.format("lines[%d].remove(); lines[%d] = undefined; delete(lines[%d]);",
+                clientIndex,
                 clientIndex,
                 clientIndex
         );

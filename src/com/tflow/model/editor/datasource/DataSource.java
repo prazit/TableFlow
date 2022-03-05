@@ -53,4 +53,14 @@ public class DataSource extends Room implements Serializable {
     public void setPlug(LinePlug plug) {
         this.plug = plug;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", type:" + type +
+                ", name:'" + name + '\'' +
+                ", plug:" + plug +
+                '}';
+    }
 }

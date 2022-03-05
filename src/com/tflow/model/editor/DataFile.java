@@ -143,4 +143,16 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
     public String getSelectableId() {
         return "df" + id;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", type:" + type +
+                ", name:'" + name + '\'' +
+                ", path:'" + path + '\'' +
+                ", endPlug:" + endPlug +
+                ", startPlug:" + startPlug +
+                '}';
+    }
 }

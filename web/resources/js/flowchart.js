@@ -42,11 +42,14 @@ function hideLines() {
 }
 
 function showLines() {
-    for (var i = 0; i < lines.length; i++) {
-        if (lines[i] == null) continue;
-        lines[i].position();
-        lines[i].show();
-    }
+    $(lines).each(function (i, line) {
+        try {
+            line.position();
+            line.show();
+        } catch (err) {
+            /*nothing*/
+        }
+    });
 }
 
 function addLink($startSelectable, $endSelectable, $activeObject) {
@@ -105,7 +108,6 @@ function postUpdate(func) {
 function doPostUpdate() {
     $(tflow.postUpdate).each(function (i, e) {
         e();
-        console.log('doPostUpdate(i:' + i + ') completed.');
     });
     tflow.postUpdate = [];
 }
