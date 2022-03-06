@@ -13,17 +13,36 @@ public class AddColumnFx extends Command {
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        DataColumn sourceColumn = (DataColumn) paramMap.get(CommandParamKey.DATA_COLUMN);
-        TransformColumn targetColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
-        ColumnFunction columnFunction = (ColumnFunction) paramMap.get(CommandParamKey.COLUMN_FUNCTION);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         Project project = step.getOwner();
 
-        ColumnFx columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), (DataColumn) targetColumn);
-        columnFx.setId(project.newUniqueId());
-        initPropertyMap(columnFx.getPropertyMap(), sourceColumn);
+        Map<String, Object> propertyMap;
+        DataColumn sourceColumn;
+        TransformColumn targetColumn;
+        ColumnFunction columnFunction;
+
+        /*support undo command of Action 'RemoveColumnFx'*/
+        ColumnFx columnFx = (ColumnFx) paramMap.get(CommandParamKey.COLUMN_FX);
+        boolean isExecute = (columnFx == null);
+        if (isExecute) {
+            /*Action 'AddColumnFx'.execute*/
+            targetColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
+            sourceColumn = (DataColumn) paramMap.get(CommandParamKey.DATA_COLUMN);
+            columnFunction = (ColumnFunction) paramMap.get(CommandParamKey.COLUMN_FUNCTION);
+            columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), (DataColumn) targetColumn);
+            columnFx.setId(project.newUniqueId());
+            propertyMap = columnFx.getPropertyMap();
+            initPropertyMap(propertyMap, sourceColumn);
+        } else {
+            /*Action 'RemoveColumnFx'.executeUndo*/
+            propertyMap = columnFx.getPropertyMap();
+            targetColumn = (TransformColumn) columnFx.getOwner();
+            String sourceSelectableId = (String) propertyMap.get("sourceColumn");
+            sourceColumn = (DataColumn) selectableMap.get(sourceSelectableId);
+            columnFunction = columnFx.getFunction();
+        }
 
         TransformTable transformTable = (TransformTable) targetColumn.getOwner();
         List<ColumnFx> columnFxList = transformTable.getColumnFxTable().getColumnFxList();
@@ -32,17 +51,19 @@ public class AddColumnFx extends Command {
 
         selectableMap.put(columnFx.getSelectableId(), columnFx);
 
-        /*Notice: draw lines below tested on ColumnFunction.LOOKUP and expect to work for all ColumnFunction*/
-
-        /*line between sourceColumn and columnFx*/
-        Line line1 = step.addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
-
-        /*line between columnFx and targetColumn*/
-        Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
-
         List<Line> lineList = new ArrayList<>();
-        lineList.add(line1);
-        lineList.add(line2);
+        if (isExecute) {
+            /*Notice: draw lines below tested on ColumnFunction.LOOKUP and expect to work for all ColumnFunction*/
+
+            /*line between sourceColumn and columnFx*/
+            Line line1 = step.addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
+
+            /*line between columnFx and targetColumn*/
+            Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
+
+            lineList.add(line1);
+            lineList.add(line2);
+        }
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.COLUMN_FX, columnFx);

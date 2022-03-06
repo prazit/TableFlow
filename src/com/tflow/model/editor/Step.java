@@ -24,7 +24,7 @@ public class Step implements Selectable, HasEvent {
     private Tower outputTower;
 
     private List<Line> lineList;
-    private int lastIndex;
+    private int lastLineClientIndex;
 
     private LinePlug startPlug;
 
@@ -51,7 +51,7 @@ public class Step implements Selectable, HasEvent {
         transformTower = new Tower(2, this);
         outputTower = new Tower(2, this);
         lineList = new ArrayList<>();
-        lastIndex = 0;
+        lastLineClientIndex = 0;
         startPlug = new StartPlug("step");
         zoom = Double.valueOf(100);
         this.owner = owner;
@@ -260,70 +260,15 @@ public class Step implements Selectable, HasEvent {
     /*== Public Methods ==*/
 
     public Line addLine(String startSelectableId, String endSelectableId) {
+        /*addLine function script already moved into AddDirectLine command*/
         Line newLine = new Line(startSelectableId, endSelectableId);
-
-        int index = ++lastIndex;
-        newLine.setClientIndex(index);
-        lineList.add(newLine);
-
-        Selectable startSelectable = selectableMap.get(startSelectableId);
-        Selectable endSelectable = selectableMap.get(endSelectableId);
-
-        newLine.setType(getLineType(startSelectable));
-
-        LinePlug startPlug = startSelectable.getStartPlug();
-        startPlug.setPlugged(true);
-        startPlug.getLineList().add(newLine);
-        PlugListener listener = startPlug.getListener();
-        if (listener != null) {
-            listener.plugged(newLine);
-        }
-        newLine.setStartPlug(startPlug);
-
-        HasEndPlug hasEndPlug = (HasEndPlug) endSelectable;
-        LinePlug endPlug = hasEndPlug.getEndPlug();
-        endPlug.setPlugged(true);
-        endPlug.getLineList().add(newLine);
-        listener = endPlug.getListener();
-        if (listener != null) {
-            listener.plugged(newLine);
-        }
-        newLine.setEndPlug(endPlug);
-
-        eventManager.fireEvent(EventName.LINE_ADDED, newLine);
+        eventManager.fireEvent(EventName.ADD_LINE, newLine);
         return newLine;
     }
 
     public void removeLine(Line line) {
-        lineList.remove(line);
-
-        LinePlug startPlug = line.getStartPlug();
-        startPlug.getLineList().remove(line);
-        PlugListener listener = startPlug.getListener();
-        if (listener != null) {
-            listener.unplugged(line);
-        }
-
-        LinePlug endPlug = line.getEndPlug();
-        endPlug.getLineList().remove(line);
-        listener = endPlug.getListener();
-        if (listener != null) {
-            listener.unplugged(line);
-        }
-
-        eventManager.fireEvent(EventName.LINE_REMOVED, line);
-    }
-
-    private LineType getLineType(Selectable selectable) {
-        if (selectable instanceof DataColumn) {
-            DataColumn dataColumn = (DataColumn) selectable;
-            return LineType.valueOf(dataColumn.getType().name());
-        } else if (selectable instanceof ColumnFx) {
-            ColumnFx columnFx = (ColumnFx) selectable;
-            return LineType.valueOf(columnFx.getOwner().getType().name());
-        } else {
-            return LineType.TABLE;
-        }
+        /*removeLine function script already moved into RemoveDirectLine command*/
+        eventManager.fireEvent(EventName.REMOVE_LINE, line);
     }
 
     public List<Line> getLineByStart(String selectableId) {
@@ -411,6 +356,11 @@ public class Step implements Selectable, HasEvent {
             }
         }
     }
+
+    public int newLineClientIndex() {
+        return ++lastLineClientIndex;
+    }
+
 
     @Override
     public String toString() {

@@ -11,6 +11,7 @@ public class ActionView {
     private String code;
     private String name;
     private String description;
+    private boolean undo;
 
     public ActionView(Action action) {
         id = action.getId();
@@ -18,6 +19,7 @@ public class ActionView {
         code = action.getCode();
         name = action.getName();
         description = action.getDescription();
+        undo = action.isCanUndo();
     }
 
     public int getId() {
@@ -58,5 +60,13 @@ public class ActionView {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isUndo() {
+        return undo;
+    }
+
+    public void setUndo(boolean undo) {
+        this.undo = undo;
     }
 }

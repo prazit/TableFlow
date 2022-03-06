@@ -30,12 +30,10 @@ public class RemoveColumnFx extends Action {
 
     @Override
     protected void initUndoCommands() {
-        /*TODO: need undo for unexpected remove, how to keep existing lines and properties*/
-
-        /*setUndoParams(
-                CommandParamKey.COLUMN_FUNCTION,
+        setParams(
+                CommandParamKey.COLUMN_FX,
                 CommandParamKey.STEP
         );
-        setUndoCommands(new com.tflow.model.editor.cmd.AddColumnFx());*/
+        setUndoCommands(new com.tflow.model.editor.cmd.AddColumnFx());
     }
 }

@@ -3,7 +3,7 @@ package com.tflow.model.editor;
 import java.io.Serializable;
 
 public class Line implements Serializable {
-    private static final long serialVersionUID = 2021122109996660010L;
+    private static final long serialVersionUID = 2021122109996660011L;
 
     private String startSelectableId;
     private String endSelectableId;

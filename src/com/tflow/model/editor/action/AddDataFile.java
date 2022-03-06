@@ -34,12 +34,10 @@ public class AddDataFile extends Action {
 
     @Override
     protected void initUndoCommands() {
-        /*setUndoParams(
-                CommandParamKey.DATA_SOURCE,
-                CommandParamKey.TOWER,
-                CommandParamKey.LINE_LIST,
-                CommandParamKey.PROJECT
-        );*/
+        setUndoParams(
+                CommandParamKey.DATA_FILE,
+                CommandParamKey.STEP
+        );
         /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataFile());*/
     }
 }

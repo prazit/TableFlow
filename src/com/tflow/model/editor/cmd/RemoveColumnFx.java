@@ -30,6 +30,11 @@ public class RemoveColumnFx extends Command {
 
         /*remove fx from FxTable*/
         targetTable.getColumnFxTable().getColumnFxList().remove(columnFx);
+
+        /*for Action.executeUndo()*/
+        paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
+
+        /*no Action Result*/
     }
 
 }

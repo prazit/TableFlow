@@ -5,7 +5,7 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import java.util.Map;
 
 public class RemoveDirectLine extends Action {
-    private static final long serialVersionUID = 2021122109996660006L;
+    private static final long serialVersionUID = 2021122109996660013L;
 
     public RemoveDirectLine(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);
@@ -15,7 +15,7 @@ public class RemoveDirectLine extends Action {
     protected void initAction() {
         this.name = "Remove Line";
         this.description = "remove a line from current step";
-        this.code = "RLI";
+        this.code = "RML";
         this.image = "action.png";
     }
 

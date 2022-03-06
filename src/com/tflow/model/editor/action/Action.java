@@ -30,6 +30,9 @@ public abstract class Action implements Serializable {
 
     private Map<ActionResultKey, Object> resultMap;
 
+    private Action previousChain;
+    private Action nextChain;
+
     protected abstract void initAction();
 
     protected abstract void initCommands();
@@ -118,8 +121,24 @@ public abstract class Action implements Serializable {
     }
 
     public boolean isCanUndo() {
-        if (commandList == null) initUndoCommandsWrapper();
+        if (undoCommandList == null) initUndoCommandsWrapper();
         return canUndo;
+    }
+
+    public Action getPreviousChain() {
+        return previousChain;
+    }
+
+    public void setPreviousChain(Action previousChain) {
+        this.previousChain = previousChain;
+    }
+
+    public Action getNextChain() {
+        return nextChain;
+    }
+
+    public void setNextChain(Action nextChain) {
+        this.nextChain = nextChain;
     }
 
     /**
@@ -132,14 +151,26 @@ public abstract class Action implements Serializable {
     /*-- Public Methods --*/
 
     public void execute() throws RequiredParamException, UnsupportedOperationException {
+        execute(false);
+    }
+
+    /**
+     * @param chain this Action is chain of previous Action in the history.
+     */
+    public void execute(boolean chain) throws RequiredParamException, UnsupportedOperationException {
         if (commandList == null) initCommandsWrapper();
         requiredParam(paramList, paramMap, false);
 
         /*this action need ID before add to history*/
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Project project = step.getOwner();
+        List<Action> history = step.getHistory();
         setId(project.newUniqueId());
-        step.getHistory().add(this);
+        if (chain) {
+            previousChain = history.get(history.size() - 1);
+            previousChain.setNextChain(this);
+        }
+        history.add(this);
 
         resultMap.clear();
 
@@ -149,13 +180,13 @@ public abstract class Action implements Serializable {
 
     public void executeUndo() throws RequiredParamException, UnsupportedOperationException {
         if (commandList == null) initUndoCommandsWrapper();
-        requiredParam(undoParamList, paramMap, true);
+        requiredParam(paramList, paramMap, true);
 
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         List<Action> history = step.getHistory();
 
         int lastActionIndex = history.size() - 1;
-        if (!history.get(lastActionIndex).equals(this))
+        if (history.get(lastActionIndex).getId() != getId())
             throw new UnsupportedOperationException("Action '" + getName() + "' is not last action in the history. " + toString());
         if (!isCanUndo())
             throw new UnsupportedOperationException("Action '" + getName() + "' is not support UNDO. " + toString());
@@ -166,6 +197,11 @@ public abstract class Action implements Serializable {
 
         /*remove Action from history (FILO)*/
         history.remove(lastActionIndex);
+
+        if(previousChain != null) {
+            previousChain.setNextChain(null);
+            previousChain.executeUndo();
+        }
     }
 
     private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap,

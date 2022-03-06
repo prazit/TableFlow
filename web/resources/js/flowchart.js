@@ -308,7 +308,7 @@ function draggableEnter($dragTarget, $droppable) {
                     $draggable.removeClass('dropping').addClass('dragging');
                 }
 
-                /*TODO: need to scope the draggable area here*/
+                /*Notice: don't need to scope the draggable area but if you want, script here*/
             },
             onDragEnd: function (pos) {
                 this.line.remove();

@@ -49,12 +49,21 @@ public class EditorController extends Controller {
     private boolean showActionButtons;
     private int stepListActiveTab;
 
+    private Map<String, Integer> actionPriorityMap;
+
     @PostConstruct
     public void onCreation() {
         Project project = workspace.getProject();
         leftPanelTitle = "Step List";
+        initActionPriorityMap();
         initStepList(project);
-        refreshActionList(project);
+        //refreshActionList(project);
+    }
+
+    private void initActionPriorityMap() {
+        actionPriorityMap = new HashMap<>();
+        actionPriorityMap.put("RML", 1);
+        actionPriorityMap.put("AML", 2);
     }
 
     private void initStepList(Project project) {
@@ -67,10 +76,32 @@ public class EditorController extends Controller {
         Step step = project.getActiveStep();
         if (step == null) return;
 
+        /*need to group more chains to one action*/
         actionList = new ArrayList<>();
+        Action currentAction = null;
+        int currentPriority = 0;
         for (Action action : step.getHistory()) {
-            actionList.add(new ActionView(action));
+            int actionPriority = getActionPriority(action);
+            if (currentAction == null || actionPriority > currentPriority) {
+                currentAction = action;
+                currentPriority = actionPriority;
+            }
+            if (action.getNextChain() == null) {
+                ActionView view = new ActionView(currentAction);
+                view.setId(action.getId()); //need to use id from the last action of a group (more detailed, see: undo function).
+                actionList.add(view);
+                currentAction = null;
+                currentPriority = 0;
+            }
         }
+    }
+
+    private int getActionPriority(Action action) {
+        Integer priority = actionPriorityMap.get(action.getCode());
+        if (priority == null) {
+            return 99;
+        }
+        return priority;
     }
 
     private void refreshStepList(List<Step> stepList) {
@@ -611,6 +642,56 @@ public class EditorController extends Controller {
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+    }
+
+    public void undo(ActionView actionView) {
+        Project project = workspace.getProject();
+        Step step = project.getActiveStep();
+
+        List<Action> history = step.getHistory();
+        Action action;
+        int actionIndex = getActionIndex(actionView, actionList);
+        if (actionIndex < 0) {
+            String message = "Action '{" + actionView.getName() + "}' not found, Undo is aborted.";
+            log.error(message);
+            FacesUtil.addError(message);
+            return;
+        }
+
+        for (int i = actionList.size() - 1; i >= actionIndex; i--) {
+            ActionView view = actionList.remove(i);
+            action = history.get(history.size() - 1);
+            if (view.getId() != action.getId()) {
+                String message = "Action List not match with the Action History Action(" + actionView + ") History(" + action + "), Undo is aborted.";
+                log.error(message);
+                FacesUtil.addError(message);
+                return;
+            }
+            try {
+                action.executeUndo();
+            } catch (RequiredParamException e) {
+                log.error("Undo '{}' Failed!", action.getName(), e);
+                FacesUtil.addError("Add " + action.getName() + " Failed with Internal Command Error!");
+                return;
+            }
+        }
+
+        refreshActionList(project);
+
+        selectObject(step.getSelectableId());
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        FacesUtil.addInfo("Undo[" + actionView.getName() + "] completed.");
+        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+    }
+
+    private int getActionIndex(ActionView action, List<ActionView> actionViewList) {
+        int i = 0;
+        for (ActionView act : actionViewList) {
+            if (act.getId() == action.getId()) return i;
+            i++;
+        }
+        return -1;
     }
 
     /**

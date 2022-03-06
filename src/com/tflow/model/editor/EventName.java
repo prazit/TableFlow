@@ -4,6 +4,8 @@ public enum EventName {
 
     /*Event as command trigger*/
     REMOVE,
+    ADD_LINE,
+    REMOVE_LINE,
 
     /*Event as status notifier*/
     PROPERTY_CHANGED,

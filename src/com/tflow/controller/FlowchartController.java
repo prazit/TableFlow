@@ -38,12 +38,28 @@ public class FlowchartController extends Controller {
         /*-- Handle all events --*/
         Step step = getStep();
         step.getEventManager()
+                .removeHandlers(EventName.ADD_LINE)
+                .addHandler(EventName.ADD_LINE, new EventHandler() {
+                    @Override
+                    public void handle(Event event) {
+                        Line line = (Line) event.getData();
+                        addDirectLine(line.getStartSelectableId(), line.getEndSelectableId(), true);
+                    }
+                })
                 .removeHandlers(EventName.LINE_ADDED)
                 .addHandler(EventName.LINE_ADDED, new EventHandler() {
                     @Override
                     public void handle(Event event) {
                         Line line = (Line) event.getData();
                         jsBuilder.append(line.getJsAdd());
+                    }
+                })
+                .removeHandlers(EventName.REMOVE_LINE)
+                .addHandler(EventName.REMOVE_LINE, new EventHandler() {
+                    @Override
+                    public void handle(Event event) {
+                        Line line = (Line) event.getData();
+                        removeDirectLine(line, true);
                     }
                 })
                 .removeHandlers(EventName.LINE_REMOVED)
@@ -232,7 +248,7 @@ public class FlowchartController extends Controller {
 
         } else {
             /*add line from Column to ColumnFX*/
-            action = addDirectLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
+            action = addDirectLine(newLine.getStartSelectableId(), newLine.getEndSelectableId(), false);
         }
 
         /*-- client-side javascript --*/
@@ -284,7 +300,7 @@ public class FlowchartController extends Controller {
         }
 
         /*Remove object event may be occurred by unplugged listener. (Known event: RemoveColumnFx, RemoveDataTable, RemoveTransformTable)*/
-        removeDirectLine(line);
+        removeDirectLine(line, false);
 
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.pre(JavaScript.lineStart);
@@ -298,7 +314,7 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript(jsBuilder.toString());
     }
 
-    private void removeDirectLine(Line line) {
+    private void removeDirectLine(Line line, boolean chain) {
         log.warn("removeDirectLine(line:{})", line);
         Step step = getStep();
 
@@ -308,7 +324,7 @@ public class FlowchartController extends Controller {
 
         Action action = new RemoveDirectLine(paramMap);
         try {
-            action.execute();
+            action.execute(chain);
         } catch (RequiredParamException e) {
             log.error("Remove Line Failed!", e);
             FacesUtil.addError("Remove Line Failed with Internal Command Error!");
@@ -319,7 +335,7 @@ public class FlowchartController extends Controller {
         String dataSourceId = ((Selectable) dataSource).getSelectableId();
         String dataFileId = dataFile.getSelectableId();
         log.warn("addDataSourceLine(dataSource:{}, dataFile:{})", dataSourceId, dataFileId);
-        return addDirectLine(dataSourceId, dataFileId);
+        return addDirectLine(dataSourceId, dataFileId, false);
     }
 
     private Action addColumnFx(DataColumn sourceColumn, TransformColumn transformColumn) {
@@ -353,7 +369,7 @@ public class FlowchartController extends Controller {
         return action;
     }
 
-    private Action addDirectLine(String startSelectableId, String endSelectableId) {
+    private Action addDirectLine(String startSelectableId, String endSelectableId, boolean chain) {
         log.warn("addDirectLine(start:{}, end:{})", startSelectableId, endSelectableId);
         Step step = getStep();
 
@@ -363,7 +379,7 @@ public class FlowchartController extends Controller {
 
         Action action = new AddDirectLine(paramMap);
         try {
-            action.execute();
+            action.execute(chain);
         } catch (RequiredParamException e) {
             log.error("Add Line Failed!", e);
             FacesUtil.addError("Add Line Failed with Internal Command Error!");
@@ -384,7 +400,7 @@ public class FlowchartController extends Controller {
 
         Action action = new RemoveColumnFx(paramMap);
         try {
-            action.execute();
+            action.execute(true);
         } catch (RequiredParamException e) {
             log.error("Remove ColumnFx Failed!", e);
             FacesUtil.addError("Remove ColumnFx Failed with Internal Command Error!");
@@ -638,7 +654,7 @@ public class FlowchartController extends Controller {
 
         try {
             Action action = new RemoveTransformTable(paramMap);
-            action.execute();
+            action.execute(true);
         } catch (RequiredParamException e) {
             log.error("Remove TransformTable Failed!", e);
             FacesUtil.addError("Remove Transformation Table Failed with Internal Command Error!");
@@ -673,7 +689,7 @@ public class FlowchartController extends Controller {
 
         try {
             Action action = new RemoveDataTable(paramMap);
-            action.execute();
+            action.execute(true);
         } catch (RequiredParamException e) {
             log.error("Remove DataTable Failed!", e);
             FacesUtil.addError("Remove DataTable Failed with Internal Command Error!");
