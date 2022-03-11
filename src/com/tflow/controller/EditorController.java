@@ -50,6 +50,7 @@ public class EditorController extends Controller {
     private int stepListActiveTab;
 
     private Map<String, Integer> actionPriorityMap;
+    private boolean fullActionList;
 
     @PostConstruct
     public void onCreation() {
@@ -72,26 +73,36 @@ public class EditorController extends Controller {
         selectStep(project.getActiveStepIndex(), false);
     }
 
+    public void refreshActionList() {
+        refreshActionList(workspace.getProject());
+    }
+
     private void refreshActionList(Project project) {
         Step step = project.getActiveStep();
         if (step == null) return;
 
         /*need to group more chains to one action*/
         actionList = new ArrayList<>();
-        Action currentAction = null;
-        int currentPriority = 0;
-        for (Action action : step.getHistory()) {
-            int actionPriority = getActionPriority(action);
-            if (currentAction == null || actionPriority > currentPriority) {
-                currentAction = action;
-                currentPriority = actionPriority;
+        if (fullActionList) {
+            for (Action action : step.getHistory()) {
+                actionList.add(new ActionView(action));
             }
-            if (action.getNextChain() == null) {
-                ActionView view = new ActionView(currentAction);
-                view.setId(action.getId()); //need to use id from the last action of a group (more detailed, see: undo function).
-                actionList.add(view);
-                currentAction = null;
-                currentPriority = 0;
+        } else {
+            Action currentAction = null;
+            int currentPriority = 0;
+            for (Action action : step.getHistory()) {
+                int actionPriority = getActionPriority(action);
+                if (currentAction == null || actionPriority > currentPriority) {
+                    currentAction = action;
+                    currentPriority = actionPriority;
+                }
+                if (action.getNextChain() == null) {
+                    ActionView view = new ActionView(currentAction);
+                    view.setId(action.getId()); //need to use id from the last action of a group (more detailed, see: undo function).
+                    actionList.add(view);
+                    currentAction = null;
+                    currentPriority = 0;
+                }
             }
         }
     }
@@ -204,6 +215,14 @@ public class EditorController extends Controller {
 
     public void setStepListActiveTab(int stepListActiveTab) {
         this.stepListActiveTab = stepListActiveTab;
+    }
+
+    public boolean isFullActionList() {
+        return fullActionList;
+    }
+
+    public void setFullActionList(boolean fullActionList) {
+        this.fullActionList = fullActionList;
     }
 
     /*== Public Methods ==*/
