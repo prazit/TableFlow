@@ -638,16 +638,14 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        Local local = new Local("Untitled", "/", project.newElementId());
-        DataFile dataFile = new DataFile(local, DataFileType.IN_MD, "Untitled", "/", project.newElementId(), project.newElementId());
-
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.DATA_SOURCE, local);
-        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
         paramMap.put(CommandParamKey.STEP, step);
 
+        Action action = new AddDataFile(paramMap);
+        Selectable selectable = null;
         try {
-            new AddDataFile(paramMap).execute();
+            action.execute();
+            selectable = (Selectable) action.getResultMap().get(ActionResultKey.DATA_FILE);
         } catch (RequiredParamException e) {
             log.error("Add DataFile Failed!", e);
             FacesUtil.addError("Add DataFile Failed with Internal Command Error!");
@@ -656,10 +654,9 @@ public class EditorController extends Controller {
 
         refreshActionList(project);
 
-        selectObject(dataFile.getSelectableId());
+        selectObject(selectable.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.addInfo("DataFile[" + dataFile.getName() + "] added.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 

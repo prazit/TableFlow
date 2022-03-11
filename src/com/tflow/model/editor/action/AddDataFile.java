@@ -22,12 +22,9 @@ public class AddDataFile extends Action {
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.DATA_SOURCE,
-                CommandParamKey.DATA_FILE,
                 CommandParamKey.STEP
         );
         setCommands(
-                new com.tflow.model.editor.cmd.AddDataSource(),
                 new com.tflow.model.editor.cmd.AddDataFile()
         );
     }
@@ -38,6 +35,6 @@ public class AddDataFile extends Action {
                 CommandParamKey.DATA_FILE,
                 CommandParamKey.STEP
         );
-        /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataFile());*/
+        setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataFile());
     }
 }
