@@ -1,9 +1,6 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.model.editor.DataTable;
-import com.tflow.model.editor.Selectable;
-import com.tflow.model.editor.Step;
-import com.tflow.model.editor.TransformTable;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
@@ -21,6 +18,12 @@ public class RemoveTransformTable extends Command {
         TransformTable transformTable = (TransformTable) paramMap.get(CommandParamKey.TRANSFORM_TABLE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
+
+        /*remove line beteween dataFile and dataTable*/
+        Line line = transformTable.getEndPlug().getLine();
+        if (line != null) {
+            step.removeLine(line);
+        }
 
         /*remove from Tower*/
         Floor floor = transformTable.getFloor();

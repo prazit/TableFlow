@@ -3,10 +3,12 @@ package com.tflow.model.editor.cmd;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
+import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,11 +22,26 @@ public class AddDataSource extends Command {
         Tower tower = step.getDataTower();
         Project project = step.getOwner();
 
-        int id = project.newUniqueId();
-        dataSource.setId(id);
+        @SuppressWarnings("unchecked")
+        List<DataFile> dataFileList = (List<DataFile>) paramMap.get(CommandParamKey.DATA_FILE_LIST);
+        boolean isExecute = (dataFileList == null);
 
-        Floor floor = tower.getAvailableFloor(0, false);
-        floor.setRoom(0, dataSource);
+        Floor floor;
+        int roomIndex;
+        int id;
+        if (isExecute) {
+            floor = tower.getAvailableFloor(0, false);
+            roomIndex = 0;
+            id = project.newUniqueId();
+            dataSource.setId(id);
+        } else {
+            floor = dataSource.getFloor();
+            roomIndex = dataSource.getRoomIndex();
+            id = dataSource.getId();
+        }
+
+        /*Undo action will put dataSource at old room*/
+        floor.setRoom(roomIndex, dataSource);
 
         switch (dataSource.getType()) {
             case DATABASE:
@@ -36,12 +53,17 @@ public class AddDataSource extends Command {
                 break;
 
             case LOCAL:
-                /*nothing to do for local*/
+                project.getLocalMap().put(id, (Local) dataSource);
                 break;
         }
 
         Selectable selectable = (Selectable) dataSource;
         step.getSelectableMap().put(selectable.getSelectableId(), selectable);
+
+        /*for Acion.executeUndo*/
+
+
+        /*Action Result*/
     }
 
 }

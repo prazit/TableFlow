@@ -28,6 +28,7 @@ public class AddDataFile extends Command {
         DataFile dataFile = (DataFile) paramMap.get(CommandParamKey.DATA_FILE);
         DataTable dataTable;
         if (dataFile == null) {
+            /*execute*/
             dataTable = null;
 
             dataFile = new DataFile(null, DataFileType.IN_MD, "Untitled", "/", project.newElementId(), project.newElementId());

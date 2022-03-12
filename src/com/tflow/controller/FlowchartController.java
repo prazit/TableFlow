@@ -1,6 +1,5 @@
 package com.tflow.controller;
 
-import com.tflow.HasEvent;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
@@ -38,28 +37,12 @@ public class FlowchartController extends Controller {
         /*-- Handle all events --*/
         Step step = getStep();
         step.getEventManager()
-                .removeHandlers(EventName.ADD_LINE)
-                .addHandler(EventName.ADD_LINE, new EventHandler() {
-                    @Override
-                    public void handle(Event event) {
-                        Line line = (Line) event.getData();
-                        addDirectLine(line.getStartSelectableId(), line.getEndSelectableId(), true);
-                    }
-                })
                 .removeHandlers(EventName.LINE_ADDED)
                 .addHandler(EventName.LINE_ADDED, new EventHandler() {
                     @Override
                     public void handle(Event event) {
                         Line line = (Line) event.getData();
                         jsBuilder.append(line.getJsAdd());
-                    }
-                })
-                .removeHandlers(EventName.REMOVE_LINE)
-                .addHandler(EventName.REMOVE_LINE, new EventHandler() {
-                    @Override
-                    public void handle(Event event) {
-                        Line line = (Line) event.getData();
-                        removeDirectLine(line, true);
                     }
                 })
                 .removeHandlers(EventName.LINE_REMOVED)
@@ -71,7 +54,7 @@ public class FlowchartController extends Controller {
                     }
                 });
 
-        Map<String, Selectable> selectableMap = step.getSelectableMap();
+        /*Map<String, Selectable> selectableMap = step.getSelectableMap();
         for (Selectable selectable : selectableMap.values()) {
             if (!(selectable instanceof HasEvent)) continue;
             HasEvent target = (HasEvent) selectable;
@@ -86,29 +69,8 @@ public class FlowchartController extends Controller {
                             }
                         });
 
-            } else if (target instanceof DataTable) {
-                if (target instanceof TransformTable) {
-                    target.getEventManager()
-                            .removeHandlers(EventName.REMOVE)
-                            .addHandler(EventName.REMOVE, new EventHandler() {
-                                @Override
-                                public void handle(Event event) {
-                                    removeTransformTable((TransformTable) event.getTarget());
-                                }
-                            });
-
-                } else {
-                    target.getEventManager()
-                            .removeHandlers(EventName.REMOVE)
-                            .addHandler(EventName.REMOVE, new EventHandler() {
-                                @Override
-                                public void handle(Event event) {
-                                    removeDataTable((DataTable) event.getTarget());
-                                }
-                            });
-                }
             }
-        }
+        }*/
     }
 
     public Step getStep() {
@@ -275,6 +237,7 @@ public class FlowchartController extends Controller {
      * boolean isStartPlug | true = remove first line from start-plug, false = remove line from end-plug<br/>
      */
     public void removeLine() {
+        String friendSelectableId = null;
         String selectableId = FacesUtil.getRequestParam("selectableId");
         boolean isStartPlug = Boolean.parseBoolean(FacesUtil.getRequestParam("startPlug"));
         Step step = getStep();
@@ -288,8 +251,7 @@ public class FlowchartController extends Controller {
             return;
         }
 
-        String friendSelectableId = "";
-        Line line = null;
+        Line line;
         if (isStartPlug) {
             line = selectable.getStartPlug().getLine();
             friendSelectableId = line.getEndSelectableId();
@@ -298,9 +260,19 @@ public class FlowchartController extends Controller {
             line = hasEndPlug.getEndPlug().getLine();
             friendSelectableId = line.getStartSelectableId();
         }
+        Selectable friend = selectableMap.get(friendSelectableId);
 
-        /*Remove object event may be occurred by unplugged listener. (Known event: RemoveColumnFx, RemoveDataTable, RemoveTransformTable)*/
-        removeDirectLine(line, false);
+        if (selectable instanceof ColumnFx) {
+            removeColumnFx((ColumnFx) selectable);
+        } else if (friend instanceof ColumnFx) {
+            removeColumnFx((ColumnFx) friend);
+        } else if (selectable instanceof TransformTable) {
+            removeTransformTable((TransformTable) selectable);
+        } else if (selectable instanceof DataTable) {
+            removeDataTable((DataTable) selectable);
+        } else {
+            removeDirectLine(line, false);
+        }
 
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.pre(JavaScript.lineStart);
@@ -308,7 +280,7 @@ public class FlowchartController extends Controller {
         if (selectableMap.containsKey(selectableId)) {
             jsBuilder.post(JavaScript.updateEm, selectableId);
         }
-        if (selectableMap.containsKey(friendSelectableId)) {
+        if (friendSelectableId != null && selectableMap.containsKey(friendSelectableId)) {
             jsBuilder.post(JavaScript.updateEm, friendSelectableId);
         }
         FacesUtil.runClientScript(jsBuilder.toString());
@@ -400,7 +372,7 @@ public class FlowchartController extends Controller {
 
         Action action = new RemoveColumnFx(paramMap);
         try {
-            action.execute(true);
+            action.execute(false);
         } catch (RequiredParamException e) {
             log.error("Remove ColumnFx Failed!", e);
             FacesUtil.addError("Remove ColumnFx Failed with Internal Command Error!");
@@ -654,7 +626,7 @@ public class FlowchartController extends Controller {
 
         try {
             Action action = new RemoveTransformTable(paramMap);
-            action.execute(true);
+            action.execute(false);
         } catch (RequiredParamException e) {
             log.error("Remove TransformTable Failed!", e);
             FacesUtil.addError("Remove Transformation Table Failed with Internal Command Error!");
@@ -689,7 +661,7 @@ public class FlowchartController extends Controller {
 
         try {
             Action action = new RemoveDataTable(paramMap);
-            action.execute(true);
+            action.execute(false);
         } catch (RequiredParamException e) {
             log.error("Remove DataTable Failed!", e);
             FacesUtil.addError("Remove DataTable Failed with Internal Command Error!");

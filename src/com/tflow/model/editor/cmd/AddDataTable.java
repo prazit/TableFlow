@@ -22,20 +22,30 @@ public class AddDataTable extends Command {
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
-        DataTable dataTable = extractData(dataFile, step);
-        dataTable.setLevel(0);
+        /*support undo of Action 'RemoveDataFile'*/
+        DataTable dataTable = (DataTable) paramMap.get(CommandParamKey.DATA_TABLE);
+        boolean isExecute = dataTable == null;
+        if (isExecute) {
+            /*execute*/
+            dataTable = extractData(dataFile, step);
+            dataTable.setLevel(0);
+        }
 
+        /*add to Tower*/
         Tower tower = step.getDataTower();
-
         Floor floor = tower.getAvailableFloor(2, false);
         floor.setRoom(2, dataTable);
 
-        step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
+        /*Add to selectableMap*/
+        DataTableUtil.addTo(step.getSelectableMap(), dataTable, step.getOwner());
 
         /*Add to DataTable List*/
         List<DataTable> dataList = step.getDataList();
         dataTable.setIndex(dataList.size());
         dataList.add(dataTable);
+
+        /*line between DataFile and DataTable*/
+        step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
@@ -73,7 +83,7 @@ public class AddDataTable extends Command {
         List<DataFile> outputList = dataTable.getOutputList();
         outputList.add(outputCSVFile);
 
-        DataTableUtil.renewChild(step.getSelectableMap(), dataTable, project);
+        DataTableUtil.generateId(step.getSelectableMap(), dataTable, project);
 
         return dataTable;
     }

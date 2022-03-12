@@ -57,7 +57,7 @@
                                                     </div>
                                                     <br/>
                                                     <p:outputLabel value="(#{action.code}:#{action.id})" rendered="#{not editorCtl.fullActionList}"/>
-                                                    <p:commandButton value="Undo" action="#{editorCtl.undo(action)}" rendered="#{action.undo and not editorCtl.fullActionList}" styleClass="float-right" update="@parent"/>
+                                                    <p:commandButton value="Undo" action="#{editorCtl.undo(action)}" rendered="#{action.undo and not editorCtl.fullActionList}" styleClass="float-right" update="@parent" onstart="serverStart()" oncomplete="serverEnd()"/>
                                                 </p:outputPanel>
                                             </p:repeat>
                                         </p:scrollPanel>
@@ -80,9 +80,9 @@
                                         <p:submenu label="Add">
                                             <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addStep}" update="stepForm,propertyForm"/>
                                             <p:divider/>
-                                            <p:menuitem value="File Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="stepForm,propertyForm"/>
-                                            <p:menuitem value="DB Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="stepForm,propertyForm"/>
-                                            <p:menuitem value="SFTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="stepForm,propertyForm"/>
+                                            <p:menuitem value="Root Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="stepForm,propertyForm"/>
+                                            <p:menuitem value="FTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="stepForm,propertyForm"/>
+                                            <p:menuitem value="DataBase Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="stepForm,propertyForm"/>
                                             <p:divider/>
                                             <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="stepForm,propertyForm"/>
                                         </p:submenu>

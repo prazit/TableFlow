@@ -5,7 +5,7 @@ import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.datasource.Local;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class AddOutputFile extends Command {
@@ -17,13 +17,10 @@ public class AddOutputFile extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Project project = step.getOwner();
 
-        /*TODO: may be need to detect existing local and reuse them*/
-        Local local = new Local("Untitled", "/", project.newElementId());
-
-        DataFile dataFile = new DataFile(local, DataFileType.OUT_MD, "Untitled", "/", project.newElementId(), project.newElementId());
-        dataTable.getOutputList().add(dataFile);
-
+        DataFile dataFile = new DataFile(null, DataFileType.OUT_MD, "Untitled", "/", project.newElementId(), project.newElementId());
         dataFile.setId(project.newUniqueId());
+
+        dataTable.getOutputList().add(dataFile);
 
         step.getSelectableMap().put(dataFile.getSelectableId(), dataFile);
 

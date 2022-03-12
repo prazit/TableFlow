@@ -2,7 +2,6 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 
-import java.util.List;
 import java.util.Map;
 
 public class RemoveColumnFx extends Command {
@@ -15,17 +14,11 @@ public class RemoveColumnFx extends Command {
         TransformTable targetTable = (TransformTable) targetColumn.getOwner();
 
         /*remove remaining lines on startPlug*/
-        List<Line> lineList = columnFx.getStartPlug().getLineList();
-        if (lineList.size() > 0) {
-            for (Line line : lineList) {
-                step.removeLine(line);
-            }
-        }
+        step.removeLine(columnFx.getStartPlug());
 
         /*remove remaining line on endPlug*/
         for (ColumnFxPlug endPlug : columnFx.getEndPlugList()) {
-            Line line = endPlug.getLine();
-            if (line != null) step.removeLine(line);
+            step.removeLine(endPlug);
         }
 
         /*remove fx from FxTable*/

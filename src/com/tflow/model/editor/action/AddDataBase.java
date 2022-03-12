@@ -30,11 +30,10 @@ public class AddDataBase extends Action {
 
     @Override
     protected void initUndoCommands() {
-        /*setUndoParams(
+        setUndoParams(
                 CommandParamKey.DATA_SOURCE,
-                CommandParamKey.TOWER,
-                CommandParamKey.PROJECT
-        );*/
-        /*setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataSource());*/
+                CommandParamKey.STEP
+        );
+        setUndoCommands(new com.tflow.model.editor.cmd.RemoveDataSource());
     }
 }

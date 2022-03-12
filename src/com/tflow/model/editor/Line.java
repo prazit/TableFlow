@@ -14,6 +14,8 @@ public class Line implements Serializable {
     private LineType type;
     private String text;
 
+    private boolean user;
+
     public Line(String startSelectableId, String endSelectableId) {
         this.startSelectableId = startSelectableId;
         this.endSelectableId = endSelectableId;
@@ -73,6 +75,14 @@ public class Line implements Serializable {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public boolean isUser() {
+        return user;
+    }
+
+    public void setUser(boolean user) {
+        this.user = user;
     }
 
     public String getJsAdd() {

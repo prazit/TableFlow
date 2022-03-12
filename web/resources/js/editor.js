@@ -148,6 +148,22 @@ function lineEnd() {
     window.scrollTo(lines.lineEnd);
 }
 
+function serverStart() {
+    /*show progress and disable all server action (allow client action)*/
+    $('.container').addClass('server');
+    contentReady(function() {
+        contentWindow.$('.flow-chart').addClass('server');
+    });
+}
+
+function serverEnd() {
+    /*hide progress bar and enable all server action*/
+    $('.container').removeClass('server');
+    contentReady(function() {
+        contentWindow.$('.flow-chart').removeClass('server');
+    });
+}
+
 function scrollToObj(active) {
     var thisScroll = Date.now(),
         diff = thisScroll - tflow.lastScroll;
@@ -169,6 +185,7 @@ function scrollToObj(active) {
     var outerHeight = active.outerHeight();
     var outerWidth = active.outerWidth();
 
+    /*TODO: no need to scroll when the object already stand in the current screen*/
     contentWindow.scrollTo(0, 0);
     var pos = active.offset();
     pos.top *= zoomed;

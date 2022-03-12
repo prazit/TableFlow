@@ -143,14 +143,10 @@ public class Step implements Selectable, HasEvent {
     }
 
     /**
-     * If you need to add line to the list must call addLine().
+     * Notice: Read only.
      */
     public List<Line> getLineList() {
         return lineList;
-    }
-
-    public void setLineList(List<Line> lineList) {
-        this.lineList = lineList;
     }
 
     public Project getOwner() {
@@ -259,16 +255,85 @@ public class Step implements Selectable, HasEvent {
 
     /*== Public Methods ==*/
 
+    /**
+     * Internal use to add new line to the step without history.
+     */
     public Line addLine(String startSelectableId, String endSelectableId) {
-        /*addLine function script already moved into AddDirectLine command*/
         Line newLine = new Line(startSelectableId, endSelectableId);
-        eventManager.fireEvent(EventName.ADD_LINE, newLine);
+
+        newLine.setClientIndex(newLineClientIndex());
+        lineList.add(newLine);
+
+        Selectable startSelectable = selectableMap.get(startSelectableId);
+        Selectable endSelectable = selectableMap.get(endSelectableId);
+
+        newLine.setType(getLineType(startSelectable));
+
+        LinePlug startPlug = startSelectable.getStartPlug();
+        startPlug.setPlugged(true);
+        startPlug.getLineList().add(newLine);
+        PlugListener listener = startPlug.getListener();
+        if (listener != null) {
+            listener.plugged(newLine);
+        }
+        newLine.setStartPlug(startPlug);
+
+        HasEndPlug hasEndPlug = (HasEndPlug) endSelectable;
+        LinePlug endPlug = hasEndPlug.getEndPlug();
+        endPlug.setPlugged(true);
+        endPlug.getLineList().add(newLine);
+        listener = endPlug.getListener();
+        if (listener != null) {
+            listener.plugged(newLine);
+        }
+        newLine.setEndPlug(endPlug);
+
         return newLine;
     }
 
+    /**
+     * Internal use to remove line from the step without history.
+     */
     public void removeLine(Line line) {
-        /*removeLine function script already moved into RemoveDirectLine command*/
-        eventManager.fireEvent(EventName.REMOVE_LINE, line);
+        lineList.remove(line);
+
+        LinePlug startPlug = line.getStartPlug();
+        startPlug.getLineList().remove(line);
+        PlugListener listener = startPlug.getListener();
+        if (listener != null) {
+            listener.unplugged(line);
+        }
+
+        LinePlug endPlug = line.getEndPlug();
+        endPlug.getLineList().remove(line);
+        listener = endPlug.getListener();
+        if (listener != null) {
+            listener.unplugged(line);
+        }
+    }
+
+    /**
+     * Internal use to remove line from the step without history.
+     */
+    public void removeLine(LinePlug plug) {
+        List<Line> lineList = new ArrayList<>(plug.getLineList());
+        if (lineList.size() > 0) {
+            for (Line line : lineList) {
+                removeLine(line);
+            }
+        }
+    }
+
+    public LineType getLineType(Selectable selectable) {
+        if (selectable instanceof DataColumn) {
+            DataColumn dataColumn = (DataColumn) selectable;
+            return LineType.valueOf(dataColumn.getType().name());
+        } else if (selectable instanceof ColumnFx) {
+            ColumnFx columnFx = (ColumnFx) selectable;
+            return LineType.valueOf(columnFx.getOwner().getType().name());
+        } else {
+            return LineType.TABLE;
+        }
     }
 
     public List<Line> getLineByStart(String selectableId) {

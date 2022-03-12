@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.datasource.Database;
+import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 
 import java.util.ArrayList;
@@ -12,9 +13,13 @@ public class Project {
     private String name;
     private Batch batch;
     private int activeStepIndex;
+
     private List<Step> stepList;
+
     private Map<Integer, Database> databaseMap;
     private Map<Integer, SFTP> sftpMap;
+    private Map<Integer, Local> localMap;
+
     private Map<String, Variable> variableMap;
 
     private int lastElementId;
@@ -26,6 +31,7 @@ public class Project {
         stepList = new ArrayList<>();
         databaseMap = new HashMap<>();
         sftpMap = new HashMap<>();
+        localMap = new HashMap<>();
         variableMap = new HashMap<>();
     }
 
@@ -76,6 +82,14 @@ public class Project {
 
     public void setSftpMap(Map<Integer, SFTP> sftpMap) {
         this.sftpMap = sftpMap;
+    }
+
+    public Map<Integer, Local> getLocalMap() {
+        return localMap;
+    }
+
+    public void setLocalMap(Map<Integer, Local> localMap) {
+        this.localMap = localMap;
     }
 
     public Map<String, Variable> getVariableMap() {

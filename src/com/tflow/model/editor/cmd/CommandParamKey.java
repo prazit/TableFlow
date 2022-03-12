@@ -2,31 +2,30 @@ package com.tflow.model.editor.cmd;
 
 public enum CommandParamKey {
 
-    PROJECT,
-    HISTORY,
+    STEP,
     ACTION,
 
     DATA_SOURCE,
+
     DATA_FILE,
+    DATA_FILE_LIST,
+
     DATA_TABLE,
+    DATA_COLUMN,
+
     TRANSFORM_TABLE,
+    TRANSFORM_COLUMN,
     COLUMN_FX,
     TABLE_FX,
 
     COLUMN_FUNCTION,
 
-    DATA_COLUMN,
-    TRANSFORM_COLUMN,
-
-    TOWER,
-    LINE_LIST,
     LINE,
+    LINE_LIST,
 
     DATA_TEST1,
-    DATA_TEST2,
-    STEP,
+    DATA_TEST2;
 
-    ;
 
     boolean optional;
 

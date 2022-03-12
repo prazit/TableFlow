@@ -51,7 +51,8 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent 
 
             @Override
             public void unplugged(Line line) {
-                eventManager.fireEvent(EventName.REMOVE);
+                plug.setPlugged(false);
+                plug.setRemoveButton(false);
             }
         });
 

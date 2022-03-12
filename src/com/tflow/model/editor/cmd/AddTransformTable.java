@@ -69,7 +69,8 @@ public class AddTransformTable extends Command {
         floor.setRoom(roomIndex - 1, transformTable.getColumnFxTable());
         floor.setRoom(roomIndex, transformTable);
 
-        DataTableUtil.renewChild(step.getSelectableMap(), transformTable, project);
+        DataTableUtil.generateId(step.getSelectableMap(), transformTable, project);
+        DataTableUtil.addTo(step.getSelectableMap(), transformTable, project);
 
         /*link from SourceTable to TransformTable*/
         step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());

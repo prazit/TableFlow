@@ -5,7 +5,6 @@ import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,20 +21,10 @@ public class RemoveDataFile extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
         /*remove remaining lines on startPlug*/
-        List<Line> lineList = dataFile.getStartPlug().getLineList();
-        if (lineList.size() > 0) {
-            for (Line line : lineList) {
-                step.removeLine(line);
-            }
-        }
+        step.removeLine(dataFile.getStartPlug());
 
         /*remove remaining line on endPlug*/
-        lineList = dataFile.getEndPlug().getLineList();
-        if (lineList.size() > 0) {
-            for (Line line : lineList) {
-                step.removeLine(line);
-            }
-        }
+        step.removeLine(dataFile.getEndPlug());
 
         /*remove from Tower*/
         Floor floor = dataFile.getFloor();

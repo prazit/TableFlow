@@ -52,18 +52,16 @@ public class AddColumnFx extends Command {
         selectableMap.put(columnFx.getSelectableId(), columnFx);
 
         List<Line> lineList = new ArrayList<>();
-        if (isExecute) {
-            /*Notice: draw lines below tested on ColumnFunction.LOOKUP and expect to work for all ColumnFunction*/
+        /*Notice: draw lines below tested on ColumnFunction.LOOKUP and expect to work for all ColumnFunction*/
 
-            /*line between sourceColumn and columnFx*/
-            Line line1 = step.addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
+        /*line between sourceColumn and columnFx*/
+        Line line1 = step.addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
 
-            /*line between columnFx and targetColumn*/
-            Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
+        /*line between columnFx and targetColumn*/
+        Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
 
-            lineList.add(line1);
-            lineList.add(line2);
-        }
+        lineList.add(line1);
+        lineList.add(line2);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.COLUMN_FX, columnFx);

@@ -1,6 +1,9 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.model.editor.*;
+import com.tflow.model.editor.EventName;
+import com.tflow.model.editor.Line;
+import com.tflow.model.editor.Project;
+import com.tflow.model.editor.Step;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 
@@ -17,37 +20,8 @@ public class AddDirectLine extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Project project = step.getOwner();
 
-        /*------- step.addLine -------*/
-
-        newLine.setClientIndex(step.newLineClientIndex());
-        step.getLineList().add(newLine);
-
-        Map<String, Selectable> selectableMap = step.getSelectableMap();
-        Selectable startSelectable = selectableMap.get(newLine.getStartSelectableId());
-        Selectable endSelectable = selectableMap.get(newLine.getEndSelectableId());
-
-        newLine.setType(getLineType(startSelectable));
-
-        LinePlug startPlug = startSelectable.getStartPlug();
-        startPlug.setPlugged(true);
-        startPlug.getLineList().add(newLine);
-        PlugListener listener = startPlug.getListener();
-        if (listener != null) {
-            listener.plugged(newLine);
-        }
-        newLine.setStartPlug(startPlug);
-
-        HasEndPlug hasEndPlug = (HasEndPlug) endSelectable;
-        LinePlug endPlug = hasEndPlug.getEndPlug();
-        endPlug.setPlugged(true);
-        endPlug.getLineList().add(newLine);
-        listener = endPlug.getListener();
-        if (listener != null) {
-            listener.plugged(newLine);
-        }
-        newLine.setEndPlug(endPlug);
-
-        /*------- step.addLine -------*/
+        newLine = step.addLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
+        newLine.setUser(true);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.LINE, newLine);
@@ -59,18 +33,6 @@ public class AddDirectLine extends Command {
 
         /*notify status*/
         step.getEventManager().fireEvent(EventName.LINE_ADDED, newLine);
-    }
-
-    private LineType getLineType(Selectable selectable) {
-        if (selectable instanceof DataColumn) {
-            DataColumn dataColumn = (DataColumn) selectable;
-            return LineType.valueOf(dataColumn.getType().name());
-        } else if (selectable instanceof ColumnFx) {
-            ColumnFx columnFx = (ColumnFx) selectable;
-            return LineType.valueOf(columnFx.getOwner().getType().name());
-        } else {
-            return LineType.TABLE;
-        }
     }
 
 }

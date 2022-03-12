@@ -67,7 +67,8 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
             @Override
             public void unplugged(Line line) {
-                eventManager.fireEvent(EventName.REMOVE);
+                plug.setPlugged(false);
+                plug.setRemoveButton(false);
             }
         });
 

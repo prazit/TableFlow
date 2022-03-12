@@ -2,13 +2,10 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
-import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
-import com.tflow.model.editor.room.Tower;
 import com.tflow.util.DataTableUtil;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +20,11 @@ public class RemoveDataTable extends Command {
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
+        /*TODO: need to create actions to remove all child at first, history will change between this process (keep no chain no effect)*/
+
+        /*remove line between dataFile and dataTable*/
+        step.removeLine(dataTable.getEndPlug());
+
         /*remove from Tower*/
         Floor floor = dataTable.getFloor();
         int roomIndex = dataTable.getRoomIndex();
@@ -32,7 +34,7 @@ public class RemoveDataTable extends Command {
         step.getDataList().remove(dataTable);
 
         /*remove from selectableMap*/
-        step.getSelectableMap().remove(dataTable.getSelectableId());
+        DataTableUtil.removeFrom(step.getSelectableMap(), dataTable);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);

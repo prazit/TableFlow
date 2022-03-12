@@ -11,26 +11,8 @@ public class RemoveDirectLine extends Command {
         Line line = (Line) paramMap.get(CommandParamKey.LINE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
 
-        /*------- step.removeLine -------*/
-        //step.removeLine(line);
-        step.getLineList().remove(line);
-
-        LinePlug startPlug = line.getStartPlug();
-        startPlug.getLineList().remove(line);
-        PlugListener listener = startPlug.getListener();
-        if (listener != null) {
-            listener.unplugged(line);
-        }
-
-        LinePlug endPlug = line.getEndPlug();
-        endPlug.getLineList().remove(line);
-        listener = endPlug.getListener();
-        if (listener != null) {
-            listener.unplugged(line);
-        }
-
-        /*------- step.removeLine -------*/
-
+        step.removeLine(line);
+        
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.LINE, line);
 
