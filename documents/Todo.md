@@ -10,7 +10,11 @@
 
 |        Done        | Task                                                         | Remark                                                       |
 | :----------------: | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| :heavy_check_mark: | Action of Line create more problems, need to recheck/design Line Action is needed or not.<br /><br />question:<br />+ 1:where and when the Add/RemoveLine action is created.<br />+ 2:why need the AddLine action. | answer:<br />+ 1:every call of step.addLine/removeLine within command will create Add/RemoveLine action<br />+ 2: for Undo<br /><br /><br />solved:<br />+ need 2 modes for Add/RemoveLine, one for User Action and one for Internal-Command.<br />+ User Action need the Action for Undo<br />+ Internal Command don't need it and expect the Action History has no change between command process. |
+| :heavy_check_mark: | Write to files: <br />need design of file structure          | see: File Structure.md                                       |
+| :heavy_check_mark: | need storage selection,<br />                                | storages: (embedded or dbms) sqlite, berkeley, file or mongo, java-db<br /><br />**file system** is the best choice (fastest query time when have large amount of objects) |
+|                    | need API tier for read/write object                          | back end: REST or learn more about MicroService(both client browser and server), Kafka (event queue) and friends |
+|                    | need Write Queue System, <br />no wait time for Write, <br />guarantee no fail for Write <br /> | front end: <br />+ need low storage alert (show at the Project Selection step before open project)<br />+ need to lock all change when open Project with an storage alert |
+|                    |                                                              | front end event: write when everything has changed<br />     |
 
 
 ----
