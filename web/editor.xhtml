@@ -96,11 +96,13 @@
                                             <p:menuitem value="Table Buttons" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
                                         </p:submenu>
 
-                                        <p:submenu label="Test">
-                                            <p:menuitem value="Write Serialize (test)" icon="pi pi-fw pi-plus"
-                                                        actionListener="#{editorCtl.testWriteSerialize}"/>
-                                            <p:menuitem value="Read Serialize (test)" icon="pi pi-fw pi-plus"
-                                                        actionListener="#{editorCtl.testReadSerialize}"/>
+                                        <p:submenu label="Test Serialize">
+                                            <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>
+                                            <p:menuitem value="Write (Action List with header)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteHeader}"/>
+                                            <p:menuitem value="Write (Action List with footer)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteFooter}"/>
+                                            <p:divider/>
+                                            <p:menuitem value="Read (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadActionList}"/>
+                                            <p:menuitem value="Scan (Unknown Object)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testScanSerialize}"/>
                                         </p:submenu>
 
                                         <p:divider layout="vertical"/>

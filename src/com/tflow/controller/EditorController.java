@@ -10,6 +10,8 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
+import net.mcmanus.eamonn.serialysis.SEntity;
+import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
@@ -21,11 +23,9 @@ import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.beans.Transient;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ViewScoped
 @Named("editorCtl")
@@ -423,13 +423,19 @@ public class EditorController extends Controller {
     }
 
     @SuppressWarnings("unchecked")
-    public void testReadSerialize() {
+    public void testReadActionList() {
+        /*Notice: serialized file can contains Footer-Data after serialized-data without any concern.*/
+        /*Notice: serialized file can contains Header-Data before serialized-data when use SerialScan.readObject to read.*/
+        /*Notice: IMPORTANT: serialized file can't contains Header-Data before serialized-data when use Object.readObject to read.*/
         List<Action> actionList = null;
         try {
-            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/TestAction.ser");
+            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+
+            /*-- normal cast to known object --*/
             ObjectInputStream in = new ObjectInputStream(fileIn);
             actionList = (List<Action>) in.readObject();
             in.close();
+
             fileIn.close();
         } catch (IOException i) {
             log.error("", i);
@@ -447,41 +453,66 @@ public class EditorController extends Controller {
         }
     }
 
-    public void testWriteSerialize() {
-        Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.DATA_SOURCE, "String");
-        paramMap.put(CommandParamKey.DATA_FILE, "Integer");
-        paramMap.put(CommandParamKey.DATA_TABLE, "Date");
-        paramMap.put(CommandParamKey.COLUMN_FUNCTION, "Decimal");
-        paramMap.put(CommandParamKey.TRANSFORM_TABLE, DateTimeUtil.now());
-        paramMap.put(CommandParamKey.DATA_TEST1, 35000);
-        paramMap.put(CommandParamKey.DATA_TEST2, 35000.00053);
-
-        List<Action> actionList = new ArrayList<>();
-        TestAction testAction = new TestAction(paramMap);
-        actionList.add(testAction);
-
+    public void testScanSerialize() {
+        FileInputStream fileIn = null;
         try {
-            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/TestAction.ser");
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(actionList);
-            out.close();
-            fileOut.close();
-            log.info("Serialized data is saved in /Apps/TFlow/TestAction.ser");
-        } catch (IOException i) {
-            i.printStackTrace();
+            fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+
+            /*-- scan for serialized object for unknown object --*/
+            SerialScan serialScan = new SerialScan(fileIn);
+            SEntity sEntity = serialScan.readObject();
+            int objectCount = 0;
+            while (sEntity != null) {
+                objectCount++;
+                log.warn("sEntity[{}]={}", objectCount, sEntity);
+                sEntity = serialScan.readObject();
+            }
+
+            fileIn.close();
+
+        } catch (EOFException eof) {
+            try {
+                fileIn.close();
+            } catch (IOException e) {
+                /*nothing*/
+            }
+
+        } catch (Exception e) {
+            log.error("testScanSerialize failed, ", e);
         }
     }
 
-    public void testAction() {
-        Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.DATA_TEST1, new String[]{"Data1", "Data1.1", "Data1.2"});
-        paramMap.put(CommandParamKey.DATA_TEST2, new String[]{"Data2", "Data2.1", "Data2.2"});
+    public void testWriteActionList() {
+        List<Action> history = workspace.getProject().getActiveStep().getHistory();
+        testWriteSerialize(history, null, null);
+    }
 
+    public void testWriteHeader() {
+        List<Action> history = workspace.getProject().getActiveStep().getHistory();
+        testWriteSerialize(history, "TFlow - Some header before real data.", null);
+    }
+
+    public void testWriteFooter() {
+        List<Action> history = workspace.getProject().getActiveStep().getHistory();
+        testWriteSerialize(history, null, "TFlow - Some footer after real data.");
+    }
+
+    public void testWriteSerialize(Object object, String header, String footer) {
         try {
-            new TestAction(paramMap).execute();
-        } catch (RequiredParamException e) {
-            log.error("TestAction Failed!", e);
+            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/TestSerialize.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            if (header != null) {
+                out.writeChars(header);
+            }
+            out.writeObject(object);
+            if (footer != null) {
+                out.writeChars(footer);
+            }
+            out.close();
+            fileOut.close();
+            log.info("Serialized data is saved in /Apps/TFlow/TestSerialize.ser");
+        } catch (IOException i) {
+            log.error("testWriteSerialize failed,", i);
         }
     }
 

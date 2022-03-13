@@ -13,7 +13,7 @@ import java.io.Serializable;
 public class Room implements Serializable {
     private static final long serialVersionUID = 2021121909996660030L;
 
-    private Logger log = LoggerFactory.getLogger(Room.class);
+    private transient Logger log = LoggerFactory.getLogger(Room.class);
 
     private String elementId;
     private int roomIndex;

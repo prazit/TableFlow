@@ -10,6 +10,7 @@ import java.io.Serializable;
 @SessionScoped
 @Named("workspace")
 public class Workspace implements Serializable {
+    private static final long serialVersionUID = 2021121709996660006L;
 
     private Project project;
     private User user;

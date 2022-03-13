@@ -13,7 +13,7 @@ import java.util.Map;
 public class DataFile extends Room implements Serializable, Selectable, HasEndPlug {
     private static final long serialVersionUID = 2021121709996660020L;
 
-    private Logger log = LoggerFactory.getLogger(DataFile.class);
+    private transient Logger log = LoggerFactory.getLogger(DataFile.class);
 
     private int id;
     private DataSource dataSource;

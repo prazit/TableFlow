@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class EventManager implements Serializable {
+    private static final long serialVersionUID = 2021121709996660063L;
 
     private Selectable target;
     private Map<EventName, List<EventHandler>> eventHandlerMap;

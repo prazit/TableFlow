@@ -9,9 +9,10 @@ import java.util.Map;
 
 /**
  * Remove DataFile only.<br/>
- * Notice: the DataTable need to remove all related objects before.
+ * Notice: the DataFile need to remove all related objects before.
  */
 public class RemoveDataFile extends Command {
+    private static final long serialVersionUID = 2022031309996660012L;
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {

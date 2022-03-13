@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +11,8 @@ import java.util.Map;
  * One time use guarantee (toString).<br/>
  * jQuery Defer option (toDeferString).
  */
-public class JavaScriptBuilder {
+public class JavaScriptBuilder implements Serializable {
+    private static final long serialVersionUID = 2021121709996660060L;
 
     private Map<String, Integer> preMap;
     private Map<String, Integer> jsMap;

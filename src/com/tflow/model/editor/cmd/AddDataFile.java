@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AddDataFile extends Command {
+    private static final long serialVersionUID = 2022031309996660005L;
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {

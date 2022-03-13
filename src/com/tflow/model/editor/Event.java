@@ -1,6 +1,9 @@
 package com.tflow.model.editor;
 
-public class Event {
+import java.io.Serializable;
+
+public class Event implements Serializable {
+    private static final long serialVersionUID = 2021121709996660061L;
 
     private EventName eventName;
     private Selectable target;

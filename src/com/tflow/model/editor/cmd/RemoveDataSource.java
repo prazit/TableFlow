@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class RemoveDataSource extends Command {
+    private static final long serialVersionUID = 2022031309996660014L;
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {
@@ -39,7 +40,7 @@ public class RemoveDataSource extends Command {
         int roomIndex = dataSource.getRoomIndex();
         floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, project.newElementId()));
 
-        /*Notice: don't remove from project, go to Project page to manage all data-source*/
+        /*Notice: don't remove data-source from project, go to Project page to manage all data-source*/
 
         /*remove from selectableMap*/
         selectableMap.remove(((Selectable) dataSource).getSelectableId());

@@ -15,6 +15,7 @@ import java.util.Map;
  * Extract Data File, Create DataTable and then add to DATA TOWER and DataTable List.
  */
 public class AddDataTable extends Command {
+    private static final long serialVersionUID = 2022031309996660006L;
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {

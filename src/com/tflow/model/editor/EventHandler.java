@@ -1,6 +1,9 @@
 package com.tflow.model.editor;
 
-public abstract class EventHandler {
+import java.io.Serializable;
+
+public abstract class EventHandler implements Serializable {
+    private static final long serialVersionUID = 2021121709996660062L;
 
     protected EventName eventName;
     private boolean handling;

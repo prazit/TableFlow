@@ -12,7 +12,7 @@ import java.util.List;
 public class Floor implements Serializable {
     private static final long serialVersionUID = 2021121909996660020L;
 
-    private Logger log = LoggerFactory.getLogger(Floor.class);
+    private transient Logger log = LoggerFactory.getLogger(Floor.class);
 
     private int index;
     private Tower tower;

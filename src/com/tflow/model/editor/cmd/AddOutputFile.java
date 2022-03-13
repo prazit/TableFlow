@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class AddOutputFile extends Command {
+    private static final long serialVersionUID = 2022031309996660010L;
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {

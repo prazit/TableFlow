@@ -14,7 +14,7 @@ import java.util.List;
 public class Tower implements Serializable {
     private static final long serialVersionUID = 2021121909996660010L;
 
-    private Logger log = LoggerFactory.getLogger(Tower.class);
+    private transient Logger log = LoggerFactory.getLogger(Tower.class);
 
     private List<Floor> floorList;
     private int roomsOnAFloor;

@@ -15,6 +15,7 @@ import java.util.Map;
  * Add DataSource to TOWER and DataSource List.
  */
 public class AddDataSource extends Command {
+    private static final long serialVersionUID = 2022031309996660000L;
 
     public void execute(Map<CommandParamKey, Object> paramMap) {
         DataSource dataSource = (DataSource) paramMap.get(CommandParamKey.DATA_SOURCE);

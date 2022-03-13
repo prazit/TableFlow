@@ -5,6 +5,7 @@ import com.tflow.model.editor.*;
 import java.util.Map;
 
 public class RemoveDirectLine extends Command {
+    private static final long serialVersionUID = 2022031309996660015L;
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {

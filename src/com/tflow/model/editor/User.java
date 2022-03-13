@@ -2,7 +2,11 @@ package com.tflow.model.editor;
 
 import com.tflow.system.constant.Theme;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
+    private static final long serialVersionUID = 2021121709996660008L;
+
     private Theme theme;
 
     public Theme getTheme() {

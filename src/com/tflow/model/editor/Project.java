@@ -4,12 +4,15 @@ import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Project {
+public class Project implements Serializable {
+    private static final long serialVersionUID = 2021121709996660001L;
+
     private String name;
     private Batch batch;
     private int activeStepIndex;

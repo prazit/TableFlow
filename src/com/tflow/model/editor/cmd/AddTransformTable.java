@@ -17,8 +17,9 @@ import java.util.Map;
  * Create TransformTable and copy all column from the source DataTable, add it to the TOWER and TransformTable List.
  */
 public class AddTransformTable extends Command {
+    private static final long serialVersionUID = 2022031309996660002L;
 
-    private Logger log = LoggerFactory.getLogger(AddTransformTable.class);
+    private transient Logger log = LoggerFactory.getLogger(AddTransformTable.class);
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {

@@ -13,6 +13,7 @@ import java.util.Map;
  * Notice: the DataTable need to remove all related objects before.
  */
 public class RemoveDataTable extends Command {
+    private static final long serialVersionUID = 2022031309996660011L;
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {

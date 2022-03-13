@@ -4,12 +4,14 @@ import com.tflow.HasEvent;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Tower;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Step implements Selectable, HasEvent {
+public class Step implements Serializable, Selectable, HasEvent {
+    private static final long serialVersionUID = 2021121709996660002L;
 
     private int id;
     private String name;
@@ -143,7 +145,7 @@ public class Step implements Selectable, HasEvent {
     }
 
     /**
-     * Notice: Read only.
+     * Notice: Step.LineList is Read only, don't make any change to it.
      */
     public List<Line> getLineList() {
         return lineList;
