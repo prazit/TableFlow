@@ -198,7 +198,7 @@ public abstract class Action implements Serializable {
         /*remove Action from history (FILO)*/
         history.remove(lastActionIndex);
 
-        if(previousChain != null) {
+        if (previousChain != null) {
             previousChain.setNextChain(null);
             previousChain.executeUndo();
         }
@@ -218,15 +218,16 @@ public abstract class Action implements Serializable {
 
     @Override
     public String toString() {
-        return getClass().getName() + "{" +
-                "id=" + id +
-                ", icon='" + image + '\'' +
-                ", code='" + code + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", canUndo=" + canUndo +
-                ", canRedo=" + canRedo +
-                ", paramMap=" + Arrays.toString(paramMap.keySet().toArray()) +
+        return "{" +
+                "className:'" + getClass().getName() + "'" +
+                ", id:" + id +
+                ", icon:'" + image + '\'' +
+                ", code:'" + code + '\'' +
+                ", name:'" + name + '\'' +
+                ", description:'" + description + '\'' +
+                ", canUndo:" + canUndo +
+                ", canRedo:" + canRedo +
+                ", paramMap:" + Arrays.toString(paramMap.keySet().toArray()) +
                 '}';
     }
 }

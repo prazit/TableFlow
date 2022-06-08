@@ -96,13 +96,18 @@
                                             <p:menuitem value="Table Buttons" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
                                         </p:submenu>
 
-                                        <p:submenu label="Test Serialize">
-                                            <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>
-                                            <p:menuitem value="Write (Action List with header)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteHeader}"/>
-                                            <p:menuitem value="Write (Action List with footer)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteFooter}"/>
-                                            <p:divider/>
-                                            <p:menuitem value="Read (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadActionList}"/>
-                                            <p:menuitem value="Scan (Unknown Object)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testScanSerialize}"/>
+                                        <p:submenu label="Testing">
+                                            <p:submenu label="Kafka">
+                                                <p:menuitem value="Send Message" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSendMessage}"/>
+                                            </p:submenu>
+                                            <p:submenu label="Serialize">
+                                                <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>
+                                                <p:menuitem value="Write (Action List with header)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteHeader}"/>
+                                                <p:menuitem value="Write (Action List with footer)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteFooter}"/>
+                                                <p:divider/>
+                                                <p:menuitem value="Read (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadActionList}"/>
+                                                <p:menuitem value="Scan (Unknown Object)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testScanSerialize}"/>
+                                            </p:submenu>
                                         </p:submenu>
 
                                         <p:divider layout="vertical"/>

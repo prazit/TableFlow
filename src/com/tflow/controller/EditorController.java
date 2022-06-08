@@ -8,10 +8,12 @@ import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
-import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
@@ -23,8 +25,8 @@ import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.beans.Transient;
 import java.io.*;
+import java.util.Properties;
 import java.util.*;
 
 @ViewScoped
@@ -420,6 +422,45 @@ public class EditorController extends Controller {
     public void darkTheme() {
         workspace.getUser().setTheme(Theme.DARK);
         FacesUtil.redirect("/editor.xhtml");
+    }
+
+    private int messageNo;
+
+    /*-- TODO: remove this comment block
+    @jakarta.inject.Inject
+    KafkaMessenger kafkaMessenger;*/
+    private Producer<String, String> producer;
+
+    public void testSendMessage() {
+        messageNo++;
+
+        /*-- TODO: remove this comment block | using Micronaut Kafka lib
+        KafkaMessenger kafkaMessenger = applicationContext.getBean(KafkaMessenger.class);
+        kafkaMessenger.sendMessage("MessageKey#" + messageNo, "MessageValue#" + messageNo);*/
+
+        /* using Kafka lib -- https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm */
+
+        if(producer == null) {
+            Properties props = new Properties();
+            props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
+            props.put("acks", "all");
+            props.put("retries", 0);
+            props.put("batch.size", 16384);
+            props.put("linger.ms", 1);
+            props.put("buffer.memory", 33554432);
+            props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            producer = new KafkaProducer<String, String>(props);
+        }
+
+        String topic = "quickstart-events";
+        /*String key = "MessageKey#" + messageNo;*/
+        String key = "SessionID";
+        /*String value = "MessageValue#" + messageNo;*/
+        String value = Arrays.toString(workspace.getProject().getActiveStep().getHistory().toArray());
+        producer.send(new ProducerRecord<String, String>(topic, key, value));
+
+        log.warn("testSendMessage(key:{}, value:{}) completed.", key, value);
     }
 
     @SuppressWarnings("unchecked")
