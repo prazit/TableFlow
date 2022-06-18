@@ -1,6 +1,8 @@
 package com.tflow.controller;
 
 import com.tflow.HasEvent;
+import com.tflow.kafka.KafkaRecordValue;
+import com.tflow.kafka.KafkaTWAdditional;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
@@ -9,11 +11,15 @@ import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
+import com.tflow.util.SerializeUtil;
+import com.tflow.wcmd.TWcmd;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.Metric;
+import org.apache.kafka.common.MetricName;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
@@ -26,6 +32,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.*;
 
@@ -426,21 +433,36 @@ public class EditorController extends Controller {
 
     private int messageNo;
 
-    /*-- TODO: remove this comment block
-    @jakarta.inject.Inject
-    KafkaMessenger kafkaMessenger;*/
     private Producer<String, String> producer;
+    private long producerLastClose = 0;
 
-    public void testSendMessage() {
+    public void testKafkaSendMessage() {
         messageNo++;
 
-        /*-- TODO: remove this comment block | using Micronaut Kafka lib
-        KafkaMessenger kafkaMessenger = applicationContext.getBean(KafkaMessenger.class);
-        kafkaMessenger.sendMessage("MessageKey#" + messageNo, "MessageValue#" + messageNo);*/
-
         /* using Kafka lib -- https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm */
+        String topic = "quickstart-events";
+        String key = "Key#" + messageNo;
+        //String key = "SessionID";
+        String value = "";
 
-        if(producer == null) {
+        List<Action> history = workspace.getProject().getActiveStep().getHistory();
+        KafkaTWAdditional additional = new KafkaTWAdditional();
+        additional.setProjectId(workspace.getProject().getName());
+        additional.setModifiedClientId(3);
+        additional.setModifiedUserId(23);
+        try {
+            KafkaRecordValue kafkaRecordValue = new KafkaRecordValue(SerializeUtil.serialize(history), additional);
+            value = SerializeUtil.serialize(kafkaRecordValue);
+
+            kafkaRecordValue = (KafkaRecordValue) SerializeUtil.deserialize(value);
+            kafkaRecordValue.setData(SerializeUtil.deserialize((String) kafkaRecordValue.getData()));
+
+            log.warn("testSendMessage: deserialize kafkaRecordValue: {}", kafkaRecordValue);
+        } catch (IOException | ClassNotFoundException ex) {
+            log.error("testSendMessage: ", ex);
+        }
+
+        if (producer == null) {
             Properties props = new Properties();
             props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
             props.put("acks", "all");
@@ -449,18 +471,74 @@ public class EditorController extends Controller {
             props.put("linger.ms", 1);
             props.put("buffer.memory", 33554432);
             props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("key.serializer.encoding", "UTF-8");
             props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("value.serializer.encoding", "UTF-8");
             producer = new KafkaProducer<String, String>(props);
         }
 
-        String topic = "quickstart-events";
-        /*String key = "MessageKey#" + messageNo;*/
-        String key = "SessionID";
-        /*String value = "MessageValue#" + messageNo;*/
-        String value = Arrays.toString(workspace.getProject().getActiveStep().getHistory().toArray());
-        producer.send(new ProducerRecord<String, String>(topic, key, value));
+        /* need to know server connection status before send the message */
+        try {
+            Metric metric;
+            MetricName metricName;
+            long closeCount = 0;
+            long creationCount = -1;
+            for (Map.Entry<MetricName, ? extends Metric> mapEntry : producer.metrics().entrySet()) {
+                metric = mapEntry.getValue();
+                metricName = metric.metricName();
+                if (metricName.name().compareTo("connection-close-total") == 0) {
+                    closeCount = ((Double) metric.metricValue()).longValue();
+                } else if (metricName.name().compareTo("connection-creation-total") == 0) {
+                    creationCount = ((Double) metric.metricValue()).longValue();
+                }
+            }
 
+            log.warn("testSendMessage: connection-close-total = {}, connection-creation-total = {}", closeCount, creationCount);
+            if (closeCount > producerLastClose || creationCount == 0) {
+                producerLastClose = closeCount;
+                log.error("testSendMessage: Kafka is down! the message is not sent, key:{}, value:{}", key, value);
+                return;
+            }
+
+        } catch (NullPointerException ex) {
+            log.error("testSendMessage: Kafka metric not valid! the message is not sent, key:{}, value:{}", key, value);
+            return;
+        }
+
+        /*String value = "MessageValue#" + messageNo;*/
+        producer.send(new ProducerRecord<String, String>(topic, key, value));
         log.warn("testSendMessage(key:{}, value:{}) completed.", key, value);
+
+        /*TODO: remove test line below*/
+        testWriteSerialize(value, null, null, "/Apps/TFlow/TestSerializeKafka.ser");
+    }
+
+    private void testConvertByteArrayAndString(KafkaRecordValue kafkaRecordValue) {
+        /*#1 using ByteStream*/
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(kafkaRecordValue);
+            objectOutputStream.close();
+
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+            ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            KafkaRecordValue deserilizedKafkaRecordValue = (KafkaRecordValue) objectInputStream.readObject();
+            objectInputStream.close();
+            log.warn("testConvertByteArrayAndString: #1 serilizedKafkaRecordValue: {}", Arrays.toString(byteArrayOutputStream.toByteArray()));
+            log.warn("testConvertByteArrayAndString: #1 deserilizedKafkaRecordValue: {}", deserilizedKafkaRecordValue);
+
+            String value = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.ISO_8859_1);
+            byteArrayInputStream = new ByteArrayInputStream(value.getBytes(StandardCharsets.ISO_8859_1));
+            log.warn("testConvertByteArrayAndString: #2 serilizedKafkaRecordValue: {}", Arrays.toString(value.getBytes()));
+            objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            deserilizedKafkaRecordValue = (KafkaRecordValue) objectInputStream.readObject();
+            objectInputStream.close();
+            log.warn("testConvertByteArrayAndString: #2 deserilizedKafkaRecordValue: {}", deserilizedKafkaRecordValue);
+
+        } catch (Exception ex) {
+            log.error("testConvertByteArrayAndString: ", ex);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -492,6 +570,56 @@ public class EditorController extends Controller {
         for (Action actionBase : actionList) {
             log.info("action = {}", actionBase.toString());
         }
+    }
+
+    public String testReadFromFile() {
+        String value = "";
+        try {
+            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+
+            /*-- normal cast to known object --*/
+            StringBuilder stringBuilder = new StringBuilder();
+            InputStreamReader inputStreamReader = new InputStreamReader(fileIn, StandardCharsets.US_ASCII);
+            log.warn("testReadFromFile: inputStreamReader.getEncoding: {}", inputStreamReader.getEncoding());
+            int ch = inputStreamReader.read();
+            while (ch != -1) {
+                stringBuilder.append((char) ch);
+                ch = inputStreamReader.read();
+            }
+            inputStreamReader.close();
+            fileIn.close();
+            value = stringBuilder.toString();
+
+        } catch (Exception ex) {
+            log.error("testReadFromFile: ", ex);
+        }
+
+        return value;
+    }
+
+    public void testReadKafkaRecordValue() {
+        KafkaRecordValue kafkaRecordValue = null;
+        try {
+            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+
+            /*-- normal cast to known object --*/
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            kafkaRecordValue = (KafkaRecordValue) in.readObject();
+            in.close();
+
+            fileIn.close();
+        } catch (IOException i) {
+            log.error("", i);
+        } catch (ClassNotFoundException c) {
+            log.error("List<Action> class not found", c);
+        }
+
+        if (kafkaRecordValue == null) {
+            log.error("KafkaRecordValue is Null");
+            return;
+        }
+
+        log.info("kafkaRecordValue = {}", kafkaRecordValue.toString());
     }
 
     public void testScanSerialize() {
@@ -528,6 +656,16 @@ public class EditorController extends Controller {
         testWriteSerialize(history, null, null);
     }
 
+    public void testWriteKafkaRecordValue() {
+        List<Action> history = workspace.getProject().getActiveStep().getHistory();
+        KafkaTWAdditional additional = new KafkaTWAdditional();
+        additional.setProjectId(workspace.getProject().getName());
+        additional.setModifiedClientId(3);
+        additional.setModifiedUserId(23);
+        KafkaRecordValue kafkaRecordValue = new KafkaRecordValue(history, additional);
+        testWriteSerialize(kafkaRecordValue, null, null);
+    }
+
     public void testWriteHeader() {
         List<Action> history = workspace.getProject().getActiveStep().getHistory();
         testWriteSerialize(history, "TFlow - Some header before real data.", null);
@@ -539,13 +677,25 @@ public class EditorController extends Controller {
     }
 
     public void testWriteSerialize(Object object, String header, String footer) {
+        testWriteSerialize(object, header, footer, null);
+    }
+
+    public void testWriteSerialize(Object object, String header, String footer, String fileName) {
         try {
-            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/TestSerialize.ser");
+            if (fileName == null) {
+                fileName = "/Apps/TFlow/TestSerialize.ser";
+            }
+
+            FileOutputStream fileOut = new FileOutputStream(fileName);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             if (header != null) {
                 out.writeChars(header);
             }
-            out.writeObject(object);
+            if (object instanceof String) {
+                out.write(((String) object).getBytes(StandardCharsets.ISO_8859_1));
+            } else {
+                out.writeObject(object);
+            }
             if (footer != null) {
                 out.writeChars(footer);
             }
