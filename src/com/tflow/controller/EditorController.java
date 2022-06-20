@@ -442,7 +442,6 @@ public class EditorController extends Controller {
         /* using Kafka lib -- https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm */
         String topic = "quickstart-events";
         String key = "Key#" + messageNo;
-        //String key = "SessionID";
         String value = "";
 
         List<Action> history = workspace.getProject().getActiveStep().getHistory();

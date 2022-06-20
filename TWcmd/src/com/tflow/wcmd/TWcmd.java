@@ -69,7 +69,13 @@ public class TWcmd {
                 UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(record);
 
                 /*test without Queue, execute the command*/
-                updateProjectCommand.execute();
+                try {
+                    updateProjectCommand.execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
