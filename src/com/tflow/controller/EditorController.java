@@ -3,6 +3,7 @@ package com.tflow.controller;
 import com.tflow.HasEvent;
 import com.tflow.kafka.KafkaRecordValue;
 import com.tflow.kafka.KafkaTWAdditional;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
@@ -12,7 +13,6 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
-import com.tflow.wcmd.TWcmd;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -436,28 +436,48 @@ public class EditorController extends Controller {
     private Producer<String, String> producer;
     private long producerLastClose = 0;
 
-    public void testKafkaSendMessage() {
+    public void testKafkaSendMessage1() {
+        testKafkaSendMessage(ProjectFileType.TEST_TYPE_1);
+    }
+
+    public void testKafkaSendMessage2() {
+        testKafkaSendMessage(ProjectFileType.TEST_TYPE_2);
+    }
+
+    public void testKafkaSendMessage3() {
+        testKafkaSendMessage(ProjectFileType.TEST_TYPE_3);
+    }
+
+    public void testKafkaSendMessage4() {
+        testKafkaSendMessage(ProjectFileType.TEST_TYPE_4);
+    }
+
+    public void testKafkaSendMessage(ProjectFileType projectFileType) {
         messageNo++;
 
         /* using Kafka lib -- https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm */
         String topic = "quickstart-events";
-        String key = "Key#" + messageNo;
+        String key = projectFileType.name();
         String value = "";
 
         List<Action> history = workspace.getProject().getActiveStep().getHistory();
         KafkaTWAdditional additional = new KafkaTWAdditional();
-        additional.setProjectId(workspace.getProject().getName());
+        additional.setRecordId("123");
+        additional.setProjectId("project-1");
+        additional.setStepId("step-2");
+        additional.setDataTableId("data-table-3");
+        additional.setTransformTableId("transform-table-4");
         additional.setModifiedClientId(3);
         additional.setModifiedUserId(23);
         try {
             KafkaRecordValue kafkaRecordValue = new KafkaRecordValue(SerializeUtil.serialize(history), additional);
             value = SerializeUtil.serialize(kafkaRecordValue);
 
-            kafkaRecordValue = (KafkaRecordValue) SerializeUtil.deserialize(value);
+            /*kafkaRecordValue = (KafkaRecordValue) SerializeUtil.deserialize(value);
             kafkaRecordValue.setData(SerializeUtil.deserialize((String) kafkaRecordValue.getData()));
+            log.warn("testSendMessage: deserialize kafkaRecordValue: {}", kafkaRecordValue);*/
 
-            log.warn("testSendMessage: deserialize kafkaRecordValue: {}", kafkaRecordValue);
-        } catch (IOException | ClassNotFoundException ex) {
+        } catch (IOException ex) {
             log.error("testSendMessage: ", ex);
         }
 
@@ -485,19 +505,21 @@ public class EditorController extends Controller {
             for (Map.Entry<MetricName, ? extends Metric> mapEntry : producer.metrics().entrySet()) {
                 metric = mapEntry.getValue();
                 metricName = metric.metricName();
-                if (metricName.name().compareTo("connection-close-total") == 0) {
+
+                /*TODO: when Kafka Server is down, need more info to know server status*/
+                /*if (metricName.name().compareTo("connection-close-total") == 0) {
                     closeCount = ((Double) metric.metricValue()).longValue();
                 } else if (metricName.name().compareTo("connection-creation-total") == 0) {
                     creationCount = ((Double) metric.metricValue()).longValue();
-                }
+                }*/
             }
 
-            log.warn("testSendMessage: connection-close-total = {}, connection-creation-total = {}", closeCount, creationCount);
+            /*log.warn("testSendMessage: connection-close-total = {}, connection-creation-total = {}", closeCount, creationCount);
             if (closeCount > producerLastClose || creationCount == 0) {
                 producerLastClose = closeCount;
                 log.error("testSendMessage: Kafka is down! the message is not sent, key:{}, value:{}", key, value);
                 return;
-            }
+            }*/
 
         } catch (NullPointerException ex) {
             log.error("testSendMessage: Kafka metric not valid! the message is not sent, key:{}, value:{}", key, value);
@@ -509,7 +531,7 @@ public class EditorController extends Controller {
         log.warn("testSendMessage(key:{}, value:{}) completed.", key, value);
 
         /*TODO: remove test line below*/
-        testWriteSerialize(value, null, null, "/Apps/TFlow/TestSerializeKafka.ser");
+        testWriteSerialize(value, null, null, "/Apps/TFlow/tmp/TestSerializeKafka.ser");
     }
 
     private void testConvertByteArrayAndString(KafkaRecordValue kafkaRecordValue) {
@@ -547,7 +569,7 @@ public class EditorController extends Controller {
         /*Notice: IMPORTANT: serialized file can't contains Header-Data before serialized-data when use Object.readObject to read.*/
         List<Action> actionList = null;
         try {
-            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/tmp/TestSerialize.ser");
 
             /*-- normal cast to known object --*/
             ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -574,7 +596,7 @@ public class EditorController extends Controller {
     public String testReadFromFile() {
         String value = "";
         try {
-            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/tmp/TestSerialize.ser");
 
             /*-- normal cast to known object --*/
             StringBuilder stringBuilder = new StringBuilder();
@@ -599,7 +621,7 @@ public class EditorController extends Controller {
     public void testReadKafkaRecordValue() {
         KafkaRecordValue kafkaRecordValue = null;
         try {
-            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+            FileInputStream fileIn = new FileInputStream("/Apps/TFlow/tmp/TestSerialize.ser");
 
             /*-- normal cast to known object --*/
             ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -624,7 +646,7 @@ public class EditorController extends Controller {
     public void testScanSerialize() {
         FileInputStream fileIn = null;
         try {
-            fileIn = new FileInputStream("/Apps/TFlow/TestSerialize.ser");
+            fileIn = new FileInputStream("/Apps/TFlow/tmp/TestSerialize.ser");
 
             /*-- scan for serialized object for unknown object --*/
             SerialScan serialScan = new SerialScan(fileIn);
@@ -682,7 +704,7 @@ public class EditorController extends Controller {
     public void testWriteSerialize(Object object, String header, String footer, String fileName) {
         try {
             if (fileName == null) {
-                fileName = "/Apps/TFlow/TestSerialize.ser";
+                fileName = "/Apps/TFlow/tmp/TestSerialize.ser";
             }
 
             FileOutputStream fileOut = new FileOutputStream(fileName);
@@ -700,7 +722,7 @@ public class EditorController extends Controller {
             }
             out.close();
             fileOut.close();
-            log.info("Serialized data is saved in /Apps/TFlow/TestSerialize.ser");
+            log.info("Serialized data is saved in /Apps/TFlow/tmp/TestSerialize.ser");
         } catch (IOException i) {
             log.error("testWriteSerialize failed,", i);
         }

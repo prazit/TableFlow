@@ -1,6 +1,5 @@
 package com.tflow.wcmd;
 
-import com.tflow.kafka.KafkaRecordValue;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -8,10 +7,12 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 
 public class TWcmd {
@@ -26,6 +27,8 @@ public class TWcmd {
 
     public void start() {
         /*example from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_consumer_group_example.htm*/
+
+        /*TODO: need configuration for consumer*/
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("group.id", "twcmd");
@@ -39,7 +42,7 @@ public class TWcmd {
         KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
 
         String topic = "quickstart-events";
-        consumer.subscribe(Arrays.asList(topic));
+        consumer.subscribe(Collections.singletonList(topic));
         log.info("Subscribed to topic " + topic);
 
         long timeout = 30000;
@@ -51,30 +54,27 @@ public class TWcmd {
 
             for (ConsumerRecord<String, String> record : records) {
 
-                /*TODO: remove test script block*/
-                {
-                    String value = record.value();
-                    log.info("Rawdata: offset = {}, key = {}, value = {}", record.offset(), record.key(), value);
+                String value = record.value();
+                String key = record.key();
+                String offset = String.valueOf(record.offset());
+                log.info("Rawdata: offset = {}, key = {}, value = {}", offset, key, value);
 
-                    testWriteSerialized(record.value().getBytes(StandardCharsets.ISO_8859_1));
-
-                    try {
-                        log.info("Deserialize: value = {}", SerializeUtil.deserialize(value));
-                    } catch (Exception ex) {
-                        log.error("Deserialize Failed! ", ex);
-                    }
-                }
-
-                /*TODO: add command to Queue*/
+                /*TODO: add command to UpdateProjectCommandQueue*/
                 UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(record);
 
-                /*test without Queue, execute the command*/
+                /*test only*/
+                /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
+                    log.info("updateProjectCommand(offset: {}, key: {}) started.", offset, key);
                     updateProjectCommand.execute();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    log.info("updateProjectCommand(offset: {}, key: {}) completed.", offset, key);
+                } catch (InvalidParameterException inex) {
+                    /*TODO: how to handle rejected command*/
+                    log.error("Invalid parameter: {}", inex.getMessage());
+                    log.info("updateProjectCommand(offset: {}, key: {}) rejected.", offset, key);
+                } catch (Exception ex) {
+                    log.error("Hard error: ", ex);
+                    log.info("updateProjectCommand(offset: {}, key: {}) rejected.", offset, key);
                 }
             }
         }
@@ -84,10 +84,10 @@ public class TWcmd {
 
     public void testWriteSerialized(byte[] serialized) {
         try {
-            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/TestConsumerSerialize.ser");
+            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/tmp/TestConsumerSerialize.ser");
             fileOut.write(serialized);
             fileOut.close();
-            log.info("testWriteSerialized: Serialized data is saved in /Apps/TFlow/TestConsumerSerialize.ser");
+            log.info("testWriteSerialized: Serialized data is saved in /Apps/TFlow/tmp/TestConsumerSerialize.ser");
         } catch (IOException i) {
             log.error("testWriteSerialized failed,", i);
         }

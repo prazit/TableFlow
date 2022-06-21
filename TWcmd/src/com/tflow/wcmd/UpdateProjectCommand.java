@@ -4,17 +4,14 @@ import com.tflow.kafka.KafkaRecordValue;
 import com.tflow.kafka.KafkaTWAdditional;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.util.DateTimeUtil;
+import com.tflow.util.FileUtil;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -33,8 +30,7 @@ public class UpdateProjectCommand extends WriteCommand {
     @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException {
         KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) SerializeUtil.deserialize(kafkaRecord.value());
-        ProjectFileType projectFileType = ProjectFileType.parse(kafkaRecord.key());
-        validate(projectFileType, kafkaRecordValue);
+        ProjectFileType projectFileType = validate(kafkaRecord.key(), kafkaRecordValue);
 
         KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
         Date now = DateTimeUtil.now();
@@ -45,19 +41,14 @@ public class UpdateProjectCommand extends WriteCommand {
 
             /*move existing Data File to Transaction folder*/
             File historyFile = getHistoryFile(projectFileType, additional);
-            String fullFileName = file.toString();
-            if (!file.renameTo(historyFile)) {
-                log.error("Unexpected case: failed to rename projectfile({}) to historyFile({})!", file, historyFile);
-            }
+            KafkaRecordValue historyRecord = readFrom(file);
+            writeTo(historyFile, historyRecord);
 
             /*need created-info from history*/
-            KafkaRecordValue historyRecord = readFrom(file);
             KafkaTWAdditional historyAdditional = (KafkaTWAdditional) historyRecord.getAdditional();
             additional.setCreatedDate(historyAdditional.getCreatedDate());
             additional.setCreatedUserId(historyAdditional.getCreatedUserId());
             additional.setCreatedClientId(historyAdditional.getCreatedClientId());
-
-            file = new File(fullFileName);
 
         } else {
             additional.setCreatedDate(now);
@@ -83,8 +74,12 @@ public class UpdateProjectCommand extends WriteCommand {
         return kafkaRecordValue;
     }
 
+    /**
+     * IMPORTANT: replace only.
+     */
     private void writeTo(File file, KafkaRecordValue kafkaRecordValue) throws IOException {
-        FileOutputStream fileOut = new FileOutputStream(file);
+        FileUtil.autoCreateParentDir(file);
+        FileOutputStream fileOut = new FileOutputStream(file, false);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOut);
         objectOutputStream.writeObject(kafkaRecordValue);
         objectOutputStream.close();
@@ -93,10 +88,10 @@ public class UpdateProjectCommand extends WriteCommand {
 
     public void testWriteSerialized(byte[] serialized) {
         try {
-            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/TestConsumerSerialize.ser");
+            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/tmp/TestConsumerSerialize.ser");
             fileOut.write(serialized);
             fileOut.close();
-            log.info("testWriteSerialized: Serialized data is saved in /Apps/TFlow/TestConsumerSerialize.ser");
+            log.info("testWriteSerialized: Serialized data is saved in /Apps/TFlow/tmp/TestConsumerSerialize.ser");
         } catch (IOException i) {
             log.error("testWriteSerialized failed,", i);
         }
@@ -105,13 +100,13 @@ public class UpdateProjectCommand extends WriteCommand {
 
     private File getHistoryFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
         /*TODO: need history root path from configuration*/
-        String rootPath = "C:/Apps/TFlow/hist";
+        String rootPath = "/Apps/TFlow/hist";
         return getFile(projectFileType, additional, rootPath, DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS"));
     }
 
     private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
         /*TODO: need project data root path from configuration*/
-        String rootPath = "C:/Apps/TFlow/project";
+        String rootPath = "/Apps/TFlow/project";
         return getFile(projectFileType, additional, rootPath, "");
     }
 
@@ -135,40 +130,57 @@ public class UpdateProjectCommand extends WriteCommand {
                 path = "/" + additional.getProjectId();
         }
 
-        return new File(rootPath + path + "/" + projectFileType.getKey());
+        return new File(rootPath + path + "/" + getFileName(projectFileType.getPrefix(), additional.getRecordId()) + postFix);
     }
 
-    private void validate(ProjectFileType projectFileType, KafkaRecordValue kafkaRecordValue) throws UnsupportedOperationException, InvalidParameterException {
-        /*validate Additional Data and KafkaKey*/
+    private String getFileName(String prefix, String recordId) {
+        if (prefix.endsWith("-"))
+            return prefix + recordId;
+        return prefix;
+    }
 
-        if (projectFileType == null) {
-            throw new UnsupportedOperationException("Invalid project-file-type '" + projectFileType.getKey() + "'!");
+    /**
+     * validate Additional Data and KafkaKey
+     **/
+    private ProjectFileType validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue) throws UnsupportedOperationException, InvalidParameterException {
+
+        ProjectFileType projectFileType;
+        try {
+            projectFileType = ProjectFileType.valueOf(kafkaRecordKey);
+        } catch (Exception ex) {
+            throw new UnsupportedOperationException("Invalid operation '" + kafkaRecordKey + "', recommends to use value from enum 'ProjectFileType' !!");
         }
 
         /*check required data for the KafkaKey*/
         KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
         int requireType = projectFileType.getRequireType();
 
+        // recordId is required on all require types.
+        if (additional.getRecordId() == null) {
+            throw new InvalidParameterException("Additional.RecordId is required for operation('" + projectFileType.name() + "')");
+        }
+
         // projectId is required on all types.
         if (additional.getProjectId() == null) {
-            throw new InvalidParameterException("Additional.ProjectId is required for project-file-type('" + projectFileType.getKey() + "')");
+            throw new InvalidParameterException("Additional.ProjectId is required for operation('" + projectFileType.name() + "')");
         }
 
         // stepId is required on all types except type(1).
         if (requireType > 1 && additional.getStepId() == null) {
-            throw new InvalidParameterException("Additional.StepId is required for project-file-type('" + projectFileType.getKey() + "')");
+            throw new InvalidParameterException("Additional.StepId is required for operation('" + projectFileType.name() + "')");
         }
 
         // dataTableId is required on type 3 only.
         if (requireType == 3 && additional.getDataTableId() == null) {
-            throw new InvalidParameterException("Additional.DataTableId is required for project-file-type('" + projectFileType.getKey() + "')");
+            throw new InvalidParameterException("Additional.DataTableId is required for operation('" + projectFileType.name() + "')");
         }
 
         // transformTableId is required on type 4 only.
         if (requireType == 4 && additional.getTransformTableId() == null) {
-            throw new InvalidParameterException("Additional.TransformTableId is required for project-file-type('" + projectFileType.getKey() + "')");
+            throw new InvalidParameterException("Additional.TransformTableId is required for operation('" + projectFileType.name() + "')");
         }
 
+        return projectFileType;
     }
 
 

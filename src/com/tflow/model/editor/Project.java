@@ -13,6 +13,8 @@ import java.util.Map;
 public class Project implements Serializable {
     private static final long serialVersionUID = 2021121709996660001L;
 
+    /*TODO: need to generate projectId to use as data root name, id is unchangeable, name is changeable*/
+    private String id;
     private String name;
     private Batch batch;
     private int activeStepIndex;

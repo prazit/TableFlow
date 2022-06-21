@@ -7,6 +7,7 @@ public class KafkaTWAdditional implements Serializable {
     private static final long serialVersionUID = 2022061609996660001L;
 
     /* Parent Field Group: all fields are optional */
+    private String recordId;
     private String projectId;
     private String stepId;
     private String dataTableId;
@@ -52,6 +53,14 @@ public class KafkaTWAdditional implements Serializable {
 
     public void setTransformTableId(String transformTableId) {
         this.transformTableId = transformTableId;
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
     }
 
     public long getModifiedClientId() {
@@ -109,6 +118,7 @@ public class KafkaTWAdditional implements Serializable {
                 ", stepId:'" + stepId + '\'' +
                 ", dataTableId:'" + dataTableId + '\'' +
                 ", transformTableId:'" + transformTableId + '\'' +
+                ", recordId:'" + recordId + '\'' +
                 ", modifiedClientId:" + modifiedClientId +
                 ", modifiedUserId:" + modifiedUserId +
                 ", createdClientId:" + createdClientId +

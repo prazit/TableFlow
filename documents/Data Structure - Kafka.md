@@ -35,7 +35,6 @@ Kafka
 
 > **Kafka-Topic:** UpdateGroupList, UpdateProjectList
 > 
-> 
 > **Note:** write process will read from data-file to data-record and update data-record by message-record before write to data-file.
 > 
 > **Required:** Client-ID
@@ -51,16 +50,12 @@ Kafka
 
 > **Kafka-Topic:** <u>UpdateProject</u>
 > 
-> 
 > **Note:** write process will read from data-file to data-record and update data-record by message-record before write to data-file.
 > 
 > **Kafka-Record-Detail:** already defined in [Data Structure - project.md](C:\Users\prazi\Documents\GitHub\TFlow\documents\Data Structure - project.md)
 
 ```json
 // ### Message Record Value Structure is Concatenation of Serialized String
-// 
-// separator = TFLOW-ADDITIONAL-DATA
-<serialized-data><separator><serialized-additional>
 
 // ### Additional Data
 { 
@@ -84,32 +79,33 @@ Kafka
 
 | data-key                       | shorten and use as record key | required field                                      |
 | ------------------------------ | ----------------------------- | --------------------------------------------------- |
-| project                        | project                       | + project-id                                        |
-| db-list                        | db-list                       | + project-id                                        |
-| sftp-list                      | sftp-list                     | + project-id                                        |
-| local-list                     | local-list                    | + project-id                                        |
-| step-list                      | step-list                     | + project-id                                        |
-| db                             | db                            | + project-id                                        |
-| sftp                           | sftp                          | + project-id                                        |
-| local                          | local                         | + project-id                                        |
-| step                           | step                          | + project-id                                        |
-| data-table-list                | data-table-list               | + project-id<br/>+ step-id                          |
-| tower                          | tower                         | + project-id<br/>+ step-id                          |
-| floor                          | floor                         | + project-id<br/>+ step-id                          |
-| line-list                      | line-list                     | + project-id<br/>+ step-id                          |
-| line                           | line                          | + project-id<br/>+ step-id                          |
-| data-file                      | data-file                     | + project-id<br/>+ step-id                          |
-| data-table                     | data-table                    | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-column-list         | data-column-list              | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-output-list         | data-output-list              | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-column              | data-column                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| transform-table                | transform-table               | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-column-list    | transform-column-list         | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-trasnform-list | transformation-list           | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-output-list    | transform-output-list         | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-column         | transform-column              | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-transformation | transformation                | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-output         | transform-output              | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| project                        | PROJECT                       | + project-id                                        |
+| db-list                        | DB_LIST                       | + project-id                                        |
+| sftp-list                      | SFTP_LIST                     | + project-id                                        |
+| local-list                     | LOCAL_LIST                    | + project-id                                        |
+| step-list                      | STEP_LIST                     | + project-id                                        |
+| db                             | DB                            | + project-id                                        |
+| sftp                           | SFTP                          | + project-id                                        |
+| local                          | LOCAL                         | + project-id                                        |
+| step                           | STEP                          | + project-id                                        |
+| data-table-list                | DATA_TABLE_LIST               | + project-id<br/>+ step-id                          |
+| tower                          | TOWER                         | + project-id<br/>+ step-id                          |
+| floor                          | FLOOR                         | + project-id<br/>+ step-id                          |
+| line-list                      | LINE_LIST                     | + project-id<br/>+ step-id                          |
+| line                           | LINE                          | + project-id<br/>+ step-id                          |
+| data-file                      | DATA_FILE                     | + project-id<br/>+ step-id                          |
+| data-table                     | DATA_TABLE                    | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-column-list         | DATA_COLUMN_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-output-list         | DATA_OUTPUT_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-column              | DATA_COLUMN                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-output              | DATA_OUTPUT                   |                                                     |
+| transform-table                | TRANSFORM_TABLE               | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-column-list    | TRANSFORM_COLUMN_LIST         | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-trasnform-list | TRANSFORMATION_LIST           | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-output-list    | TRANSFORM_OUTPUT_LIST         | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-column         | TRANSFORM_COLUMN              | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-transformation | TRANSFORMATION                | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-output         | TRANSFORM_OUPUT               | + project-id<br/>+ step-id<br/>+ transform-table-id |
 
 ----
 
