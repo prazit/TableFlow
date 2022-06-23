@@ -1,6 +1,5 @@
 package com.tflow.model.editor;
 
-import com.tflow.HasEvent;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 import org.slf4j.Logger;

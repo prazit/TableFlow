@@ -1,6 +1,6 @@
 package com.tflow.controller;
 
-import com.tflow.HasEvent;
+import com.tflow.model.editor.HasEvent;
 import com.tflow.kafka.KafkaRecordValue;
 import com.tflow.kafka.KafkaTWAdditional;
 import com.tflow.kafka.ProjectFileType;

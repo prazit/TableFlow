@@ -1,6 +1,5 @@
 package com.tflow.model.editor;
 
-import com.tflow.HasEvent;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Tower;
 

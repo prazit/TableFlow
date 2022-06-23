@@ -86,18 +86,6 @@ public class UpdateProjectCommand extends WriteCommand {
         fileOut.close();
     }
 
-    public void testWriteSerialized(byte[] serialized) {
-        try {
-            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/tmp/TestConsumerSerialize.ser");
-            fileOut.write(serialized);
-            fileOut.close();
-            log.info("testWriteSerialized: Serialized data is saved in /Apps/TFlow/tmp/TestConsumerSerialize.ser");
-        } catch (IOException i) {
-            log.error("testWriteSerialized failed,", i);
-        }
-    }
-
-
     private File getHistoryFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
         /*TODO: need history root path from configuration*/
         String rootPath = "/Apps/TFlow/hist";

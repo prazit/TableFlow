@@ -1,6 +1,4 @@
-package com.tflow;
-
-import com.tflow.model.editor.EventManager;
+package com.tflow.model.editor;
 
 public interface HasEvent {
 
