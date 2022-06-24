@@ -18,12 +18,19 @@ public class Workspace implements Serializable {
 
     @PostConstruct
     public void onCreation() {
-        // TODO: do this after Authentication Module is completed, load session settings first then remove initialized below, test only.
+        // TODO: do this after Authentication Module is completed, load session settings first then remove initialized below.
         user = new User();
+        user.setId(1);
         user.setTheme(Theme.DARK);
+
+        // TODO: load client information into Client instance.
+        client = new Client();
+        client.setId(1);
 
         // TODO: do this after AddProject action is completed, remove mockup project and mockup step here.
         project = new Project("Mockup Project");
+        project.setId("P1");
+        project.setOwer(this);
         project.getStepList().add(new Step("Mockup Step 1", project));
     }
 

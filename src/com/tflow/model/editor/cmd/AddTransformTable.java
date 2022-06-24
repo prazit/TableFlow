@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
@@ -81,6 +83,12 @@ public class AddTransformTable extends Command {
 
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.TRANSFORM_TABLE, transformTable);
+
+        // save TransformTable data
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, transformTable, step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
+
+        // save TransformTable list
+        //ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, transformTableList, step.getOwner(), dataFile.getId(), step.getId());
     }
 
     private SourceType getSourceType(DataTable sourceTable) {

@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class Line implements Serializable {
     private static final long serialVersionUID = 2021121709996660054L;
 
+    private int id;
     private String startSelectableId;
     private String endSelectableId;
 
@@ -19,6 +20,14 @@ public class Line implements Serializable {
     public Line(String startSelectableId, String endSelectableId) {
         this.startSelectableId = startSelectableId;
         this.endSelectableId = endSelectableId;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getClientIndex() {
@@ -115,6 +124,7 @@ public class Line implements Serializable {
     @Override
     public String toString() {
         return "{" +
+                "id:'" + id + '\'' +
                 "startSelectableId:'" + startSelectableId + '\'' +
                 ", endSelectableId:'" + endSelectableId + '\'' +
                 ", type:" + type +

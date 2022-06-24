@@ -23,6 +23,31 @@ public class KafkaTWAdditional implements Serializable {
     private Date createdDate;
     private Date modifiedDate;
 
+    public KafkaTWAdditional() {
+        /*nothing*/
+    }
+
+    public KafkaTWAdditional(long modifiedClientId, long modifiedUserId, String projectId) {
+        this.modifiedClientId = modifiedClientId;
+        this.modifiedUserId = modifiedUserId;
+        this.projectId = projectId;
+    }
+
+    public KafkaTWAdditional(long modifiedClientId, long modifiedUserId, String projectId, String recordId) {
+        this.modifiedClientId = modifiedClientId;
+        this.modifiedUserId = modifiedUserId;
+        this.projectId = projectId;
+        this.recordId = recordId;
+    }
+
+    public KafkaTWAdditional(long modifiedClientId, long modifiedUserId, String projectId, String recordId, String stepId) {
+        this.modifiedClientId = modifiedClientId;
+        this.modifiedUserId = modifiedUserId;
+        this.projectId = projectId;
+        this.recordId = recordId;
+        this.stepId = stepId;
+    }
+
     public String getProjectId() {
         return projectId;
     }

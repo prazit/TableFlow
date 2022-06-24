@@ -4,6 +4,7 @@ import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +14,6 @@ import java.util.Map;
 public class Project implements Serializable {
     private static final long serialVersionUID = 2021121709996660001L;
 
-    /*TODO: need to generate projectId to use as data root name, id is unchangeable, name is changeable*/
     private String id;
     private String name;
     private Batch batch;
@@ -30,6 +30,8 @@ public class Project implements Serializable {
     private int lastElementId;
     private int lastUniqueId;
 
+    private transient Workspace owner;
+
     public Project(String name) {
         activeStepIndex = -1;
         this.name = name;
@@ -38,6 +40,14 @@ public class Project implements Serializable {
         sftpMap = new HashMap<>();
         localMap = new HashMap<>();
         variableMap = new HashMap<>();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -103,6 +113,14 @@ public class Project implements Serializable {
 
     public void setVariableMap(Map<String, Variable> variableMap) {
         this.variableMap = variableMap;
+    }
+
+    public Workspace getOwner() {
+        return owner;
+    }
+
+    public void setOwer(Workspace workspace) {
+        this.owner = workspace;
     }
 
     /*== Public Methods ==*/

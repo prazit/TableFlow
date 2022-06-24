@@ -1,11 +1,14 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.datasource.Local;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class AddOutputFile extends Command {
@@ -21,7 +24,8 @@ public class AddOutputFile extends Command {
         DataFile dataFile = new DataFile(null, DataFileType.OUT_MD, "Untitled", "/", project.newElementId(), project.newElementId());
         dataFile.setId(project.newUniqueId());
 
-        dataTable.getOutputList().add(dataFile);
+        List<DataFile> outputList = dataTable.getOutputList();
+        outputList.add(dataFile);
 
         step.getSelectableMap().put(dataFile.getSelectableId(), dataFile);
 
@@ -30,6 +34,13 @@ public class AddOutputFile extends Command {
 
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
+
+        // save OutputFile data
+        ProjectDataManager.addData(ProjectFileType.DATA_OUTPUT, dataFile, project, dataFile.getId(), step.getId(), dataTable.getId());
+
+        // save OutputFile list
+        ProjectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, outputList, project, dataFile.getId(), step.getId(), dataTable.getId());
+
     }
 
 }

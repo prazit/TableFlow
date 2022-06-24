@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.EventName;
 import com.tflow.model.editor.Line;
 import com.tflow.model.editor.Project;
@@ -22,6 +24,7 @@ public class AddDirectLine extends Command {
         Project project = step.getOwner();
 
         newLine = step.addLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
+        newLine.setId(project.newUniqueId());
         newLine.setUser(true);
 
         /*for Action.executeUndo()*/
@@ -34,6 +37,12 @@ public class AddDirectLine extends Command {
 
         /*notify status*/
         step.getEventManager().fireEvent(EventName.LINE_ADDED, newLine);
+
+        // save DataTable data
+        ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+
+        // save DataTable list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, lineList, project, newLine.getId(), step.getId());
     }
 
 }

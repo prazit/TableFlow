@@ -1,5 +1,8 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.KafkaTWAdditional;
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
@@ -44,18 +47,29 @@ public class AddDataSource extends Command {
         /*Undo action will put dataSource at old room*/
         floor.setRoom(roomIndex, dataSource);
 
+        ProjectFileType fileType;
+        ProjectFileType listFileType;
+        Object listObject;
         switch (dataSource.getType()) {
             case DATABASE:
                 project.getDatabaseMap().put(id, (Database) dataSource);
+                fileType = ProjectFileType.DB;
+                listFileType = ProjectFileType.DB_LIST;
+                listObject = project.getDatabaseMap();
                 break;
 
             case SFTP:
                 project.getSftpMap().put(id, (SFTP) dataSource);
+                fileType = ProjectFileType.SFTP;
+                listFileType = ProjectFileType.SFTP_LIST;
+                listObject = project.getSftpMap();
                 break;
 
-            case LOCAL:
+            default: //case LOCAL:
                 project.getLocalMap().put(id, (Local) dataSource);
-                break;
+                fileType = ProjectFileType.LOCAL;
+                listFileType = ProjectFileType.LOCAL_LIST;
+                listObject = project.getLocalMap();
         }
 
         Selectable selectable = (Selectable) dataSource;
@@ -63,8 +77,13 @@ public class AddDataSource extends Command {
 
         /*for Acion.executeUndo*/
 
-
         /*Action Result*/
+
+        // save DataSource data
+        ProjectDataManager.addData(fileType, dataSource, project, dataSource.getId());
+
+        // save DataSource list
+        ProjectDataManager.addData(listFileType, listObject, project);
     }
 
 }

@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
@@ -71,6 +73,13 @@ public class AddColumnFx extends Command {
         Map<ActionResultKey, Object> resultMap = action.getResultMap();
         resultMap.put(ActionResultKey.LINE_LIST, lineList);
         resultMap.put(ActionResultKey.COLUMN_FX, columnFx);
+
+
+        // save TransformColumn data
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, columnFx, project, columnFx.getId(), step.getId());
+
+        // save TransformColumn list
+        ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, columnFxList, project, columnFx.getId(), step.getId());
     }
 
     private void initPropertyMap(Map<String, Object> propertyMap, DataColumn sourceColumn) {

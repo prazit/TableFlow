@@ -57,7 +57,7 @@ public class TWcmd {
                 String value = record.value();
                 String key = record.key();
                 String offset = String.valueOf(record.offset());
-                log.info("Rawdata: offset = {}, key = {}, value = {}", offset, key, value);
+                //log.info("Rawdata: offset = {}, key = {}, value = {}", offset, key, value);
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
                 UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(record);

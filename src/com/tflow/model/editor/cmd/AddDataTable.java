@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
@@ -53,6 +55,14 @@ public class AddDataTable extends Command {
 
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.DATA_TABLE, dataTable);
+
+        // save DataTable data
+        int dataTableId = dataTable.getId();
+        ProjectDataManager.addData(ProjectFileType.DATA_TABLE, dataTable, step.getOwner(), dataTableId, step.getId(), dataTableId);
+
+        // save DataTable list
+        ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, step.getOwner(), dataTableId, step.getId());
+
     }
 
     private DataTable extractData(DataFile dataFile, Step step) {

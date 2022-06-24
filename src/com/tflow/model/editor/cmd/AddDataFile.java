@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
@@ -57,6 +59,10 @@ public class AddDataFile extends Command {
 
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
+
+        // save DataFile data
+        ProjectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, project, dataFile.getId(), step.getId());
+
     }
 
 }

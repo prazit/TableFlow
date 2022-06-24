@@ -7,7 +7,16 @@ import java.io.Serializable;
 public class User implements Serializable {
     private static final long serialVersionUID = 2021121709996660008L;
 
+    private long id;
     private Theme theme;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public Theme getTheme() {
         if (theme == null)

@@ -122,9 +122,9 @@ public class UpdateProjectCommand extends WriteCommand {
     }
 
     private String getFileName(String prefix, String recordId) {
-        if (prefix.endsWith("-"))
-            return prefix + recordId;
-        return prefix;
+        if (prefix.endsWith("list"))
+            return prefix;
+        return prefix + recordId;
     }
 
     /**
@@ -132,43 +132,43 @@ public class UpdateProjectCommand extends WriteCommand {
      **/
     private ProjectFileType validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue) throws UnsupportedOperationException, InvalidParameterException {
 
-        ProjectFileType projectFileType;
+        ProjectFileType fileType;
         try {
-            projectFileType = ProjectFileType.valueOf(kafkaRecordKey);
+            fileType = ProjectFileType.valueOf(kafkaRecordKey);
         } catch (Exception ex) {
             throw new UnsupportedOperationException("Invalid operation '" + kafkaRecordKey + "', recommends to use value from enum 'ProjectFileType' !!");
         }
 
         /*check required data for the KafkaKey*/
         KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
-        int requireType = projectFileType.getRequireType();
+        int requireType = fileType.getRequireType();
 
         // recordId is required on all require types.
-        if (additional.getRecordId() == null) {
-            throw new InvalidParameterException("Additional.RecordId is required for operation('" + projectFileType.name() + "')");
+        if (!fileType.getPrefix().endsWith("list") && additional.getRecordId() == null) {
+            throw new InvalidParameterException("Additional.RecordId is required for operation('" + fileType.name() + "')");
         }
 
         // projectId is required on all types.
         if (additional.getProjectId() == null) {
-            throw new InvalidParameterException("Additional.ProjectId is required for operation('" + projectFileType.name() + "')");
+            throw new InvalidParameterException("Additional.ProjectId is required for operation('" + fileType.name() + "')");
         }
 
         // stepId is required on all types except type(1).
         if (requireType > 1 && additional.getStepId() == null) {
-            throw new InvalidParameterException("Additional.StepId is required for operation('" + projectFileType.name() + "')");
+            throw new InvalidParameterException("Additional.StepId is required for operation('" + fileType.name() + "')");
         }
 
         // dataTableId is required on type 3 only.
         if (requireType == 3 && additional.getDataTableId() == null) {
-            throw new InvalidParameterException("Additional.DataTableId is required for operation('" + projectFileType.name() + "')");
+            throw new InvalidParameterException("Additional.DataTableId is required for operation('" + fileType.name() + "')");
         }
 
         // transformTableId is required on type 4 only.
         if (requireType == 4 && additional.getTransformTableId() == null) {
-            throw new InvalidParameterException("Additional.TransformTableId is required for operation('" + projectFileType.name() + "')");
+            throw new InvalidParameterException("Additional.TransformTableId is required for operation('" + fileType.name() + "')");
         }
 
-        return projectFileType;
+        return fileType;
     }
 
 

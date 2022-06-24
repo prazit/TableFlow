@@ -87,7 +87,7 @@ Kafka
 | db                             | DB                            | + project-id                                        |
 | sftp                           | SFTP                          | + project-id                                        |
 | local                          | LOCAL                         | + project-id                                        |
-| step                           | STEP                          | + project-id                                        |
+| step                           | STEP                          | + project-id<br/>+ step-id                          |
 | data-table-list                | DATA_TABLE_LIST               | + project-id<br/>+ step-id                          |
 | tower                          | TOWER                         | + project-id<br/>+ step-id                          |
 | floor                          | FLOOR                         | + project-id<br/>+ step-id                          |
@@ -98,7 +98,7 @@ Kafka
 | data-table-column-list         | DATA_COLUMN_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
 | data-table-output-list         | DATA_OUTPUT_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
 | data-table-column              | DATA_COLUMN                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-output              | DATA_OUTPUT                   |                                                     |
+| data-table-output              | DATA_OUTPUT                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
 | transform-table                | TRANSFORM_TABLE               | + project-id<br/>+ step-id<br/>+ transform-table-id |
 | transform-table-column-list    | TRANSFORM_COLUMN_LIST         | + project-id<br/>+ step-id<br/>+ transform-table-id |
 | transform-table-trasnform-list | TRANSFORMATION_LIST           | + project-id<br/>+ step-id<br/>+ transform-table-id |

@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
@@ -30,6 +32,13 @@ public class AddTransformColumn extends Command {
 
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.TRANSFORM_COLUMN, transformColumn);
+
+        // save TransformColumn data
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, transformColumn, step.getOwner(), transformColumn.getId(), step.getId(), 0, transformTable.getId());
+
+        // save TransformColumn list
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, columnList, step.getOwner(), transformColumn.getId(), step.getId(), 0, transformTable.getId());
+
     }
 
 }

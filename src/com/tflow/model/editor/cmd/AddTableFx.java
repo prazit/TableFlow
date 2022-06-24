@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
@@ -30,6 +32,13 @@ public class AddTableFx extends Command {
 
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
+
+        // save Transformation data
+        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION, tableFx, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+
+        // save Transformation list
+        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+
     }
 
 }
