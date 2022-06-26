@@ -84,6 +84,14 @@ public class AddDataSource extends Command {
 
         // save DataSource list
         ProjectDataManager.addData(listFileType, listObject, project);
+
+        //no line to save
+
+        // save Tower data
+        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+
+        // save Floor data
+        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
 }

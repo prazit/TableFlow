@@ -1,7 +1,11 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class RemoveColumnFx extends Command {
@@ -12,23 +16,44 @@ public class RemoveColumnFx extends Command {
         ColumnFx columnFx = (ColumnFx) paramMap.get(CommandParamKey.COLUMN_FX);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         DataColumn targetColumn = columnFx.getOwner();
-        TransformTable targetTable = (TransformTable) targetColumn.getOwner();
+        TransformTable transformTable = (TransformTable) targetColumn.getOwner();
 
         /*remove remaining lines on startPlug*/
-        step.removeLine(columnFx.getStartPlug());
+        LinePlug startPlug = columnFx.getStartPlug();
+        List<Line> removedLineList = new ArrayList<>(startPlug.getLineList());
+        step.removeLine(startPlug);
 
         /*remove remaining line on endPlug*/
         for (ColumnFxPlug endPlug : columnFx.getEndPlugList()) {
+            removedLineList.addAll(endPlug.getLineList());
             step.removeLine(endPlug);
         }
 
         /*remove fx from FxTable*/
-        targetTable.getColumnFxTable().getColumnFxList().remove(columnFx);
+        List<ColumnFx> columnFxList = transformTable.getColumnFxTable().getColumnFxList();
+        columnFxList.remove(columnFx);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
 
         /*no Action Result*/
+
+        // save TransformColumn data
+        Project project = step.getOwner();
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, null, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+
+        // save TransformColumn list
+        ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, columnFxList, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+
+        // save Line data
+        for (Line line : removedLineList) {
+            ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+        }
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+
+        // no tower, floor to save here
     }
 
 }

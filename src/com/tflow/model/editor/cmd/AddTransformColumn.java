@@ -39,6 +39,7 @@ public class AddTransformColumn extends Command {
         // save TransformColumn list
         ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, columnList, step.getOwner(), transformColumn.getId(), step.getId(), 0, transformTable.getId());
 
+        // no line, tower, floor to save here
     }
 
 }

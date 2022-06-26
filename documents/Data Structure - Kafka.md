@@ -77,35 +77,36 @@ Kafka
 }
 ```
 
-| data-key                       | shorten and use as record key | required field                                      |
-| ------------------------------ | ----------------------------- | --------------------------------------------------- |
-| project                        | PROJECT                       | + project-id                                        |
-| db-list                        | DB_LIST                       | + project-id                                        |
-| sftp-list                      | SFTP_LIST                     | + project-id                                        |
-| local-list                     | LOCAL_LIST                    | + project-id                                        |
-| step-list                      | STEP_LIST                     | + project-id                                        |
-| db                             | DB                            | + project-id                                        |
-| sftp                           | SFTP                          | + project-id                                        |
-| local                          | LOCAL                         | + project-id                                        |
-| step                           | STEP                          | + project-id<br/>+ step-id                          |
-| data-table-list                | DATA_TABLE_LIST               | + project-id<br/>+ step-id                          |
-| tower                          | TOWER                         | + project-id<br/>+ step-id                          |
-| floor                          | FLOOR                         | + project-id<br/>+ step-id                          |
-| line-list                      | LINE_LIST                     | + project-id<br/>+ step-id                          |
-| line                           | LINE                          | + project-id<br/>+ step-id                          |
-| data-file                      | DATA_FILE                     | + project-id<br/>+ step-id                          |
-| data-table                     | DATA_TABLE                    | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-column-list         | DATA_COLUMN_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-output-list         | DATA_OUTPUT_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-column              | DATA_COLUMN                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| data-table-output              | DATA_OUTPUT                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
-| transform-table                | TRANSFORM_TABLE               | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-column-list    | TRANSFORM_COLUMN_LIST         | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-trasnform-list | TRANSFORMATION_LIST           | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-output-list    | TRANSFORM_OUTPUT_LIST         | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-column         | TRANSFORM_COLUMN              | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-transformation | TRANSFORMATION                | + project-id<br/>+ step-id<br/>+ transform-table-id |
-| transform-table-output         | TRANSFORM_OUPUT               | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| data-key                              | shorten and use as record key | required field                                      |
+| ------------------------------------- | ----------------------------- | --------------------------------------------------- |
+| project                               | PROJECT                       | + project-id                                        |
+| db-list                               | DB_LIST                       | + project-id                                        |
+| sftp-list                             | SFTP_LIST                     | + project-id                                        |
+| local-list                            | LOCAL_LIST                    | + project-id                                        |
+| step-list                             | STEP_LIST                     | + project-id                                        |
+| db                                    | DB                            | + project-id                                        |
+| sftp                                  | SFTP                          | + project-id                                        |
+| local                                 | LOCAL                         | + project-id                                        |
+| step                                  | STEP                          | + project-id<br/>+ step-id                          |
+| data-table-list                       | DATA_TABLE_LIST               | + project-id<br/>+ step-id                          |
+| tower                                 | TOWER                         | + project-id<br/>+ step-id                          |
+| floor                                 | FLOOR                         | + project-id<br/>+ step-id                          |
+| line-list                             | LINE_LIST                     | + project-id<br/>+ step-id                          |
+| line                                  | LINE                          | + project-id<br/>+ step-id                          |
+| data-file                             | DATA_FILE                     | + project-id<br/>+ step-id                          |
+| data-table                            | DATA_TABLE                    | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-column-list                | DATA_COLUMN_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-output-list                | DATA_OUTPUT_LIST              | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-column                     | DATA_COLUMN                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| data-table-output                     | DATA_OUTPUT                   | + project-id<br/>+ step-id<br/>+ data-table-id      |
+| transform-table                       | TRANSFORM_TABLE               | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-column-list           | TRANSFORM_COLUMN_LIST         | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-trasnform-list        | TRANSFORMATION_LIST           | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-output-list           | TRANSFORM_OUTPUT_LIST         | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-column                | TRANSFORM_COLUMN              | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-column-transformation | TRANSFORM_COLUMNFX            |                                                     |
+| transform-table-transformation        | TRANSFORMATION                | + project-id<br/>+ step-id<br/>+ transform-table-id |
+| transform-table-output                | TRANSFORM_OUPUT               | + project-id<br/>+ step-id<br/>+ transform-table-id |
 
 ----
 

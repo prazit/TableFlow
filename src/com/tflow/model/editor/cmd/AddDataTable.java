@@ -48,7 +48,9 @@ public class AddDataTable extends Command {
         dataList.add(dataTable);
 
         /*line between DataFile and DataTable*/
-        step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
+        Project project = step.getOwner();
+        Line newLine = step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
+        newLine.setId(project.newUniqueId());
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
@@ -63,6 +65,17 @@ public class AddDataTable extends Command {
         // save DataTable list
         ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, step.getOwner(), dataTableId, step.getId());
 
+        // save Line data
+        ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+
+        // save Tower data
+        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+
+        // save Floor data
+        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
     private DataTable extractData(DataFile dataFile, Step step) {

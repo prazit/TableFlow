@@ -1,10 +1,15 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
+import com.tflow.model.editor.room.Tower;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,10 +27,14 @@ public class RemoveDataFile extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
         /*remove remaining lines on startPlug*/
-        step.removeLine(dataFile.getStartPlug());
+        LinePlug startPlug = dataFile.getStartPlug();
+        List<Line> removedLineList = new ArrayList<>(startPlug.getLineList());
+        step.removeLine(startPlug);
 
         /*remove remaining line on endPlug*/
-        step.removeLine(dataFile.getEndPlug());
+        LinePlug endPlug = dataFile.getEndPlug();
+        removedLineList.addAll(endPlug.getLineList());
+        step.removeLine(endPlug);
 
         /*remove from Tower*/
         Floor floor = dataFile.getFloor();
@@ -43,6 +52,24 @@ public class RemoveDataFile extends Command {
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+
+        // save DataFile data
+        ProjectDataManager.addData(ProjectFileType.DATA_FILE, null, project, dataFile.getId(), step.getId());
+
+        // save Line data
+        for (Line line : removedLineList) {
+            ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+        }
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+
+        // save Tower data
+        Tower tower = floor.getTower();
+        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+
+        // save Floor data
+        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
 }

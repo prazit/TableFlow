@@ -48,9 +48,9 @@ public class Step implements Serializable, Selectable, HasEvent {
         dataList = new ArrayList<>();
         transformList = new ArrayList<>();
         outputList = new ArrayList<>();
-        dataTower = new Tower(3, this);
-        transformTower = new Tower(2, this);
-        outputTower = new Tower(2, this);
+        dataTower = new Tower(owner.newUniqueId(), 3, this);
+        transformTower = new Tower(owner.newUniqueId(), 2, this);
+        outputTower = new Tower(owner.newUniqueId(), 2, this);
         lineList = new ArrayList<>();
         lastLineClientIndex = 0;
         startPlug = new StartPlug("step");

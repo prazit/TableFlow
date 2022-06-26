@@ -16,16 +16,26 @@ public class Tower implements Serializable {
 
     private transient Logger log = LoggerFactory.getLogger(Tower.class);
 
+    private int id;
     private List<Floor> floorList;
     private int roomsOnAFloor;
     private Room activeRoom;
 
     private Step owner;
 
-    public Tower(int roomsOnAFloor, Step owner) {
+    public Tower(int id, int roomsOnAFloor, Step owner) {
+        this.id = id;
         this.roomsOnAFloor = roomsOnAFloor;
         floorList = new ArrayList<>();
         this.owner = owner;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     /**
@@ -89,7 +99,7 @@ public class Tower implements Serializable {
 
         if (floor == null) {
             int flIndex = newFloorIndex < 0 ? floorList.size() : newFloorIndex;
-            floor = new Floor(flIndex, this);
+            floor = new Floor(owner.getOwner().newUniqueId(), flIndex, this);
             addRoom(roomsOnAFloor, floor);
             floorList.add(flIndex, floor);
         }

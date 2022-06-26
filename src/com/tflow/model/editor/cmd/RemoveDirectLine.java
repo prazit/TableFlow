@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 
 import java.util.Map;
@@ -22,6 +24,15 @@ public class RemoveDirectLine extends Command {
 
         /*notify status*/
         step.getEventManager().fireEvent(EventName.LINE_REMOVED, line);
+
+        // save Line data
+        Project project = step.getOwner();
+        ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, line.getId(), step.getId());
+
+        // no tower, floor to save here
     }
 
 }

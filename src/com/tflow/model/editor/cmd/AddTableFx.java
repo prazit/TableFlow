@@ -39,6 +39,7 @@ public class AddTableFx extends Command {
         // save Transformation list
         ProjectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
 
+        // no line, tower, floor to save here
     }
 
 }

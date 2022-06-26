@@ -31,5 +31,7 @@ public class AddStep extends Command {
 
         // save Step data
         ProjectDataManager.addData(ProjectFileType.STEP, step, project, stepId, stepId);
+
+        // no line, tower, floor to save here
     }
 }

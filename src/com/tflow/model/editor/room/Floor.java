@@ -14,14 +14,24 @@ public class Floor implements Serializable {
 
     private transient Logger log = LoggerFactory.getLogger(Floor.class);
 
+    private int id;
     private int index;
     private Tower tower;
     private List<Room> roomList;
 
-    public Floor(int index, Tower owner) {
+    public Floor(int id, int index, Tower owner) {
+        this.id = id;
         this.index = index;
         this.tower = owner;
         roomList = new ArrayList<>();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getIndex() {

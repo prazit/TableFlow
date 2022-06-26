@@ -41,6 +41,7 @@ public class AddOutputFile extends Command {
         // save OutputFile list
         ProjectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, outputList, project, dataFile.getId(), step.getId(), dataTable.getId());
 
+        // no line, tower, floor to save here
     }
 
 }

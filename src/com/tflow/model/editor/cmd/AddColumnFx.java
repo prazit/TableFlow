@@ -59,9 +59,11 @@ public class AddColumnFx extends Command {
 
         /*line between sourceColumn and columnFx*/
         Line line1 = step.addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
+        line1.setId(project.newUniqueId());
 
         /*line between columnFx and targetColumn*/
         Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
+        line2.setId(project.newUniqueId());
 
         lineList.add(line1);
         lineList.add(line2);
@@ -74,12 +76,20 @@ public class AddColumnFx extends Command {
         resultMap.put(ActionResultKey.LINE_LIST, lineList);
         resultMap.put(ActionResultKey.COLUMN_FX, columnFx);
 
-
         // save TransformColumn data
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, columnFx, project, columnFx.getId(), step.getId());
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, columnFx, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformColumn list
-        ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, columnFxList, project, columnFx.getId(), step.getId());
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, columnFxList, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+
+        // save Line data
+        ProjectDataManager.addData(ProjectFileType.LINE, line1, project, line1.getId(), step.getId());
+        ProjectDataManager.addData(ProjectFileType.LINE, line2, project, line2.getId(), step.getId());
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, line1.getId(), step.getId());
+
+        // no tower, floor to save here
     }
 
     private void initPropertyMap(Map<String, Object> propertyMap, DataColumn sourceColumn) {

@@ -13,6 +13,11 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.security.InvalidParameterException;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
+
+/*TODO: need to append last command to the list of command in history folder
+   put file in the step folder
+   split file by max-file-size from configuration*/
 
 /**
  * Kafka-Topic: UpdateProject
@@ -56,7 +61,21 @@ public class UpdateProjectCommand extends WriteCommand {
             additional.setCreatedClientId(additional.getModifiedClientId());
         }
 
-        writeTo(file, kafkaRecordValue);
+        if (kafkaRecordValue.getData() == null) {
+            log.info("remove( file: {}, additional: {} )", file, additional);
+            remove(file);
+        } else {
+            log.info("writeTo( file: {}, additional: {} )", file, additional);
+            writeTo(file, kafkaRecordValue);
+        }
+    }
+
+    private void remove(File file) {
+        try {
+            if (!file.delete()) throw new Exception("file.delete() return false.");
+        } catch (Exception ex) {
+            log.warn("remove(file: {}) failed! ", file, ex.getMessage());
+        }
     }
 
     private KafkaRecordValue readFrom(File file) throws IOException, ClassNotFoundException {
@@ -70,7 +89,7 @@ public class UpdateProjectCommand extends WriteCommand {
         in.close();
         fileIn.close();
 
-        log.info("readFrom( file: {} ).kafkaRecordValue = {}", file, kafkaRecordValue);
+        log.info("readFrom( file: {} ). kafkafRecordValue.additional = {}", file, kafkaRecordValue.getAdditional());
         return kafkaRecordValue;
     }
 

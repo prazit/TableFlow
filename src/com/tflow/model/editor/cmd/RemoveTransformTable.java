@@ -1,10 +1,15 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
+import com.tflow.model.editor.room.Tower;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,15 +26,15 @@ public class RemoveTransformTable extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
         /*remove line beteween dataFile and dataTable*/
-        Line line = transformTable.getEndPlug().getLine();
-        if (line != null) {
-            step.removeLine(line);
-        }
+        LinePlug endPlug = transformTable.getEndPlug();
+        List<Line> removedLineList = new ArrayList<>(endPlug.getLineList());
+        step.removeLine(endPlug);
 
         /*remove from Tower*/
+        Project project = step.getOwner();
         Floor floor = transformTable.getFloor();
         int roomIndex = transformTable.getRoomIndex();
-        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, step.getOwner().newElementId()));
+        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, project.newElementId()));
 
         /*remove from TransformTable List*/
         step.getTransformList().remove(transformTable);
@@ -42,6 +47,28 @@ public class RemoveTransformTable extends Command {
         DataTable dataTable = (DataTable) selectableMap.get(transformTable.getSourceSelectableId());
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
+
+        // save TransformTable data
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, null, project, transformTable.getId(), step.getId(), 0, transformTable.getId());
+
+        // save TransformTable list
+        //ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, transformTableList, step.getOwner(), dataFile.getId(), step.getId());
+
+        // save Line data
+        for (Line line : removedLineList) {
+            ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+        }
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+
+        // save Tower data
+        Tower tower = floor.getTower();
+        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+
+        // save Floor data
+        ProjectDataManager.addData(ProjectFileType.FLOOR, null, project, floor.getId(), step.getId());
+
     }
 
 }

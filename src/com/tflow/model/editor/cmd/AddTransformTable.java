@@ -76,7 +76,8 @@ public class AddTransformTable extends Command {
         DataTableUtil.addTo(step.getSelectableMap(), transformTable, project);
 
         /*link from SourceTable to TransformTable*/
-        step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
+        Line newLine = step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
+        newLine.setId(project.newUniqueId());
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
@@ -84,11 +85,23 @@ public class AddTransformTable extends Command {
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.TRANSFORM_TABLE, transformTable);
 
-        // save TransformTable data
+        // save TransformTable data including ColumnFxTable
         ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, transformTable, step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformTable list
         //ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, transformTableList, step.getOwner(), dataFile.getId(), step.getId());
+
+        // save Line data
+        ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+
+        // save Tower data
+        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+
+        // save Floor data (both TransformTable and ColumnFxTable)
+        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
     private SourceType getSourceType(DataTable sourceTable) {

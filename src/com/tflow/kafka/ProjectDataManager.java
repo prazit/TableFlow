@@ -18,10 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/*TODO: save Line & Line List data for all commands*/
-/*TODO: save Tower data for Add/Remove room commands*/
-/*TODO: save Floor data for Add/Remove room commands*/
-/*TODO: save Removed data for Remove commands*/
+/*TODO: need FileType for columnFx and then use it instead of TRANSFORM_COLUMN*/
+/*TODO: need some missed commands for Undo of Add commands below:
+ + RemoveTransformColumn for AddTransformColumn
+ + RemoveOutputFile for AddOutputFile
+ + RemoveTableFx for AddTableFx
+ */
+
+/*TODO: how to update Object between line*/
 public class ProjectDataManager {
 
     private static Logger log = LoggerFactory.getLogger(ProjectDataManager.class);
@@ -181,7 +185,9 @@ public class ProjectDataManager {
             log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) started.", fileType.name(), recordId);
 
             try {
-                kafkaRecordValue = new KafkaRecordValue(SerializeUtil.serialize(writeCommand.getDataObject()), additional);
+                Object dataObject = writeCommand.getDataObject();
+                String serializedData = (dataObject == null) ? null : SerializeUtil.serialize(dataObject);
+                kafkaRecordValue = new KafkaRecordValue(serializedData, additional);
                 value = SerializeUtil.serialize(kafkaRecordValue);
             } catch (IOException ex) {
                 log.warn("Serialization failed: ", ex);

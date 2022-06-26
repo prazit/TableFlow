@@ -1,5 +1,7 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectDataManager;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSource;
@@ -8,6 +10,7 @@ import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
+import com.tflow.model.editor.room.Tower;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +43,7 @@ public class RemoveDataSource extends Command {
         int roomIndex = dataSource.getRoomIndex();
         floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, project.newElementId()));
 
-        /*Notice: don't remove data-source from project, go to Project page to manage all data-source*/
+        /*Notice: don't remove data-source from project because of data-sources are shared between steps, go to Project page to manage all data-sources*/
 
         /*remove from selectableMap*/
         selectableMap.remove(((Selectable) dataSource).getSelectableId());
@@ -48,6 +51,23 @@ public class RemoveDataSource extends Command {
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_SOURCE, dataSource);
         paramMap.put(CommandParamKey.DATA_FILE_LIST, dataFileList);
+
+        // no DataSource to save here
+
+        // save Line data
+        for (Line line : lineList) {
+            ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+        }
+
+        // save Line list
+        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+
+        // save Tower data
+        Tower tower = floor.getTower();
+        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+
+        // save Floor data
+        ProjectDataManager.addData(ProjectFileType.FLOOR, null, project, floor.getId(), step.getId());
     }
 
 }
