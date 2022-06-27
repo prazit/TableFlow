@@ -10,6 +10,7 @@ import com.tflow.model.editor.room.Tower;
 import com.tflow.util.DataTableUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +31,9 @@ public class RemoveDataTable extends Command {
 
         /*remove line between dataFile and dataTable*/
         LinePlug endPlug = dataTable.getEndPlug();
-        List<Line> removedLineList = new ArrayList<>(endPlug.getLineList());
-        step.removeLine(endPlug);
+        Line removedLine = endPlug.getLine();
+        DataFile dataFile = (DataFile) step.getSelectableMap().get(removedLine.getStartSelectableId());
+        step.removeLine(removedLine);
 
         /*remove from Tower*/
         Project project = step.getOwner();
@@ -58,9 +60,10 @@ public class RemoveDataTable extends Command {
         ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, project, dataTableId, step.getId());
 
         // save Line data
-        for (Line line : removedLineList) {
-            ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
-        }
+        ProjectDataManager.addData(ProjectFileType.LINE, null, project, removedLine.getId(), step.getId());
+
+        // save object(DataFile) at endPlug.
+        ProjectDataManager.addData(ProjectFileType.DATA_FILE, null, project, dataFile.getId(), step.getId());
 
         // save Line list
         ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());

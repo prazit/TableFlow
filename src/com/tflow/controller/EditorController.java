@@ -796,6 +796,9 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
+    /**
+     * TODO: need action for removeDataSource.
+     */
     public void addLocal() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
@@ -877,6 +880,9 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
+    /**
+     * TODO: need action for removeDataFile (UI: need to show 2 buttons on the endPlug, one for Remove-Line and one for Remove-Data-File).
+     */
     public void addDataFile() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();

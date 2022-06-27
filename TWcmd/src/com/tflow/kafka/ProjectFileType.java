@@ -21,6 +21,7 @@ public enum ProjectFileType {
 
     STEP("", 2),
     DATA_TABLE_LIST("data-table-list", 2),
+    TRANSFORM_TABLE_LIST("transform-table-list", 2),
     TOWER("", 2),
     FLOOR("", 2),
     LINE_LIST("line-list", 2),

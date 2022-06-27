@@ -209,7 +209,9 @@ public enum Properties {
             /*"Condition:Condition(ColumnName==ColumnName(TargetTableLookup))",*/
             /*"Conditions:ConditionList(ColumnName==ColumnName(TargetTableLookup))",*/
             "--:Value:--",
-            ".:propertyMap:sourceColumn:Value from:Column:sourceTable",
+            ".:propertyMap:sourceColumn:Key:Column:sourceTable",
+            ".:propertyMap:sourceColumn:MatchKey:Column:sourceTable",
+            ".:propertyMap:sourceColumn:Value:Column:sourceTable",
             ".:propertyMap:nullValue:Replace Null:String"
     ),
     CFX_GET(

@@ -26,15 +26,15 @@ public class RemoveDataFile extends Command {
         Project project = step.getOwner();
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
-        /*remove remaining lines on startPlug*/
+        /*remove remaining lines on startPlug (startPlug connect to many DataTable)*/
         LinePlug startPlug = dataFile.getStartPlug();
         List<Line> removedLineList = new ArrayList<>(startPlug.getLineList());
         step.removeLine(startPlug);
 
-        /*remove remaining line on endPlug*/
+        /*remove remaining line on endPlug (endPlug connect to one DataSource)*/
         LinePlug endPlug = dataFile.getEndPlug();
-        removedLineList.addAll(endPlug.getLineList());
-        step.removeLine(endPlug);
+        removedLineList.add(endPlug.getLine());
+        step.removeLine(endPlug.getLine());
 
         /*remove from Tower*/
         Floor floor = dataFile.getFloor();

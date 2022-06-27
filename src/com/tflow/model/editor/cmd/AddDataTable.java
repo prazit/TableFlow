@@ -68,6 +68,9 @@ public class AddDataTable extends Command {
         // save Line data
         ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
 
+        // save Object(DataFile) at the endPlug.
+        ProjectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, step.getOwner(), dataFile.getId(), step.getId());
+
         // save Line list
         ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
 

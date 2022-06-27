@@ -58,12 +58,14 @@ public class AddDataFile extends Command {
         // save DataFile data
         ProjectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, project, dataFile.getId(), step.getId());
 
-        // save Line data
         if (newLine != null) {
+            // save Line data
             ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
 
             // save Line list
             ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+
+            // no object at the startPlug to save here
         }
 
         // save Tower data

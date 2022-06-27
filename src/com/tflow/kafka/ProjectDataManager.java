@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/*TODO: how to update Object between line*/
+/*TODO: save updated object between line in RemoveDataFile when the Action RemoveDataFile is used in the UI*/
 public class ProjectDataManager {
 
     private static Logger log = LoggerFactory.getLogger(ProjectDataManager.class);
@@ -155,6 +155,9 @@ public class ProjectDataManager {
         /*TODO: after wait, need to set commitWaiting = false; and then commit*/
     }
 
+    /**
+     * TODO: need to run ProjectWriteCommand in another thread, this process guarantee success no need to wait for it.
+     */
     private static void commit() {
         if (commitWaiting) return;
 

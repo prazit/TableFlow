@@ -75,6 +75,11 @@ public class AddTransformTable extends Command {
         DataTableUtil.generateId(step.getSelectableMap(), transformTable, project);
         DataTableUtil.addTo(step.getSelectableMap(), transformTable, project);
 
+        /*Add to TransformTable List*/
+        List<TransformTable> transformList = step.getTransformList();
+        transformTable.setIndex(transformList.size());
+        transformList.add(transformTable);
+
         /*link from SourceTable to TransformTable*/
         Line newLine = step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
         newLine.setId(project.newUniqueId());
@@ -89,10 +94,17 @@ public class AddTransformTable extends Command {
         ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, transformTable, step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformTable list
-        //ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, transformTableList, step.getOwner(), dataFile.getId(), step.getId());
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
 
         // save Line data
         ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+
+        // save Object(DataTable) at the endPlug.
+        if (sourceTable instanceof TransformTable) {
+            ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
+        } else {
+            ProjectDataManager.addData(ProjectFileType.DATA_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
+        }
 
         // save Line list
         ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());

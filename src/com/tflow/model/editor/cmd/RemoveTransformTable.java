@@ -7,6 +7,7 @@ import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
+import org.jboss.weld.manager.Transform;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +26,14 @@ public class RemoveTransformTable extends Command {
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
-        /*remove line beteween dataFile and dataTable*/
+        /*remove line between sourceTables and transformTable (support future feature, merge table) */
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
         LinePlug endPlug = transformTable.getEndPlug();
         List<Line> removedLineList = new ArrayList<>(endPlug.getLineList());
+        List<DataTable> updatedTableList = new ArrayList<>();
+        for (Line line : removedLineList) {
+            updatedTableList.add((DataTable) selectableMap.get(line.getStartSelectableId()));
+        }
         step.removeLine(endPlug);
 
         /*remove from Tower*/
@@ -37,10 +43,10 @@ public class RemoveTransformTable extends Command {
         floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, project.newElementId()));
 
         /*remove from TransformTable List*/
-        step.getTransformList().remove(transformTable);
+        List<TransformTable> transformList = step.getTransformList();
+        transformList.remove(transformTable);
 
         /*remove from selectableMap*/
-        Map<String, Selectable> selectableMap = step.getSelectableMap();
         selectableMap.remove(transformTable.getSelectableId());
 
         /*for Action.executeUndo()*/
@@ -52,13 +58,22 @@ public class RemoveTransformTable extends Command {
         ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, null, project, transformTable.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformTable list
-        //ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, transformTableList, step.getOwner(), dataFile.getId(), step.getId());
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
 
         // save Line data
         for (Line line : removedLineList) {
             ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
         }
 
+        // save Object(DataTable) at the startPlug of removedLine.
+        for (DataTable table : updatedTableList) {
+            if (table instanceof TransformTable) {
+                ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, table, project, table.getId(), step.getId(), 0, table.getId());
+            } else {
+                ProjectDataManager.addData(ProjectFileType.DATA_TABLE, table, project, table.getId(), step.getId(), table.getId());
+            }
+        }
+        
         // save Line list
         ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
 

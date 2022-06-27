@@ -17,6 +17,7 @@ public class RemoveColumnFx extends Command {
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         DataColumn targetColumn = columnFx.getOwner();
         TransformTable transformTable = (TransformTable) targetColumn.getOwner();
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
 
         /*remove remaining lines on startPlug*/
         LinePlug startPlug = columnFx.getStartPlug();
@@ -24,14 +25,19 @@ public class RemoveColumnFx extends Command {
         step.removeLine(startPlug);
 
         /*remove remaining line on endPlug*/
+        List<DataColumn> updatedColumnList = new ArrayList<>();
         for (ColumnFxPlug endPlug : columnFx.getEndPlugList()) {
-            removedLineList.addAll(endPlug.getLineList());
+            Line line = endPlug.getLine();
+            removedLineList.add(line);
+            updatedColumnList.add((DataColumn) selectableMap.get(line.getStartSelectableId()));
             step.removeLine(endPlug);
         }
 
         /*remove fx from FxTable*/
         List<ColumnFx> columnFxList = transformTable.getColumnFxTable().getColumnFxList();
         columnFxList.remove(columnFx);
+
+        selectableMap.remove(columnFx.getSelectableId());
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.COLUMN_FX, columnFx);
@@ -47,6 +53,18 @@ public class RemoveColumnFx extends Command {
         // save Line data
         for (Line line : removedLineList) {
             ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+        }
+
+        // save Object(TransformColumn) at startPlug.
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, targetColumn, project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
+
+        // save Objects(DataColumn) at endPlug.
+        for (DataColumn dataColumn : updatedColumnList) {
+            if (dataColumn instanceof TransformColumn) {
+                ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, dataColumn, project, dataColumn.getId(), step.getId(), 0, dataColumn.getOwner().getId());
+            } else {
+                ProjectDataManager.addData(ProjectFileType.DATA_COLUMN, dataColumn, project, dataColumn.getId(), step.getId(), dataColumn.getOwner().getId());
+            }
         }
 
         // save Line list
