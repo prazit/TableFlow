@@ -483,6 +483,7 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript(jsBuilder.toString());
     }
 
+    /*TODO: need Action for RemoveColumn*/
     public void addColumn() {
         Step step = getStep();
         String selectableId = FacesUtil.getRequestParam("selectableId");
@@ -526,6 +527,7 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript(jsBuilder.toString());
     }
 
+    /*TODO: need Action for RemoveTransformation*/
     public void addTransformation() {
         Step step = getStep();
         String selectableId = FacesUtil.getRequestParam("selectableId");
@@ -569,6 +571,7 @@ public class FlowchartController extends Controller {
         FacesUtil.runClientScript(jsBuilder.toString());
     }
 
+    /*TODO: need Action for RemoveOutput*/
     public void addOutputFile() {
         Step step = getStep();
         String selectableId = FacesUtil.getRequestParam("selectableId");

@@ -34,6 +34,6 @@ public class AddTransformColumn extends Action {
                 CommandParamKey.TRANSFORM_COLUMN,
                 CommandParamKey.STEP
         );
-        //setUndoCommands(new com.tflow.model.editor.cmd.RemoveTransformColumn());
+        setUndoCommands(new com.tflow.model.editor.cmd.RemoveTransformColumn());
     }
 }

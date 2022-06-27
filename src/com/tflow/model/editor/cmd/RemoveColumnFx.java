@@ -38,12 +38,11 @@ public class RemoveColumnFx extends Command {
 
         /*no Action Result*/
 
-        // save TransformColumn data
+        // save TransformColumnFx data
         Project project = step.getOwner();
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, null, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, null, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
 
-        // save TransformColumn list
-        ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, columnFxList, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+        // no TransformColumnFx list to save here, it already saved in the AddTransformTable
 
         // save Line data
         for (Line line : removedLineList) {

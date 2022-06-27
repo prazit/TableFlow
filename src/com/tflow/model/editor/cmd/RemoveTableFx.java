@@ -9,29 +9,21 @@ import com.tflow.model.editor.action.ActionResultKey;
 import java.util.List;
 import java.util.Map;
 
-public class AddTableFx extends Command {
+public class RemoveTableFx extends Command {
     private static final long serialVersionUID = 2022031309996660017L;
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        TransformTable transformTable = (TransformTable) paramMap.get(CommandParamKey.TRANSFORM_TABLE);
+        TableFx tableFx = (TableFx) paramMap.get(CommandParamKey.TABLE_FX);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Project project = step.getOwner();
 
-        TableFx tableFx = (TableFx) paramMap.get(CommandParamKey.TABLE_FX);
-        if(tableFx == null) {
-            // for AddTableFx
-            tableFx = new TableFx(TableFunction.SORT, TableFunction.SORT.getName(), transformTable);
-            tableFx.setId(project.newUniqueId());
-        }/*else{
-            // nothing for RemoveTableFx.Undo
-        }*/
-
+        TransformTable transformTable = tableFx.getOwner();
         List<TableFx> tableFxList = transformTable.getFxList();
-        tableFxList.add(tableFx);
+        tableFxList.remove(tableFx);
 
-        step.getSelectableMap().put(tableFx.getSelectableId(), tableFx);
+        step.getSelectableMap().remove(tableFx.getSelectableId(), tableFx);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.TABLE_FX, tableFx);
@@ -40,10 +32,10 @@ public class AddTableFx extends Command {
         action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
 
         // save Transformation data
-        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION, tableFx, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION, null, step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
 
         // save Transformation list
-        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
 
         // no line, tower, floor to save here
     }

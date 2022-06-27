@@ -34,6 +34,6 @@ public class AddOutputFile extends Action {
                 CommandParamKey.DATA_FILE,
                 CommandParamKey.STEP
         );
-        //setUndoCommands(new com.tflow.model.editor.cmd.RemoveOutputFile());
+        setUndoCommands(new com.tflow.model.editor.cmd.RemoveOutputFile());
     }
 }

@@ -34,6 +34,6 @@ public class AddTableFx extends Action {
                 CommandParamKey.TABLE_FX,
                 CommandParamKey.STEP
         );
-        //setUndoCommands(new com.tflow.model.editor.cmd.RemoveTableFx());
+        setUndoCommands(new com.tflow.model.editor.cmd.RemoveTableFx());
     }
 }

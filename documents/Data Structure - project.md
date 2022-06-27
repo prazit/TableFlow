@@ -37,6 +37,7 @@ Project data based.
 |               |               |                    | transformation-id-list | Transformation List:<br />+ list of transformation-id                                                     | 22  |                 |     |
 |               |               |                    | output-file-id-list    | Output File List:<br />+ list of output-file-id                                                           | 23  |                 |     |
 |               |               |                    | transform-column-id    | Transform Column:<br />+ column detail<br />(different from Data Column)                                  | 24  | 12              | 12  |
+|               |               |                    | transform-column-fx-id | Transform Column Function:<br/>+ function detail                                                          | 28  | 16              | 16  |
 |               |               |                    | transformation-id      | Transformation:<br />+ transformation detail                                                              | 25  | 13              | 13  |
 |               |               |                    | output-file-id         | Output File:<br />+ output detail                                                                         | 26  | 14              | 14  |
 

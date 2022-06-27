@@ -38,6 +38,7 @@ public enum ProjectFileType {
     TRANSFORMATION_LIST("transformation-list", 4),
     TRANSFORM_OUTPUT_LIST("transform-output-list", 4),
     TRANSFORM_COLUMN("", 4),
+    TRANSFORM_COLUMNFX("", 4),
     TRANSFORMATION("", 4),
     TRANSFORM_OUTPUT("", 4),
     ;

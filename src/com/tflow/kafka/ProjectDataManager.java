@@ -18,13 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/*TODO: need FileType for columnFx and then use it instead of TRANSFORM_COLUMN*/
-/*TODO: need some missed commands for Undo of Add commands below:
- + RemoveTransformColumn for AddTransformColumn
- + RemoveOutputFile for AddOutputFile
- + RemoveTableFx for AddTableFx
- */
-
 /*TODO: how to update Object between line*/
 public class ProjectDataManager {
 

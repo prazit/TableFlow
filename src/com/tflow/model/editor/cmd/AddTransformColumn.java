@@ -20,10 +20,16 @@ public class AddTransformColumn extends Command {
         Project project = step.getOwner();
 
         List<DataColumn> columnList = transformTable.getColumnList();
-        TransformColumn transformColumn = new TransformColumn(columnList.size(), DataType.STRING, "Untitled", project.newElementId(), project.newElementId(), transformTable);
-        columnList.add(transformColumn);
+        TransformColumn transformColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
+        if(transformColumn == null) {
+            // for AddTransformColumn
+            transformColumn = new TransformColumn(columnList.size(), DataType.STRING, "Untitled", project.newElementId(), project.newElementId(), transformTable);
+            transformColumn.setId(project.newUniqueId());
+        }/*else{
+            //nothing for RemoveTransformColumn.Undo
+        }*/
 
-        transformColumn.setId(project.newUniqueId());
+        columnList.add(transformColumn);
 
         step.getSelectableMap().put(transformColumn.getSelectableId(), transformColumn);
 
