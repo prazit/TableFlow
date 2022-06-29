@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.server.ServerNotActiveException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -130,9 +131,9 @@ public class ProjectDataManager {
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("key.serializer.encoding", "UTF-8");
+        props.put("key.serializer.encoding", StandardCharsets.UTF_8.name());
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer.encoding", "UTF-8");
+        props.put("value.serializer.encoding", StandardCharsets.UTF_8.name());
         producer = new KafkaProducer<String, String>(props);
     }
 

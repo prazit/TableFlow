@@ -1,33 +1,36 @@
-package com.tflow.wcmd;
+package com.tflow.trcmd;
 
 import com.tflow.kafka.KafkaRecordValue;
 import com.tflow.kafka.KafkaTWAdditional;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.util.DateTimeUtil;
-import com.tflow.util.FileUtil;
 import com.tflow.util.SerializeUtil;
+import com.tflow.wcmd.KafkaCommand;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.security.InvalidParameterException;
 import java.util.Date;
-
-/*TODO: need to append last command to the list of command in history folder
-   put file in the step folder
-   split file by max-file-size from configuration*/
 
 /**
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
  * Kafka-Value: serialized data with additional information or Message Record Value Structure spec in \TFlow\documents\Data Structure - Kafka.md
  */
-public class UpdateProjectCommand extends KafkaCommand {
+public class ReadProjectCommand extends KafkaCommand {
 
-    private Logger log = LoggerFactory.getLogger(UpdateProjectCommand.class);
+    private Logger log = LoggerFactory.getLogger(ReadProjectCommand.class);
 
-    public UpdateProjectCommand(ConsumerRecord<String, String> kafkaRecord) {
+    private KafkaProducer producer;
+
+    public ReadProjectCommand(ConsumerRecord<String, String> kafkaRecord, KafkaProducer producer) {
         super(kafkaRecord);
+        this.producer = producer;
     }
 
     @Override
@@ -40,40 +43,20 @@ public class UpdateProjectCommand extends KafkaCommand {
         additional.setModifiedDate(now);
 
         File file = getFile(projectFileType, additional);
-        if (file.exists()) {
+        if (!file.exists()) {
+            /*TODO: create Header message for error*/
 
-            /*move existing Data File to Transaction folder*/
-            File historyFile = getHistoryFile(projectFileType, additional);
-            KafkaRecordValue historyRecord = readFrom(file);
-            writeTo(historyFile, historyRecord);
-
-            /*need created-info from history*/
-            KafkaTWAdditional historyAdditional = (KafkaTWAdditional) historyRecord.getAdditional();
-            additional.setCreatedDate(historyAdditional.getCreatedDate());
-            additional.setCreatedUserId(historyAdditional.getCreatedUserId());
-            additional.setCreatedClientId(historyAdditional.getCreatedClientId());
-
-        } else {
-            additional.setCreatedDate(now);
-            additional.setCreatedUserId(additional.getModifiedUserId());
-            additional.setCreatedClientId(additional.getModifiedClientId());
+            /*TODO: send Header message*/
+             return;
         }
 
-        if (kafkaRecordValue.getData() == null) {
-            log.info("remove( file: {}, additional: {} )", file, additional);
-            remove(file);
-        } else {
-            log.info("writeTo( file: {}, additional: {} )", file, additional);
-            writeTo(file, kafkaRecordValue);
-        }
-    }
+        /*TODO: create Header message*/
 
-    private void remove(File file) {
-        try {
-            if (!file.delete()) throw new Exception("file.delete() return false.");
-        } catch (Exception ex) {
-            log.warn("remove(file: {}) failed! ", file, ex.getMessage());
-        }
+        /*TODO: create Data message*/
+
+        /*TODO: send Header message*/
+
+        /*TODO: send Data message*/
     }
 
     private KafkaRecordValue readFrom(File file) throws IOException, ClassNotFoundException {
@@ -89,24 +72,6 @@ public class UpdateProjectCommand extends KafkaCommand {
 
         log.info("readFrom( file: {} ). kafkafRecordValue.additional = {}", file, kafkaRecordValue.getAdditional());
         return kafkaRecordValue;
-    }
-
-    /**
-     * IMPORTANT: replace only.
-     */
-    private void writeTo(File file, KafkaRecordValue kafkaRecordValue) throws IOException {
-        FileUtil.autoCreateParentDir(file);
-        FileOutputStream fileOut = new FileOutputStream(file, false);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOut);
-        objectOutputStream.writeObject(kafkaRecordValue);
-        objectOutputStream.close();
-        fileOut.close();
-    }
-
-    private File getHistoryFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
-        /*TODO: need history root path from configuration*/
-        String rootPath = "/Apps/TFlow/hist";
-        return getFile(projectFileType, additional, rootPath, DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS"));
     }
 
     private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {

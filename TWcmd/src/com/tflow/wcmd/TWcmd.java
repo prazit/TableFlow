@@ -36,12 +36,12 @@ public class TWcmd {
         props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms", "30000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("key.deserializer.encoding", "UTF-8");
+        props.put("key.deserializer.encoding", StandardCharsets.UTF_8.name());
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer.encoding", "UTF-8");
+        props.put("value.deserializer.encoding", StandardCharsets.UTF_8.name());
         KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
 
-        String topic = "quickstart-events";
+        String topic = "project-write"; //"quickstart-events";
         consumer.subscribe(Collections.singletonList(topic));
         log.info("Subscribed to topic " + topic);
 

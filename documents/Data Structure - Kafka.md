@@ -48,34 +48,70 @@ Kafka
 
 ## Project Write Command
 
-> **Kafka-Topic:** <u>UpdateProject</u>
+> **Kafka-Topic:** <u>project-write</u>
 > 
 > **Note:** write process will read from data-file to data-record and update data-record by message-record before write to data-file.
 > 
 > **Kafka-Record-Detail:** already defined in [Data Structure - project.md](C:\Users\prazi\Documents\GitHub\TFlow\documents\Data Structure - project.md)
 
+## 
+
+## Project Read Command
+
+> **Kafka-Topic:** <u>project-read</u>
+> 
+> **Note:** read process will read from data-file to serialized-string(similar to message in Project Write Command) and create 2 messages as Header(client-id with record-key) and Content(serialized-string with record-key).
+
+## 
+
+> **Kafka-Topic:** <u>project-data</u>
+> 
+> **Note:** client receive data after send project read command.
+
+## 
+
+## Kafka Record Value
+
+
+
+### for Project Write Command, Project Read Command
+
 ```json
-// ### Message Record Value Structure is Concatenation of Serialized String
+// ### Message Record Value is Serialized String of this structure.
+{
+    object: "serialized-object",
+    additional:
+    { 
+        /* Parent Field Group: all fields are optional */
+        projectId: "String",
+        stepId: "String",
+        dataTableId: "String",
+        transformTableId: "String",
 
-// ### Additional Data
-{ 
-    /* Parent Field Group: all fields are optional */
-    projectId: "String",
-    stepId: "String",
-    dataTableId: "String",
-    transformTableId: "String",
+        /* Transaction Field Group: all fields are required */
+        modifiedClientId: ,
+        modifiedUserId: ,
 
-    /* Transaction Field Group: all fields are required */
-    modifiedClientId: ,
-    modifiedUserId: ,
-
-    /* Generated Field Group: generate by service */
-    createdClientId: ,    // copy from modifiedClientId when create
-    createdUserId: ,
-    createdDate: ,
-    modifiedDate: ,       // server date
+        /* Generated Field Group: generate by service */
+        createdClientId: ,    // copy from modifiedClientId when create
+        createdUserId: ,
+        createdDate: ,
+        modifiedDate: ,       // server date
+    }
 }
 ```
+
+
+
+### for Group List Write Command, Group List Read Command
+
+
+
+### for Project List Write Command, Project List Read Command
+
+## 
+
+## Kafka Record Keys
 
 | data-key                        | shorten and use as record key | required field                                      |
 | ------------------------------- | ----------------------------- | --------------------------------------------------- |
@@ -107,6 +143,8 @@ Kafka
 | transform-table-column-function | TRANSFORM_COLUMNFX            | + project-id<br/>+ step-id<br/>+ transform-table-id |
 | transform-table-transformation  | TRANSFORMATION                | + project-id<br/>+ step-id<br/>+ transform-table-id |
 | transform-table-output          | TRANSFORM_OUPUT               | + project-id<br/>+ step-id<br/>+ transform-table-id |
+
+
 
 ----
 

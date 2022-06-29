@@ -5,13 +5,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import java.io.IOException;
 
 /**
- * Receive kafka message then convert and write to storage.
+ * Receive kafka message then deserialize and execute something.
  */
-public abstract class WriteCommand {
+public abstract class KafkaCommand {
 
     protected ConsumerRecord<String, String> kafkaRecord;
 
-    public WriteCommand(ConsumerRecord<String, String> kafkaRecord) {
+    public KafkaCommand(ConsumerRecord<String, String> kafkaRecord) {
         this.kafkaRecord = kafkaRecord;
     }
 
