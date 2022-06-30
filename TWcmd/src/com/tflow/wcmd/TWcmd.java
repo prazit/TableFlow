@@ -37,9 +37,8 @@ public class TWcmd {
         props.put("session.timeout.ms", "30000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer.encoding", StandardCharsets.UTF_8.name());
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.ObjectDeserializer");
+        KafkaConsumer<String, Object> consumer = new KafkaConsumer<String, Object>(props);
 
         String topic = "project-write"; //"quickstart-events";
         consumer.subscribe(Collections.singletonList(topic));
@@ -47,23 +46,20 @@ public class TWcmd {
 
         long timeout = 30000;
         Duration duration = Duration.ofMillis(timeout);
-        ConsumerRecords<String, String> records;
+        ConsumerRecords<String, Object> records;
         polling = true;
         while (polling) {
             records = consumer.poll(duration);
 
-            for (ConsumerRecord<String, String> record : records) {
-
-                String value = record.value();
-                String key = record.key();
-                String offset = String.valueOf(record.offset());
-                //log.info("Rawdata: offset = {}, key = {}, value = {}", offset, key, value);
+            for (ConsumerRecord<String, Object> record : records) {
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
                 UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(record);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
+                long offset = record.offset();
+                String key = record.key();
                 try {
                     log.info("updateProjectCommand(offset: {}, key: {}) started.", offset, key);
                     updateProjectCommand.execute();

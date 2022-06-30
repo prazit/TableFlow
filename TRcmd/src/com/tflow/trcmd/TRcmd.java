@@ -24,11 +24,12 @@ public class TRcmd {
         /*nothing*/
     }
 
+    @SuppressWarnings("unchecked")
     public void start() {
         /*example from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_consumer_group_example.htm*/
 
-        KafkaConsumer<String, String> consumer = crateConsumer();
-        KafkaProducer<String, String> producer = createProducer();
+        KafkaConsumer<String, Object> consumer = createConsumer();
+        KafkaProducer<String, Object> dataProducer = createProducer();
 
         /*TODO: need to load topic from configuration*/
         String topic = "project-read"; //"quickstart-events";
@@ -37,20 +38,20 @@ public class TRcmd {
 
         long timeout = 30000;
         Duration duration = Duration.ofMillis(timeout);
-        ConsumerRecords<String, String> records;
+        ConsumerRecords<String, Object> records;
         polling = true;
         while (polling) {
             records = consumer.poll(duration);
 
-            for (ConsumerRecord<String, String> record : records) {
+            for (ConsumerRecord<String, Object> record : records) {
 
-                String value = record.value();
+                Object value = record.value();
                 String key = record.key();
                 String offset = String.valueOf(record.offset());
-                //log.info("Rawdata: offset = {}, key = {}, value = {}", offset, key, value);
+                log.info("Rawdata: offset = {}, key = {}, value = {}", offset, key, value);
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                ReadProjectCommand readProjectCommand = new ReadProjectCommand(record, producer);
+                ReadProjectCommand readProjectCommand = new ReadProjectCommand(record, dataProducer, topic);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
@@ -72,7 +73,7 @@ public class TRcmd {
         consumer.close();
     }
 
-    private KafkaConsumer<String, String> crateConsumer() {
+    private KafkaConsumer<String, Object> createConsumer() {
         /*TODO: need to load consumer configuration*/
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
@@ -84,10 +85,10 @@ public class TRcmd {
         props.put("key.deserializer.encoding", "UTF-8");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer.encoding", "UTF-8");
-        return new KafkaConsumer<String, String>(props);
+        return new KafkaConsumer<String, Object>(props);
     }
 
-    private KafkaProducer<String, String> createProducer() {
+    private KafkaProducer<String, Object> createProducer() {
         /*TODO: need to load producer configuration*/
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
@@ -98,9 +99,8 @@ public class TRcmd {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer.encoding", StandardCharsets.UTF_8.name());
-        return new KafkaProducer<String, String>(props);
+        props.put("value.serializer", "com.tflow.kafka.ObjectSerializer");
+        return new KafkaProducer<String, Object>(props);
     }
 
     public void stop() {

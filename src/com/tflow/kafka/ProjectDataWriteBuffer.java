@@ -1,12 +1,12 @@
 package com.tflow.kafka;
 
-public class ProjectWriteCommand {
+public class ProjectDataWriteBuffer {
 
     private ProjectFileType fileType;
     private Object dataObject;
     private KafkaTWAdditional additional;
 
-    public ProjectWriteCommand(ProjectFileType fileType, Object dataObject, KafkaTWAdditional additional) {
+    public ProjectDataWriteBuffer(ProjectFileType fileType, Object dataObject, KafkaTWAdditional additional) {
         this.fileType = fileType;
         this.dataObject = dataObject;
         this.additional = additional;

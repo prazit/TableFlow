@@ -72,9 +72,7 @@ Kafka
 
 ## Kafka Record Value
 
-
-
-### for Project Write Command, Project Read Command
+### for Project Write Command, Project Read Command : Data
 
 ```json
 // ### Message Record Value is Serialized String of this structure.
@@ -89,23 +87,34 @@ Kafka
         transformTableId: "String",
 
         /* Transaction Field Group: all fields are required */
-        modifiedClientId: ,
-        modifiedUserId: ,
+        modifiedClientId: int,
+        modifiedUserId: int,
 
         /* Generated Field Group: generate by service */
-        createdClientId: ,    // copy from modifiedClientId when create
-        createdUserId: ,
-        createdDate: ,
-        modifiedDate: ,       // server date
+        createdClientId: int,     // copy from modifiedClientId when create
+        createdUserId: int,
+        createdDate: Date,
+        modifiedDate: Date,       // server date
     }
 }
 ```
 
+### 
 
+### for Project Read Command : Header
+
+```json
+// ### Message Record Value is Serialized String of this structure.
+// ### code >= 0 = clientId
+// ### code < 0 = KafkaErrorCode(Enum)
+{
+    code: int
+}
+```
+
+### 
 
 ### for Group List Write Command, Group List Read Command
-
-
 
 ### for Project List Write Command, Project List Read Command
 
@@ -143,8 +152,6 @@ Kafka
 | transform-table-column-function | TRANSFORM_COLUMNFX            | + project-id<br/>+ step-id<br/>+ transform-table-id |
 | transform-table-transformation  | TRANSFORMATION                | + project-id<br/>+ step-id<br/>+ transform-table-id |
 | transform-table-output          | TRANSFORM_OUPUT               | + project-id<br/>+ step-id<br/>+ transform-table-id |
-
-
 
 ----
 

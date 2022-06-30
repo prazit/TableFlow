@@ -2,18 +2,17 @@ package com.tflow.kafka;
 
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Workspace;
-import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.util.SerializeUtil;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.utils.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.rmi.server.ServerNotActiveException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +23,14 @@ public class ProjectDataManager {
 
     private static Logger log = LoggerFactory.getLogger(ProjectDataManager.class);
 
-    private static List<ProjectWriteCommand> projectWriteCommandList = new ArrayList<>();
+    private static List<ProjectDataWriteBuffer> projectDataWriteBufferList = new ArrayList<>();
 
     private static String writeTopic;
+    private static String readTopic;
     private static long commitAgainMilliseconds;
     private static boolean commitWaiting;
-    private static Producer<String, String> producer;
+    private static Producer<String, Object> producer;
+    private static Consumer<String, byte[]> consumer;
 
     private static void createProducer() {
         /* Notice: some properties from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm
@@ -122,7 +123,8 @@ public class ProjectDataManager {
             10:37:52,212 INFO  [org.apache.kafka.common.utils.AppInfoParser] (default task-10) Kafka version: 3.1.0
         **/
         /*TODO: need to load producer configuration*/
-        writeTopic = "quickstart-events";
+        writeTopic = "project-write";
+        readTopic = "project-read";
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("acks", "all");
@@ -132,12 +134,26 @@ public class ProjectDataManager {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.ObjectSerializer");
         props.put("value.serializer.encoding", StandardCharsets.UTF_8.name());
-        producer = new KafkaProducer<String, String>(props);
+        producer = new KafkaProducer<String, Object>(props);
     }
 
-    private static boolean ready(Producer<String, String> producer) {
+    private static void createConsumer() {
+        /*TODO: need to load consumer configuration*/
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
+        props.put("group.id", "tflow");
+        props.put("enable.auto.commit", "true");
+        props.put("auto.commit.interval.ms", "1000");
+        props.put("session.timeout.ms", "30000");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("key.deserializer.encoding", "UTF-8");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        consumer = new KafkaConsumer<String, byte[]>(props);
+    }
+
+    private static boolean ready(Producer<String, Object> producer) {
         if (producer == null) createProducer();
 
         /*TODO: check status of Producer(kafka server)*/
@@ -162,14 +178,14 @@ public class ProjectDataManager {
     private static void commit() {
         if (commitWaiting) return;
 
-        ArrayList<ProjectWriteCommand> commitList = new ArrayList<>(projectWriteCommandList);
+        ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList);
         KafkaTWAdditional additional;
         ProjectFileType fileType;
         String recordId;
         KafkaRecordValue kafkaRecordValue;
         String key;
         String value;
-        for (ProjectWriteCommand writeCommand : commitList) {
+        for (ProjectDataWriteBuffer writeCommand : commitList) {
             if (!ready(producer)) {
                 commit(commitAgainMilliseconds);
                 return;
@@ -185,15 +201,15 @@ public class ProjectDataManager {
                 Object dataObject = writeCommand.getDataObject();
                 String serializedData = (dataObject == null) ? null : SerializeUtil.serialize(dataObject);
                 kafkaRecordValue = new KafkaRecordValue(serializedData, additional);
-                value = SerializeUtil.serialize(kafkaRecordValue);
+                //value = SerializeUtil.serialize(kafkaRecordValue);
             } catch (IOException ex) {
                 log.warn("Serialization failed: ", ex);
                 commit(commitAgainMilliseconds);
                 return;
             }
 
-            producer.send(new ProducerRecord<String, String>(writeTopic, key, value));
-            projectWriteCommandList.remove(writeCommand);
+            producer.send(new ProducerRecord<String, Object>(writeTopic, key, kafkaRecordValue));
+            projectDataWriteBufferList.remove(writeCommand);
 
             log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) completed.", fileType.name(), recordId);
         }
@@ -243,7 +259,40 @@ public class ProjectDataManager {
         if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId");
         if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId");
 
-        projectWriteCommandList.add(new ProjectWriteCommand(fileType, object, additional));
+        projectDataWriteBufferList.add(new ProjectDataWriteBuffer(fileType, object, additional));
         commit();
     }
+
+    public static Object getData(ProjectFileType fileType, KafkaTWAdditional additional) {
+
+        /*TODO: produce Read Command message*/
+        long code = requestData(fileType, additional);
+        if (code < 0) {
+            return code;
+        }
+
+        /*TODO: start consumer to capture ByteArray data*/
+
+        /*TODO: when got data then stop consumer*/
+        Object data = null;
+
+        /*TODO: return data*/
+
+        return data;
+    }
+
+    private static long requestData(ProjectFileType fileType, KafkaTWAdditional additional) {
+        if (!ready(producer)) {
+            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
+        }
+
+        log.info("requestData( fileType:{}, recordId:{} ) started.", fileType.name(), additional.getRecordId());
+
+        producer.send(new ProducerRecord<String, Object>(readTopic, fileType.name(), additional));
+
+        log.info("requestData completed.");
+
+        return 1L;
+    }
+
 }

@@ -1,22 +1,17 @@
 package com.tflow.trcmd;
 
-import com.tflow.kafka.KafkaRecordValue;
-import com.tflow.kafka.KafkaTWAdditional;
-import com.tflow.kafka.ProjectFileType;
-import com.tflow.util.DateTimeUtil;
+import com.tflow.kafka.*;
+import com.tflow.util.FileUtil;
 import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.KafkaCommand;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.security.InvalidParameterException;
-import java.util.Date;
 
 /**
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
@@ -26,39 +21,60 @@ public class ReadProjectCommand extends KafkaCommand {
 
     private Logger log = LoggerFactory.getLogger(ReadProjectCommand.class);
 
-    private KafkaProducer producer;
+    private String topic;
+    private KafkaProducer<String, Object> dataProducer;
 
-    public ReadProjectCommand(ConsumerRecord<String, String> kafkaRecord, KafkaProducer producer) {
+    public ReadProjectCommand(ConsumerRecord<String, Object> kafkaRecord, KafkaProducer<String, Object> dataProducer, String topic) {
         super(kafkaRecord);
-        this.producer = producer;
+        this.dataProducer = dataProducer;
+        this.topic = topic;
     }
 
     @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException {
-        KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) SerializeUtil.deserialize(kafkaRecord.value());
-        ProjectFileType projectFileType = validate(kafkaRecord.key(), kafkaRecordValue);
-
-        KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
-        Date now = DateTimeUtil.now();
-        additional.setModifiedDate(now);
+        KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecord.value();
+        ProjectFileType projectFileType = validate(kafkaRecord.key(), additional);
 
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
-            /*TODO: create Header message for error*/
-
-            /*TODO: send Header message*/
-             return;
+            sendObject(kafkaRecord.key(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+            return;
         }
 
-        /*TODO: create Header message*/
+        if (isProjectEditingByAnother(additional)) {
+            sendObject(kafkaRecord.key(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
+            return;
+        }
 
-        /*TODO: create Data message*/
+        /*create Data message*/
+        KafkaRecordValue recordValue = readFrom(file);
 
-        /*TODO: send Header message*/
-
-        /*TODO: send Data message*/
+        /*send Header message and then Data message*/
+        sendObject(kafkaRecord.key(), additional.getModifiedClientId());
+        sendObject(kafkaRecord.key(), recordValue);
     }
 
+    private boolean isProjectEditingByAnother(KafkaTWAdditional additional) throws IOException, ClassNotFoundException {
+        File clientFile = getClientFile(additional);
+        if (!clientFile.exists()) {
+            /*create clientFile at the first read*/
+            writeClientTo(clientFile, new ClientRecord(additional));
+            return false;
+        }
+
+        ClientRecord clientRecord = readClientFrom(clientFile);
+        if (clientRecord.isMe(additional)) {
+            return false;
+        }
+
+        //TODO: need timeout for User close browser without close the project
+        return true;
+    }
+
+    private void sendObject(String key, Object object) {
+        dataProducer.send(new ProducerRecord<String, Object>(topic, key, object));
+    }
+    
     private KafkaRecordValue readFrom(File file) throws IOException, ClassNotFoundException {
 
         KafkaRecordValue kafkaRecordValue = null;
@@ -72,6 +88,33 @@ public class ReadProjectCommand extends KafkaCommand {
 
         log.info("readFrom( file: {} ). kafkafRecordValue.additional = {}", file, kafkaRecordValue.getAdditional());
         return kafkaRecordValue;
+    }
+
+    private ClientRecord readClientFrom(File file) throws IOException, ClassNotFoundException {
+
+        ClientRecord clientRecord = null;
+        FileInputStream fileIn = new FileInputStream(file);
+
+        /*-- normal cast to known object --*/
+        ObjectInputStream in = new ObjectInputStream(fileIn);
+        clientRecord = (ClientRecord) in.readObject();
+        in.close();
+        fileIn.close();
+
+        log.info("readClientFrom( file: {} ). clientRecord = {}", file, clientRecord);
+        return clientRecord;
+    }
+
+    /**
+     * IMPORTANT: replace only.
+     */
+    private void writeClientTo(File file, ClientRecord clientRecord) throws IOException {
+        FileUtil.autoCreateParentDir(file);
+        FileOutputStream fileOut = new FileOutputStream(file, false);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOut);
+        objectOutputStream.writeObject(clientRecord);
+        objectOutputStream.close();
+        fileOut.close();
     }
 
     private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
@@ -103,6 +146,10 @@ public class ReadProjectCommand extends KafkaCommand {
         return new File(rootPath + path + "/" + getFileName(projectFileType.getPrefix(), additional.getRecordId()) + postFix);
     }
 
+    private File getClientFile(KafkaTWAdditional additional) {
+        return new File("/" + additional.getProjectId() + "/client");
+    }
+
     private String getFileName(String prefix, String recordId) {
         if (prefix.endsWith("list"))
             return prefix;
@@ -112,7 +159,7 @@ public class ReadProjectCommand extends KafkaCommand {
     /**
      * validate Additional Data and KafkaKey
      **/
-    private ProjectFileType validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue) throws UnsupportedOperationException, InvalidParameterException {
+    private ProjectFileType validate(String kafkaRecordKey, KafkaTWAdditional additional) throws UnsupportedOperationException, InvalidParameterException {
 
         ProjectFileType fileType;
         try {
@@ -122,7 +169,6 @@ public class ReadProjectCommand extends KafkaCommand {
         }
 
         /*check required data for the KafkaKey*/
-        KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
         int requireType = fileType.getRequireType();
 
         // recordId is required on all require types.

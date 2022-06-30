@@ -26,14 +26,14 @@ public class UpdateProjectCommand extends KafkaCommand {
 
     private Logger log = LoggerFactory.getLogger(UpdateProjectCommand.class);
 
-    public UpdateProjectCommand(ConsumerRecord<String, String> kafkaRecord) {
+    public UpdateProjectCommand(ConsumerRecord<String, Object> kafkaRecord) {
         super(kafkaRecord);
     }
 
     @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException {
-        KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) SerializeUtil.deserialize(kafkaRecord.value());
-        ProjectFileType projectFileType = validate(kafkaRecord.key(), kafkaRecordValue);
+        KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) kafkaRecord.value();
+        ProjectFileType projectFileType = validate((String) kafkaRecord.key(), kafkaRecordValue);
 
         KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
         Date now = DateTimeUtil.now();

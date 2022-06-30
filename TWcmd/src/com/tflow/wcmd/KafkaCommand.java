@@ -9,9 +9,9 @@ import java.io.IOException;
  */
 public abstract class KafkaCommand {
 
-    protected ConsumerRecord<String, String> kafkaRecord;
+    protected ConsumerRecord<String, Object> kafkaRecord;
 
-    public KafkaCommand(ConsumerRecord<String, String> kafkaRecord) {
+    public KafkaCommand(ConsumerRecord<String, Object> kafkaRecord) {
         this.kafkaRecord = kafkaRecord;
     }
 

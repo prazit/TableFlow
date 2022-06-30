@@ -456,7 +456,7 @@ public class EditorController extends Controller {
         messageNo++;
 
         /* using Kafka lib -- https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm */
-        String topic = "quickstart-events";
+        String topic = "project-read";
         String key = projectFileType.name();
         String value = "";
 
