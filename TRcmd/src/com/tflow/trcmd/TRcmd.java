@@ -31,10 +31,11 @@ public class TRcmd {
         KafkaConsumer<String, Object> consumer = createConsumer();
         KafkaProducer<String, Object> dataProducer = createProducer();
 
-        /*TODO: need to load topic from configuration*/
-        String topic = "project-read"; //"quickstart-events";
-        consumer.subscribe(Collections.singletonList(topic));
-        log.info("Subscribed to topic " + topic);
+        /*TODO: need to load readTopic from configuration*/
+        String readTopic = "project-read";
+        String dataTopic = "project-data";
+        consumer.subscribe(Collections.singletonList(readTopic));
+        log.info("Subscribed to readTopic " + readTopic);
 
         long timeout = 30000;
         Duration duration = Duration.ofMillis(timeout);
@@ -51,7 +52,7 @@ public class TRcmd {
                 log.info("Rawdata: offset = {}, key = {}, value = {}", offset, key, value);
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                ReadProjectCommand readProjectCommand = new ReadProjectCommand(record, dataProducer, topic);
+                ReadProjectCommand readProjectCommand = new ReadProjectCommand(record, dataProducer, dataTopic);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
@@ -83,7 +84,7 @@ public class TRcmd {
         props.put("session.timeout.ms", "30000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", "UTF-8");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "com.tflow.kafka.ObjectDeserializer");
         props.put("value.deserializer.encoding", "UTF-8");
         return new KafkaConsumer<String, Object>(props);
     }

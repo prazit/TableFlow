@@ -16,10 +16,16 @@ public enum KafkaErrorCode {
      */
     INTERNAL_SERVER_ERROR(-11),
     PROJECT_EDITING_BY_ANOTHER(-12),
-    DATA_FILE_NOT_FOUND(-13)
-    ;
+    DATA_FILE_NOT_FOUND(-13);
 
     private long code;
+
+    public static KafkaErrorCode parse(long code) {
+        for (KafkaErrorCode errorCode : values()) {
+            if (errorCode.getCode() == code) return errorCode;
+        }
+        return null;
+    }
 
     public long getCode() {
         return code;
@@ -27,5 +33,10 @@ public enum KafkaErrorCode {
 
     KafkaErrorCode(long code) {
         this.code = code;
+    }
+
+    @Override
+    public String toString() {
+        return name();
     }
 }

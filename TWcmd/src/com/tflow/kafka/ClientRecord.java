@@ -1,6 +1,9 @@
 package com.tflow.kafka;
 
-public class ClientRecord {
+import java.io.Serializable;
+
+public class ClientRecord implements Serializable {
+    private static final long serialVersionUID = 2022070109996660001L;
 
     private long userId;
     private long clientId;
@@ -33,5 +36,13 @@ public class ClientRecord {
     public boolean isMe(KafkaTWAdditional additional) {
         return additional.getModifiedClientId() == clientId &&
                 additional.getModifiedUserId() == userId;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "userId:" + userId +
+                ", clientId:" + clientId +
+                '}';
     }
 }

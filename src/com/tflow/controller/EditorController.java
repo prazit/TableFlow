@@ -1,9 +1,7 @@
 package com.tflow.controller;
 
+import com.tflow.kafka.*;
 import com.tflow.model.editor.HasEvent;
-import com.tflow.kafka.KafkaRecordValue;
-import com.tflow.kafka.KafkaTWAdditional;
-import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
@@ -431,107 +429,46 @@ public class EditorController extends Controller {
         FacesUtil.redirect("/editor.xhtml");
     }
 
-    private int messageNo;
+    public void testKafkaSendMessage() {
+        ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(ProjectDataManager.testBuffer);
+        for (ProjectDataWriteBuffer projectDataWriteBuffer : testList) {
+            ProjectFileType projectFileType = projectDataWriteBuffer.getFileType();
+            KafkaTWAdditional additional = projectDataWriteBuffer.getAdditional();
 
-    private Producer<String, String> producer;
-    private long producerLastClose = 0;
-
-    public void testKafkaSendMessage1() {
-        testKafkaSendMessage(ProjectFileType.TEST_TYPE_1);
-    }
-
-    public void testKafkaSendMessage2() {
-        testKafkaSendMessage(ProjectFileType.TEST_TYPE_2);
-    }
-
-    public void testKafkaSendMessage3() {
-        testKafkaSendMessage(ProjectFileType.TEST_TYPE_3);
-    }
-
-    public void testKafkaSendMessage4() {
-        testKafkaSendMessage(ProjectFileType.TEST_TYPE_4);
-    }
-
-    public void testKafkaSendMessage(ProjectFileType projectFileType) {
-        messageNo++;
-
-        /* using Kafka lib -- https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm */
-        String topic = "project-read";
-        String key = projectFileType.name();
-        String value = "";
-
-        List<Action> history = workspace.getProject().getActiveStep().getHistory();
-        KafkaTWAdditional additional = new KafkaTWAdditional();
-        additional.setRecordId("123");
-        additional.setProjectId("project-1");
-        additional.setStepId("step-2");
-        additional.setDataTableId("data-table-3");
-        additional.setTransformTableId("transform-table-4");
-        additional.setModifiedClientId(3);
-        additional.setModifiedUserId(23);
-        try {
-            KafkaRecordValue kafkaRecordValue = new KafkaRecordValue(SerializeUtil.serialize(history), additional);
-            value = SerializeUtil.serialize(kafkaRecordValue);
-
-            /*kafkaRecordValue = (KafkaRecordValue) SerializeUtil.deserialize(value);
-            kafkaRecordValue.setData(SerializeUtil.deserialize((String) kafkaRecordValue.getData()));
-            log.warn("testSendMessage: deserialize kafkaRecordValue: {}", kafkaRecordValue);*/
-
-        } catch (IOException ex) {
-            log.error("testSendMessage: ", ex);
-        }
-
-        if (producer == null) {
-            Properties props = new Properties();
-            props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-            props.put("acks", "all");
-            props.put("retries", 0);
-            props.put("batch.size", 16384);
-            props.put("linger.ms", 1);
-            props.put("buffer.memory", 33554432);
-            props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-            props.put("key.serializer.encoding", "UTF-8");
-            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-            props.put("value.serializer.encoding", "UTF-8");
-            producer = new KafkaProducer<String, String>(props);
-        }
-
-        /* need to know server connection status before send the message */
-        try {
-            Metric metric;
-            MetricName metricName;
-            long closeCount = 0;
-            long creationCount = -1;
-            for (Map.Entry<MetricName, ? extends Metric> mapEntry : producer.metrics().entrySet()) {
-                metric = mapEntry.getValue();
-                metricName = metric.metricName();
-
-                /*TODO: when Kafka Server is down, need more info to know server status*/
-                /*if (metricName.name().compareTo("connection-close-total") == 0) {
-                    closeCount = ((Double) metric.metricValue()).longValue();
-                } else if (metricName.name().compareTo("connection-creation-total") == 0) {
-                    creationCount = ((Double) metric.metricValue()).longValue();
-                }*/
+            log.warn("testKafkaSendMessage begin: getData(projectFileType:{}, additional:{})", projectFileType, additional);
+            Object data = ProjectDataManager.getData(projectFileType, additional);
+            if (data == null) {
+                log.error("testKafkaSendMessage end: getData.returned data = null");
+                continue;
             }
 
-            /*log.warn("testSendMessage: connection-close-total = {}, connection-creation-total = {}", closeCount, creationCount);
-            if (closeCount > producerLastClose || creationCount == 0) {
-                producerLastClose = closeCount;
-                log.error("testSendMessage: Kafka is down! the message is not sent, key:{}, value:{}", key, value);
-                return;
-            }*/
+            long errorCode;
+            if (data instanceof Long) {
+                errorCode = (Long) data;
+                KafkaErrorCode kafkaErrorCode = KafkaErrorCode.parse(errorCode);
+                log.error("testKafkaSendMessage end: getData.returned error({})", kafkaErrorCode);
+                continue;
+            }
 
-        } catch (NullPointerException ex) {
-            log.error("testSendMessage: Kafka metric not valid! the message is not sent, key:{}, value:{}", key, value);
-            return;
+            try {
+                KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) data;
+                Object serialized = kafkaRecordValue.getData();
+                Object object;
+                if (serialized instanceof String) {
+                    log.warn("serialized is String");
+                    object = SerializeUtil.deserialize((String) kafkaRecordValue.getData());
+                } else {
+                    log.warn("serialized is byte[]");
+                    object = SerializeUtil.deserialize((byte[]) kafkaRecordValue.getData());
+                }
+                log.warn("testKafkaSendMessage: getData.returned object({}) = {}", object.getClass().getName(), object);
+                log.warn("testKafkaSendMessage end: getData(projectFileType:{}).returned additional = {}", projectFileType, kafkaRecordValue.getAdditional());
+            } catch (Exception ex) {
+                log.error("testKafkaSendMessage end: cast to DataTable failed: ", ex);
+            }
+
+            ProjectDataManager.testBuffer.remove(projectDataWriteBuffer);
         }
-
-        /*String value = "MessageValue#" + messageNo;*/
-        producer.send(new ProducerRecord<String, String>(topic, key, value));
-        log.warn("testSendMessage(key:{}, value:{}) completed.", key, value);
-
-        /*TODO: remove test line below*/
-        testWriteSerialize(value, null, null, "/Apps/TFlow/tmp/TestSerializeKafka.ser");
     }
 
     private void testConvertByteArrayAndString(KafkaRecordValue kafkaRecordValue) {

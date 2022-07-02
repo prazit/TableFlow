@@ -12,13 +12,8 @@ public class ObjectDeserializer implements Deserializer<Object> {
         if (data == null)
             return null;
 
-        if (data.length == 8) {
-            long value = 0;
-            for (byte b : data) {
-                value <<= 8;
-                value |= b & 0xFF;
-            }
-            return value;
+        if (data.length == 16) {
+            return SerializeUtil.deserializeHeader(data);
         }
 
         try {

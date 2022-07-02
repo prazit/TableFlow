@@ -24,6 +24,9 @@ public class ReadProjectCommand extends KafkaCommand {
     private String topic;
     private KafkaProducer<String, Object> dataProducer;
 
+    /*TODO: need to load rootPath from configuration*/
+    private String rootPath = "/Apps/TFlow/project";
+
     public ReadProjectCommand(ConsumerRecord<String, Object> kafkaRecord, KafkaProducer<String, Object> dataProducer, String topic) {
         super(kafkaRecord);
         this.dataProducer = dataProducer;
@@ -37,12 +40,12 @@ public class ReadProjectCommand extends KafkaCommand {
 
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
-            sendObject(kafkaRecord.key(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
             return;
         }
 
         if (isProjectEditingByAnother(additional)) {
-            sendObject(kafkaRecord.key(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
+            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
             return;
         }
 
@@ -50,7 +53,7 @@ public class ReadProjectCommand extends KafkaCommand {
         KafkaRecordValue recordValue = readFrom(file);
 
         /*send Header message and then Data message*/
-        sendObject(kafkaRecord.key(), additional.getModifiedClientId());
+        sendObject(kafkaRecord.key(), additional.getModifiedClientId(), 0);
         sendObject(kafkaRecord.key(), recordValue);
     }
 
@@ -63,6 +66,8 @@ public class ReadProjectCommand extends KafkaCommand {
         }
 
         ClientRecord clientRecord = readClientFrom(clientFile);
+        log.warn("isProjectEditingByAnother( compare additional: {}, clientRecord: {} )", additional, clientRecord);
+
         if (clientRecord.isMe(additional)) {
             return false;
         }
@@ -71,10 +76,14 @@ public class ReadProjectCommand extends KafkaCommand {
         return true;
     }
 
+    private void sendObject(String key, long clientId, long statusCode) {
+        dataProducer.send(new ProducerRecord<String, Object>(topic, key, SerializeUtil.serializeHeader(clientId, statusCode)));
+    }
+
     private void sendObject(String key, Object object) {
         dataProducer.send(new ProducerRecord<String, Object>(topic, key, object));
     }
-    
+
     private KafkaRecordValue readFrom(File file) throws IOException, ClassNotFoundException {
 
         KafkaRecordValue kafkaRecordValue = null;
@@ -86,7 +95,7 @@ public class ReadProjectCommand extends KafkaCommand {
         in.close();
         fileIn.close();
 
-        log.info("readFrom( file: {} ). kafkafRecordValue.additional = {}", file, kafkaRecordValue.getAdditional());
+        log.info("readFrom( file: {} ):kafkafRecordValue.additional = {}", file, kafkaRecordValue.getAdditional());
         return kafkaRecordValue;
     }
 
@@ -101,7 +110,7 @@ public class ReadProjectCommand extends KafkaCommand {
         in.close();
         fileIn.close();
 
-        log.info("readClientFrom( file: {} ). clientRecord = {}", file, clientRecord);
+        log.info("readClientFrom( file: {} ):clientRecord = {}", file, clientRecord);
         return clientRecord;
     }
 
@@ -109,6 +118,7 @@ public class ReadProjectCommand extends KafkaCommand {
      * IMPORTANT: replace only.
      */
     private void writeClientTo(File file, ClientRecord clientRecord) throws IOException {
+        log.info("writeClientTo( file: {}, clientRecord: {} )", file, clientRecord);
         FileUtil.autoCreateParentDir(file);
         FileOutputStream fileOut = new FileOutputStream(file, false);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOut);
@@ -119,7 +129,6 @@ public class ReadProjectCommand extends KafkaCommand {
 
     private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
         /*TODO: need project data root path from configuration*/
-        String rootPath = "/Apps/TFlow/project";
         return getFile(projectFileType, additional, rootPath, "");
     }
 
@@ -147,7 +156,7 @@ public class ReadProjectCommand extends KafkaCommand {
     }
 
     private File getClientFile(KafkaTWAdditional additional) {
-        return new File("/" + additional.getProjectId() + "/client");
+        return new File(rootPath + "/" + additional.getProjectId() + "/client");
     }
 
     private String getFileName(String prefix, String recordId) {

@@ -62,10 +62,10 @@ public enum ProjectFileType {
 
     @Override
     public String toString() {
-        return "{" +
-                "name: '" + name() + '\'' +
-                ", key: '" + prefix + '\'' +
-                ", requireType: " + requireType +
-                '}';
+        return name();
+    }
+
+    public boolean isMe(String name) {
+        return (name().compareTo(name) == 0);
     }
 }

@@ -37,10 +37,10 @@ public class TWcmd {
         props.put("session.timeout.ms", "30000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.ObjectDeserializer");
+        props.put("value.deserializer", "com.tflow.kafka.ObjectDeserializer");
         KafkaConsumer<String, Object> consumer = new KafkaConsumer<String, Object>(props);
 
-        String topic = "project-write"; //"quickstart-events";
+        String topic = "project-write";
         consumer.subscribe(Collections.singletonList(topic));
         log.info("Subscribed to topic " + topic);
 

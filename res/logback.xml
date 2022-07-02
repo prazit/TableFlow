@@ -23,7 +23,7 @@
         <immediateFlush>true</immediateFlush>
     </appender>
 
-    <root level="DEBUG">
+    <root level="trace">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>
