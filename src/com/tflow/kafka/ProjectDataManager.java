@@ -1,7 +1,11 @@
 package com.tflow.kafka;
 
 import com.tflow.model.editor.Project;
+import com.tflow.model.editor.Step;
 import com.tflow.model.editor.Workspace;
+import com.tflow.model.editor.datasource.Database;
+import com.tflow.model.editor.datasource.Local;
+import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,6 +14,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,11 +150,11 @@ public class ProjectDataManager {
         producer = new KafkaProducer<String, Object>(props);
     }
 
-    private static void createConsumer() {
-        /*TODO: need to load consumer configuration*/
+    private static void createConsumer(long clientId) {
         Properties props = new Properties();
+
+        /*TODO: need to load consumer configuration*/
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-        props.put("group.id", "tflow");
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms", "30000");
@@ -158,14 +163,30 @@ public class ProjectDataManager {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", "UTF-8");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        consumer = new KafkaConsumer<String, byte[]>(props);
 
-        consumer.subscribe(Collections.singletonList(dataTopic));
-        log.info("Subscribed to topic " + dataTopic);
+        props.put("group.id", "tflow" + clientId);
 
-        /*-- Notice: seekToEnd not work!
-        Set<TopicPartition> topicPartitionSet = consumer.assignment();
-        consumer.seekToEnd(topicPartitionSet);*/
+        subscribeTo(dataTopic, consumer = new KafkaConsumer<String, byte[]>(props));
+    }
+
+    private static void subscribeTo(String topic, Consumer consumer) {
+        List<PartitionInfo> topicPartitionList = consumer.partitionsFor(topic);
+        ArrayList<TopicPartition> arrTopic = new ArrayList<>();
+
+        for (PartitionInfo partitionInfo : topicPartitionList) {
+            arrTopic.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
+        }
+
+        //need to use assign instead of subscribe: consumer.subscribe(Collections.singletonList(topic));
+        consumer.assign(arrTopic);
+        log.info("consumer created and subscribed to topic({})", dataTopic);
+
+        consumer.poll(Duration.ofMillis(0));
+        consumer.seekToEnd(arrTopic);
+
+        for (TopicPartition topicPartition : arrTopic) {
+            log.info("partition:{}, position:{}", topicPartition, consumer.position(topicPartition) - 1);
+        }
     }
 
     private static boolean ready(Producer<String, Object> producer) {
@@ -177,8 +198,8 @@ public class ProjectDataManager {
         return true;
     }
 
-    private static boolean readyToCapture(Consumer<String, byte[]> consumer) {
-        if (consumer == null) createConsumer();
+    private static boolean readyToCapture(Consumer<String, byte[]> consumer, long clientId) {
+        if (consumer == null) createConsumer(clientId);
 
         /*TODO: check status of Consumer(kafka server)*/
         // need log.warn("something about server status");
@@ -288,6 +309,130 @@ public class ProjectDataManager {
         commit();
     }
 
+    /* Notice: TFlow need to check Client file for heartbeat it self, TODO: need to remove Client file checker from TRcmd */
+    public static Project getProject(String projectId, long userId, long clientId) throws Exception {
+
+        /*get project, to know the project is not edit by another */
+        Object data = getData(ProjectFileType.PROJECT, new KafkaTWAdditional(clientId, userId, projectId));
+        /*TODO: need Project Model and Mapper, find "addData(ProjectFileType.PROJECT" then use Mapper*/
+        Project project = (Project) throwExceptionOnError(data);
+
+        /*get db-list*/
+        data = getData(ProjectFileType.DB_LIST, new KafkaTWAdditional(clientId, userId, projectId, "1"));
+        /*TODO: find "addData(ProjectFileType.DB_LIST" then convert to list of id-list*/
+        List<Integer> databaseIdList = (List<Integer>) throwExceptionOnError(data);
+        Map<Integer, Database> databaseMap = new HashMap<>();
+        project.setDatabaseMap(databaseMap);
+
+        /*get each db in db-list*/
+        for (Integer id : databaseIdList) {
+            data = getData(ProjectFileType.DB, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
+            /*TODO: need Database Model and Mapper, find "addData(ProjectFileType.DB" then use Mapper*/
+            databaseMap.put(id, (Database) throwExceptionOnError(data));
+        }
+
+        /*get sftp-list*/
+        data = getData(ProjectFileType.SFTP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "2"));
+        /*TODO: find "addData(ProjectFileType.SFTP_LIST" then convert to list of id-list*/
+        List<Integer> sftpIdList = (List<Integer>) throwExceptionOnError(data);
+        Map<Integer, SFTP> sftpMap = new HashMap<>();
+        project.setSftpMap(sftpMap);
+
+        /*get each sftp in sftp-list*/
+        for (Integer id : sftpIdList) {
+            data = getData(ProjectFileType.SFTP, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
+            /*TODO: need SFTP Model and Mapper, find "addData(ProjectFileType.SFTP" then use Mapper*/
+            sftpMap.put(id, (SFTP) throwExceptionOnError(data));
+        }
+
+        /*get local-list*/
+        data = getData(ProjectFileType.LOCAL_LIST, new KafkaTWAdditional(clientId, userId, projectId, "3"));
+        /*TODO: find "addData(ProjectFileType.LOCAL_LIST" then convert to list of id-list*/
+        List<Integer> localIdList = (List<Integer>) throwExceptionOnError(data);
+        Map<Integer, Local> localMap = new HashMap<>();
+        project.setLocalMap(localMap);
+
+        /*get each local in local-list*/
+        for (Integer id : localIdList) {
+            data = getData(ProjectFileType.LOCAL, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
+            /*TODO: need LOCAL Model and Mapper, find "addData(ProjectFileType.LOCAL" then use Mapper*/
+            localMap.put(id, (Local) throwExceptionOnError(data));
+        }
+
+        /*get step-list*/
+        data = getData(ProjectFileType.STEP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "4"));
+        /*TODO: find "addData(ProjectFileType.STEP_LIST" then convert to list of id-list*/
+        List<Integer> stepIdList = (List<Integer>) throwExceptionOnError(data);
+        List<Step> stepList = new ArrayList<>();
+        project.setStepList(stepList);
+
+        /*each step in step-list is mockup-data used to show step-name only, get step data when click on step label*/
+        for (Integer id : sftpIdList) {
+            data = getData(ProjectFileType.STEP, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id), String.valueOf(id)));
+            /*TODO: need STEP Model and Mapper, find "addData(ProjectFileType.STEP" then use Mapper*/
+            stepList.add((Step) throwExceptionOnError(data));
+        }
+
+        return project;
+    }
+
+    private static Step getStep(long clientId, long userId, Project project, int stepIndex) throws Exception {
+        /*TODO: all step below need to create Model and Mapper(mapstruct lib)*/
+
+        String projectId = project.getId();
+        List<Step> stepList = project.getStepList();
+        Step stepModel = stepList.get(stepIndex);
+        String stepId = String.valueOf(stepModel.getId());
+
+        /*get step*/
+        Object data = getData(ProjectFileType.STEP, new KafkaTWAdditional(clientId, userId, projectId, stepId, stepId));
+        /*TODO: need STEP Model and Mapper, find "addData(ProjectFileType.STEP" then use Mapper*/
+        stepList.remove(stepIndex);
+        Step step = (Step) throwExceptionOnError(data);
+        stepList.add(stepIndex, step);
+
+        /*TODO: get each tower in step*/
+        /*TODO: get each floor in tower*/
+
+        /*TODO: get data-table-list*/
+        /*TODO: get each data-table in data-table-list*/
+
+        /*TODO: get data-file in data-table*/
+
+        /*TODO: get column-list*/
+        /*TODO: get each column in column-list*/
+
+        /*TODO: get output-list*/
+        /*TODO: get each output in output-list*/
+
+        /*TODO: TRANSFORM TABLE need list*/
+        /*TODO: get transform-table-list*/
+        /*TODO: get each transform-table in transform-table-list*/
+
+        /*TODO: get tranform-column-list*/
+        /*TODO: get each tranform-column in tranform-column-list*/
+
+        /*TODO: get each tranform-columnfx in tranform-table(columnFxTable)*/
+
+        /*TODO: get tranform-output-list*/
+        /*TODO: get each tranform-output in tranform-output-list*/
+
+        /*TODO: get tranformation-list*/
+        /*TODO: get each tranformation in tranformation-list*/
+
+        /*TODO: get line-list at the end*/
+        /*TODO: get each line in line-list*/
+
+        return step;
+    }
+
+    private static Object throwExceptionOnError(Object data) throws Exception {
+        if (data instanceof Long) {
+            throw new Exception(KafkaErrorCode.parse((Long) data).name());
+        }
+        return data;
+    }
+
     public static Object getData(ProjectFileType fileType, KafkaTWAdditional additional) {
         long code = requestData(fileType, additional);
         if (code < 0) {
@@ -298,14 +443,19 @@ public class ProjectDataManager {
     }
 
     private static long requestData(ProjectFileType fileType, KafkaTWAdditional additional) {
+        log.info("requestData( fileType:{}, recordId:{} ) started.", fileType.name(), additional.getRecordId());
+
         if (!ready(producer)) {
+            log.warn("requestData: producer not ready to send message");
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
 
-        log.info("requestData( fileType:{}, recordId:{} ) started.", fileType.name(), additional.getRecordId());
+        if (!readyToCapture(consumer, additional.getModifiedClientId())) {
+            log.warn("requestData: consumer not ready to start capture");
+            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
+        }
 
         producer.send(new ProducerRecord<String, Object>(readTopic, fileType.name(), additional));
-
         log.info("requestData completed.");
 
         return 1L;
@@ -313,11 +463,6 @@ public class ProjectDataManager {
 
     private static Object captureData(ProjectFileType fileType, KafkaTWAdditional additional) {
         log.warn("captureData(fileType:{}, additional:{}) started", fileType, additional);
-
-        if (!readyToCapture(consumer)) {
-            log.warn("captureData: consumer not ready to start capture");
-            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
-        }
 
         Object data = null;
         long timeout = 30000;
@@ -329,7 +474,6 @@ public class ProjectDataManager {
         long clientId = additional.getModifiedClientId();
         while (polling) {
 
-            /*TODO: need more test, need no duplicate/rerun message*/
             records = consumer.poll(duration);
             if (records == null) {
                 log.warn("consumer.poll return null!");
@@ -349,7 +493,7 @@ public class ProjectDataManager {
                 String offset = String.valueOf(record.offset());
                 log.info("captureData: offset = {}, key = {}, value = {}", offset, key, Arrays.copyOf(value, 16));
 
-                // need data message
+                // find data message
                 if (gotHeader) {
                     log.warn("try to deserialize data message.");
                     try {
@@ -365,12 +509,12 @@ public class ProjectDataManager {
                     break;
                 }
 
-                // need header message
+                // find header message
                 log.warn("try to deserialize header message.");
 
                 if (!fileType.isMe(key)) {
                     // ignore other messages
-                    log.warn("need header(clientId:{}, key:{}), ignore message by key={}", clientId, fileType, key);
+                    log.warn("need header(clientId:{}, key:{}), ignore message( key:{} )", clientId, fileType, key);
                     continue;
                 }
 
@@ -389,7 +533,7 @@ public class ProjectDataManager {
                     break;
                 } else if (code != clientId) {
                     // ignore other messages
-                    log.warn("need header({}), ignore message by header({})", clientId, code);
+                    log.warn("need header(clientId:{}), ignore message by header(clientId:{})", clientId, code);
                     continue;
                 }
 
