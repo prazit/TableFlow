@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.DataSourceData;
 import com.tflow.model.editor.DataFile;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Selectable;
@@ -53,26 +54,30 @@ public class AddDataSource extends Command {
         ProjectFileType fileType;
         ProjectFileType listFileType;
         List<Integer> idList;
+        DataSourceData dataSourceData;
         switch (dataSource.getType()) {
             case DATABASE:
                 project.getDatabaseMap().put(id, (Database) dataSource);
                 fileType = ProjectFileType.DB;
                 listFileType = ProjectFileType.DB_LIST;
-                idList = projectDataManager.mappers.idList.map(project.getDatabaseMap());
+                dataSourceData = projectDataManager.dataSourceMapper.map((Database) dataSource);
+                idList = projectDataManager.idListMapper.map(project.getDatabaseMap());
                 break;
 
             case SFTP:
                 project.getSftpMap().put(id, (SFTP) dataSource);
                 fileType = ProjectFileType.SFTP;
                 listFileType = ProjectFileType.SFTP_LIST;
-                idList = projectDataManager.mappers.idList.map(project.getSftpMap());
+                dataSourceData = projectDataManager.dataSourceMapper.map((SFTP) dataSource);
+                idList = projectDataManager.idListMapper.map(project.getSftpMap());
                 break;
 
             default: //case LOCAL:
                 project.getLocalMap().put(id, (Local) dataSource);
                 fileType = ProjectFileType.LOCAL;
                 listFileType = ProjectFileType.LOCAL_LIST;
-                idList = projectDataManager.mappers.idList.map(project.getLocalMap());
+                dataSourceData = projectDataManager.dataSourceMapper.map((Local) dataSource);
+                idList = projectDataManager.idListMapper.map(project.getLocalMap());
         }
 
         Selectable selectable = (Selectable) dataSource;
@@ -83,7 +88,7 @@ public class AddDataSource extends Command {
         /*Action Result*/
 
         // save DataSource data
-        projectDataManager.addData(fileType, dataSource, project, dataSource.getId());
+        projectDataManager.addData(fileType, dataSourceData, project, dataSource.getId());
 
         // save DataSource list
         projectDataManager.addData(listFileType, idList, project);

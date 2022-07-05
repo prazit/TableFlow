@@ -1,14 +1,13 @@
 package com.tflow.kafka;
 
-import com.tflow.model.data.ProjectData;
-import com.tflow.model.data.StepItemData;
+import com.tflow.model.data.*;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
 import com.tflow.model.editor.Workspace;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
-import com.tflow.model.mapper.ProjectMappers;
+import com.tflow.model.mapper.*;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,6 +18,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +45,20 @@ public class ProjectDataManager {
     /*TODO: remove Collection below, it for test*/
     public List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
 
-    public ProjectMappers mappers;
+    public IdListMapper idListMapper;
+    public ProjectMapper projectMapper;
+    public DataSourceMapper dataSourceMapper;
+    public StepMapper stepMapper;
 
-    public ProjectDataManager(ProjectMappers mappers) {
-        this.mappers = mappers;
+    public ProjectDataManager() {
+        createMappers();
+    }
+
+    private void createMappers() {
+        idListMapper = new IdListMapper();
+        projectMapper = Mappers.getMapper(ProjectMapper.class);
+        dataSourceMapper = Mappers.getMapper(DataSourceMapper.class);
+        stepMapper = Mappers.getMapper(StepMapper.class);
     }
 
     private void createProducer() {
@@ -275,6 +285,12 @@ public class ProjectDataManager {
         addData(fileType, object, additional);
     }
 
+    public void addData(ProjectFileType fileType, Object object, Project project, String recordId) {
+        Workspace workspace = project.getOwner();
+        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
+        addData(fileType, object, additional);
+    }
+
     public void addData(ProjectFileType fileType, Object object, Project project, int recordId) {
         Workspace workspace = project.getOwner();
         KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
@@ -319,12 +335,12 @@ public class ProjectDataManager {
 
     /* Notice: TFlow need to check Client file for heartbeat it self, TODO: need to remove Client file checker from TRcmd */
     @SuppressWarnings("unchecked")
-    public Project getProject(String projectId, long userId, long clientId) throws Exception {
+    public Project getProject(String projectId, long userId, long clientId) throws ClassCastException, ProjectDataException {
 
         /*get project, to know the project is not edit by another */
-        Object data = getData(ProjectFileType.PROJECT, new KafkaTWAdditional(clientId, userId, projectId));
+        Object data = getData(ProjectFileType.PROJECT, new KafkaTWAdditional(clientId, userId, projectId, projectId));
         /*TODO: find "addData(ProjectFileType.PROJECT" then use Mapper*/
-        Project project = mappers.project.map((ProjectData) throwExceptionOnError(data));
+        Project project = projectMapper.map((ProjectData) throwExceptionOnError(data));
 
         /*get db-list*/
         data = getData(ProjectFileType.DB_LIST, new KafkaTWAdditional(clientId, userId, projectId, "1"));
@@ -335,13 +351,11 @@ public class ProjectDataManager {
         /*get each db in db-list*/
         for (Integer id : databaseIdList) {
             data = getData(ProjectFileType.DB, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
-            /*TODO: need Database Model and Mapper, find "addData(ProjectFileType.DB" then use Mapper*/
-            databaseMap.put(id, (Database) throwExceptionOnError(data));
+            databaseMap.put(id, dataSourceMapper.map((DatabaseData) throwExceptionOnError(data)));
         }
 
         /*get sftp-list*/
         data = getData(ProjectFileType.SFTP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "2"));
-        /*TODO: find "addData(ProjectFileType.SFTP_LIST" then convert to list of id-list*/
         List<Integer> sftpIdList = (List<Integer>) throwExceptionOnError(data);
         Map<Integer, SFTP> sftpMap = new HashMap<>();
         project.setSftpMap(sftpMap);
@@ -349,13 +363,11 @@ public class ProjectDataManager {
         /*get each sftp in sftp-list*/
         for (Integer id : sftpIdList) {
             data = getData(ProjectFileType.SFTP, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
-            /*TODO: need SFTP Model and Mapper, find "addData(ProjectFileType.SFTP" then use Mapper*/
-            sftpMap.put(id, (SFTP) throwExceptionOnError(data));
+            sftpMap.put(id, dataSourceMapper.map((SFTPData) throwExceptionOnError(data)));
         }
 
         /*get local-list*/
         data = getData(ProjectFileType.LOCAL_LIST, new KafkaTWAdditional(clientId, userId, projectId, "3"));
-        /*TODO: find "addData(ProjectFileType.LOCAL_LIST" then convert to list of id-list*/
         List<Integer> localIdList = (List<Integer>) throwExceptionOnError(data);
         Map<Integer, Local> localMap = new HashMap<>();
         project.setLocalMap(localMap);
@@ -363,14 +375,13 @@ public class ProjectDataManager {
         /*get each local in local-list*/
         for (Integer id : localIdList) {
             data = getData(ProjectFileType.LOCAL, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
-            /*TODO: need LOCAL Model and Mapper, find "addData(ProjectFileType.LOCAL" then use Mapper*/
-            localMap.put(id, (Local) throwExceptionOnError(data));
+            localMap.put(id, dataSourceMapper.map((LocalData) throwExceptionOnError(data)));
         }
 
         /*get step-list*/
         data = getData(ProjectFileType.STEP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "4"));
         List<StepItemData> stepItemDataList = (List<StepItemData>) throwExceptionOnError(data);
-        project.setStepList(mappers.step.toStepList(stepItemDataList));
+        project.setStepList(stepMapper.toStepList(stepItemDataList));
 
         return project;
     }
@@ -425,9 +436,9 @@ public class ProjectDataManager {
         return step;
     }
 
-    private Object throwExceptionOnError(Object data) throws Exception {
+    private Object throwExceptionOnError(Object data) throws ProjectDataException {
         if (data instanceof Long) {
-            throw new Exception(KafkaErrorCode.parse((Long) data).name());
+            throw new ProjectDataException(KafkaErrorCode.parse((Long) data).name());
         }
         return data;
     }
@@ -438,7 +449,38 @@ public class ProjectDataManager {
             return code;
         }
 
-        return captureData(fileType, additional);
+        Object data = captureData(fileType, additional);
+        if (data == null) {
+            log.error("getData.return null record");
+            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
+        }
+
+        if (data instanceof Long) {
+            long errorCode = (Long) data;
+            KafkaErrorCode kafkaErrorCode = KafkaErrorCode.parse(errorCode);
+            log.error("getData.return error({})", kafkaErrorCode);
+            return errorCode;
+        }
+
+        Object object = null;
+        try {
+            KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) data;
+            Object serialized = kafkaRecordValue.getData();
+            if (serialized instanceof String) {
+                object = SerializeUtil.deserialize((String) kafkaRecordValue.getData());
+            } else {
+                object = SerializeUtil.deserialize((byte[]) kafkaRecordValue.getData());
+            }
+        } catch (Exception ex) {
+            log.error("getData.deserialize error: {}", ex.getMessage());
+            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
+        }
+
+        if (object == null) {
+            log.error("getData.return null object");
+            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
+        }
+        return object;
     }
 
     private long requestData(ProjectFileType fileType, KafkaTWAdditional additional) {

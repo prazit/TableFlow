@@ -27,7 +27,10 @@ public class AddStep extends Command {
 
         // save Step data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.mappers.step.toStepItemDataList(stepList), project, stepId, stepId);
+        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.stepMapper.map(step), project, stepId, stepId);
+
+        // save Step List
+        projectDataManager.addData(ProjectFileType.STEP_LIST, projectDataManager.stepMapper.toStepItemDataList(stepList), project, stepId, stepId);
 
         // no line, tower, floor to save here
     }

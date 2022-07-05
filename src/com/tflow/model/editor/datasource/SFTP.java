@@ -26,6 +26,9 @@ public class SFTP extends DataSource implements Selectable {
     /*tmp=/ftp/<id>/<root-path>/*/
     private String tmp;
 
+    /* for DataSourceMapper*/
+    public SFTP() {/*nothing*/}
+
     /* for ProjectDataManager.getProject only */
     public SFTP(int id) {
         this.id = id;

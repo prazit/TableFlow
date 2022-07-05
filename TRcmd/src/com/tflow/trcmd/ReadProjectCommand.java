@@ -36,7 +36,17 @@ public class ReadProjectCommand extends KafkaCommand {
     @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException {
         KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecord.value();
-        ProjectFileType projectFileType = validate(kafkaRecord.key(), additional);
+
+        ProjectFileType projectFileType;
+        try {
+            projectFileType = validate(kafkaRecord.key(), additional);
+        } catch (InvalidParameterException ex) {
+            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.valueOf(ex.getMessage()).getCode());
+            return;
+        } catch (UnsupportedOperationException ex) {
+            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
+            return;
+        }
 
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
@@ -182,27 +192,27 @@ public class ReadProjectCommand extends KafkaCommand {
 
         // recordId is required on all require types.
         if (!fileType.getPrefix().endsWith("list") && additional.getRecordId() == null) {
-            throw new InvalidParameterException("Additional.RecordId is required for operation('" + fileType.name() + "')");
+            throw new InvalidParameterException(KafkaErrorCode.REQUIRES_RECORD_ID.name());
         }
 
         // projectId is required on all types.
         if (additional.getProjectId() == null) {
-            throw new InvalidParameterException("Additional.ProjectId is required for operation('" + fileType.name() + "')");
+            throw new InvalidParameterException(KafkaErrorCode.REQUIRES_PROJECT_ID.name());
         }
 
         // stepId is required on all types except type(1).
         if (requireType > 1 && additional.getStepId() == null) {
-            throw new InvalidParameterException("Additional.StepId is required for operation('" + fileType.name() + "')");
+            throw new InvalidParameterException(KafkaErrorCode.REQUIRES_STEP_ID.name());
         }
 
         // dataTableId is required on type 3 only.
         if (requireType == 3 && additional.getDataTableId() == null) {
-            throw new InvalidParameterException("Additional.DataTableId is required for operation('" + fileType.name() + "')");
+            throw new InvalidParameterException(KafkaErrorCode.REQUIRES_DATATABLE_ID.name());
         }
 
         // transformTableId is required on type 4 only.
         if (requireType == 4 && additional.getTransformTableId() == null) {
-            throw new InvalidParameterException("Additional.TransformTableId is required for operation('" + fileType.name() + "')");
+            throw new InvalidParameterException(KafkaErrorCode.REQUIRES_TRANSFORMTABLE_ID.name());
         }
 
         return fileType;

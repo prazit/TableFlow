@@ -2,9 +2,11 @@ package com.tflow.model.data;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /* TODO: need to complete all fields in StepData Model */
 @Data
-public class StepData {
+public class StepData implements Serializable {
     private static final long serialVersionUID = 2021121709996660002L;
 
     private int id;

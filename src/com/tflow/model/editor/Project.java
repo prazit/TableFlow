@@ -77,7 +77,10 @@ public class Project implements Serializable {
 
     public void setActiveStepIndex(int activeStepIndex) {
         this.activeStepIndex = activeStepIndex;
-        getActiveStep().refresh();
+
+        Step activeStep = getActiveStep();
+        if (activeStep != null)
+            activeStep.refresh();
     }
 
     public List<Step> getStepList() {
@@ -152,7 +155,7 @@ public class Project implements Serializable {
     }
 
     public Step getActiveStep() {
-        if (activeStepIndex < 0) return null;
+        if (activeStepIndex < 0 || activeStepIndex >= stepList.size()) return null;
         return stepList.get(activeStepIndex);
     }
 

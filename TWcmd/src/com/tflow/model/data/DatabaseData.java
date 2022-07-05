@@ -2,6 +2,7 @@ package com.tflow.model.data;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /*TODO: complete all Fields in DatabaseData Model*/

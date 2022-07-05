@@ -98,7 +98,9 @@
 
                                         <p:submenu label="Testing">
                                             <p:submenu label="Kafka">
-                                                <p:menuitem value="Send Message | Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testKafkaSendMessage}"/>
+                                                <p:menuitem value="Send Message | Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testGetData}"/>
+                                                <p:menuitem value="Send Message | Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>
+                                                <p:menuitem value="Send Message | Save Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSaveProject}"/>
                                             </p:submenu>
                                             <p:submenu label="Serialize">
                                                 <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>

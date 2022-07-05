@@ -6,17 +6,8 @@ import com.tflow.model.editor.Step;
 import org.mapstruct.Mapper;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Mapper(componentModel = "cdi",
-        imports = {
-                Collectors.class,
-
-                Step.class,
-
-                StepData.class,
-        }
-)
+@Mapper(componentModel = "default")
 public interface StepMapper {
 
     Step map(StepData stepData);

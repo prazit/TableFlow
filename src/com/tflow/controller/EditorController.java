@@ -1,24 +1,18 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.*;
-import com.tflow.model.editor.HasEvent;
+import com.tflow.model.data.ProjectData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
-import com.tflow.model.mapper.ProjectMappers;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.Metric;
-import org.apache.kafka.common.MetricName;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
@@ -32,7 +26,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 import java.util.*;
 
 @ViewScoped
@@ -60,18 +53,14 @@ public class EditorController extends Controller {
     private Map<String, Integer> actionPriorityMap;
     private boolean fullActionList;
 
-    @Inject
-    private ProjectMappers projectMappers;
     private ProjectDataManager projectDataManager;
 
     @PostConstruct
     public void onCreation() {
-        projectDataManager = new ProjectDataManager(projectMappers);
-        Project project = workspace.getProject();
-        project.setManager(projectDataManager);
+        testOpenProject();
         leftPanelTitle = "Step List";
         initActionPriorityMap();
-        initStepList(project);
+        initStepList(workspace.getProject());
         //refreshActionList(project);
     }
 
@@ -436,7 +425,7 @@ public class EditorController extends Controller {
         FacesUtil.redirect("/editor.xhtml");
     }
 
-    public void testKafkaSendMessage() {
+    public void testGetData() {
         ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(projectDataManager.testBuffer);
         for (ProjectDataWriteBuffer projectDataWriteBuffer : testList) {
             ProjectFileType projectFileType = projectDataWriteBuffer.getFileType();
@@ -476,6 +465,43 @@ public class EditorController extends Controller {
 
             projectDataManager.testBuffer.remove(projectDataWriteBuffer);
         }
+    }
+
+    public void testSaveProject() {
+        log.info("testSaveProject: started");
+
+        Project project = workspace.getProject();
+        ProjectDataManager projectDataManager = project.getManager();
+        String id = project.getId();
+        ProjectData projectData = projectDataManager.projectMapper.map(project);
+        projectDataManager.addData(ProjectFileType.PROJECT, projectData, project, id);
+        projectDataManager.addData(ProjectFileType.DB_LIST, projectData.getDatabaseList(), project, id);
+        projectDataManager.addData(ProjectFileType.SFTP_LIST, projectData.getSftpList(), project, id);
+        projectDataManager.addData(ProjectFileType.LOCAL_LIST, projectData.getLocalList(), project, id);
+        projectDataManager.addData(ProjectFileType.STEP_LIST, projectData.getStepList(), project, id);
+        Step step = project.getActiveStep();
+        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.stepMapper.map(step), project, step.getId(), step.getId());
+
+        log.info("testSaveProject: completed");
+    }
+
+    public void testOpenProject() {
+        projectDataManager = new ProjectDataManager();
+        Project project = null;
+        log.info("calling projectDataManager.getProject");
+        try {
+            project = projectDataManager.getProject(workspace.getProject().getId(), workspace.getUser().getId(), workspace.getClient().getId());
+        } catch (ProjectDataException ex) {
+            log.error("Error from server: {}", ex.getMessage());
+        } catch (ClassCastException ex) {
+            log.error("", ex);
+        }
+        log.info("projectDataManager.getProject.return: {}", project);
+
+        if (project != null) {
+            workspace.setProject(project);
+        }
+        workspace.getProject().setManager(projectDataManager);
     }
 
     private void testConvertByteArrayAndString(KafkaRecordValue kafkaRecordValue) {

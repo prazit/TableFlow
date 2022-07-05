@@ -3,11 +3,12 @@ package com.tflow.model.data;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /*TODO: after getData need to call Owner.createPlugListener*/
 @Data
-public class LinePlugData {
+public class LinePlugData implements Serializable {
     private static final long serialVersionUID = 2021121709996660050L;
 
     private String plug;

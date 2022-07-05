@@ -17,6 +17,11 @@ public class Line implements Serializable {
 
     private boolean user;
 
+    /* for Mappers */
+    public Line(Integer id) {
+        this.id = id;
+    }
+
     public Line(String startSelectableId, String endSelectableId) {
         this.startSelectableId = startSelectableId;
         this.endSelectableId = endSelectableId;

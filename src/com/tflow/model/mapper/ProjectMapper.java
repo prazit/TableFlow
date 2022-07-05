@@ -13,7 +13,7 @@ import org.mapstruct.Mappings;
 
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "cdi",
+@Mapper( componentModel = "default",
         imports = {
                 Collectors.class,
 
@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 public interface ProjectMapper {
 
     @Mappings({
-            @Mapping(target = "stepList", expression = "java(project.getStepList().stream().map(Step::getId).collect(Collectors.toList()))"),
             @Mapping(target = "databaseList", expression = "java(project.getDatabaseMap().values().stream().map(Database::getId).collect(Collectors.toList()))"),
             @Mapping(target = "sftpList", expression = "java(project.getSftpMap().values().stream().map(SFTP::getId).collect(Collectors.toList()))"),
             @Mapping(target = "localList", expression = "java(project.getLocalMap().values().stream().map(Local::getId).collect(Collectors.toList()))"),
@@ -42,7 +41,6 @@ public interface ProjectMapper {
     ProjectData map(Project project);
 
     @Mappings({
-            @Mapping(target = "stepList", expression = "java(projectData.getStepList().stream().map(Step::new).collect(Collectors.toList()))"),
             @Mapping(target = "databaseMap", expression = "java(projectData.getDatabaseList().stream().map(Database::new).collect(Collectors.toMap(Database::getId,item->{return item;})))"),
             @Mapping(target = "sftpMap", expression = "java(projectData.getSftpList().stream().map(SFTP::new).collect(Collectors.toMap(SFTP::getId,item->{return item;})))"),
             @Mapping(target = "localMap", expression = "java(projectData.getLocalList().stream().map(Local::new).collect(Collectors.toMap(Local::getId,item->{return item;})))"),
