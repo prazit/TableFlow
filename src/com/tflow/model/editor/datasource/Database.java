@@ -29,6 +29,11 @@ public class Database extends DataSource implements Selectable {
 
     private Map<String, String> propList;
 
+    /* for ProjectDataManager.getProject only */
+    public Database(int id) {
+        this.id = id;
+    }
+
     public Database(String name, Dbms dbms, String plug) {
         this.dbms = dbms;
         setType(DataSourceType.DATABASE);

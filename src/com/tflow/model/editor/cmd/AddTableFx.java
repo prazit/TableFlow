@@ -40,10 +40,11 @@ public class AddTableFx extends Command {
         action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
 
         // save Transformation data
-        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION, tableFx, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.TRANSFORMATION, tableFx, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
 
         // save Transformation list
-        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no line, tower, floor to save here
     }

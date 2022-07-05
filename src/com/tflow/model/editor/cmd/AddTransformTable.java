@@ -91,29 +91,30 @@ public class AddTransformTable extends Command {
         action.getResultMap().put(ActionResultKey.TRANSFORM_TABLE, transformTable);
 
         // save TransformTable data including ColumnFxTable
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, transformTable, step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, transformTable, step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformTable list
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
 
         // save Line data
-        ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
 
         // save Object(DataTable) at the endPlug.
         if (sourceTable instanceof TransformTable) {
-            ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
         } else {
-            ProjectDataManager.addData(ProjectFileType.DATA_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.DATA_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
         }
 
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
 
         // save Tower data
-        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
 
         // save Floor data (both TransformTable and ColumnFxTable)
-        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
     private SourceType getSourceType(DataTable sourceTable) {

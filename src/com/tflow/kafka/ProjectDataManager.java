@@ -1,11 +1,14 @@
 package com.tflow.kafka;
 
+import com.tflow.model.data.ProjectData;
+import com.tflow.model.data.StepItemData;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
 import com.tflow.model.editor.Workspace;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.mapper.ProjectMappers;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -20,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.*;
@@ -28,22 +30,28 @@ import java.util.*;
 /*TODO: save updated object between line in RemoveDataFile when the Action RemoveDataFile is used in the UI*/
 public class ProjectDataManager {
 
-    private static Logger log = LoggerFactory.getLogger(ProjectDataManager.class);
+    private Logger log = LoggerFactory.getLogger(ProjectDataManager.class);
 
-    private static List<ProjectDataWriteBuffer> projectDataWriteBufferList = new ArrayList<>();
+    private List<ProjectDataWriteBuffer> projectDataWriteBufferList = new ArrayList<>();
 
-    private static String writeTopic;
-    private static String readTopic;
-    private static String dataTopic;
-    private static long commitAgainMilliseconds;
-    private static boolean commitWaiting;
-    private static Producer<String, Object> producer;
-    private static Consumer<String, byte[]> consumer;
+    private String writeTopic;
+    private String readTopic;
+    private String dataTopic;
+    private long commitAgainMilliseconds;
+    private boolean commitWaiting;
+    private Producer<String, Object> producer;
+    private Consumer<String, byte[]> consumer;
 
     /*TODO: remove Collection below, it for test*/
-    public static List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
+    public List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
 
-    private static void createProducer() {
+    public ProjectMappers mappers;
+
+    public ProjectDataManager(ProjectMappers mappers) {
+        this.mappers = mappers;
+    }
+
+    private void createProducer() {
         /* Notice: some properties from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm
          * All properties please see the log message when the producer is loaded (already shown below).
             INFO  [org.apache.kafka.clients.producer.ProducerConfig] (default task-10) ProducerConfig values:
@@ -150,7 +158,7 @@ public class ProjectDataManager {
         producer = new KafkaProducer<String, Object>(props);
     }
 
-    private static void createConsumer(long clientId) {
+    private void createConsumer(long clientId) {
         Properties props = new Properties();
 
         /*TODO: need to load consumer configuration*/
@@ -169,7 +177,7 @@ public class ProjectDataManager {
         subscribeTo(dataTopic, consumer = new KafkaConsumer<String, byte[]>(props));
     }
 
-    private static void subscribeTo(String topic, Consumer consumer) {
+    private void subscribeTo(String topic, Consumer consumer) {
         List<PartitionInfo> topicPartitionList = consumer.partitionsFor(topic);
         ArrayList<TopicPartition> arrTopic = new ArrayList<>();
 
@@ -189,7 +197,7 @@ public class ProjectDataManager {
         }
     }
 
-    private static boolean ready(Producer<String, Object> producer) {
+    private boolean ready(Producer<String, Object> producer) {
         if (producer == null) createProducer();
 
         /*TODO: check status of Producer(kafka server)*/
@@ -198,7 +206,7 @@ public class ProjectDataManager {
         return true;
     }
 
-    private static boolean readyToCapture(Consumer<String, byte[]> consumer, long clientId) {
+    private boolean readyToCapture(Consumer<String, byte[]> consumer, long clientId) {
         if (consumer == null) createConsumer(clientId);
 
         /*TODO: check status of Consumer(kafka server)*/
@@ -210,7 +218,7 @@ public class ProjectDataManager {
     /**
      * Wait milliseconds and then commit.
      */
-    private static void commit(long milliseconds) {
+    private void commit(long milliseconds) {
         commitWaiting = true;
 
         /*TODO: Wait milliseconds, please use Scheduler.*/
@@ -220,7 +228,7 @@ public class ProjectDataManager {
     /**
      * TODO: need to run ProjectWriteCommand in another thread, this process guarantee success no need to wait for it.
      */
-    private static void commit() {
+    private void commit() {
         if (commitWaiting) return;
 
         ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList);
@@ -261,39 +269,39 @@ public class ProjectDataManager {
         }
     }
 
-    public static void addData(ProjectFileType fileType, Object object, Project project) {
+    public void addData(ProjectFileType fileType, Object object, Project project) {
         Workspace workspace = project.getOwner();
         KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
         addData(fileType, object, additional);
     }
 
-    public static void addData(ProjectFileType fileType, Object object, Project project, int recordId) {
+    public void addData(ProjectFileType fileType, Object object, Project project, int recordId) {
         Workspace workspace = project.getOwner();
         KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
         addData(fileType, object, additional);
     }
 
-    public static void addData(ProjectFileType fileType, Object object, Project project, int recordId, int stepId) {
+    public void addData(ProjectFileType fileType, Object object, Project project, int recordId, int stepId) {
         Workspace workspace = project.getOwner();
         KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         addData(fileType, object, additional);
     }
 
-    public static void addData(ProjectFileType fileType, Object object, Project project, int recordId, int stepId, int dataTableId) {
+    public void addData(ProjectFileType fileType, Object object, Project project, int recordId, int stepId, int dataTableId) {
         Workspace workspace = project.getOwner();
         KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         addData(fileType, object, additional);
     }
 
-    public static void addData(ProjectFileType fileType, Object object, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
+    public void addData(ProjectFileType fileType, Object object, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
         Workspace workspace = project.getOwner();
         KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         addData(fileType, object, additional);
     }
 
-    public static void addData(ProjectFileType fileType, Object object, KafkaTWAdditional additional) throws InvalidParameterException {
+    public void addData(ProjectFileType fileType, Object object, KafkaTWAdditional additional) throws InvalidParameterException {
         if (additional.getModifiedUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId");
         if (additional.getModifiedClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId");
 
@@ -310,16 +318,16 @@ public class ProjectDataManager {
     }
 
     /* Notice: TFlow need to check Client file for heartbeat it self, TODO: need to remove Client file checker from TRcmd */
-    public static Project getProject(String projectId, long userId, long clientId) throws Exception {
+    @SuppressWarnings("unchecked")
+    public Project getProject(String projectId, long userId, long clientId) throws Exception {
 
         /*get project, to know the project is not edit by another */
         Object data = getData(ProjectFileType.PROJECT, new KafkaTWAdditional(clientId, userId, projectId));
-        /*TODO: need Project Model and Mapper, find "addData(ProjectFileType.PROJECT" then use Mapper*/
-        Project project = (Project) throwExceptionOnError(data);
+        /*TODO: find "addData(ProjectFileType.PROJECT" then use Mapper*/
+        Project project = mappers.project.map((ProjectData) throwExceptionOnError(data));
 
         /*get db-list*/
         data = getData(ProjectFileType.DB_LIST, new KafkaTWAdditional(clientId, userId, projectId, "1"));
-        /*TODO: find "addData(ProjectFileType.DB_LIST" then convert to list of id-list*/
         List<Integer> databaseIdList = (List<Integer>) throwExceptionOnError(data);
         Map<Integer, Database> databaseMap = new HashMap<>();
         project.setDatabaseMap(databaseMap);
@@ -361,22 +369,13 @@ public class ProjectDataManager {
 
         /*get step-list*/
         data = getData(ProjectFileType.STEP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "4"));
-        /*TODO: find "addData(ProjectFileType.STEP_LIST" then convert to list of id-list*/
-        List<Integer> stepIdList = (List<Integer>) throwExceptionOnError(data);
-        List<Step> stepList = new ArrayList<>();
-        project.setStepList(stepList);
-
-        /*each step in step-list is mockup-data used to show step-name only, get step data when click on step label*/
-        for (Integer id : sftpIdList) {
-            data = getData(ProjectFileType.STEP, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id), String.valueOf(id)));
-            /*TODO: need STEP Model and Mapper, find "addData(ProjectFileType.STEP" then use Mapper*/
-            stepList.add((Step) throwExceptionOnError(data));
-        }
+        List<StepItemData> stepItemDataList = (List<StepItemData>) throwExceptionOnError(data);
+        project.setStepList(mappers.step.toStepList(stepItemDataList));
 
         return project;
     }
 
-    private static Step getStep(long clientId, long userId, Project project, int stepIndex) throws Exception {
+    private Step getStep(long clientId, long userId, Project project, int stepIndex) throws Exception {
         /*TODO: all step below need to create Model and Mapper(mapstruct lib)*/
 
         String projectId = project.getId();
@@ -426,14 +425,14 @@ public class ProjectDataManager {
         return step;
     }
 
-    private static Object throwExceptionOnError(Object data) throws Exception {
+    private Object throwExceptionOnError(Object data) throws Exception {
         if (data instanceof Long) {
             throw new Exception(KafkaErrorCode.parse((Long) data).name());
         }
         return data;
     }
 
-    public static Object getData(ProjectFileType fileType, KafkaTWAdditional additional) {
+    public Object getData(ProjectFileType fileType, KafkaTWAdditional additional) {
         long code = requestData(fileType, additional);
         if (code < 0) {
             return code;
@@ -442,7 +441,7 @@ public class ProjectDataManager {
         return captureData(fileType, additional);
     }
 
-    private static long requestData(ProjectFileType fileType, KafkaTWAdditional additional) {
+    private long requestData(ProjectFileType fileType, KafkaTWAdditional additional) {
         log.info("requestData( fileType:{}, recordId:{} ) started.", fileType.name(), additional.getRecordId());
 
         if (!ready(producer)) {
@@ -461,7 +460,7 @@ public class ProjectDataManager {
         return 1L;
     }
 
-    private static Object captureData(ProjectFileType fileType, KafkaTWAdditional additional) {
+    private Object captureData(ProjectFileType fileType, KafkaTWAdditional additional) {
         log.warn("captureData(fileType:{}, additional:{}) started", fileType, additional);
 
         Object data = null;

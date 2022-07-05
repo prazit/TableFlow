@@ -8,6 +8,7 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.mapper.ProjectMappers;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
@@ -59,9 +60,15 @@ public class EditorController extends Controller {
     private Map<String, Integer> actionPriorityMap;
     private boolean fullActionList;
 
+    @Inject
+    private ProjectMappers projectMappers;
+    private ProjectDataManager projectDataManager;
+
     @PostConstruct
     public void onCreation() {
+        projectDataManager = new ProjectDataManager(projectMappers);
         Project project = workspace.getProject();
+        project.setManager(projectDataManager);
         leftPanelTitle = "Step List";
         initActionPriorityMap();
         initStepList(project);
@@ -430,13 +437,13 @@ public class EditorController extends Controller {
     }
 
     public void testKafkaSendMessage() {
-        ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(ProjectDataManager.testBuffer);
+        ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(projectDataManager.testBuffer);
         for (ProjectDataWriteBuffer projectDataWriteBuffer : testList) {
             ProjectFileType projectFileType = projectDataWriteBuffer.getFileType();
             KafkaTWAdditional additional = projectDataWriteBuffer.getAdditional();
 
             log.warn("testKafkaSendMessage begin: getData(projectFileType:{}, additional:{})", projectFileType, additional);
-            Object data = ProjectDataManager.getData(projectFileType, additional);
+            Object data = projectDataManager.getData(projectFileType, additional);
             if (data == null) {
                 log.error("testKafkaSendMessage end: getData.returned data = null");
                 continue;
@@ -467,7 +474,7 @@ public class EditorController extends Controller {
                 log.error("testKafkaSendMessage end: cast to DataTable failed: ", ex);
             }
 
-            ProjectDataManager.testBuffer.remove(projectDataWriteBuffer);
+            projectDataManager.testBuffer.remove(projectDataWriteBuffer);
         }
     }
 

@@ -77,26 +77,27 @@ public class AddColumnFx extends Command {
         resultMap.put(ActionResultKey.COLUMN_FX, columnFx);
 
         // save TransformColumn data
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, columnFx, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
-
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, columnFx, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+        
         // no TransformColumnFx list to save here, it already saved in the AddTransformTable
 
         // save Line data
-        ProjectDataManager.addData(ProjectFileType.LINE, line1, project, line1.getId(), step.getId());
-        ProjectDataManager.addData(ProjectFileType.LINE, line2, project, line2.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, line1, project, line1.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, line2, project, line2.getId(), step.getId());
 
         // save Object(SourceColumn) at the startPlug of line1
         if (sourceColumn instanceof TransformColumn) {
-            ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, sourceColumn, project, sourceColumn.getId(), step.getId(), 0, sourceColumn.getOwner().getId());
+            projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, sourceColumn, project, sourceColumn.getId(), step.getId(), 0, sourceColumn.getOwner().getId());
         } else {
-            ProjectDataManager.addData(ProjectFileType.DATA_COLUMN, sourceColumn, project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
+            projectDataManager.addData(ProjectFileType.DATA_COLUMN, sourceColumn, project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
         }
 
         // save Object(TargetColumn) at the endPlug of line2
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, targetColumn, project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, targetColumn, project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, line1.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, line1.getId(), step.getId());
 
         // no tower, floor to save here
     }

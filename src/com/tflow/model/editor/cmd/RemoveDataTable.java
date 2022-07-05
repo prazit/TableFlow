@@ -53,27 +53,28 @@ public class RemoveDataTable extends Command {
         paramMap.put(CommandParamKey.DATA_FILE, dataTable.getDataFile());
 
         // save DataTable data
+        ProjectDataManager projectDataManager = project.getManager();
         int dataTableId = dataTable.getId();
-        ProjectDataManager.addData(ProjectFileType.DATA_TABLE, null, project, dataTableId, step.getId(), dataTableId);
+        projectDataManager.addData(ProjectFileType.DATA_TABLE, null, project, dataTableId, step.getId(), dataTableId);
 
         // save DataTable list
-        ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, project, dataTableId, step.getId());
+        projectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, project, dataTableId, step.getId());
 
         // save Line data
-        ProjectDataManager.addData(ProjectFileType.LINE, null, project, removedLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, null, project, removedLine.getId(), step.getId());
 
         // save object(DataFile) at endPlug.
-        ProjectDataManager.addData(ProjectFileType.DATA_FILE, null, project, dataFile.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.DATA_FILE, null, project, dataFile.getId(), step.getId());
 
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
 
         // save Tower data
         Tower tower = floor.getTower();
-        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
 
         // save Floor data
-        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
 }

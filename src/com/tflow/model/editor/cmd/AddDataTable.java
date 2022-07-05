@@ -59,26 +59,27 @@ public class AddDataTable extends Command {
         action.getResultMap().put(ActionResultKey.DATA_TABLE, dataTable);
 
         // save DataTable data
+        ProjectDataManager projectDataManager = project.getManager();
         int dataTableId = dataTable.getId();
-        ProjectDataManager.addData(ProjectFileType.DATA_TABLE, dataTable, step.getOwner(), dataTableId, step.getId(), dataTableId);
+        projectDataManager.addData(ProjectFileType.DATA_TABLE, dataTable, step.getOwner(), dataTableId, step.getId(), dataTableId);
 
         // save DataTable list
-        ProjectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, step.getOwner(), dataTableId, step.getId());
+        projectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, step.getOwner(), dataTableId, step.getId());
 
         // save Line data
-        ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
 
         // save Object(DataFile) at the endPlug.
-        ProjectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, step.getOwner(), dataFile.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, step.getOwner(), dataFile.getId(), step.getId());
 
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
 
         // save Tower data
-        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
 
         // save Floor data
-        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
     private DataTable extractData(DataFile dataFile, Step step) {

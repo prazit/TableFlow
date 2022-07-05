@@ -3,6 +3,7 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Tower;
 
+import javax.enterprise.inject.Default;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +42,16 @@ public class Step implements Serializable, Selectable, HasEvent {
     private Map<String, Selectable> selectableMap;
 
     private EventManager eventManager;
+
+    /* for StepMapper */
+    public Step() {
+        /*nothting*/
+    }
+
+    /* for ProjectMapper */
+    public Step(int id) {
+        this.id = id;
+    }
 
     public Step(String name, Project owner) {
         this.name = name;

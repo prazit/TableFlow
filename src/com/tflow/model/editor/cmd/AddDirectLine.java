@@ -39,10 +39,11 @@ public class AddDirectLine extends Command {
         step.getEventManager().fireEvent(EventName.LINE_ADDED, newLine);
 
         // save Line data
-        ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
 
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
 
         // no tower, floor to save here
     }

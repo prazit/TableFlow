@@ -32,10 +32,11 @@ public class RemoveTableFx extends Command {
         action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
 
         // save Transformation data
-        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION, null, step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.TRANSFORMATION, null, step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
 
         // save Transformation list
-        ProjectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
 
         // no line, tower, floor to save here
     }

@@ -32,10 +32,11 @@ public class RemoveOutputFile extends Command {
         action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
 
         // save OutputFile data
-        ProjectDataManager.addData(ProjectFileType.DATA_OUTPUT, null, project, dataFile.getId(), step.getId(), dataTable.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, null, project, dataFile.getId(), step.getId(), dataTable.getId());
 
         // save OutputFile list
-        ProjectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, outputList, project, dataFile.getId(), step.getId(), dataTable.getId());
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, outputList, project, dataFile.getId(), step.getId(), dataTable.getId());
 
         // no line, tower, floor to save here
     }

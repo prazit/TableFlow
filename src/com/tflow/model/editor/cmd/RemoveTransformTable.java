@@ -55,34 +55,35 @@ public class RemoveTransformTable extends Command {
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
 
         // save TransformTable data
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, null, project, transformTable.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, null, project, transformTable.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformTable list
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
 
         // save Line data
         for (Line line : removedLineList) {
-            ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
         }
 
         // save Object(DataTable) at the startPlug of removedLine.
         for (DataTable table : updatedTableList) {
             if (table instanceof TransformTable) {
-                ProjectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, table, project, table.getId(), step.getId(), 0, table.getId());
+                projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, table, project, table.getId(), step.getId(), 0, table.getId());
             } else {
-                ProjectDataManager.addData(ProjectFileType.DATA_TABLE, table, project, table.getId(), step.getId(), table.getId());
+                projectDataManager.addData(ProjectFileType.DATA_TABLE, table, project, table.getId(), step.getId(), table.getId());
             }
         }
         
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
 
         // save Tower data
         Tower tower = floor.getTower();
-        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
 
         // save Floor data
-        ProjectDataManager.addData(ProjectFileType.FLOOR, null, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, null, project, floor.getId(), step.getId());
 
     }
 

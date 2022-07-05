@@ -1,14 +1,10 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.kafka.KafkaTWAdditional;
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
-import com.tflow.model.editor.Workspace;
 
-import java.io.IOException;
-import java.rmi.server.ServerNotActiveException;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +26,8 @@ public class AddStep extends Command {
         stepList.add(step);
 
         // save Step data
-        ProjectDataManager.addData(ProjectFileType.STEP, step, project, stepId, stepId);
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.mappers.step.toStepItemDataList(stepList), project, stepId, stepId);
 
         // no line, tower, floor to save here
     }

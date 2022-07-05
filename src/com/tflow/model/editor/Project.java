@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectDataManager;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class Project implements Serializable {
     private static final long serialVersionUID = 2021121709996660001L;
@@ -31,6 +34,8 @@ public class Project implements Serializable {
     private int lastUniqueId;
 
     private transient Workspace owner;
+
+    private transient ProjectDataManager manager;
 
     public Project(String name) {
         activeStepIndex = -1;
@@ -123,6 +128,14 @@ public class Project implements Serializable {
         this.owner = workspace;
     }
 
+    public ProjectDataManager getManager() {
+        return manager;
+    }
+
+    public void setManager(ProjectDataManager manager) {
+        this.manager = manager;
+    }
+
     /*== Public Methods ==*/
 
     /**
@@ -142,4 +155,5 @@ public class Project implements Serializable {
         if (activeStepIndex < 0) return null;
         return stepList.get(activeStepIndex);
     }
+
 }

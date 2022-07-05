@@ -14,6 +14,11 @@ public class Local extends DataSource implements Selectable {
     private List<String> pathHistory;
     private String rootPath;
 
+    /* for ProjectDataManager.getProject only */
+    public Local(int id) {
+        this.id = id;
+    }
+
     public Local(String name, String rootPath, String plug) {
         setName(name);
         setType(DataSourceType.LOCAL);

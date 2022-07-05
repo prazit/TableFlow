@@ -27,10 +27,11 @@ public class RemoveDirectLine extends Command {
 
         // save Line data
         Project project = step.getOwner();
-        ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
 
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, line.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, line.getId(), step.getId());
 
         // no tower, floor to save here
     }

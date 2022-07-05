@@ -32,10 +32,11 @@ public class RemoveTransformColumn extends Command {
         action.getResultMap().put(ActionResultKey.TRANSFORM_COLUMN, transformColumn);
 
         // save TransformColumn data
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, null, project, transformColumn.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, null, project, transformColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformColumn list
-        ProjectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, columnList, project, transformColumn.getId(), step.getId(), 0, transformTable.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, columnList, project, transformColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // no line, tower, floor to save here
     }

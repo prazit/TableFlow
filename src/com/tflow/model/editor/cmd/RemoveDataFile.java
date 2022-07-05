@@ -54,22 +54,23 @@ public class RemoveDataFile extends Command {
         paramMap.put(CommandParamKey.DATA_FILE, dataFile);
 
         // save DataFile data
-        ProjectDataManager.addData(ProjectFileType.DATA_FILE, null, project, dataFile.getId(), step.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.DATA_FILE, null, project, dataFile.getId(), step.getId());
 
         // save Line data
         for (Line line : removedLineList) {
-            ProjectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
         }
 
         // save Line list
-        ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
 
         // save Tower data
         Tower tower = floor.getTower();
-        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
 
         // save Floor data
-        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
 }

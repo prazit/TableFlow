@@ -56,23 +56,24 @@ public class AddDataFile extends Command {
         action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
 
         // save DataFile data
-        ProjectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, project, dataFile.getId(), step.getId());
+        ProjectDataManager projectDataManager = project.getManager();
+        projectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, project, dataFile.getId(), step.getId());
 
         if (newLine != null) {
             // save Line data
-            ProjectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
 
             // save Line list
-            ProjectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
 
             // no object at the startPlug to save here
         }
 
         // save Tower data
-        ProjectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
 
         // save Floor data
-        ProjectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
     }
 
 }
