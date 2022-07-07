@@ -7,8 +7,8 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * TODO: after getData need (1) + (2) before regenSelectableMap
- * 1. find LinePlug to replace id
+ * TODO: after getData, before regenSelectableMap
+ * 1. find each Line by id in lineList
  * 2. call Owner.createPlugListener
  **/
 @Data

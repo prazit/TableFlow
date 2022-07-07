@@ -8,6 +8,7 @@ import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.DataTableUtil;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class AddDataTable extends Command {
         DataFile dataFile = (DataFile) paramMap.get(CommandParamKey.DATA_FILE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
+        Project project = step.getOwner();
 
         /*support undo of Action 'RemoveDataFile'*/
         DataTable dataTable = (DataTable) paramMap.get(CommandParamKey.DATA_TABLE);
@@ -40,7 +42,7 @@ public class AddDataTable extends Command {
         floor.setRoom(2, dataTable);
 
         /*Add to selectableMap*/
-        DataTableUtil.addTo(step.getSelectableMap(), dataTable, step.getOwner());
+        DataTableUtil.addTo(step.getSelectableMap(), dataTable, project);
 
         /*Add to DataTable List*/
         List<DataTable> dataList = step.getDataList();
@@ -48,7 +50,6 @@ public class AddDataTable extends Command {
         dataList.add(dataTable);
 
         /*line between DataFile and DataTable*/
-        Project project = step.getOwner();
         Line newLine = step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
         newLine.setId(project.newUniqueId());
 
@@ -60,17 +61,18 @@ public class AddDataTable extends Command {
 
         // save DataTable data
         ProjectDataManager projectDataManager = project.getManager();
+        ProjectMapper mapper = projectDataManager.mapper;
         int dataTableId = dataTable.getId();
-        projectDataManager.addData(ProjectFileType.DATA_TABLE, dataTable, step.getOwner(), dataTableId, step.getId(), dataTableId);
+        projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(dataTable), project, dataTableId, step.getId(), dataTableId);
 
         // save DataTable list
-        projectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, dataList, step.getOwner(), dataTableId, step.getId());
+        projectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), project, dataTableId, step.getId());
 
         // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());
 
         // save Object(DataFile) at the endPlug.
-        projectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, step.getOwner(), dataFile.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.DATA_FILE, dataFile, project, dataFile.getId(), step.getId());
 
         // save Line list
         projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());

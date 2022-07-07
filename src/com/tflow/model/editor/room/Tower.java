@@ -24,6 +24,11 @@ public class Tower implements Serializable {
     private Step owner;
 
     /*for StepMapper*/
+    public Tower() {
+        /*nothing*/
+    }
+
+    /*for StepMapper*/
     public Tower(int id) {
         this.id = id;
     }

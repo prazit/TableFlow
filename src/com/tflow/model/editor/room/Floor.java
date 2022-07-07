@@ -26,6 +26,11 @@ public class Floor implements Serializable {
         roomList = new ArrayList<>();
     }
 
+    /*for StepMapper*/
+    public Floor(Integer id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }

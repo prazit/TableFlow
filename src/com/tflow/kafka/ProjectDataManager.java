@@ -1,12 +1,11 @@
 package com.tflow.kafka;
 
 import com.tflow.model.data.*;
-import com.tflow.model.editor.Project;
-import com.tflow.model.editor.Step;
-import com.tflow.model.editor.Workspace;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.*;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.*;
+import java.util.Properties;
 
 /*TODO: save updated object between line in RemoveDataFile when the Action RemoveDataFile is used in the UI*/
 public class ProjectDataManager {
@@ -45,20 +45,14 @@ public class ProjectDataManager {
     /*TODO: remove Collection below, it for test*/
     public List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
 
-    public IdListMapper idListMapper;
-    public ProjectMapper projectMapper;
-    public DataSourceMapper dataSourceMapper;
-    public StepMapper stepMapper;
+    public ProjectMapper mapper;
 
     public ProjectDataManager() {
         createMappers();
     }
 
     private void createMappers() {
-        idListMapper = new IdListMapper();
-        projectMapper = Mappers.getMapper(ProjectMapper.class);
-        dataSourceMapper = Mappers.getMapper(DataSourceMapper.class);
-        stepMapper = Mappers.getMapper(StepMapper.class);
+        mapper = Mappers.getMapper(ProjectMapper.class);
     }
 
     private void createProducer() {
@@ -333,14 +327,13 @@ public class ProjectDataManager {
         commit();
     }
 
-    /* Notice: TFlow need to check Client file for heartbeat it self, TODO: need to remove Client file checker from TRcmd */
     @SuppressWarnings("unchecked")
     public Project getProject(String projectId, long userId, long clientId) throws ClassCastException, ProjectDataException {
 
         /*get project, to know the project is not edit by another */
         Object data = getData(ProjectFileType.PROJECT, new KafkaTWAdditional(clientId, userId, projectId, projectId));
         /*TODO: find "addData(ProjectFileType.PROJECT" then use Mapper*/
-        Project project = projectMapper.map((ProjectData) throwExceptionOnError(data));
+        Project project = mapper.map((ProjectData) throwExceptionOnError(data));
 
         /*get db-list*/
         data = getData(ProjectFileType.DB_LIST, new KafkaTWAdditional(clientId, userId, projectId, "1"));
@@ -351,7 +344,7 @@ public class ProjectDataManager {
         /*get each db in db-list*/
         for (Integer id : databaseIdList) {
             data = getData(ProjectFileType.DB, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
-            databaseMap.put(id, dataSourceMapper.map((DatabaseData) throwExceptionOnError(data)));
+            databaseMap.put(id, mapper.map((DatabaseData) throwExceptionOnError(data)));
         }
 
         /*get sftp-list*/
@@ -363,7 +356,7 @@ public class ProjectDataManager {
         /*get each sftp in sftp-list*/
         for (Integer id : sftpIdList) {
             data = getData(ProjectFileType.SFTP, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
-            sftpMap.put(id, dataSourceMapper.map((SFTPData) throwExceptionOnError(data)));
+            sftpMap.put(id, mapper.map((SFTPData) throwExceptionOnError(data)));
         }
 
         /*get local-list*/
@@ -375,60 +368,107 @@ public class ProjectDataManager {
         /*get each local in local-list*/
         for (Integer id : localIdList) {
             data = getData(ProjectFileType.LOCAL, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id)));
-            localMap.put(id, dataSourceMapper.map((LocalData) throwExceptionOnError(data)));
+            localMap.put(id, mapper.map((LocalData) throwExceptionOnError(data)));
+        }
+
+        /*get variable-list*/
+        data = getData(ProjectFileType.VARIABLE_LIST, new KafkaTWAdditional(clientId, userId, projectId, "4"));
+        List<String> varIdList = (List<String>) throwExceptionOnError(data);
+        Map<String, Variable> varMap = new HashMap<>();
+        project.setVariableMap(varMap);
+
+        /*get each variable in variable-list*/
+        for (String id : varIdList) {
+            data = getData(ProjectFileType.VARIABLE, new KafkaTWAdditional(clientId, userId, projectId, id));
+            varMap.put(id, mapper.map((VariableData) throwExceptionOnError(data)));
         }
 
         /*get step-list*/
-        data = getData(ProjectFileType.STEP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "4"));
+        data = getData(ProjectFileType.STEP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "5"));
         List<StepItemData> stepItemDataList = (List<StepItemData>) throwExceptionOnError(data);
-        project.setStepList(projectMapper.toStepList(stepItemDataList));
+        project.setStepList(mapper.toStepList(stepItemDataList));
 
         return project;
     }
 
+    /**
+     * TODO: TRcmd: need to remove Client file checker from TRcmd
+     * TODO: TRcmd: Project List: need to create new Project when projectId < 0 (TRcmd to TWcmd)
+     * TODO: commit(): need to update Client file before execute first command
+     * TODO: flowchart-client: need to update Client file for heartbeat of the working-project.
+     **/
+    @SuppressWarnings("unchecked")
     private Step getStep(long clientId, long userId, Project project, int stepIndex) throws Exception {
-        /*TODO: all step below need to create Model and Mapper(mapstruct lib)*/
-
         String projectId = project.getId();
         List<Step> stepList = project.getStepList();
-        Step stepModel = stepList.get(stepIndex);
+        Step stepModel = stepList.remove(stepIndex);
         String stepId = String.valueOf(stepModel.getId());
 
         /*get step*/
         Object data = getData(ProjectFileType.STEP, new KafkaTWAdditional(clientId, userId, projectId, stepId, stepId));
-        /*TODO: need STEP Model and Mapper, find "addData(ProjectFileType.STEP" then use Mapper*/
         stepList.remove(stepIndex);
-        Step step = (Step) throwExceptionOnError(data);
+        Step step = mapper.map((StepData) throwExceptionOnError(data));
         stepList.add(stepIndex, step);
 
-        /*TODO: get each tower in step*/
-        /*TODO: get each floor in tower*/
+        /*get data-table-list*/
+        data = getData(ProjectFileType.DATA_TABLE_LIST, new KafkaTWAdditional(clientId, userId, projectId, "1", stepId));
+        List<Integer> dataTableIdList = (List<Integer>) throwExceptionOnError(data);
+        List<DataTable> dataTableList = new ArrayList<>();
+        step.setDataList(dataTableList);
 
-        /*TODO: get data-table-list*/
         /*TODO: get each data-table in data-table-list*/
+        /*TODO: find "addData(ProjectFileType.DATA_TABLE" then use Mapper*/
+        for (Integer id : dataTableIdList) {
+            data = getData(ProjectFileType.DATA_TABLE, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(id), stepId));
+            dataTableList.add(mapper.map((DataTableData) throwExceptionOnError(data)));
+        }
 
         /*TODO: get data-file in data-table*/
+        /*TODO: need DataFile Model, find "addData(ProjectFileType.DATA_FILE" then use Mapper*/
 
         /*TODO: get column-list*/
         /*TODO: get each column in column-list*/
+        /*TODO: need DataColumn Model, find "addData(ProjectFileType.DATA_COLUMN" then use Mapper*/
 
         /*TODO: get output-list*/
         /*TODO: get each output in output-list*/
+        /*TODO: find "addData(ProjectFileType.DATA_OUTPUT" then use Mapper*/
 
         /*TODO: TRANSFORM TABLE need list*/
         /*TODO: get transform-table-list*/
+        data = getData(ProjectFileType.TRANSFORM_TABLE_LIST, new KafkaTWAdditional(clientId, userId, projectId, "1", stepId));
+        List<Integer> transformTableIdList = (List<Integer>) throwExceptionOnError(data);
+        List<TransformTable> transformTableList = new ArrayList<>();
+        step.setTransformList(transformTableList);
+
         /*TODO: get each transform-table in transform-table-list*/
+        /*TODO: need TransformTable Model, find "addData(ProjectFileType.TRANSFORM_TABLE" then use Mapper*/
 
         /*TODO: get tranform-column-list*/
         /*TODO: get each tranform-column in tranform-column-list*/
+        /*TODO: need TransformColumn Model, find "addData(ProjectFileType.TRANSFORM_COLUMN" then use Mapper*/
 
         /*TODO: get each tranform-columnfx in tranform-table(columnFxTable)*/
+        /*TODO: need TransformColumnFx Model, find "addData(ProjectFileType.TRANSFORM_COLUMNFX" then use Mapper*/
 
         /*TODO: get tranform-output-list*/
         /*TODO: get each tranform-output in tranform-output-list*/
+        /*TODO: find "addData(ProjectFileType.TRANSFORM_OUTPUT" then use Mapper*/
 
         /*TODO: get tranformation-list*/
         /*TODO: get each tranformation in tranformation-list*/
+        /*TODO: need Transformmation Model, find "addData(ProjectFileType.TRANSFORMATION" then use Mapper*/
+
+        /*TODO: get each tower in step*/
+        List<Tower> towerList = new ArrayList<>();
+        for (Tower tower : Arrays.asList(step.getDataTower(), step.getTransformTower(), step.getOutputTower())) {
+            data = getData(ProjectFileType.TOWER, new KafkaTWAdditional(clientId, userId, projectId, String.valueOf(tower.getId()), stepId));
+            towerList.add(mapper.map((TowerData) throwExceptionOnError(data)));
+
+            /*TODO: get each floor in tower*/
+            /*TODO: need Floor Model, find "addData(ProjectFileType.FLOOR" then use Mapper*/
+
+        }
 
         /*TODO: get line-list at the end*/
         /*TODO: get each line in line-list*/

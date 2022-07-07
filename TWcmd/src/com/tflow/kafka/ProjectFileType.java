@@ -14,10 +14,12 @@ public enum ProjectFileType {
     DB_LIST("db-list", 1),
     SFTP_LIST("sftp-list", 1),
     LOCAL_LIST("local-list", 1),
+    VARIABLE_LIST("var-list", 1),
     STEP_LIST("step-list", 1),
     DB("", 1),
     SFTP("", 1),
     LOCAL("", 1),
+    VARIABLE("", 1),
 
     STEP("", 2),
     DATA_TABLE_LIST("data-table-list", 2),

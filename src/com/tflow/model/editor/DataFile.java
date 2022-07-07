@@ -40,6 +40,11 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
         this.setRoomType(RoomType.DATA_FILE);
     }
 
+    /* for stepMapper */
+    public DataFile(Integer id) {
+        this.id = id;
+    }
+
     private StartPlug createStartPlug(String plugId) {
         StartPlug startPlug = new StartPlug(plugId);
         startPlug.setExtractButton(true);

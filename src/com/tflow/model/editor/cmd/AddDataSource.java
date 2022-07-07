@@ -60,24 +60,24 @@ public class AddDataSource extends Command {
                 project.getDatabaseMap().put(id, (Database) dataSource);
                 fileType = ProjectFileType.DB;
                 listFileType = ProjectFileType.DB_LIST;
-                dataSourceData = projectDataManager.dataSourceMapper.map((Database) dataSource);
-                idList = projectDataManager.idListMapper.map(project.getDatabaseMap());
+                dataSourceData = projectDataManager.mapper.map((Database) dataSource);
+                idList = projectDataManager.mapper.fromMap(project.getDatabaseMap());
                 break;
 
             case SFTP:
                 project.getSftpMap().put(id, (SFTP) dataSource);
                 fileType = ProjectFileType.SFTP;
                 listFileType = ProjectFileType.SFTP_LIST;
-                dataSourceData = projectDataManager.dataSourceMapper.map((SFTP) dataSource);
-                idList = projectDataManager.idListMapper.map(project.getSftpMap());
+                dataSourceData = projectDataManager.mapper.map((SFTP) dataSource);
+                idList = projectDataManager.mapper.fromMap(project.getSftpMap());
                 break;
 
             default: //case LOCAL:
                 project.getLocalMap().put(id, (Local) dataSource);
                 fileType = ProjectFileType.LOCAL;
                 listFileType = ProjectFileType.LOCAL_LIST;
-                dataSourceData = projectDataManager.dataSourceMapper.map((Local) dataSource);
-                idList = projectDataManager.idListMapper.map(project.getLocalMap());
+                dataSourceData = projectDataManager.mapper.map((Local) dataSource);
+                idList = projectDataManager.mapper.fromMap(project.getLocalMap());
         }
 
         Selectable selectable = (Selectable) dataSource;

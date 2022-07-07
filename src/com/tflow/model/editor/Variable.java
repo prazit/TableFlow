@@ -1,7 +1,6 @@
 package com.tflow.model.editor;
 
-/*TODO: need Variable List Data File in ProjectFileType*/
-/*TODO: need Variable Data File in ProjectFileType*/
+/*TODO: Future Featured: need to complete all fields in Variable*/
 /**
  * A function item that execute(translation) at the first access.
  */

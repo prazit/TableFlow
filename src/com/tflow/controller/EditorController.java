@@ -473,14 +473,14 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         ProjectDataManager projectDataManager = project.getManager();
         String id = project.getId();
-        ProjectData projectData = projectDataManager.projectMapper.map(project);
+        ProjectData projectData = projectDataManager.mapper.map(project);
         projectDataManager.addData(ProjectFileType.PROJECT, projectData, project, id);
         projectDataManager.addData(ProjectFileType.DB_LIST, projectData.getDatabaseList(), project, id);
         projectDataManager.addData(ProjectFileType.SFTP_LIST, projectData.getSftpList(), project, id);
         projectDataManager.addData(ProjectFileType.LOCAL_LIST, projectData.getLocalList(), project, id);
         projectDataManager.addData(ProjectFileType.STEP_LIST, projectData.getStepList(), project, id);
         Step step = project.getActiveStep();
-        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.stepMapper.map(step), project, step.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.mapper.map(step), project, step.getId(), step.getId());
 
         log.info("testSaveProject: completed");
     }
