@@ -381,7 +381,7 @@ public class ProjectDataManager {
         /*get step-list*/
         data = getData(ProjectFileType.STEP_LIST, new KafkaTWAdditional(clientId, userId, projectId, "4"));
         List<StepItemData> stepItemDataList = (List<StepItemData>) throwExceptionOnError(data);
-        project.setStepList(stepMapper.toStepList(stepItemDataList));
+        project.setStepList(projectMapper.toStepList(stepItemDataList));
 
         return project;
     }

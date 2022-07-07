@@ -15,7 +15,10 @@ public class Step implements Serializable, Selectable, HasEvent {
 
     private int id;
     private String name;
+
+    /* Notice: index >= 0 = Working Data, index < 0 = Label Data */
     private int index;
+
     private List<Action> history;
     private List<DataTable> dataList;
     private List<TransformTable> transformList;
@@ -28,6 +31,7 @@ public class Step implements Serializable, Selectable, HasEvent {
     private List<Line> lineList;
     private int lastLineClientIndex;
 
+    /* TODO: future featured: show all steps in one flowchart*/
     private LinePlug startPlug;
 
     private Project owner;

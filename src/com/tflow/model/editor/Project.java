@@ -79,7 +79,7 @@ public class Project implements Serializable {
         this.activeStepIndex = activeStepIndex;
 
         Step activeStep = getActiveStep();
-        if (activeStep != null)
+        if (activeStep != null && activeStep.getId() >= 0)
             activeStep.refresh();
     }
 

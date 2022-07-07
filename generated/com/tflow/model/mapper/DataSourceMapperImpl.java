@@ -19,7 +19,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-07-05T19:33:20+0700",
+    date = "2022-07-07T11:49:00+0700",
     comments = "version: 1.5.2.Final, compiler: javac, environment: Java 11.0.3 (JetBrains s.r.o)"
 )
 public class DataSourceMapperImpl implements DataSourceMapper {

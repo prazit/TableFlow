@@ -11,9 +11,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper( componentModel = "default",
+@Mapper(componentModel = "default",
         imports = {
                 Collectors.class,
 
@@ -47,5 +49,15 @@ public interface ProjectMapper {
             @Mapping(target = "variableMap", expression = "java(projectData.getVariableList().stream().map(Variable::new).collect(Collectors.toMap(Variable::getName,item->{return item;})))"),
     })
     Project map(ProjectData projectData);
+
+    List<StepItemData> toStepItemDataList(List<Step> stepList);
+
+    List<Step> toStepList(List<StepItemData> stepItemDataList);
+
+    @Mappings({
+            @Mapping(target = "name", ignore = true),
+            @Mapping(target = "index", expression = "java(-1)")
+    })
+    Step toStep(StepItemData stepItemData);
 
 }

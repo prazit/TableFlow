@@ -1,15 +1,14 @@
 package com.tflow.model.mapper;
 
 import com.tflow.model.data.StepData;
-import com.tflow.model.data.StepItemData;
+import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.Step;
-import java.util.ArrayList;
-import java.util.List;
+import com.tflow.model.editor.room.Tower;
 import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-07-05T19:33:20+0700",
+    date = "2022-07-07T11:49:20+0700",
     comments = "version: 1.5.2.Final, compiler: javac, environment: Java 11.0.3 (JetBrains s.r.o)"
 )
 public class StepMapperImpl implements StepMapper {
@@ -25,6 +24,10 @@ public class StepMapperImpl implements StepMapper {
         step.setId( stepData.getId() );
         step.setName( stepData.getName() );
         step.setIndex( stepData.getIndex() );
+        step.setDataTower( toTower( stepData.getDataTower() ) );
+        step.setTransformTower( toTower( stepData.getTransformTower() ) );
+        step.setOutputTower( toTower( stepData.getOutputTower() ) );
+        step.setActiveObject( toSelectable( stepData.getActiveObject() ) );
         step.setZoom( stepData.getZoom() );
         step.setShowStepList( stepData.isShowStepList() );
         step.setShowPropertyList( stepData.isShowPropertyList() );
@@ -42,6 +45,10 @@ public class StepMapperImpl implements StepMapper {
 
         StepData stepData = new StepData();
 
+        stepData.setDataTower( stepDataTowerId( step ) );
+        stepData.setTransformTower( stepTransformTowerId( step ) );
+        stepData.setOutputTower( stepOutputTowerId( step ) );
+        stepData.setActiveObject( stepActiveObjectSelectableId( step ) );
         stepData.setId( step.getId() );
         stepData.setName( step.getName() );
         stepData.setIndex( step.getIndex() );
@@ -54,57 +61,54 @@ public class StepMapperImpl implements StepMapper {
         return stepData;
     }
 
-    @Override
-    public List<StepItemData> toStepItemDataList(List<Step> stepList) {
-        if ( stepList == null ) {
-            return null;
+    private int stepDataTowerId(Step step) {
+        if ( step == null ) {
+            return 0;
         }
-
-        List<StepItemData> list = new ArrayList<StepItemData>( stepList.size() );
-        for ( Step step : stepList ) {
-            list.add( stepToStepItemData( step ) );
+        Tower dataTower = step.getDataTower();
+        if ( dataTower == null ) {
+            return 0;
         }
-
-        return list;
+        int id = dataTower.getId();
+        return id;
     }
 
-    @Override
-    public List<Step> toStepList(List<StepItemData> stepItemDataList) {
-        if ( stepItemDataList == null ) {
-            return null;
+    private int stepTransformTowerId(Step step) {
+        if ( step == null ) {
+            return 0;
         }
-
-        List<Step> list = new ArrayList<Step>( stepItemDataList.size() );
-        for ( StepItemData stepItemData : stepItemDataList ) {
-            list.add( stepItemDataToStep( stepItemData ) );
+        Tower transformTower = step.getTransformTower();
+        if ( transformTower == null ) {
+            return 0;
         }
-
-        return list;
+        int id = transformTower.getId();
+        return id;
     }
 
-    protected StepItemData stepToStepItemData(Step step) {
+    private int stepOutputTowerId(Step step) {
+        if ( step == null ) {
+            return 0;
+        }
+        Tower outputTower = step.getOutputTower();
+        if ( outputTower == null ) {
+            return 0;
+        }
+        int id = outputTower.getId();
+        return id;
+    }
+
+    private String stepActiveObjectSelectableId(Step step) {
         if ( step == null ) {
             return null;
         }
-
-        StepItemData stepItemData = new StepItemData();
-
-        stepItemData.setId( step.getId() );
-        stepItemData.setName( step.getName() );
-
-        return stepItemData;
-    }
-
-    protected Step stepItemDataToStep(StepItemData stepItemData) {
-        if ( stepItemData == null ) {
+        Selectable activeObject = step.getActiveObject();
+        if ( activeObject == null ) {
             return null;
         }
-
-        Step step = new Step();
-
-        step.setId( stepItemData.getId() );
-        step.setName( stepItemData.getName() );
-
-        return step;
+        String selectableId = activeObject.getSelectableId();
+        if ( selectableId == null ) {
+            return null;
+        }
+        return selectableId;
     }
 }
