@@ -14,11 +14,21 @@ public class TableFx implements Serializable, Selectable {
 
     private TransformTable owner;
 
+    /*for projectMapper*/
+    public TableFx() {
+        /*nothing*/
+    }
+
     public TableFx(TableFunction function, String name, TransformTable owner) {
         this.name = name;
         this.function = function;
         paramMap = new HashMap<>();
         this.owner = owner;
+    }
+
+    /*for projectMapper*/
+    public TableFx(int id) {
+        this.id = id;
     }
 
     public int getId() {

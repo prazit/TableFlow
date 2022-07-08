@@ -17,7 +17,7 @@ public class Local extends DataSource implements Selectable {
     /* for DataSourceMapper*/
     public Local() {/*nothing*/}
 
-    /* for ProjectDataManager.getProject only */
+    /* for ProjectMapper */
     public Local(int id) {
         this.id = id;
     }

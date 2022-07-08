@@ -8,6 +8,7 @@ import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.DataTableUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,29 +93,30 @@ public class AddTransformTable extends Command {
 
         // save TransformTable data including ColumnFxTable
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, transformTable, step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformTable list
-        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), step.getOwner(), 1, step.getId());
 
         // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());
 
         // save Object(DataTable) at the endPlug.
         if (sourceTable instanceof TransformTable) {
-            projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
         } else {
-            projectDataManager.addData(ProjectFileType.DATA_TABLE, sourceTable, step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
         }
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), step.getId());
 
         // save Tower data
-        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
 
         // save Floor data (both TransformTable and ColumnFxTable)
-        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
     }
 
     private SourceType getSourceType(DataTable sourceTable) {

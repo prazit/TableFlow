@@ -8,6 +8,7 @@ import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +41,11 @@ public class AddDirectLine extends Command {
 
         // save Line data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.LINE, newLine, project, newLine.getId(), step.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), step.getId());
 
         // no tower, floor to save here
     }

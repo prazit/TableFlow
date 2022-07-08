@@ -5,6 +5,7 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -41,10 +42,11 @@ public class AddTransformColumn extends Command {
 
         // save TransformColumn data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, transformColumn, step.getOwner(), transformColumn.getId(), step.getId(), 0, transformTable.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(transformColumn), step.getOwner(), transformColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformColumn list
-        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, columnList, step.getOwner(), transformColumn.getId(), step.getId(), 0, transformTable.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(columnList), step.getOwner(), transformColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // no line, tower, floor to save here
     }

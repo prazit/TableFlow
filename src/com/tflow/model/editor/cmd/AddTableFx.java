@@ -5,6 +5,7 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class AddTableFx extends Command {
         Project project = step.getOwner();
 
         TableFx tableFx = (TableFx) paramMap.get(CommandParamKey.TABLE_FX);
-        if(tableFx == null) {
+        if (tableFx == null) {
             // for AddTableFx
             tableFx = new TableFx(TableFunction.SORT, TableFunction.SORT.getName(), transformTable);
             tableFx.setId(project.newUniqueId());
@@ -41,10 +42,11 @@ public class AddTableFx extends Command {
 
         // save Transformation data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.TRANSFORMATION, tableFx, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
 
         // save Transformation list
-        projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, tableFxList, step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(tableFxList), step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no line, tower, floor to save here
     }

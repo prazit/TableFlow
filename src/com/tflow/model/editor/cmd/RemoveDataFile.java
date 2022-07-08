@@ -2,11 +2,13 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,22 +57,23 @@ public class RemoveDataFile extends Command {
 
         // save DataFile data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.DATA_FILE, null, project, dataFile.getId(), step.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.DATA_FILE, (TWData) null, project, dataFile.getId(), step.getId());
 
         // save Line data
         for (Line line : removedLineList) {
-            projectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), step.getId());
         }
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, 1, step.getId());
 
         // save Tower data
         Tower tower = floor.getTower();
-        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
 
         // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
     }
 
 }

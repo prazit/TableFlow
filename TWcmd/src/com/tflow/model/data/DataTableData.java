@@ -4,12 +4,8 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-/**
- * TODO: after getData
- * 1. set owner = step
- **/
 @Data
-public class DataTableData implements Serializable {
+public class DataTableData extends TWData implements Serializable {
     private static final long serialVersionUID = 2021121709996660030L;
 
     private int id;

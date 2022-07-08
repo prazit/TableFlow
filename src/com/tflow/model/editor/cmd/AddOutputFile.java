@@ -6,6 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.datasource.Local;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +44,11 @@ public class AddOutputFile extends Command {
 
         // save OutputFile data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, dataFile, project, dataFile.getId(), step.getId(), dataTable.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(dataFile), project, dataFile.getId(), step.getId(), dataTable.getId());
 
         // save OutputFile list
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, outputList, project, dataFile.getId(), step.getId(), dataTable.getId());
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, dataFile.getId(), step.getId(), dataTable.getId());
 
         // no line, tower, floor to save here
     }

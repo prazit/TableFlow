@@ -25,6 +25,11 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent 
 
     private EventManager eventManager;
 
+    /*for projectMapper*/
+    public ColumnFx() {
+        /*nothing*/
+    }
+
     public ColumnFx(ColumnFunction function, String name, String startPlug, DataColumn owner) {
         this.name = name;
         this.function = function;
@@ -35,6 +40,11 @@ public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent 
         endPlugList = new ArrayList<>();
         createEndPlugList();
         function.getProperties().initPropertyMap(propertyMap);
+    }
+
+    /*for projectMapper*/
+    public ColumnFx(int id) {
+        this.id = id;
     }
 
     private StartPlug createStartPlug(String plugId) {

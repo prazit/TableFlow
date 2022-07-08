@@ -19,6 +19,11 @@ public class Floor implements Serializable {
     private Tower tower;
     private List<Room> roomList;
 
+    /*for projectMapper*/
+    public Floor() {
+        /*nothing*/
+    }
+
     public Floor(int id, int index, Tower owner) {
         this.id = id;
         this.index = index;

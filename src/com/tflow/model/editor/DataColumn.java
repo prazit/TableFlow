@@ -16,6 +16,11 @@ public class DataColumn implements Serializable, Selectable {
 
     protected DataTable owner;
 
+    /*for projectMapper*/
+    public DataColumn() {
+        /*nothing*/
+    }
+
     public DataColumn(int index, DataType type, String name, String startPlug, DataTable owner) {
         this.index = index;
         this.type = type;

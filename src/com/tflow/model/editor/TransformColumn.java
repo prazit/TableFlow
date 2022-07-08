@@ -8,6 +8,9 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
 
     private LinePlug endPlug;
 
+    /*for projectMapper*/
+    public TransformColumn() {/*nothing*/}
+
     public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug, DataTable owner) {
         super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug, owner);
         dataColName = "" + name;

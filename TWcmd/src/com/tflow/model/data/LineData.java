@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class LineData implements Serializable {
+public class LineData extends TWData implements Serializable {
     private static final long serialVersionUID = 2021121709996660054L;
 
     private int id;

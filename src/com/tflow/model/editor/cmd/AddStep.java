@@ -4,6 +4,7 @@ import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -27,10 +28,11 @@ public class AddStep extends Command {
 
         // save Step data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.mapper.map(step), project, stepId, stepId);
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, stepId, stepId);
 
         // save Step List
-        projectDataManager.addData(ProjectFileType.STEP_LIST, projectDataManager.mapper.toStepItemDataList(stepList), project, stepId, stepId);
+        projectDataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList(stepList), project, stepId, stepId);
 
         // no line, tower, floor to save here
     }

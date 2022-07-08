@@ -7,12 +7,12 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * TODO: after getData, before regenSelectableMap
- * 1. find each Line by id in lineList
+ * TODO: after getData
+ * 1. find each Line by id (line in lineList)
  * 2. call Owner.createPlugListener
  **/
 @Data
-public class LinePlugData implements Serializable {
+public class LinePlugData extends TWData implements Serializable {
     private static final long serialVersionUID = 2021121709996660050L;
 
     private String plug;

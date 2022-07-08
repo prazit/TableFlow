@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class ProjectData implements Serializable {
+public class ProjectData extends TWData implements Serializable {
     private static final long serialVersionUID = 2021121709996660001L;
 
     private String id;

@@ -8,6 +8,7 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
@@ -472,15 +473,16 @@ public class EditorController extends Controller {
 
         Project project = workspace.getProject();
         ProjectDataManager projectDataManager = project.getManager();
+        ProjectMapper mapper = projectDataManager.mapper;
         String id = project.getId();
-        ProjectData projectData = projectDataManager.mapper.map(project);
+        ProjectData projectData = mapper.map(project);
         projectDataManager.addData(ProjectFileType.PROJECT, projectData, project, id);
         projectDataManager.addData(ProjectFileType.DB_LIST, projectData.getDatabaseList(), project, id);
         projectDataManager.addData(ProjectFileType.SFTP_LIST, projectData.getSftpList(), project, id);
         projectDataManager.addData(ProjectFileType.LOCAL_LIST, projectData.getLocalList(), project, id);
         projectDataManager.addData(ProjectFileType.STEP_LIST, projectData.getStepList(), project, id);
         Step step = project.getActiveStep();
-        projectDataManager.addData(ProjectFileType.STEP, projectDataManager.mapper.map(step), project, step.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
 
         log.info("testSaveProject: completed");
     }

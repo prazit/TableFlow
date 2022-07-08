@@ -2,11 +2,13 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.mapper.ProjectMapper;
 import org.jboss.weld.manager.Transform;
 
 import java.util.ArrayList;
@@ -56,34 +58,35 @@ public class RemoveTransformTable extends Command {
 
         // save TransformTable data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, null, project, transformTable.getId(), step.getId(), 0, transformTable.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, (TWData) null, project, transformTable.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformTable list
-        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, transformList, step.getOwner(), 1, step.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), step.getOwner(), 1, step.getId());
 
         // save Line data
         for (Line line : removedLineList) {
-            projectDataManager.addData(ProjectFileType.LINE, null, project, line.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), step.getId());
         }
 
         // save Object(DataTable) at the startPlug of removedLine.
         for (DataTable table : updatedTableList) {
             if (table instanceof TransformTable) {
-                projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, table, project, table.getId(), step.getId(), 0, table.getId());
+                projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) table), project, table.getId(), step.getId(), 0, table.getId());
             } else {
-                projectDataManager.addData(ProjectFileType.DATA_TABLE, table, project, table.getId(), step.getId(), table.getId());
+                projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) table), project, table.getId(), step.getId(), table.getId());
             }
         }
-        
+
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, step.getLineList(), project, 1, step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, 1, step.getId());
 
         // save Tower data
         Tower tower = floor.getTower();
-        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
 
         // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, null, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, (TWData) null, project, floor.getId(), step.getId());
 
     }
 

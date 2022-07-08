@@ -28,6 +28,11 @@ public class DataFile extends Room implements Serializable, Selectable, HasEndPl
 
     private HasDataFile owner;
 
+    /*for projectMapper*/
+    public DataFile() {
+        /*nothing*/
+    }
+
     public DataFile(DataSource dataSource, DataFileType type, String name, String path, String endPlug, String startPlug) {
         this.dataSource = dataSource;
         this.type = type;

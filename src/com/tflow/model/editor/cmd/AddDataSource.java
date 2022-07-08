@@ -13,6 +13,7 @@ import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ public class AddDataSource extends Command {
         floor.setRoom(roomIndex, dataSource);
 
         ProjectDataManager projectDataManager = project.getManager();
+        ProjectMapper mapper = projectDataManager.mapper;
         ProjectFileType fileType;
         ProjectFileType listFileType;
         List<Integer> idList;
@@ -60,24 +62,24 @@ public class AddDataSource extends Command {
                 project.getDatabaseMap().put(id, (Database) dataSource);
                 fileType = ProjectFileType.DB;
                 listFileType = ProjectFileType.DB_LIST;
-                dataSourceData = projectDataManager.mapper.map((Database) dataSource);
-                idList = projectDataManager.mapper.fromMap(project.getDatabaseMap());
+                dataSourceData = mapper.map((Database) dataSource);
+                idList = mapper.fromMap(project.getDatabaseMap());
                 break;
 
             case SFTP:
                 project.getSftpMap().put(id, (SFTP) dataSource);
                 fileType = ProjectFileType.SFTP;
                 listFileType = ProjectFileType.SFTP_LIST;
-                dataSourceData = projectDataManager.mapper.map((SFTP) dataSource);
-                idList = projectDataManager.mapper.fromMap(project.getSftpMap());
+                dataSourceData = mapper.map((SFTP) dataSource);
+                idList = mapper.fromMap(project.getSftpMap());
                 break;
 
             default: //case LOCAL:
                 project.getLocalMap().put(id, (Local) dataSource);
                 fileType = ProjectFileType.LOCAL;
                 listFileType = ProjectFileType.LOCAL_LIST;
-                dataSourceData = projectDataManager.mapper.map((Local) dataSource);
-                idList = projectDataManager.mapper.fromMap(project.getLocalMap());
+                dataSourceData = mapper.map((Local) dataSource);
+                idList = mapper.fromMap(project.getLocalMap());
         }
 
         Selectable selectable = (Selectable) dataSource;
@@ -96,10 +98,10 @@ public class AddDataSource extends Command {
         // no line to save here
 
         // save Tower data
-        projectDataManager.addData(ProjectFileType.TOWER, tower, project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
 
         // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, floor, project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
     }
 
 }

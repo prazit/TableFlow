@@ -2,9 +2,11 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -33,10 +35,11 @@ public class RemoveOutputFile extends Command {
 
         // save OutputFile data
         ProjectDataManager projectDataManager = project.getManager();
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, null, project, dataFile.getId(), step.getId(), dataTable.getId());
+        ProjectMapper mapper = projectDataManager.mapper;
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, (TWData) null, project, dataFile.getId(), step.getId(), dataTable.getId());
 
         // save OutputFile list
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, outputList, project, dataFile.getId(), step.getId(), dataTable.getId());
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, dataFile.getId(), step.getId(), dataTable.getId());
 
         // no line, tower, floor to save here
     }

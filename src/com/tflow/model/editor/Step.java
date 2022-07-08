@@ -165,6 +165,10 @@ public class Step implements Serializable, Selectable, HasEvent {
         return lineList;
     }
 
+    public void setLineList(List<Line> lineList) {
+        this.lineList = lineList;
+    }
+
     public Project getOwner() {
         return owner;
     }

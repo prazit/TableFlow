@@ -1,7 +1,10 @@
 package com.tflow.model.data;
 
+import lombok.Data;
+
 import java.util.List;
 
+@Data
 public class LocalData extends DataSourceData {
     private static final long serialVersionUID = 2021121709996660013L;
 

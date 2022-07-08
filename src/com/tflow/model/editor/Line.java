@@ -17,6 +17,11 @@ public class Line implements Serializable {
 
     private boolean user;
 
+    /*for projectMapper*/
+    public Line() {
+        /*nothing*/
+    }
+
     /* for Mappers */
     public Line(Integer id) {
         this.id = id;
