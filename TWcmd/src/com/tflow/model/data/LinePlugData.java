@@ -26,5 +26,5 @@ public class LinePlugData extends TWData implements Serializable {
     private boolean transferButton;
     private boolean locked;
 
-    private boolean startPlug;
+    private boolean notEndPlug;
 }

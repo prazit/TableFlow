@@ -3,7 +3,6 @@ package com.tflow.model.data;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 public class TransformTableData extends DataTableData implements Serializable {
@@ -11,7 +10,5 @@ public class TransformTableData extends DataTableData implements Serializable {
 
     private String sourceType;
     private String sourceSelectableId;
-    private List<Integer> fxList;
-    private ColumnFxTableData columnFxTable;
 
 }

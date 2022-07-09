@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.system.constant.Theme;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -28,8 +29,7 @@ public class Workspace implements Serializable {
         client.setId(1);
 
         // TODO: do this after AddProject action is completed, remove mockup project and mockup step here.
-        project = new Project("Mockup Project");
-        project.setId("P1");
+        project = new Project("P1", "Mockup Project");
         project.setOwer(this);
         project.getStepList().add(new Step("Mockup Step 1", project));
     }

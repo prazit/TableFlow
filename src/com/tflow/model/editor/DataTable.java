@@ -32,6 +32,11 @@ public class DataTable extends Room implements Serializable, Selectable, HasData
 
     private EventManager eventManager;
 
+    /*for ProjectMapper*/
+    public DataTable() {
+        /*nothing*/
+    }
+
     public DataTable(String name, DataFile dataFile, String idColName, String endPlug, String startPlug, Step owner) {
         this.owner = owner;
         this.name = name;

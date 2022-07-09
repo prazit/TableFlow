@@ -12,6 +12,11 @@ public class ColumnFxPlug extends LinePlug implements Serializable, Selectable, 
     private String name;
     private ColumnFx owner;
 
+    /*for ProjectMapper*/
+    public ColumnFxPlug() {
+        /*nothing*/
+    }
+
     public ColumnFxPlug(int id, DataType type, String name, String plugId, ColumnFx owner) {
         super(plugId);
         this.id = id;

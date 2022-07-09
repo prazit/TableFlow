@@ -5,6 +5,6 @@ public class EndPlug extends LinePlug {
 
     public EndPlug(String elementId) {
         super(elementId);
-        setStartPlug(false);
+        setNotEndPlug(false);
     }
 }

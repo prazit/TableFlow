@@ -18,9 +18,14 @@ public class LinePlug implements Serializable {
     private boolean transferButton;
     private boolean locked;
 
-    private boolean startPlug;
+    private boolean notEndPlug;
 
     private PlugListener listener;
+
+    /*for ProjectMapper*/
+    public LinePlug() {
+        /*nothing*/
+    }
 
     public LinePlug(String plug) {
         this.plug = plug;
@@ -124,20 +129,20 @@ public class LinePlug implements Serializable {
         this.locked = locked;
     }
 
-    public boolean isStartPlug() {
-        return startPlug;
+    public boolean isNotEndPlug() {
+        return notEndPlug;
     }
 
-    public void setStartPlug(boolean startPlug) {
+    public void setNotEndPlug(boolean notEndPlug) {
         styleClass = null;
-        this.startPlug = startPlug;
+        this.notEndPlug = notEndPlug;
     }
 
     private String styleClass;
 
     public String getStyleClass() {
         if (styleClass == null)
-            styleClass = (startPlug ? "start-plug" : "end-plug") +
+            styleClass = (notEndPlug ? "start-plug" : "end-plug") +
                     (plugged ? " connected" : " no-connection") +
                     (removeButton ? " remove-line" : "") +
                     (extractButton ? " extract-data" : "") +

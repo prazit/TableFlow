@@ -270,7 +270,7 @@ public class ProjectDataManager {
             projectDataWriteBufferList.remove(writeCommand);
             testBuffer.add(writeCommand);
 
-            log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) completed.", fileType.name(), recordId);
+            log.info("ProjectWriteCommand completed.");
         }
     }
 
@@ -349,28 +349,32 @@ public class ProjectDataManager {
     }
 
     private void addData(ProjectFileType fileType, Object object, KafkaTWAdditional additional) throws InvalidParameterException {
-        if (additional.getModifiedUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId");
-        if (additional.getModifiedClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId");
+        if (additional.getModifiedUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for ProjectDataManager.addData(" + fileType + ")");
+        if (additional.getModifiedClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for ProjectDataManager.addData(" + fileType + ")");
 
         // Notice: all of below copied from class com.flow.wcmd.UpdateProjectCommand.validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue)
         int requireType = fileType.getRequireType();
-        if (!fileType.getPrefix().endsWith("list") && additional.getRecordId() == null) throw new InvalidParameterException("Required Field: RecordId");
-        if (additional.getProjectId() == null) throw new InvalidParameterException("Required Field: ProjectId");
-        if (requireType > 1 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId");
-        if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId");
-        if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId");
+        if (!fileType.getPrefix().endsWith("list") && additional.getRecordId() == null) throw new InvalidParameterException("Required Field: RecordId for ProjectDataManager.addData(" + fileType + ")");
+        if (additional.getProjectId() == null) throw new InvalidParameterException("Required Field: ProjectId for ProjectDataManager.addData(" + fileType + ")");
+        if (requireType > 1 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId for ProjectDataManager.addData(" + fileType + ")");
+        if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId for ProjectDataManager.addData(" + fileType + ")");
+        if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId for ProjectDataManager.addData(" + fileType + ")");
 
         projectDataWriteBufferList.add(new ProjectDataWriteBuffer(fileType, object, additional));
         commit();
     }
 
     @SuppressWarnings("unchecked")
-    public Project getProject(String projectId, long userId, long clientId) throws ClassCastException, ProjectDataException {
+    public Project getProject(Workspace workspace, String projectId) throws ClassCastException, ProjectDataException {
 
         /*get project, to know the project is not edit by another */
+        long clientId = workspace.getClient().getId();
+        long userId = workspace.getUser().getId();
         Object data = getData(ProjectFileType.PROJECT, new KafkaTWAdditional(clientId, userId, projectId, projectId));
-        /*TODO: find "addData(ProjectFileType.PROJECT" then use Mapper*/
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
+        project.setOwer(workspace);
+        project.setManager(this);
+        workspace.setProject(project);
 
         /*get db-list*/
         data = getData(ProjectFileType.DB_LIST, project, "1");
@@ -661,6 +665,8 @@ public class ProjectDataManager {
     }
 
     public Object getData(ProjectFileType fileType, KafkaTWAdditional additional) {
+        log.warn("getData(fileType:{}, additional:{}", fileType, additional);
+
         long code = requestData(fileType, additional);
         if (code < 0) {
             return code;

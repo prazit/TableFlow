@@ -41,22 +41,39 @@ public class ReadProjectCommand extends KafkaCommand {
         try {
             projectFileType = validate(kafkaRecord.key(), additional);
         } catch (InvalidParameterException ex) {
-            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.valueOf(ex.getMessage()).getCode());
+            KafkaErrorCode kafkaErrorCode = KafkaErrorCode.valueOf(ex.getMessage());
+            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), kafkaErrorCode.getCode());
+            log.warn("Invalid parameter: {}", kafkaErrorCode);
             return;
         } catch (UnsupportedOperationException ex) {
             sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
+            log.warn(ex.getMessage());
             return;
         }
 
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
             sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+            log.warn("File not found: {}", file.getName());
             return;
         }
 
-        if (isProjectEditingByAnother(additional)) {
-            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
-            return;
+        File clientFile = getClientFile(additional);
+        if (clientFile.exists()) {
+            ClientRecord clientRecord = readClientFrom(clientFile);
+            if (clientRecord.isTimeout()) {
+                /*create clientFile at the first read*/
+                writeClientTo(clientFile, new ClientRecord(additional));
+
+            } else if (!clientRecord.isMe(additional)) {
+                sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
+                log.warn("Project editing by another: {}", clientRecord);
+                return;
+            }
+
+        } else {
+            /*create clientFile at the first read*/
+            writeClientTo(clientFile, new ClientRecord(additional));
         }
 
         /*create Data message*/
@@ -65,25 +82,6 @@ public class ReadProjectCommand extends KafkaCommand {
         /*send Header message and then Data message*/
         sendObject(kafkaRecord.key(), additional.getModifiedClientId(), 0);
         sendObject(kafkaRecord.key(), recordValue);
-    }
-
-    private boolean isProjectEditingByAnother(KafkaTWAdditional additional) throws IOException, ClassNotFoundException {
-        File clientFile = getClientFile(additional);
-        if (!clientFile.exists()) {
-            /*create clientFile at the first read*/
-            writeClientTo(clientFile, new ClientRecord(additional));
-            return false;
-        }
-
-        ClientRecord clientRecord = readClientFrom(clientFile);
-        log.warn("isProjectEditingByAnother( compare additional: {}, clientRecord: {} )", additional, clientRecord);
-
-        if (clientRecord.isMe(additional)) {
-            return false;
-        }
-
-        //TODO: need timeout for User close browser without close the project
-        return true;
     }
 
     private void sendObject(String key, long clientId, long statusCode) {

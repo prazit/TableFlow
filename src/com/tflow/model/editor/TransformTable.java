@@ -13,6 +13,11 @@ public class TransformTable extends DataTable {
     private List<TableFx> fxList;
     private ColumnFxTable columnFxTable;
 
+    /*for ProjectMapper*/
+    public TransformTable() {
+        /*nothing*/
+    }
+
     public TransformTable(String name, String sourceSelectableId, SourceType sourceType, String idColName, String endPlug, String startPlug, Step owner) {
         super(name, null,  idColName,  endPlug, startPlug, owner);
         this.sourceSelectableId = sourceSelectableId;

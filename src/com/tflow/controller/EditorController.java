@@ -477,12 +477,14 @@ public class EditorController extends Controller {
         String id = project.getId();
         ProjectData projectData = mapper.map(project);
         projectDataManager.addData(ProjectFileType.PROJECT, projectData, project, id);
-        projectDataManager.addData(ProjectFileType.DB_LIST, projectData.getDatabaseList(), project, id);
-        projectDataManager.addData(ProjectFileType.SFTP_LIST, projectData.getSftpList(), project, id);
-        projectDataManager.addData(ProjectFileType.LOCAL_LIST, projectData.getLocalList(), project, id);
-        projectDataManager.addData(ProjectFileType.STEP_LIST, projectData.getStepList(), project, id);
+        projectDataManager.addData(ProjectFileType.DB_LIST, mapper.fromDatabaseMap(project.getDatabaseMap()), project, "1");
+        projectDataManager.addData(ProjectFileType.SFTP_LIST, mapper.fromSftpMap(project.getSftpMap()), project, "2");
+        projectDataManager.addData(ProjectFileType.LOCAL_LIST, mapper.fromLocalMap(project.getLocalMap()), project, "3");
+        projectDataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList(project.getStepList()), project, "4");
         Step step = project.getActiveStep();
-        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
+        /*TODO: this step must be not null, fix it*/
+        if (step != null)
+            projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
 
         log.info("testSaveProject: completed");
     }
@@ -490,20 +492,24 @@ public class EditorController extends Controller {
     public void testOpenProject() {
         projectDataManager = new ProjectDataManager();
         Project project = null;
-        log.info("calling projectDataManager.getProject");
+        log.info("testOpenProject: calling projectDataManager.getProject");
         try {
-            project = projectDataManager.getProject(workspace.getProject().getId(), workspace.getUser().getId(), workspace.getClient().getId());
+            project = projectDataManager.getProject(workspace, workspace.getProject().getId());
         } catch (ProjectDataException ex) {
             log.error("Error from server: {}", ex.getMessage());
         } catch (ClassCastException ex) {
             log.error("", ex);
         }
-        log.info("projectDataManager.getProject.return: {}", project);
 
-        if (project != null) {
-            workspace.setProject(project);
+        if (project == null) {
+            log.warn("testOpenProject: getProject return null, then call testSaveProject.");
+            project = workspace.getProject();
+            project.setManager(projectDataManager);
+            testSaveProject();
+
+        } else {
+            log.warn("testOpenProject: getProject return project{}", project);
         }
-        workspace.getProject().setManager(projectDataManager);
     }
 
     private void testConvertByteArrayAndString(KafkaRecordValue kafkaRecordValue) {

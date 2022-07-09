@@ -37,7 +37,13 @@ public class Project implements Serializable {
 
     private transient ProjectDataManager manager;
 
-    public Project(String name) {
+    /*for ProjectMapper*/
+    public Project() {
+        stepList = new ArrayList<>();
+    }
+
+    public Project(String id, String name) {
+        this.id = id;
         activeStepIndex = -1;
         this.name = name;
         stepList = new ArrayList<>();
@@ -79,7 +85,7 @@ public class Project implements Serializable {
         this.activeStepIndex = activeStepIndex;
 
         Step activeStep = getActiveStep();
-        if (activeStep != null && activeStep.getId() >= 0)
+        if (activeStep != null && activeStep.getIndex() >= 0)
             activeStep.refresh();
     }
 
@@ -139,6 +145,22 @@ public class Project implements Serializable {
         this.manager = manager;
     }
 
+    @Override
+    public String toString() {
+        return "{" +
+                "id:'" + id + '\'' +
+                ", name:'" + name + '\'' +
+                ", batch:" + batch +
+                ", activeStepIndex:" + activeStepIndex +
+                ", stepList:" + stepList +
+                ", databaseMap:" + databaseMap +
+                ", sftpMap:" + sftpMap +
+                ", localMap:" + localMap +
+                ", variableMap:" + variableMap +
+                ", lastElementId:" + lastElementId +
+                ", lastUniqueId:" + lastUniqueId +
+                '}';
+    }
     /*== Public Methods ==*/
 
     /**

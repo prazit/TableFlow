@@ -39,12 +39,12 @@ public interface ProjectMapper {
 
     /*---- MAP BETWEEN OBJECT ----*/
 
-    @Mappings({
+    /*@Mappings({
             @Mapping(target = "databaseList", expression = "java(project.getDatabaseMap().values().stream().map(Database::getId).collect(Collectors.toList()))"),
             @Mapping(target = "sftpList", expression = "java(project.getSftpMap().values().stream().map(SFTP::getId).collect(Collectors.toList()))"),
             @Mapping(target = "localList", expression = "java(project.getLocalMap().values().stream().map(Local::getId).collect(Collectors.toList()))"),
             @Mapping(target = "variableList", expression = "java(project.getVariableMap().values().stream().map(Variable::getName).collect(Collectors.toList()))"),
-    })
+    })*/
     ProjectData map(Project project);
 
     @Mappings({
@@ -84,12 +84,12 @@ public interface ProjectMapper {
     FloorData map(Floor floor);
 
 
-    @Mappings({
+    /*@Mappings({
             @Mapping(target = "databaseMap", expression = "java(projectData.getDatabaseList().stream().map(Database::new).collect(Collectors.toMap(Database::getId,item->{return item;})))"),
             @Mapping(target = "sftpMap", expression = "java(projectData.getSftpList().stream().map(SFTP::new).collect(Collectors.toMap(SFTP::getId,item->{return item;})))"),
             @Mapping(target = "localMap", expression = "java(projectData.getLocalList().stream().map(Local::new).collect(Collectors.toMap(Local::getId,item->{return item;})))"),
             @Mapping(target = "variableMap", expression = "java(projectData.getVariableList().stream().map(Variable::new).collect(Collectors.toMap(Variable::getName,item->{return item;})))"),
-    })
+    })*/
     Project map(ProjectData projectData);
 
     @Mappings({
@@ -120,6 +120,9 @@ public interface ProjectMapper {
 
     ColumnFx map(ColumnFxData columnFxData);
 
+    @Mapping(target = "startPlug", ignore = true)
+    ColumnFxPlug map(ColumnFxPlugData columnFxPlugData);
+
     TableFx map(TableFxData tableFxData);
 
     Tower map(TowerData towerData);
@@ -136,8 +139,8 @@ public interface ProjectMapper {
 
     /*---- ALL ABOUT ID ----*/
 
-    default Integer id(Line line) {
-        return line.getId();
+    default Integer id(Step step) {
+        return step.getId();
     }
 
     default Integer id(DataSource dataSource) {
@@ -168,23 +171,12 @@ public interface ProjectMapper {
         return floor.getId();
     }
 
+    default Integer id(Line line) {
+        return line.getId();
+    }
+
     default String selectableId(Selectable selectable) {
         return selectable.getSelectableId();
-    }
-
-
-
-    /*TODO: where to call this function*/
-    String selectableId(LinePlugData linePlugData);
-
-    /*TODO: where to call this function*/
-    default LinePlug toLinePlug(boolean startPlug) {
-        return new LinePlug(String.valueOf(startPlug));
-    }
-
-    /*TODO: where to call this function*/
-    default boolean id(LinePlug linePlug) {
-        return false;
     }
 
 
@@ -197,9 +189,13 @@ public interface ProjectMapper {
         return new DataFile(id);
     }
 
-    default ColumnFx toColumnFx(Integer id) {return new ColumnFx(id);}
+    default ColumnFx toColumnFx(Integer id) {
+        return new ColumnFx(id);
+    }
 
-    default TableFx toTableFx(Integer id) {return new TableFx(id);}
+    default TableFx toTableFx(Integer id) {
+        return new TableFx(id);
+    }
 
     default Tower toTower(Integer id) {
         return new Tower(id);
@@ -218,6 +214,17 @@ public interface ProjectMapper {
     }
 
 
+    default List<Integer> fromDatabaseMap(Map<Integer, Database> databaseMap) {
+        return new ArrayList<>(databaseMap.keySet());
+    }
+
+    default List<Integer> fromSftpMap(Map<Integer, SFTP> sftpMap) {
+        return new ArrayList<>(sftpMap.keySet());
+    }
+
+    default List<Integer> fromLocalMap(Map<Integer, Local> localMap) {
+        return new ArrayList<>(localMap.keySet());
+    }
 
     List<Integer> fromStepList(List<Step> stepList);
 

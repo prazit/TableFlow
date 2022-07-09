@@ -13,13 +13,6 @@ public class ProjectData extends TWData implements Serializable {
     private String name;
     private int activeStepIndex;
 
-    private List<StepItemData> stepList;
-    private List<Integer> databaseList;
-
-    private List<Integer> sftpList;
-    private List<Integer> localList;
-    private List<String> variableList;
-
     private int lastElementId;
     private int lastUniqueId;
 }
