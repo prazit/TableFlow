@@ -3,10 +3,12 @@ package com.tflow.wcmd;
 import com.tflow.kafka.KafkaRecordValue;
 import com.tflow.kafka.KafkaTWAdditional;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.AdditionalData;
+import com.tflow.model.mapper.AdditionalMapper;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
-import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,7 @@ public class UpdateProjectCommand extends KafkaCommand {
         KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) kafkaRecord.value();
         ProjectFileType projectFileType = validate((String) kafkaRecord.key(), kafkaRecordValue);
 
-        KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
+        AdditionalData additional = (AdditionalData) kafkaRecordValue.getAdditional();
         Date now = DateTimeUtil.now();
         additional.setModifiedDate(now);
 
@@ -48,7 +50,7 @@ public class UpdateProjectCommand extends KafkaCommand {
             writeTo(historyFile, historyRecord);
 
             /*need created-info from history*/
-            KafkaTWAdditional historyAdditional = (KafkaTWAdditional) historyRecord.getAdditional();
+            AdditionalData historyAdditional = (AdditionalData) historyRecord.getAdditional();
             additional.setCreatedDate(historyAdditional.getCreatedDate());
             additional.setCreatedUserId(historyAdditional.getCreatedUserId());
             additional.setCreatedClientId(historyAdditional.getCreatedClientId());
@@ -72,7 +74,7 @@ public class UpdateProjectCommand extends KafkaCommand {
         try {
             if (!file.delete()) throw new Exception("file.delete() return false.");
         } catch (Exception ex) {
-            log.warn("remove(file: {}) failed! ", file, ex.getMessage());
+            log.warn("remove( file: {} ) failed! {}", file, ex.getMessage());
         }
     }
 
@@ -103,19 +105,19 @@ public class UpdateProjectCommand extends KafkaCommand {
         fileOut.close();
     }
 
-    private File getHistoryFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
+    private File getHistoryFile(ProjectFileType projectFileType, AdditionalData additional) {
         /*TODO: need history root path from configuration*/
         String rootPath = "/Apps/TFlow/hist";
         return getFile(projectFileType, additional, rootPath, DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS"));
     }
 
-    private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
+    private File getFile(ProjectFileType projectFileType, AdditionalData additional) {
         /*TODO: need project data root path from configuration*/
         String rootPath = "/Apps/TFlow/project";
         return getFile(projectFileType, additional, rootPath, "");
     }
 
-    private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional, String rootPath, String postFix) {
+    private File getFile(ProjectFileType projectFileType, AdditionalData additional, String rootPath, String postFix) {
         String path;
 
         switch (projectFileType.getRequireType()) {
@@ -155,7 +157,7 @@ public class UpdateProjectCommand extends KafkaCommand {
         } catch (Exception ex) {
             throw new UnsupportedOperationException("Invalid operation '" + kafkaRecordKey + "', recommends to use value from enum 'ProjectFileType' !!");
         }
-
+        
         /*check required data for the KafkaKey*/
         KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecordValue.getAdditional();
         int requireType = fileType.getRequireType();
@@ -185,6 +187,10 @@ public class UpdateProjectCommand extends KafkaCommand {
             throw new InvalidParameterException("Additional.TransformTableId is required for operation('" + fileType.name() + "')");
         }
 
+        AdditionalMapper mapper = Mappers.getMapper(AdditionalMapper.class);
+        AdditionalData additionalData = mapper.map(additional);
+        additionalData.setFileType(fileType);
+        kafkaRecordValue.setAdditional(additionalData);
         return fileType;
     }
 

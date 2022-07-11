@@ -58,10 +58,14 @@ public class EditorController extends Controller {
 
     @PostConstruct
     public void onCreation() {
+        projectDataManager = new ProjectDataManager();
+        Project project = workspace.getProject();
+        project.setManager(projectDataManager);
         testOpenProject();
+
         leftPanelTitle = "Step List";
         initActionPriorityMap();
-        initStepList(workspace.getProject());
+        initStepList(project);
         //refreshActionList(project);
     }
 
@@ -468,33 +472,20 @@ public class EditorController extends Controller {
         }
     }
 
-    public void testSaveProject() {
+    public void testSaveProjectTemplate() {
         log.info("testSaveProject: started");
 
-        Project project = workspace.getProject();
-        ProjectDataManager projectDataManager = project.getManager();
-        ProjectMapper mapper = projectDataManager.mapper;
-        String id = project.getId();
-        ProjectData projectData = mapper.map(project);
-        projectDataManager.addData(ProjectFileType.PROJECT, projectData, project, id);
-        projectDataManager.addData(ProjectFileType.DB_LIST, mapper.fromDatabaseMap(project.getDatabaseMap()), project, "1");
-        projectDataManager.addData(ProjectFileType.SFTP_LIST, mapper.fromSftpMap(project.getSftpMap()), project, "2");
-        projectDataManager.addData(ProjectFileType.LOCAL_LIST, mapper.fromLocalMap(project.getLocalMap()), project, "3");
-        projectDataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList(project.getStepList()), project, "4");
-        Step step = project.getActiveStep();
-        /*TODO: this step must be not null, fix it*/
-        if (step != null)
-            projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
+        projectDataManager.addProjectAs("P1", workspace.getProject());
 
         log.info("testSaveProject: completed");
     }
 
     public void testOpenProject() {
-        projectDataManager = new ProjectDataManager();
         Project project = null;
         log.info("testOpenProject: calling projectDataManager.getProject");
         try {
-            project = projectDataManager.getProject(workspace, workspace.getProject().getId());
+            /*TODO: need to test open new project from template (projectId < 0)*/
+            project = projectDataManager.getProject(workspace, "P1");
         } catch (ProjectDataException ex) {
             log.error("Error from server: {}", ex.getMessage());
         } catch (ClassCastException ex) {
@@ -502,12 +493,9 @@ public class EditorController extends Controller {
         }
 
         if (project == null) {
-            log.warn("testOpenProject: getProject return null, then call testSaveProject.");
-            project = workspace.getProject();
-            project.setManager(projectDataManager);
-            testSaveProject();
-
+            log.warn("testOpenProject: getProject return NULL, you may need to create some and then click menu Test > Save Full Project.");
         } else {
+            workspace.setProject(project);
             log.warn("testOpenProject: getProject return project{}", project);
         }
     }
@@ -659,8 +647,8 @@ public class EditorController extends Controller {
         List<Action> history = workspace.getProject().getActiveStep().getHistory();
         KafkaTWAdditional additional = new KafkaTWAdditional();
         additional.setProjectId(workspace.getProject().getName());
-        additional.setModifiedClientId(3);
-        additional.setModifiedUserId(23);
+        additional.setClientId(3);
+        additional.setUserId(23);
         KafkaRecordValue kafkaRecordValue = new KafkaRecordValue(history, additional);
         testWriteSerialize(kafkaRecordValue, null, null);
     }
@@ -721,6 +709,14 @@ public class EditorController extends Controller {
 
         project.setActiveStepIndex(stepIndex);
         Step activeStep = project.getActiveStep();
+        if (activeStep == null) {
+            if (stepIndex == 0) {
+                log.warn("selectStep(0) with empty stepList, then call addStep().");
+                addStep();
+            }
+            return;
+        }
+
         zoom = activeStep.getZoom();
         showStepList = activeStep.isShowStepList();
         showPropertyList = activeStep.isShowPropertyList();

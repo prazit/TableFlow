@@ -349,8 +349,8 @@ public class ProjectDataManager {
     }
 
     private void addData(ProjectFileType fileType, Object object, KafkaTWAdditional additional) throws InvalidParameterException {
-        if (additional.getModifiedUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for ProjectDataManager.addData(" + fileType + ")");
-        if (additional.getModifiedClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for ProjectDataManager.addData(" + fileType + ")");
+        if (additional.getUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for ProjectDataManager.addData(" + fileType + ")");
+        if (additional.getClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for ProjectDataManager.addData(" + fileType + ")");
 
         // Notice: all of below copied from class com.flow.wcmd.UpdateProjectCommand.validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue)
         int requireType = fileType.getRequireType();
@@ -364,6 +364,146 @@ public class ProjectDataManager {
         commit();
     }
 
+    public void addProjectAs(String newProjectId, Project project) {
+        String oldId = project.getId();
+        project.setId(newProjectId);
+        ProjectData projectData = mapper.map(project);
+
+        addData(ProjectFileType.PROJECT, projectData, project, newProjectId);
+
+        Map<Integer, Database> databaseMap = project.getDatabaseMap();
+        addData(ProjectFileType.DB_LIST, mapper.fromMap(databaseMap), project, "1");
+        for (Database database : databaseMap.values()) {
+            addData(ProjectFileType.DB, mapper.map(database), project, database.getId());
+        }
+
+        Map<Integer, SFTP> sftpMap = project.getSftpMap();
+        addData(ProjectFileType.SFTP_LIST, mapper.fromMap(sftpMap), project, "2");
+        for (SFTP sftp : sftpMap.values()) {
+            addData(ProjectFileType.SFTP, mapper.map(sftp), project, sftp.getId());
+        }
+
+        Map<Integer, Local> localMap = project.getLocalMap();
+        addData(ProjectFileType.LOCAL_LIST, mapper.fromMap(localMap), project, "3");
+        for (Local local : localMap.values()) {
+            addData(ProjectFileType.LOCAL, mapper.map(local), project, local.getId());
+        }
+
+        Map<String, Variable> variableMap = project.getVariableMap();
+        addData(ProjectFileType.VARIABLE_LIST, mapper.fromVarMap(variableMap), project, "3");
+        for (Variable variable : variableMap.values()) {
+            addData(ProjectFileType.VARIABLE, mapper.map(variable), project, variable.getName());
+        }
+
+        addData(ProjectFileType.STEP_LIST, mapper.fromStepList(project.getStepList()), project, "4");
+        for (Step step : project.getStepList()) {
+            addStep(step, project);
+        }
+
+        project.setId(oldId);
+    }
+
+    public void addStep(Step step, Project project) {
+        int stepId = step.getId();
+        addData(ProjectFileType.STEP, mapper.map(step), project, stepId, stepId);
+
+        /*get each tower in step*/
+        List<Tower> towerList = Arrays.asList(step.getDataTower(), step.getTransformTower(), step.getOutputTower());
+        for (Tower tower : towerList) {
+            addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
+
+            /*get each floor in tower*/
+            for (Floor floor : tower.getFloorList()) {
+                addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
+            }
+        }
+
+        /*get data-table-list*/
+        List<DataTable> dataList = step.getDataList();
+        addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), project, 1, stepId);
+
+        /*get each data-table in data-table-list*/
+        for (DataTable dataTable : dataList) {
+            int dataTableId = dataTable.getId();
+
+            /*get data-file in data-table*/
+            DataFile dataFile = dataTable.getDataFile();
+            addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, 1, stepId, dataTableId);
+
+            /*get column-list*/
+            List<DataColumn> columnList = dataTable.getColumnList();
+            addData(ProjectFileType.DATA_COLUMN_LIST, mapper.fromDataColumnList(columnList), project, 2, stepId, dataTableId);
+
+            /*get each column in column-list*/
+            for (DataColumn dataColumn : columnList) {
+                addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), project, dataColumn.getId(), stepId, dataTableId);
+            }
+
+            /*get output-list*/
+            List<DataFile> outputList = dataTable.getOutputList();
+            addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, 2, stepId, dataTableId);
+
+            /*get each output in output-list*/
+            for (DataFile output : outputList) {
+                addData(ProjectFileType.DATA_OUTPUT, mapper.map(output), project, output.getId(), stepId, dataTableId);
+            }
+        }
+
+        /*get transform-table-list*/
+        List<TransformTable> transformList = step.getTransformList();
+        addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), project, 4, stepId);
+
+        /*get each transform-table in transform-table-list*/
+        for (TransformTable transformTable : transformList) {
+            int transformTableId = transformTable.getId();
+
+            /*get tranform-column-list*/
+            List<DataColumn> columnList = transformTable.getColumnList();
+            addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(columnList), project, 5, stepId, 0, transformTableId);
+
+            /*get each tranform-column in tranform-column-list*/
+            for (DataColumn dataColumn : columnList) {
+                addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), stepId, 0, transformTableId);
+            }
+
+            /*get each tranform-columnfx in tranform-table(columnFxTable)*/
+            for (ColumnFx columnFx : transformTable.getColumnFxTable().getColumnFxList()) {
+                addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), project, columnFx.getId(), stepId, 0, transformTableId);
+            }
+
+            /*get tranform-output-list*/
+            List<DataFile> outputList = transformTable.getOutputList();
+            addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, 6, stepId, 0, transformTableId);
+
+            /*get each tranform-output in tranform-output-list*/
+            for (DataFile output : outputList) {
+                addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(output), project, output.getId(), stepId, 0, transformTableId);
+            }
+
+            /*get tranformation-list*/
+            List<TableFx> fxList = transformTable.getFxList();
+            addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(fxList), project, 7, stepId, 0, transformTableId);
+
+            /*get each tranformation in tranformation-list*/
+            for (TableFx tableFx : fxList) {
+                addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), project, tableFx.getId(), stepId, 0, transformTableId);
+            }
+        }
+
+        /*get line-list at the end*/
+        List<Line> lineList = step.getLineList();
+        addData(ProjectFileType.LINE_LIST, mapper.fromLineList(lineList), project, 8, stepId);
+
+        /*get each line in line-list*/
+        for (Line line : lineList) {
+            addData(ProjectFileType.LINE, mapper.map(line), project, line.getId(), stepId);
+        }
+
+    }
+
+    /**
+     * TODO: need to support open new project from template (projectId < 0)
+     **/
     @SuppressWarnings("unchecked")
     public Project getProject(Workspace workspace, String projectId) throws ClassCastException, ProjectDataException {
 
@@ -374,7 +514,6 @@ public class ProjectDataManager {
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwer(workspace);
         project.setManager(this);
-        workspace.setProject(project);
 
         /*get db-list*/
         data = getData(ProjectFileType.DB_LIST, project, "1");
@@ -554,12 +693,15 @@ public class ProjectDataManager {
                 columnList.add(transformColumn);
 
                 /*get each tranform-columnfx in tranform-table(columnFxTable)*/
-                data = getData(ProjectFileType.TRANSFORM_COLUMNFX, project, transformColumn.getFx().getId(), stepId, 0, transformTableId);
-                columnFx = mapper.map((ColumnFxData) throwExceptionOnError(data));
-                columnFx.setOwner(transformColumn);
-                transformColumn.setFx(columnFx);
-                for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
-                    columnFxPlug.setOwner(columnFx);
+                ColumnFx fx = transformColumn.getFx();
+                if (fx != null) {
+                    data = getData(ProjectFileType.TRANSFORM_COLUMNFX, project, fx.getId(), stepId, 0, transformTableId);
+                    columnFx = mapper.map((ColumnFxData) throwExceptionOnError(data));
+                    columnFx.setOwner(transformColumn);
+                    transformColumn.setFx(columnFx);
+                    for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
+                        columnFxPlug.setOwner(columnFx);
+                    }
                 }
             }
 
@@ -714,7 +856,7 @@ public class ProjectDataManager {
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
 
-        if (!readyToCapture(consumer, additional.getModifiedClientId())) {
+        if (!readyToCapture(consumer, additional.getClientId())) {
             log.warn("requestData: consumer not ready to start capture");
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
@@ -735,7 +877,7 @@ public class ProjectDataManager {
         ConsumerRecords<String, byte[]> records;
         boolean polling = true;
         boolean gotHeader = false;
-        long clientId = additional.getModifiedClientId();
+        long clientId = additional.getClientId();
         while (polling) {
 
             records = consumer.poll(duration);

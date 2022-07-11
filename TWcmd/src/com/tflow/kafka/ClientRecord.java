@@ -11,8 +11,8 @@ public class ClientRecord implements Serializable {
     private LocalDateTime expiredDate;
 
     public ClientRecord(KafkaTWAdditional additional) {
-        this.userId = additional.getModifiedUserId();
-        this.clientId = additional.getModifiedClientId();
+        this.userId = additional.getUserId();
+        this.clientId = additional.getClientId();
         /*TODO: need to load timeout from configuration*/
         this.expiredDate = LocalDateTime.now().plusSeconds(3600);
     }
@@ -42,8 +42,8 @@ public class ClientRecord implements Serializable {
     }
 
     public boolean isMe(KafkaTWAdditional additional) {
-        return additional.getModifiedClientId() == clientId &&
-                additional.getModifiedUserId() == userId;
+        return additional.getClientId() == clientId &&
+                additional.getUserId() == userId;
     }
 
     public boolean isTimeout() {

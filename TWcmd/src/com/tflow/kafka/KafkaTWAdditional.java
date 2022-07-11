@@ -1,7 +1,6 @@
 package com.tflow.kafka;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class KafkaTWAdditional implements Serializable {
     private static final long serialVersionUID = 2022061609996660001L;
@@ -14,35 +13,29 @@ public class KafkaTWAdditional implements Serializable {
     private String transformTableId;
 
     /* Transaction Field Group: all fields are required */
-    private long modifiedClientId;
-    private long modifiedUserId;
-
-    /* Generated Field Group: generate by WriteCommand */
-    private long createdClientId;
-    private long createdUserId;
-    private Date createdDate;
-    private Date modifiedDate;
+    private long clientId;
+    private long userId;
 
     public KafkaTWAdditional() {
         /*nothing*/
     }
 
-    public KafkaTWAdditional(long modifiedClientId, long modifiedUserId, String projectId) {
-        this.modifiedClientId = modifiedClientId;
-        this.modifiedUserId = modifiedUserId;
+    public KafkaTWAdditional(long clientId, long userId, String projectId) {
+        this.clientId = clientId;
+        this.userId = userId;
         this.projectId = projectId;
     }
 
-    public KafkaTWAdditional(long modifiedClientId, long modifiedUserId, String projectId, String recordId) {
-        this.modifiedClientId = modifiedClientId;
-        this.modifiedUserId = modifiedUserId;
+    public KafkaTWAdditional(long clientId, long userId, String projectId, String recordId) {
+        this.clientId = clientId;
+        this.userId = userId;
         this.projectId = projectId;
         this.recordId = recordId;
     }
 
-    public KafkaTWAdditional(long modifiedClientId, long modifiedUserId, String projectId, String recordId, String stepId) {
-        this.modifiedClientId = modifiedClientId;
-        this.modifiedUserId = modifiedUserId;
+    public KafkaTWAdditional(long clientId, long userId, String projectId, String recordId, String stepId) {
+        this.clientId = clientId;
+        this.userId = userId;
         this.projectId = projectId;
         this.recordId = recordId;
         this.stepId = stepId;
@@ -88,52 +81,20 @@ public class KafkaTWAdditional implements Serializable {
         this.recordId = recordId;
     }
 
-    public long getModifiedClientId() {
-        return modifiedClientId;
+    public long getClientId() {
+        return clientId;
     }
 
-    public void setModifiedClientId(long modifiedClientId) {
-        this.modifiedClientId = modifiedClientId;
+    public void setClientId(long clientId) {
+        this.clientId = clientId;
     }
 
-    public long getModifiedUserId() {
-        return modifiedUserId;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setModifiedUserId(long modifiedUserId) {
-        this.modifiedUserId = modifiedUserId;
-    }
-
-    public long getCreatedClientId() {
-        return createdClientId;
-    }
-
-    public void setCreatedClientId(long createdClientId) {
-        this.createdClientId = createdClientId;
-    }
-
-    public long getCreatedUserId() {
-        return createdUserId;
-    }
-
-    public void setCreatedUserId(long createdUserId) {
-        this.createdUserId = createdUserId;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(Date modifiedDate) {
-        this.modifiedDate = modifiedDate;
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
     @Override
@@ -144,12 +105,8 @@ public class KafkaTWAdditional implements Serializable {
                 ", dataTableId:'" + dataTableId + '\'' +
                 ", transformTableId:'" + transformTableId + '\'' +
                 ", recordId:'" + recordId + '\'' +
-                ", modifiedClientId:" + modifiedClientId +
-                ", modifiedUserId:" + modifiedUserId +
-                ", createdClientId:" + createdClientId +
-                ", createdUserId:" + createdUserId +
-                ", createdDate:" + createdDate +
-                ", modifiedDate:" + modifiedDate +
+                ", modifiedClientId:" + clientId +
+                ", modifiedUserId:" + userId +
                 '}';
     }
 }

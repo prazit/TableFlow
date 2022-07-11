@@ -104,9 +104,9 @@ public class AddTransformTable extends Command {
 
         // save Object(DataTable) at the endPlug.
         if (sourceTable instanceof TransformTable) {
-            projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
         } else {
-            projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
         }
 
         // save Line list

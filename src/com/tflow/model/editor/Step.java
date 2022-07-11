@@ -3,7 +3,6 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.room.Tower;
 
-import javax.enterprise.inject.Default;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,22 +49,22 @@ public class Step implements Serializable, Selectable, HasEvent {
     /* for StepMapper */
     public Step() {
         /*nothting*/
-    }
-
-    /* for ProjectMapper */
-    public Step(int id) {
-        this.id = id;
+        init("", null);
     }
 
     public Step(String name, Project owner) {
+        init(name, owner);
+        dataTower = new Tower(owner.newUniqueId(), 3, this);
+        transformTower = new Tower(owner.newUniqueId(), 2, this);
+        outputTower = new Tower(owner.newUniqueId(), 2, this);
+    }
+
+    private void init(String name, Project owner) {
         this.name = name;
         history = new ArrayList<>();
         dataList = new ArrayList<>();
         transformList = new ArrayList<>();
         outputList = new ArrayList<>();
-        dataTower = new Tower(owner.newUniqueId(), 3, this);
-        transformTower = new Tower(owner.newUniqueId(), 2, this);
-        outputTower = new Tower(owner.newUniqueId(), 2, this);
         lineList = new ArrayList<>();
         lastLineClientIndex = 0;
         startPlug = new StartPlug("step");
@@ -451,12 +450,25 @@ public class Step implements Serializable, Selectable, HasEvent {
     public String toString() {
         return "{" +
                 "id:" + id +
-                ", index:" + index +
                 ", name:'" + name + '\'' +
+                ", index:" + index +
+                ", history:" + history +
+                ", dataList:" + dataList +
+                ", transformList:" + transformList +
+                ", outputList:" + outputList +
+                ", dataTower:" + dataTower +
+                ", transformTower:" + transformTower +
+                ", outputTower:" + outputTower +
+                ", lineList:" + lineList +
+                ", lastLineClientIndex:" + lastLineClientIndex +
+                ", startPlug:" + startPlug +
+                ", owner:" + owner +
+                ", activeObject:" + activeObject +
                 ", zoom:" + zoom +
                 ", showStepList:" + showStepList +
                 ", showPropertyList:" + showPropertyList +
                 ", showActionButtons:" + showActionButtons +
+                ", stepListActiveTab:" + stepListActiveTab +
                 '}';
     }
 }

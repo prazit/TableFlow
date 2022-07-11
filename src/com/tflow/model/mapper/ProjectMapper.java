@@ -12,6 +12,7 @@ import org.jboss.weld.manager.Transform;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,8 @@ import java.util.stream.Collectors;
                 SFTPData.class,
                 LocalData.class,
                 VariableData.class,
-        }
+        },
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface ProjectMapper {
 
@@ -69,6 +71,7 @@ public interface ProjectMapper {
 
     DataColumnData map(DataColumn dataColumn);
 
+    @Mapping(target = "dataFile", ignore = true)
     TransformTableData map(TransformTable transformTable);
 
     TransformColumnData map(TransformColumn transformColumn);
@@ -160,7 +163,7 @@ public interface ProjectMapper {
     }
 
     default Integer id(ColumnFx columnFx) {
-        return columnFx.getId();
+        return (columnFx == null) ? -1 : columnFx.getId();
     }
 
     default Integer id(Tower tower) {
@@ -180,7 +183,6 @@ public interface ProjectMapper {
     }
 
 
-
     default DataSource toDataSource(Integer id) {
         return new Local(id);
     }
@@ -190,7 +192,7 @@ public interface ProjectMapper {
     }
 
     default ColumnFx toColumnFx(Integer id) {
-        return new ColumnFx(id);
+        return (id < 0) ? null : new ColumnFx(id);
     }
 
     default TableFx toTableFx(Integer id) {
@@ -214,19 +216,15 @@ public interface ProjectMapper {
     }
 
 
-    default List<Integer> fromDatabaseMap(Map<Integer, Database> databaseMap) {
-        return new ArrayList<>(databaseMap.keySet());
+    default List<Integer> fromMap(Map<Integer, ? extends Object> map) {
+        return new ArrayList<>(map.keySet());
     }
 
-    default List<Integer> fromSftpMap(Map<Integer, SFTP> sftpMap) {
-        return new ArrayList<>(sftpMap.keySet());
+    default List<String> fromVarMap(Map<String, Variable> variableMap) {
+        return new ArrayList<>(variableMap.keySet());
     }
 
-    default List<Integer> fromLocalMap(Map<Integer, Local> localMap) {
-        return new ArrayList<>(localMap.keySet());
-    }
-
-    List<Integer> fromStepList(List<Step> stepList);
+    List<StepItemData> fromStepList(List<Step> stepList);
 
     List<Integer> fromDataTableList(List<DataTable> dataList);
 
@@ -241,10 +239,6 @@ public interface ProjectMapper {
     List<Integer> fromLineList(List<Line> lineList);
 
     List<Integer> fromFloorList(List<Floor> floorList);
-
-    default List<Integer> fromMap(Map<Integer, ? extends Object> map) {
-        return new ArrayList<>(map.keySet());
-    }
 
 
 

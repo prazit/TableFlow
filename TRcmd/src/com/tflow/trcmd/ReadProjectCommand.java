@@ -42,18 +42,24 @@ public class ReadProjectCommand extends KafkaCommand {
             projectFileType = validate(kafkaRecord.key(), additional);
         } catch (InvalidParameterException ex) {
             KafkaErrorCode kafkaErrorCode = KafkaErrorCode.valueOf(ex.getMessage());
-            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), kafkaErrorCode.getCode());
+            sendObject(kafkaRecord.key(), additional.getClientId(), kafkaErrorCode.getCode());
             log.warn("Invalid parameter: {}", kafkaErrorCode);
             return;
         } catch (UnsupportedOperationException ex) {
-            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
+            sendObject(kafkaRecord.key(), additional.getClientId(), KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
             log.warn(ex.getMessage());
             return;
         }
 
+        /*support open new project from template (projectId starts with "T")*/
+        if (ProjectFileType.PROJECT.equals(projectFileType) && isTemplate(additional.getProjectId())) {
+            String projectId = copyTemplateToNewProject(additional);
+            additional.setProjectId(projectId);
+        }
+
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
-            sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+            sendObject(kafkaRecord.key(), additional.getClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
             log.warn("File not found: {}", file.getName());
             return;
         }
@@ -66,7 +72,7 @@ public class ReadProjectCommand extends KafkaCommand {
                 writeClientTo(clientFile, new ClientRecord(additional));
 
             } else if (!clientRecord.isMe(additional)) {
-                sendObject(kafkaRecord.key(), additional.getModifiedClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
+                sendObject(kafkaRecord.key(), additional.getClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
                 log.warn("Project editing by another: {}", clientRecord);
                 return;
             }
@@ -80,8 +86,23 @@ public class ReadProjectCommand extends KafkaCommand {
         KafkaRecordValue recordValue = readFrom(file);
 
         /*send Header message and then Data message*/
-        sendObject(kafkaRecord.key(), additional.getModifiedClientId(), 0);
+        sendObject(kafkaRecord.key(), additional.getClientId(), 0);
         sendObject(kafkaRecord.key(), recordValue);
+    }
+
+    private String copyTemplateToNewProject(KafkaTWAdditional additional) {
+
+        /*TODO: read Project List, create new ProjectID (ProjectList will updated by TWcmd)*/
+
+        /*TODO: read Template Project (file by file)*/
+
+        /*TODO: send message to TWcmd to write new project*/
+
+        return "P2";
+    }
+
+    private boolean isTemplate(String projectId) {
+        return projectId.startsWith("T");
     }
 
     private void sendObject(String key, long clientId, long statusCode) {
