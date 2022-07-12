@@ -1,5 +1,6 @@
 package com.tflow.controller;
 
+import com.google.gson.GsonBuilder;
 import com.tflow.kafka.*;
 import com.tflow.model.data.ProjectData;
 import com.tflow.model.editor.*;
@@ -8,12 +9,14 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.mapper.AdditionalMapper;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
+import org.mapstruct.factory.Mappers;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
@@ -21,6 +24,7 @@ import org.primefaces.model.menu.MenuElement;
 import org.primefaces.model.menu.MenuModel;
 
 import javax.annotation.PostConstruct;
+import javax.faces.event.ActionListener;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -58,7 +62,7 @@ public class EditorController extends Controller {
 
     @PostConstruct
     public void onCreation() {
-        projectDataManager = new ProjectDataManager();
+        projectDataManager = new ProjectDataManager(workspace.getEnvironment());
         Project project = workspace.getProject();
         project.setManager(projectDataManager);
         testOpenProject();
@@ -694,6 +698,38 @@ public class EditorController extends Controller {
         }
     }
 
+    public void testToJson() {
+        Project project = workspace.getProject();
+        ProjectMapper mapper = projectDataManager.mapper;
+        AdditionalMapper additionalMapper = Mappers.getMapper(AdditionalMapper.class);
+
+        KafkaTWAdditional kafkaTWAdditional = new KafkaTWAdditional();
+        kafkaTWAdditional.setProjectId("P1");
+        kafkaTWAdditional.setRecordId("P1");
+        kafkaTWAdditional.setClientId(workspace.getClient().getId());
+        kafkaTWAdditional.setUserId(workspace.getUser().getId());
+
+        String data = new String(SerializeUtil.toTJson(mapper.map(project)), StandardCharsets.ISO_8859_1);
+        String additional = new String(SerializeUtil.toTJson(additionalMapper.map(kafkaTWAdditional)), StandardCharsets.ISO_8859_1);
+        KafkaRecordValue kafkaRecordValue = new KafkaRecordValue(data,additional);
+
+        log.warn("testToJson: serializing...");
+        String json = new String(SerializeUtil.toTJson(kafkaRecordValue), StandardCharsets.ISO_8859_1);
+        log.warn("testToJson: serialized = \n{}", json);
+    }
+
+    public void testFromJson() {
+        //String json = "com.tflow.model.data.ProjectData={\"id\":\"P1\",\"name\":\"Mockup Project\",\"activeStepIndex\":0,\"lastElementId\":0,\"lastUniqueId\":0}";
+        String json = "com.tflow.kafka.KafkaRecordValue={\"data\":\"com.tflow.model.data.ProjectData\\u003d{\\\"id\\\":\\\"P1\\\",\\\"name\\\":\\\"Mockup Project\\\",\\\"activeStepIndex\\\":0,\\\"lastElementId\\\":0,\\\"lastUniqueId\\\":0}\",\"additional\":\"com.tflow.model.data.AdditionalData\\u003d{\\\"recordId\\\":\\\"P1\\\",\\\"projectId\\\":\\\"P1\\\",\\\"modifiedClientId\\\":1,\\\"modifiedUserId\\\":1,\\\"createdClientId\\\":0,\\\"createdUserId\\\":0}\"}";
+        Object object = null;
+        try {
+            object = SerializeUtil.fromTJson(json.getBytes(StandardCharsets.ISO_8859_1));
+            log.warn("testFromJson: object = \n{}", object);
+        } catch (Exception ex) {
+            log.error("testFromJson: object = null with error: ", ex);
+        }
+    }
+
     public void selectStep(int stepIndex) {
         selectStep(stepIndex, true);
     }
@@ -1024,5 +1060,4 @@ public class EditorController extends Controller {
             hasEvent.getEventManager().fireEvent(EventName.PROPERTY_CHANGED, property);
         }
     }
-
 }

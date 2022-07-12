@@ -8,6 +8,7 @@ import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.*;
+import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,11 +19,13 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.*;
@@ -35,6 +38,7 @@ public class ProjectDataManager {
 
     private List<ProjectDataWriteBuffer> projectDataWriteBufferList = new ArrayList<>();
 
+    KafkaEnvironmentConfigs kafkaEnvironmentConfigs;
     private String writeTopic;
     private String readTopic;
     private String dataTopic;
@@ -48,7 +52,8 @@ public class ProjectDataManager {
 
     public ProjectMapper mapper;
 
-    public ProjectDataManager() {
+    public ProjectDataManager(Environment environment) {
+        kafkaEnvironmentConfigs = KafkaEnvironmentConfigs.valueOf(environment.name());
         createMappers();
     }
 
@@ -150,6 +155,7 @@ public class ProjectDataManager {
         writeTopic = "project-write";
         readTopic = "project-read";
         dataTopic = "project-data";
+        kafkaEnvironmentConfigs = KafkaEnvironmentConfigs.DEVELOPMENT;
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("acks", "all");
@@ -159,7 +165,7 @@ public class ProjectDataManager {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", "UTF-8");
-        props.put("value.serializer", "com.tflow.kafka.ObjectSerializer");
+        props.put("value.serializer", kafkaEnvironmentConfigs.kafkaSerializer);
         producer = new KafkaProducer<String, Object>(props);
     }
 
@@ -255,6 +261,13 @@ public class ProjectDataManager {
             key = fileType.name();
             log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) started.", fileType.name(), recordId);
 
+            /**
+             * TODO: need DataSerializer & DataDeserializer used to switch between PRODUCTION(JavaSerial) mode and DEV(JSON) mode
+             * 1. DefaultDataSerializer & DefaultDataDeserializer (ProjectDataManager)
+             * 2. JSONDataSerializer & JSONDataDeserializer (ProjectDataManager)
+             * 3. JSONSerializer & JSONDeserializer (kafka)
+             * existing. ObjectSerializer & ObjectDeserializer (kafka)
+             **/
             try {
                 Object dataObject = writeCommand.getDataObject();
                 byte[] serializedData = (dataObject == null) ? null : SerializeUtil.serialize(dataObject);
@@ -870,9 +883,11 @@ public class ProjectDataManager {
     private Object captureData(ProjectFileType fileType, KafkaTWAdditional additional) {
         log.warn("captureData(fileType:{}, additional:{}) started", fileType, additional);
 
+        /*TODO: timeout and maxTry need to load from configuration*/
         Object data = null;
-        long timeout = 30000;
+        long timeout = 5000;
         long maxTry = 3;
+        long retry = maxTry;
         Duration duration = Duration.ofMillis(timeout);
         ConsumerRecords<String, byte[]> records;
         boolean polling = true;
@@ -881,15 +896,17 @@ public class ProjectDataManager {
         while (polling) {
 
             records = consumer.poll(duration);
-            if (records == null) {
-                log.warn("consumer.poll return null!");
-                maxTry--;
-                if (maxTry == 0) {
+            if (records == null || records.count() == 0) {
+                log.warn("consumer.poll return empty records!");
+                retry--;
+                if (retry == 0) {
                     log.warn("exceed max try({}) stop consumer.poll.", maxTry);
                     polling = false;
                 }
                 continue;
+
             } else {
+                retry = maxTry;
                 log.warn("consumer.poll return {} record(s).", records.count());
             }
 
@@ -903,7 +920,10 @@ public class ProjectDataManager {
                 if (gotHeader) {
                     log.warn("try to deserialize data message.");
                     try {
-                        data = SerializeUtil.deserialize(value);
+                        Class deserializerClass = Class.forName(kafkaEnvironmentConfigs.kafkaDeserializer);
+                        Constructor constructor = deserializerClass.getConstructor();
+                        Deserializer deserializer = (Deserializer) constructor.newInstance();
+                        data = deserializer.deserialize("", value);
                     } catch (Exception ex) {
                         log.error("Error when deserializing byte[] to object: ", ex);
                         polling = false;

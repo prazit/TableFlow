@@ -102,7 +102,7 @@
                                                 <p:menuitem value="Send Message | Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>
                                                 <p:menuitem value="Send Message | Save Project as Template" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSaveProjectTemplate}"/>
                                             </p:submenu>
-                                            <p:submenu label="Serialize">
+                                            <p:submenu label="Java Serialize">
                                                 <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>
                                                 <p:menuitem value="Write (Action List with header)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteHeader}"/>
                                                 <p:menuitem value="Write (Action List with footer)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteFooter}"/>
@@ -111,6 +111,10 @@
                                                 <p:menuitem value="Read (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadActionList}"/>
                                                 <p:menuitem value="Read (Kafka Record Value)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadKafkaRecordValue}"/>
                                                 <p:menuitem value="Scan (Unknown Object)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testScanSerialize}"/>
+                                            </p:submenu>
+                                            <p:submenu label="Json Serialize">
+                                                <p:menuitem value="toJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testToJson}"/>
+                                                <p:menuitem value="fromJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testFromJson}"/>
                                             </p:submenu>
                                         </p:submenu>
 

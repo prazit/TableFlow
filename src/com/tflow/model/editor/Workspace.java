@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.system.Environment;
 import com.tflow.system.constant.Theme;
 import org.slf4j.LoggerFactory;
 
@@ -13,12 +14,17 @@ import java.io.Serializable;
 public class Workspace implements Serializable {
     private static final long serialVersionUID = 2021121709996660006L;
 
+    private Environment environment;
+
     private Project project;
     private User user;
     private Client client;
 
     @PostConstruct
     public void onCreation() {
+        // TODO: load Environment from configuration.
+        environment = Environment.DEVELOPMENT;
+
         // TODO: do this after Authentication Module is completed, load session settings first then remove initialized below.
         user = new User();
         user.setId(1);
@@ -56,5 +62,9 @@ public class Workspace implements Serializable {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
     }
 }

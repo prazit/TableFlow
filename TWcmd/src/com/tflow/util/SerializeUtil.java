@@ -1,9 +1,12 @@
 package com.tflow.util;
 
-import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.kafka.common.errors.SerializationException;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -20,7 +23,7 @@ public class SerializeUtil {
     }
 
     public static byte[] serialize(Long data) {
-        return new byte[] {
+        return new byte[]{
                 (byte) (data >>> 56),
                 (byte) (data >>> 48),
                 (byte) (data >>> 40),
@@ -37,7 +40,7 @@ public class SerializeUtil {
         byte[] code = serialize(statusCode);
 
 
-        byte[] header = new byte[ 16 ];
+        byte[] header = new byte[16];
         System.arraycopy(client, 0, header, 0, 8);
         System.arraycopy(code, 0, header, 8, 8);
 
@@ -82,4 +85,27 @@ public class SerializeUtil {
         return value;
     }
 
+    public static byte[] toTJson(Object object) {
+        Gson gson = new GsonBuilder()/*.setPrettyPrinting()*/.create();
+        String tJsonString = object.getClass().getName() + "=" + gson.toJson(object);
+        return tJsonString.getBytes(StandardCharsets.ISO_8859_1);
+    }
+
+    public static Object fromTJson(byte[] tJson) throws Exception {
+        Gson gson = new GsonBuilder().create();
+
+        String tJsonString = new String(tJson, StandardCharsets.ISO_8859_1);
+        String[] words = tJsonString.split("[=]", 2);
+
+        Object object = null;
+        try {
+            Class objectClass = Class.forName(words[0]);
+            object = gson.fromJson(words[1], objectClass);
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(SerializeUtil.class).error("fromTJson error: ", ex);
+            throw ex;
+        }
+
+        return object;
+    }
 }

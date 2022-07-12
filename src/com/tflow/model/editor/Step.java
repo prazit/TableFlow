@@ -459,11 +459,10 @@ public class Step implements Serializable, Selectable, HasEvent {
                 ", dataTower:" + dataTower +
                 ", transformTower:" + transformTower +
                 ", outputTower:" + outputTower +
-                ", lineList:" + lineList +
+                //", lineList:" + lineList +
                 ", lastLineClientIndex:" + lastLineClientIndex +
-                ", startPlug:" + startPlug +
-                ", owner:" + owner +
-                ", activeObject:" + activeObject +
+                ", startPlug:" + startPlug.getPlug() +
+                ", activeObject:" + activeObject.getSelectableId() +
                 ", zoom:" + zoom +
                 ", showStepList:" + showStepList +
                 ", showPropertyList:" + showPropertyList +

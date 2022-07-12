@@ -11,14 +11,73 @@ Kafka
 | name              | notes                                                                                                                                                                                                                     |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | kafka server down | consumer: work fine without problem<br/>producer: need to know Status of server to re-send all messages                                                                                                                   |
-| topic             | = trigger-id, แยก topic ตาม Main Operation Type                                                                                                                                                                           |
+| topic             | = trigger-id, แยก topic ตาม Main Operation Type (Request,Read(Stream),Write)                                                                                                                                              |
 | partition         | partition key = ระบุ Message Queue ด้วยหมายเลข<br/>จำนวน Partition กำหนดขณะที่สร้าง Topic                                                                                                                                 |
 |                   | replication = กำหนด Partition Factor ขณะที่สร้าง Topic                                                                                                                                                                    |
-| record-key        | ใช้เป็น Opearation Subtype ID                                                                                                                                                                                             |
-| record-value      | JSON Formatted is work fine                                                                                                                                                                                               |
+| record-key        | ใช้เป็น Opearation subtype ID (ProjectFileType)                                                                                                                                                                           |
+| record-value      | JSON Formatted is work fine (Object > String(JSON) > Byte[])<br/>Java Serialize is work fine (Object > Byte[](JavaSerial))                                                                                                |
 | consumer-group-id | group id เดียวกันจะมีเพียง 1 consumer ที่ได้รับ message สำหรับทำ load balancing<br/><br/>เฉพาะกรณี Writer มีการประมวลผลข้อมูลนาน ก่อนจะบันทึกผลลัพธ์<br/>และกรณี Reader มีการประมวลผลข้อมูลนาน ก่อนจะตอบสนองผลลัพธ์กลับไป |
 
 ## 
+
+## MESSAGE FLOW
+
+```mermaid
+graph LR;
+
+subgraph Client
+user(Creator)
+user2(Opener)
+end
+
+subgraph Web
+write[Write Producer]
+request[Request Producer]
+reader[Reader Consumer]
+end
+
+subgraph Services
+writer[Write Consumer]
+receiver[Request Consumer]
+read[Read Producer]
+end
+
+subgraph Storage
+storage((Data))
+end
+
+user-->write
+write-->writer
+writer-->storage
+
+
+user2-->request
+request-->receiver
+receiver-->read
+read---storage
+
+user2---reader
+reader---read
+```
+
+###### 
+
+## CONFIGURATION
+
+| Producer/Consumer | property                  | production                                                  | dev                                                         |
+| ----------------- | ------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------- |
+| All Producers     | key.serializer            | org.apache.kafka.common.serialization.StringDeserializer    | org.apache.kafka.common.serialization.StringDeserializer    |
+|                   | key.serializer.encoding   | UTF-8                                                       | UTF-8                                                       |
+| All Consumers     | key.deserializer          | org.apache.kafka.common.serialization.StringDeserializer    | org.apache.kafka.common.serialization.StringDeserializer    |
+|                   | key.deserializer.encoding | UTF-8                                                       | UTF-8                                                       |
+| Write Producer    | value.serializer          | com.tflow.kafka.ObjectSerializer                            | com.tflow.kafka.JSONSerializer                              |
+| Write Consumer    | value.deserializer        | com.tflow.kafka.ObjectDeserializer                          | com.tflow.kafka.JSONDeserializer                            |
+| Request Producer  | value.serializer          | com.tflow.kafka.ObjectSerializer                            | com.tflow.kafka.JSONSerializer                              |
+| Request Consumer  | value.deserializer        | com.tflow.kafka.ObjectDeserializer                          | com.tflow.kafka.JSONDeserializer                            |
+| Read Producer     | value.serializer          | com.tflow.kafka.ObjectSerializer                            | com.tflow.kafka.JSONSerializer                              |
+| Read Consumer     | value.deserializer        | org.apache.kafka.common.serialization.ByteArrayDeserializer | org.apache.kafka.common.serialization.ByteArrayDeserializer |
+
+### 
 
 ## PRODUCER METRICS
 

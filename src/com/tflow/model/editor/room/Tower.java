@@ -157,10 +157,10 @@ public class Tower implements Serializable {
     @Override
     public String toString() {
         return "{" +
-                "floorList:" + Arrays.toString(floorList.toArray()) +
+                "id:" + id +
+                /*", floorList:" + Arrays.toString(floorList.toArray()) +*/
                 ", roomsOnAFloor:" + roomsOnAFloor +
                 ", activeRoom:" + activeRoom +
-                ", owner:" + owner +
                 '}';
     }
 }
