@@ -1,6 +1,7 @@
 package com.tflow.model.data;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -10,8 +11,9 @@ import java.util.Map;
  * 1. find dataSource by selectableId
  **/
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class DataFileData extends TWData implements Serializable {
-    private static final long serialVersionUID = 2021121709996660020L;
+    private static final transient long serialVersionUID = 2021121709996660020L;
 
     private int id;
     private String dataSource;

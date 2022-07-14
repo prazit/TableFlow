@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import java.util.Map;
 
 public class TestCommand extends Command {
-    private static final long serialVersionUID = 2022031309996660001L;
 
     @Inject
     Logger log;

@@ -6,13 +6,10 @@ import com.tflow.model.editor.room.RoomType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataFile extends Room implements Serializable, Selectable, HasEndPlug {
-    private static final long serialVersionUID = 2021121709996660020L;
-
+public class DataFile extends Room implements Selectable, HasEndPlug {
     private transient Logger log = LoggerFactory.getLogger(DataFile.class);
 
     private int id;

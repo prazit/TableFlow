@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransformTable extends DataTable {
-    private static final long serialVersionUID = 2021121709996660040L;
 
     private SourceType sourceType;
     private String sourceSelectableId;

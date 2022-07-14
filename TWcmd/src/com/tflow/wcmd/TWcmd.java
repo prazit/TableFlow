@@ -1,15 +1,19 @@
 package com.tflow.wcmd;
 
+import com.tflow.kafka.KafkaEnvironmentConfigs;
 import com.tflow.model.data.ProjectData;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.errors.RecordDeserializationException;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
@@ -22,6 +26,7 @@ public class TWcmd {
 
     private Logger log = LoggerFactory.getLogger(TWcmd.class);
 
+    private KafkaEnvironmentConfigs kafkaEnvironmentConfigs;
     private boolean polling;
 
     public TWcmd() {
@@ -30,9 +35,10 @@ public class TWcmd {
 
     public void start() {
         /*example from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_consumer_group_example.htm*/
-
-        /*TODO: need configuration for consumer*/
         Properties props = new Properties();
+
+        /*TODO: need configuration for all values below*/
+        kafkaEnvironmentConfigs = KafkaEnvironmentConfigs.DEVELOPMENT;
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("group.id", "twcmd");
         props.put("enable.auto.commit", "true");
@@ -40,31 +46,54 @@ public class TWcmd {
         props.put("session.timeout.ms", "30000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.deserializer", "com.tflow.kafka.ObjectDeserializer");
-        KafkaConsumer<String, Object> consumer = new KafkaConsumer<String, Object>(props);
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<String, byte[]>(props);
 
         String topic = "project-write";
         consumer.subscribe(Collections.singletonList(topic));
         log.info("Subscribed to topic " + topic);
 
+        Deserializer deserializer = null;
+        try {
+            deserializer = SerializeUtil.getDeserializer(kafkaEnvironmentConfigs.getKafkaDeserializer());
+        } catch (Exception ex) {
+            log.error("Deserializer creation error: ", ex);
+            return;
+        }
+
         long timeout = 30000;
         Duration duration = Duration.ofMillis(timeout);
-        ConsumerRecords<String, Object> records;
+        ConsumerRecords<String, byte[]> records;
         polling = true;
         while (polling) {
-            records = consumer.poll(duration);
+            try {
+                records = consumer.poll(duration);
+            } catch (RecordDeserializationException ex) {
+                log.error("Kafka Internal Error: ", ex);
+                continue;
+            }
 
-            for (ConsumerRecord<String, Object> record : records) {
+            for (ConsumerRecord<String, byte[]> record : records) {
+
+                Object value;
+                String key = record.key();
+                long offset = record.offset();
+                log.info("Incoming message offset: {}, key: {}.", offset, key);
+
+                try {
+                    value = deserializer.deserialize(topic, record.value());
+                } catch (Exception ex) {
+                    log.warn("Skip invalid message={}", new String(record.value(), StandardCharsets.ISO_8859_1));
+                    log.warn("Deserialize error: ", ex);
+                    continue;
+                }
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(record);
+                UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(key, value, kafkaEnvironmentConfigs);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
-                long offset = record.offset();
-                String key = record.key();
                 try {
-                    log.info("updateProjectCommand(offset: {}, key: {}) started.", offset, key);
                     updateProjectCommand.execute();
                     log.info("updateProjectCommand completed.");
                 } catch (InvalidParameterException inex) {

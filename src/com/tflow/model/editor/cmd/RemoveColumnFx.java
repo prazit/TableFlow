@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class RemoveColumnFx extends Command {
-    private static final long serialVersionUID = 2022031309996660008L;
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {

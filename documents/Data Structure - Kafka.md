@@ -31,7 +31,7 @@ user2(Opener)
 end
 
 subgraph Web
-write[Write Producer]
+write[<b>Write Producer</b><small><br/>Record<br/>RecordAttributes</small>]
 request[Request Producer]
 reader[Reader Consumer]
 end
@@ -47,7 +47,7 @@ storage((Data))
 end
 
 user-->write
-write-->writer
+write--: <small><br/>JsonRecordData<br/>JavaRecordData<br/>RecordAttributesData<br/></small> :-->writer
 writer-->storage
 
 
@@ -71,9 +71,9 @@ reader---read
 | All Consumers     | key.deserializer          | org.apache.kafka.common.serialization.StringDeserializer    | org.apache.kafka.common.serialization.StringDeserializer    |
 |                   | key.deserializer.encoding | UTF-8                                                       | UTF-8                                                       |
 | Write Producer    | value.serializer          | com.tflow.kafka.ObjectSerializer                            | com.tflow.kafka.JSONSerializer                              |
-| Write Consumer    | value.deserializer        | com.tflow.kafka.ObjectDeserializer                          | com.tflow.kafka.JSONDeserializer                            |
+| Write Consumer    | value.deserializer        | org.apache.kafka.common.serialization.ByteArrayDeserializer | org.apache.kafka.common.serialization.ByteArrayDeserializer |
 | Request Producer  | value.serializer          | com.tflow.kafka.ObjectSerializer                            | com.tflow.kafka.JSONSerializer                              |
-| Request Consumer  | value.deserializer        | com.tflow.kafka.ObjectDeserializer                          | com.tflow.kafka.JSONDeserializer                            |
+| Request Consumer  | value.deserializer        | org.apache.kafka.common.serialization.ByteArrayDeserializer | org.apache.kafka.common.serialization.ByteArrayDeserializer |
 | Read Producer     | value.serializer          | com.tflow.kafka.ObjectSerializer                            | com.tflow.kafka.JSONSerializer                              |
 | Read Consumer     | value.deserializer        | org.apache.kafka.common.serialization.ByteArrayDeserializer | org.apache.kafka.common.serialization.ByteArrayDeserializer |
 

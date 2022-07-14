@@ -7,8 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ColumnFxTable extends Room implements Serializable {
-    private static final long serialVersionUID = 2021121709996660044L;
+public class ColumnFxTable extends Room {
 
     private TransformTable ownerTable;
     private List<ColumnFx> columnFxList;

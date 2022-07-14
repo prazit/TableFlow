@@ -5,7 +5,6 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import java.util.Map;
 
 public class RemoveTransformTable extends Action {
-    private static final long serialVersionUID = 2021122109996660016L;
 
     public RemoveTransformTable(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);

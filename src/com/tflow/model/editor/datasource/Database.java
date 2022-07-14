@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Database extends DataSource implements Selectable {
-    private static final long serialVersionUID = 2021121709996660011L;
 
     private Dbms dbms;
     private String url;

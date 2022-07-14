@@ -3,7 +3,6 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.datasource.SFTP;
 
 public class FTPFile extends DataFile {
-    private static final long serialVersionUID = 2021121709996660021L;
 
     private String ftpName;
 

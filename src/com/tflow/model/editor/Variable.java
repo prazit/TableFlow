@@ -5,7 +5,6 @@ package com.tflow.model.editor;
  * A function item that execute(translation) at the first access.
  */
 public class Variable {
-    private static final long serialVersionUID = 2021121709996660014L;
 
     private String name;
 

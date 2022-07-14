@@ -1,9 +1,9 @@
-package com.tflow.kafka;
+package com.tflow.model.data.record;
 
 import java.io.Serializable;
 
-public class KafkaTWAdditional implements Serializable {
-    private static final long serialVersionUID = 2022061609996660001L;
+public class RecordAttributes implements Serializable {
+    private static final transient long serialVersionUID = 2022061609996660001L;
 
     /* Parent Field Group: all fields are optional */
     private String recordId;
@@ -16,24 +16,24 @@ public class KafkaTWAdditional implements Serializable {
     private long clientId;
     private long userId;
 
-    public KafkaTWAdditional() {
+    public RecordAttributes() {
         /*nothing*/
     }
 
-    public KafkaTWAdditional(long clientId, long userId, String projectId) {
+    public RecordAttributes(long clientId, long userId, String projectId) {
         this.clientId = clientId;
         this.userId = userId;
         this.projectId = projectId;
     }
 
-    public KafkaTWAdditional(long clientId, long userId, String projectId, String recordId) {
+    public RecordAttributes(long clientId, long userId, String projectId, String recordId) {
         this.clientId = clientId;
         this.userId = userId;
         this.projectId = projectId;
         this.recordId = recordId;
     }
 
-    public KafkaTWAdditional(long clientId, long userId, String projectId, String recordId, String stepId) {
+    public RecordAttributes(long clientId, long userId, String projectId, String recordId, String stepId) {
         this.clientId = clientId;
         this.userId = userId;
         this.projectId = projectId;

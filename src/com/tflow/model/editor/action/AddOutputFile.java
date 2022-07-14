@@ -5,7 +5,6 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import java.util.Map;
 
 public class AddOutputFile extends Action {
-    private static final long serialVersionUID = 2021122109996660009L;
 
     public AddOutputFile(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);

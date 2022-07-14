@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Step implements Serializable, Selectable, HasEvent {
-    private static final long serialVersionUID = 2021121709996660002L;
+public class Step implements Selectable, HasEvent {
 
     private int id;
     private String name;

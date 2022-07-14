@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 public class SFTP extends DataSource implements Selectable {
-    private static final long serialVersionUID = 2021121709996660012L;
 
     private List<String> pathHistory;
     private String rootPath;

@@ -1,11 +1,9 @@
 package com.tflow.model.editor;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TableFx implements Serializable, Selectable {
-    private static final long serialVersionUID = 2021121709996660043L;
+public class TableFx implements Selectable {
 
     private int id;
     private String name;

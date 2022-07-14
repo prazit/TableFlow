@@ -5,7 +5,6 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import java.util.Map;
 
 public class AddTransformColumn extends Action {
-    private static final long serialVersionUID = 2021122109996660008L;
 
     public AddTransformColumn(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);

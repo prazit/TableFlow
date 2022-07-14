@@ -5,14 +5,12 @@ import com.tflow.model.editor.Step;
 import com.tflow.model.editor.cmd.Command;
 import com.tflow.model.editor.cmd.CommandParamKey;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Action implements Serializable {
-    private static final long serialVersionUID = 2021122109996660000L;
+public abstract class Action {
 
     protected int id;
     protected String image;

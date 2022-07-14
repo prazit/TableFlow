@@ -1,11 +1,9 @@
 package com.tflow.model.editor;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ColumnFxPlug extends LinePlug implements Serializable, Selectable, HasEndPlug {
-    private static final long serialVersionUID = 2021121709996660045L;
+public class ColumnFxPlug extends LinePlug implements Selectable, HasEndPlug {
 
     private int id;
     private DataType type;

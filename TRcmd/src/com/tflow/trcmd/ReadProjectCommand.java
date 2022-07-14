@@ -1,10 +1,14 @@
 package com.tflow.trcmd;
 
+import com.tflow.file.ReadSerialize;
+import com.tflow.file.WriteSerialize;
 import com.tflow.kafka.*;
+import com.tflow.model.data.record.ClientRecordData;
+import com.tflow.model.data.record.RecordAttributes;
+import com.tflow.model.data.record.RecordData;
 import com.tflow.util.FileUtil;
 import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.KafkaCommand;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -27,26 +31,26 @@ public class ReadProjectCommand extends KafkaCommand {
     /*TODO: need to load rootPath from configuration*/
     private String rootPath = "/Apps/TFlow/project";
 
-    public ReadProjectCommand(ConsumerRecord<String, Object> kafkaRecord, KafkaProducer<String, Object> dataProducer, String topic) {
-        super(kafkaRecord);
+    public ReadProjectCommand(String key, Object value, KafkaEnvironmentConfigs kafkaEnvironmentConfigs, KafkaProducer<String, Object> dataProducer, String topic) {
+        super(key, value, kafkaEnvironmentConfigs);
         this.dataProducer = dataProducer;
         this.topic = topic;
     }
 
     @Override
-    public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException {
-        KafkaTWAdditional additional = (KafkaTWAdditional) kafkaRecord.value();
+    public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException {
+        RecordAttributes additional = (RecordAttributes) value;
 
         ProjectFileType projectFileType;
         try {
-            projectFileType = validate(kafkaRecord.key(), additional);
+            projectFileType = validate(key, additional);
         } catch (InvalidParameterException ex) {
             KafkaErrorCode kafkaErrorCode = KafkaErrorCode.valueOf(ex.getMessage());
-            sendObject(kafkaRecord.key(), additional.getClientId(), kafkaErrorCode.getCode());
+            sendObject(key, additional.getClientId(), kafkaErrorCode.getCode());
             log.warn("Invalid parameter: {}", kafkaErrorCode);
             return;
         } catch (UnsupportedOperationException ex) {
-            sendObject(kafkaRecord.key(), additional.getClientId(), KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
+            sendObject(key, additional.getClientId(), KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
             log.warn(ex.getMessage());
             return;
         }
@@ -59,38 +63,38 @@ public class ReadProjectCommand extends KafkaCommand {
 
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
-            sendObject(kafkaRecord.key(), additional.getClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+            sendObject(key, additional.getClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
             log.warn("File not found: {}", file.getName());
             return;
         }
 
         File clientFile = getClientFile(additional);
         if (clientFile.exists()) {
-            ClientRecord clientRecord = readClientFrom(clientFile);
-            if (clientRecord.isTimeout()) {
+            ClientRecordData clientRecordData = readClientFrom(clientFile);
+            if (clientRecordData.isTimeout()) {
                 /*create clientFile at the first read*/
-                writeClientTo(clientFile, new ClientRecord(additional));
+                writeClientTo(clientFile, new ClientRecordData(additional));
 
-            } else if (!clientRecord.isMe(additional)) {
-                sendObject(kafkaRecord.key(), additional.getClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
-                log.warn("Project editing by another: {}", clientRecord);
+            } else if (!clientRecordData.isMe(additional)) {
+                sendObject(key, additional.getClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
+                log.warn("Project editing by another: {}", clientRecordData);
                 return;
             }
 
         } else {
             /*create clientFile at the first read*/
-            writeClientTo(clientFile, new ClientRecord(additional));
+            writeClientTo(clientFile, new ClientRecordData(additional));
         }
 
         /*create Data message*/
-        KafkaRecordValue recordValue = readFrom(file);
+        RecordData recordValue = readFrom(file);
 
         /*send Header message and then Data message*/
-        sendObject(kafkaRecord.key(), additional.getClientId(), 0);
-        sendObject(kafkaRecord.key(), recordValue);
+        sendObject(key, additional.getClientId(), 0);
+        sendObject(key, recordValue);
     }
 
-    private String copyTemplateToNewProject(KafkaTWAdditional additional) {
+    private String copyTemplateToNewProject(RecordAttributes additional) {
 
         /*TODO: read Project List, create new ProjectID (ProjectList will updated by TWcmd)*/
 
@@ -113,55 +117,57 @@ public class ReadProjectCommand extends KafkaCommand {
         dataProducer.send(new ProducerRecord<String, Object>(topic, key, object));
     }
 
-    private KafkaRecordValue readFrom(File file) throws IOException, ClassNotFoundException {
+    private RecordData readFrom(File file) throws IOException, ClassNotFoundException, InstantiationException {
 
-        KafkaRecordValue kafkaRecordValue = null;
+        RecordData recordData = null;
         FileInputStream fileIn = new FileInputStream(file);
 
         /*-- normal cast to known object --*/
-        ObjectInputStream in = new ObjectInputStream(fileIn);
-        kafkaRecordValue = (KafkaRecordValue) in.readObject();
+        ObjectInputStream in = createObjectInputStream(kafkaEnvironmentConfigs.getInputStream(), fileIn);
+        ReadSerialize readSerialize = (ReadSerialize) in;
+        recordData = (RecordData) readSerialize.readSerialize();
         in.close();
         fileIn.close();
 
-        log.info("readFrom( file: {} ):kafkafRecordValue.additional = {}", file, kafkaRecordValue.getAdditional());
-        return kafkaRecordValue;
+        log.info("readFrom( file: {} ):kafkafRecordValue.additional = {}", file, recordData.getAdditional());
+        return recordData;
     }
 
-    private ClientRecord readClientFrom(File file) throws IOException, ClassNotFoundException {
+    private ClientRecordData readClientFrom(File file) throws IOException, ClassNotFoundException, InstantiationException {
 
-        ClientRecord clientRecord = null;
+        ClientRecordData clientRecordData = null;
         FileInputStream fileIn = new FileInputStream(file);
 
         /*-- normal cast to known object --*/
-        ObjectInputStream in = new ObjectInputStream(fileIn);
-        clientRecord = (ClientRecord) in.readObject();
+        ObjectInputStream in = createObjectInputStream(kafkaEnvironmentConfigs.getInputStream(), fileIn);
+        ReadSerialize readSerialize = (ReadSerialize) in;
+        clientRecordData = (ClientRecordData) readSerialize.readSerialize();
         in.close();
         fileIn.close();
 
-        log.info("readClientFrom( file: {} ):clientRecord = {}", file, clientRecord);
-        return clientRecord;
+        log.info("readClientFrom( file: {} ):clientRecord = {}", file, clientRecordData);
+        return clientRecordData;
     }
 
     /**
      * IMPORTANT: replace only.
      */
-    private void writeClientTo(File file, ClientRecord clientRecord) throws IOException {
-        log.info("writeClientTo( file: {}, clientRecord: {} )", file, clientRecord);
+    private void writeClientTo(File file, ClientRecordData clientRecordData) throws IOException, InstantiationException {
+        log.info("writeClientTo( file: {}, clientRecord: {} )", file, clientRecordData);
         FileUtil.autoCreateParentDir(file);
         FileOutputStream fileOut = new FileOutputStream(file, false);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOut);
-        objectOutputStream.writeObject(clientRecord);
+        ObjectOutputStream objectOutputStream = createObjectOutputStream(kafkaEnvironmentConfigs.getOutputStream(), fileOut);
+        ((WriteSerialize) objectOutputStream).writeSerialize(clientRecordData);
         objectOutputStream.close();
         fileOut.close();
     }
 
-    private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional) {
+    private File getFile(ProjectFileType projectFileType, RecordAttributes additional) {
         /*TODO: need project data root path from configuration*/
         return getFile(projectFileType, additional, rootPath, "");
     }
 
-    private File getFile(ProjectFileType projectFileType, KafkaTWAdditional additional, String rootPath, String postFix) {
+    private File getFile(ProjectFileType projectFileType, RecordAttributes additional, String rootPath, String postFix) {
         String path;
 
         switch (projectFileType.getRequireType()) {
@@ -184,7 +190,7 @@ public class ReadProjectCommand extends KafkaCommand {
         return new File(rootPath + path + "/" + getFileName(projectFileType.getPrefix(), additional.getRecordId()) + postFix);
     }
 
-    private File getClientFile(KafkaTWAdditional additional) {
+    private File getClientFile(RecordAttributes additional) {
         return new File(rootPath + "/" + additional.getProjectId() + "/client");
     }
 
@@ -197,7 +203,7 @@ public class ReadProjectCommand extends KafkaCommand {
     /**
      * validate Additional Data and KafkaKey
      **/
-    private ProjectFileType validate(String kafkaRecordKey, KafkaTWAdditional additional) throws UnsupportedOperationException, InvalidParameterException {
+    private ProjectFileType validate(String kafkaRecordKey, RecordAttributes additional) throws UnsupportedOperationException, InvalidParameterException {
 
         ProjectFileType fileType;
         try {

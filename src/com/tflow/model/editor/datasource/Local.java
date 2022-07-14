@@ -9,8 +9,6 @@ import com.tflow.model.editor.room.RoomType;
 import java.util.*;
 
 public class Local extends DataSource implements Selectable {
-    private static final long serialVersionUID = 2021121709996660013L;
-
     private List<String> pathHistory;
     private String rootPath;
 

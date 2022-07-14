@@ -1,16 +1,16 @@
-package com.tflow.kafka;
+package com.tflow.model.data.record;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class ClientRecord implements Serializable {
-    private static final long serialVersionUID = 2022070109996660001L;
+public class ClientRecordData implements Serializable {
+    private static final transient long serialVersionUID = 2022070109996660001L;
 
     private long userId;
     private long clientId;
     private LocalDateTime expiredDate;
 
-    public ClientRecord(KafkaTWAdditional additional) {
+    public ClientRecordData(RecordAttributes additional) {
         this.userId = additional.getUserId();
         this.clientId = additional.getClientId();
         /*TODO: need to load timeout from configuration*/
@@ -41,7 +41,7 @@ public class ClientRecord implements Serializable {
         this.expiredDate = expiredDate;
     }
 
-    public boolean isMe(KafkaTWAdditional additional) {
+    public boolean isMe(RecordAttributes additional) {
         return additional.getClientId() == clientId &&
                 additional.getUserId() == userId;
     }

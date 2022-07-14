@@ -5,18 +5,12 @@ import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 
-import java.beans.Transient;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
-public class Project implements Serializable {
-    private static final long serialVersionUID = 2021121709996660001L;
-
+public class Project {
     private String id;
     private String name;
     private Batch batch;

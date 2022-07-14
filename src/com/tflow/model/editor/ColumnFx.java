@@ -2,7 +2,6 @@ package com.tflow.model.editor;
 
 import com.tflow.model.editor.view.PropertyView;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -10,8 +9,7 @@ import java.util.*;
  * <li>REMOVE</li> occurs when the Remove-Button on startPlug is clicked.
  * <li>PROPERTY_CHANGED</li>  occurs after the value of property is changed.
  */
-public class ColumnFx implements Serializable, Selectable, HasEndPlug, HasEvent {
-    private static final long serialVersionUID = 2021121709996660042L;
+public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
 
     private int id;
     private String name;

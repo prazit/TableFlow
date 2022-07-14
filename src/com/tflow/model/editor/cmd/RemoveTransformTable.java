@@ -20,7 +20,6 @@ import java.util.Map;
  * Notice: the TransformTable need to remove all related objects before.
  */
 public class RemoveTransformTable extends Command {
-    private static final long serialVersionUID = 2022031309996660007L;
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {

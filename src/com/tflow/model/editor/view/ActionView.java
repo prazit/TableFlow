@@ -4,8 +4,7 @@ import com.tflow.model.editor.action.Action;
 
 import java.io.Serializable;
 
-public class ActionView implements Serializable {
-    private static final long serialVersionUID = 2021121709996660004L;
+public class ActionView {
 
     /*TODO: need to add Log information such as Time, Duration...*/
 

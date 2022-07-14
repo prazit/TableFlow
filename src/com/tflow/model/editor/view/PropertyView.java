@@ -2,14 +2,12 @@ package com.tflow.model.editor.view;
 
 import com.tflow.model.editor.PropertyType;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * Store attributes of property.
  */
-public class PropertyView implements Serializable {
-    private static final long serialVersionUID = 2021121709996660005L;
+public class PropertyView {
 
     private PropertyType type;
     private String label;

@@ -1,12 +1,14 @@
 package com.tflow.model.data;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class SFTPData extends DataSourceData {
-    private static final long serialVersionUID = 2021121709996660012L;
+    private static final transient long serialVersionUID = 2021121709996660012L;
 
     private List<String> pathHistory;
     private String rootPath;

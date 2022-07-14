@@ -6,13 +6,11 @@ import com.tflow.model.editor.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Tower implements Serializable {
-    private static final long serialVersionUID = 2021121909996660010L;
+public class Tower {
 
     private transient Logger log = LoggerFactory.getLogger(Tower.class);
 

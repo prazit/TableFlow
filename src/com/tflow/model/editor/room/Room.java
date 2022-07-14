@@ -4,15 +4,11 @@ import com.tflow.model.editor.Selectable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-
 /**
  * Known implementation classes.<br/>
  * EmptyRoom, DataSource, DataFile, DataTable, ColumnFx, TransformTable
  */
-public class Room implements Serializable {
-    private static final long serialVersionUID = 2021121909996660030L;
-
+public class Room {
     private transient Logger log = LoggerFactory.getLogger(Room.class);
 
     private String elementId;

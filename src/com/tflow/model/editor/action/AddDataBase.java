@@ -5,7 +5,6 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import java.util.Map;
 
 public class AddDataBase extends Action {
-    private static final long serialVersionUID = 2021122109996660001L;
 
     public AddDataBase(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);

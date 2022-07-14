@@ -1,14 +1,15 @@
-package com.tflow.model.data;
+package com.tflow.model.data.record;
 
 import com.tflow.kafka.ProjectFileType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class AdditionalData implements Serializable {
-    private static final long serialVersionUID = 2022061609996660001L;
+public class RecordAttributesData implements Serializable {
+    private static final transient long serialVersionUID = 2022061609996660001L;
 
     /* Parent Field Group: all fields are optional */
     private String recordId;

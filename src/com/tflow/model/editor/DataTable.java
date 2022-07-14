@@ -5,11 +5,9 @@ import com.tflow.model.editor.room.RoomType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.*;
 
-public class DataTable extends Room implements Serializable, Selectable, HasDataFile, HasEndPlug, HasEvent {
-    private static final long serialVersionUID = 2021121709996660030L;
+public class DataTable extends Room implements Selectable, HasDataFile, HasEndPlug, HasEvent {
 
     private int id;
     private String name;

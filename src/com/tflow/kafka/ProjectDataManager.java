@@ -1,6 +1,8 @@
 package com.tflow.kafka;
 
 import com.tflow.model.data.*;
+import com.tflow.model.data.record.RecordAttributes;
+import com.tflow.model.data.record.RecordData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -20,12 +22,12 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.*;
@@ -47,6 +49,8 @@ public class ProjectDataManager {
     private Producer<String, Object> producer;
     private Consumer<String, byte[]> consumer;
 
+    private Deserializer deserializer;
+
     /*TODO: remove Collection below, it for test*/
     public List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
 
@@ -61,7 +65,7 @@ public class ProjectDataManager {
         mapper = Mappers.getMapper(ProjectMapper.class);
     }
 
-    private void createProducer() {
+    private boolean createProducer() {
         /* Notice: some properties from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_simple_producer_example.htm
          * All properties please see the log message when the producer is loaded (already shown below).
             INFO  [org.apache.kafka.clients.producer.ProducerConfig] (default task-10) ProducerConfig values:
@@ -155,7 +159,6 @@ public class ProjectDataManager {
         writeTopic = "project-write";
         readTopic = "project-read";
         dataTopic = "project-data";
-        kafkaEnvironmentConfigs = KafkaEnvironmentConfigs.DEVELOPMENT;
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("acks", "all");
@@ -165,11 +168,13 @@ public class ProjectDataManager {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", "UTF-8");
-        props.put("value.serializer", kafkaEnvironmentConfigs.kafkaSerializer);
+        props.put("value.serializer", kafkaEnvironmentConfigs.getKafkaSerializer());
         producer = new KafkaProducer<String, Object>(props);
+
+        return true;
     }
 
-    private void createConsumer(long clientId) {
+    private boolean createConsumer(long clientId) {
         Properties props = new Properties();
 
         /*TODO: need to load consumer configuration*/
@@ -186,6 +191,15 @@ public class ProjectDataManager {
         props.put("group.id", "tflow" + clientId);
 
         subscribeTo(dataTopic, consumer = new KafkaConsumer<String, byte[]>(props));
+
+        try {
+            deserializer = SerializeUtil.getDeserializer(kafkaEnvironmentConfigs.getKafkaDeserializer());
+        } catch (Exception ex) {
+            log.error("Deserializer creation failed: ", ex);
+            return false;
+        }
+
+        return true;
     }
 
     private void subscribeTo(String topic, Consumer consumer) {
@@ -209,7 +223,11 @@ public class ProjectDataManager {
     }
 
     private boolean ready(Producer<String, Object> producer) {
-        if (producer == null) createProducer();
+        if (producer == null) {
+            if (!createProducer()) {
+                return false;
+            }
+        }
 
         /*TODO: check status of Producer(kafka server)*/
         // need log.warn("something about server status");
@@ -218,7 +236,9 @@ public class ProjectDataManager {
     }
 
     private boolean readyToCapture(Consumer<String, byte[]> consumer, long clientId) {
-        if (consumer == null) createConsumer(clientId);
+        if (consumer == null && !createConsumer(clientId)) {
+            return false;
+        }
 
         /*TODO: check status of Consumer(kafka server)*/
         // need log.warn("something about server status");
@@ -243,10 +263,10 @@ public class ProjectDataManager {
         if (commitWaiting) return;
 
         ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList);
-        KafkaTWAdditional additional;
+        RecordAttributes additional;
         ProjectFileType fileType;
         String recordId;
-        KafkaRecordValue kafkaRecordValue;
+        RecordData recordData;
         String key;
         String value;
         for (ProjectDataWriteBuffer writeCommand : commitList) {
@@ -259,27 +279,10 @@ public class ProjectDataManager {
             fileType = writeCommand.getFileType();
             recordId = additional.getRecordId();
             key = fileType.name();
+            recordData = new RecordData(writeCommand.getDataObject(), additional);
             log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) started.", fileType.name(), recordId);
 
-            /**
-             * TODO: need DataSerializer & DataDeserializer used to switch between PRODUCTION(JavaSerial) mode and DEV(JSON) mode
-             * 1. DefaultDataSerializer & DefaultDataDeserializer (ProjectDataManager)
-             * 2. JSONDataSerializer & JSONDataDeserializer (ProjectDataManager)
-             * 3. JSONSerializer & JSONDeserializer (kafka)
-             * existing. ObjectSerializer & ObjectDeserializer (kafka)
-             **/
-            try {
-                Object dataObject = writeCommand.getDataObject();
-                byte[] serializedData = (dataObject == null) ? null : SerializeUtil.serialize(dataObject);
-                kafkaRecordValue = new KafkaRecordValue(serializedData, additional);
-                //value = SerializeUtil.serialize(kafkaRecordValue);
-            } catch (IOException ex) {
-                log.warn("Serialization failed: ", ex);
-                commit(commitAgainMilliseconds);
-                return;
-            }
-
-            producer.send(new ProducerRecord<String, Object>(writeTopic, key, kafkaRecordValue));
+            producer.send(new ProducerRecord<String, Object>(writeTopic, key, recordData));
             projectDataWriteBufferList.remove(writeCommand);
             testBuffer.add(writeCommand);
 
@@ -289,79 +292,79 @@ public class ProjectDataManager {
 
     public void addData(ProjectFileType fileType, List<Integer> idList, Project project) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
         addData(fileType, (Object) idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
         addData(fileType, (Object) object, additional);
     }
 
     public void addData(ProjectFileType fileType, List idList, Project project, String recordId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
         addData(fileType, (Object) idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, String recordId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
         addData(fileType, (Object) object, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, int recordId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
         addData(fileType, (Object) object, additional);
     }
 
     public void addData(ProjectFileType fileType, List idList, Project project, int recordId, int stepId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         addData(fileType, (Object) idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         addData(fileType, (Object) object, additional);
     }
 
     public void addData(ProjectFileType fileType, List idList, Project project, int recordId, int stepId, int dataTableId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         addData(fileType, (Object) idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId, int dataTableId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         addData(fileType, (Object) object, additional);
     }
 
     public void addData(ProjectFileType fileType, List idList, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         addData(fileType, (Object) idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         addData(fileType, (Object) object, additional);
     }
 
-    private void addData(ProjectFileType fileType, TWData object, KafkaTWAdditional additional) throws InvalidParameterException {
+    private void addData(ProjectFileType fileType, TWData object, RecordAttributes additional) throws InvalidParameterException {
         addData(fileType, (Object) object, additional);
     }
 
-    private void addData(ProjectFileType fileType, Object object, KafkaTWAdditional additional) throws InvalidParameterException {
+    private void addData(ProjectFileType fileType, Object object, RecordAttributes additional) throws InvalidParameterException {
         if (additional.getUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for ProjectDataManager.addData(" + fileType + ")");
         if (additional.getClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for ProjectDataManager.addData(" + fileType + ")");
 
@@ -523,7 +526,7 @@ public class ProjectDataManager {
         /*get project, to know the project is not edit by another */
         long clientId = workspace.getClient().getId();
         long userId = workspace.getUser().getId();
-        Object data = getData(ProjectFileType.PROJECT, new KafkaTWAdditional(clientId, userId, projectId, projectId));
+        Object data = getData(ProjectFileType.PROJECT, new RecordAttributes(clientId, userId, projectId, projectId));
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwer(workspace);
         project.setManager(this);
@@ -783,43 +786,43 @@ public class ProjectDataManager {
 
     public Object getData(ProjectFileType fileType, Project project) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
         return getData(fileType, additional);
     }
 
     public Object getData(ProjectFileType fileType, Project project, String recordId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
         return getData(fileType, additional);
     }
 
     public Object getData(ProjectFileType fileType, Project project, int recordId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
         return getData(fileType, additional);
     }
 
     public Object getData(ProjectFileType fileType, Project project, int recordId, int stepId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         return getData(fileType, additional);
     }
 
     public Object getData(ProjectFileType fileType, Project project, int recordId, int stepId, int dataTableId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         return getData(fileType, additional);
     }
 
     public Object getData(ProjectFileType fileType, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
         Workspace workspace = project.getOwner();
-        KafkaTWAdditional additional = new KafkaTWAdditional(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        RecordAttributes additional = new RecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         return getData(fileType, additional);
     }
 
-    public Object getData(ProjectFileType fileType, KafkaTWAdditional additional) {
+    public Object getData(ProjectFileType fileType, RecordAttributes additional) {
         log.warn("getData(fileType:{}, additional:{}", fileType, additional);
 
         long code = requestData(fileType, additional);
@@ -842,12 +845,12 @@ public class ProjectDataManager {
 
         Object object = null;
         try {
-            KafkaRecordValue kafkaRecordValue = (KafkaRecordValue) data;
-            Object serialized = kafkaRecordValue.getData();
+            RecordData recordData = (RecordData) data;
+            Object serialized = recordData.getData();
             if (serialized instanceof String) {
-                object = SerializeUtil.deserialize((String) kafkaRecordValue.getData());
+                object = SerializeUtil.deserialize((String) recordData.getData());
             } else {
-                object = SerializeUtil.deserialize((byte[]) kafkaRecordValue.getData());
+                object = SerializeUtil.deserialize((byte[]) recordData.getData());
             }
         } catch (Exception ex) {
             log.error("getData.deserialize error: {}", ex.getMessage());
@@ -861,7 +864,7 @@ public class ProjectDataManager {
         return object;
     }
 
-    private long requestData(ProjectFileType fileType, KafkaTWAdditional additional) {
+    private long requestData(ProjectFileType fileType, RecordAttributes additional) {
         log.info("requestData( fileType:{}, recordId:{} ) started.", fileType.name(), additional.getRecordId());
 
         if (!ready(producer)) {
@@ -880,12 +883,12 @@ public class ProjectDataManager {
         return 1L;
     }
 
-    private Object captureData(ProjectFileType fileType, KafkaTWAdditional additional) {
+    private Object captureData(ProjectFileType fileType, RecordAttributes additional) {
         log.warn("captureData(fileType:{}, additional:{}) started", fileType, additional);
 
         /*TODO: timeout and maxTry need to load from configuration*/
         Object data = null;
-        long timeout = 5000;
+        long timeout = 2000;
         long maxTry = 3;
         long retry = maxTry;
         Duration duration = Duration.ofMillis(timeout);
@@ -920,9 +923,6 @@ public class ProjectDataManager {
                 if (gotHeader) {
                     log.warn("try to deserialize data message.");
                     try {
-                        Class deserializerClass = Class.forName(kafkaEnvironmentConfigs.kafkaDeserializer);
-                        Constructor constructor = deserializerClass.getConstructor();
-                        Deserializer deserializer = (Deserializer) constructor.newInstance();
                         data = deserializer.deserialize("", value);
                     } catch (Exception ex) {
                         log.error("Error when deserializing byte[] to object: ", ex);

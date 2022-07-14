@@ -1,7 +1,6 @@
 package com.tflow.model.editor;
 
 public class TransformColumn extends DataColumn implements HasEndPlug {
-    private static final long serialVersionUID = 2021121709996660041L;
 
     private String dataColName;
     private ColumnFx fx;

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DataColumn implements Serializable, Selectable {
-    private static final long serialVersionUID = 2021121709996660031L;
 
     private int id;
     protected int index;

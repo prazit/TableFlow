@@ -6,7 +6,6 @@ import com.tflow.model.editor.cmd.TestCommand;
 import java.util.Map;
 
 public class TestAction extends Action {
-    private static final long serialVersionUID = 2021121909996660000L;
 
     public TestAction(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);

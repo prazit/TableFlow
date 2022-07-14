@@ -1,28 +1,40 @@
 package com.tflow.kafka;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.tflow.model.data.record.RecordData;
+import com.tflow.model.data.record.JSONRecordData;
+import com.tflow.model.data.record.RecordAttributes;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 public class JSONSerializer implements Serializer<Object> {
     public byte[] serialize(String topic, Object data) {
         if (data == null)
             return null;
 
+        /* for Read Producer */
         if (data instanceof byte[]) {
             return (byte[]) data;
         }
 
+        /* for Write Producer, for Read Producer */
+        if (data instanceof RecordData) {
+            try {
+                RecordData recordData = (RecordData) data;
+                JSONRecordData jsonData = new JSONRecordData();
+                jsonData.setData((String) SerializeUtil.toTJsonString(recordData.getData()));
+                jsonData.setAdditional((RecordAttributes) recordData.getAdditional());
+                return SerializeUtil.toTJson(jsonData);
+            } catch (Exception ex) {
+                throw new SerializationException(": ", ex);
+            }
+        }
+
+        /* for Request Producer, for Commit function */
         try {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            return gson.toJson(data).getBytes(StandardCharsets.ISO_8859_1);
+            return SerializeUtil.toTJson(data);
         } catch (Exception ex) {
-            throw new SerializationException("Error when serializing to byte[] : " + ex.getMessage());
+            throw new SerializationException(": ", ex);
         }
     }
 }

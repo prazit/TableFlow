@@ -1,29 +1,28 @@
-package com.tflow.kafka;
+package com.tflow.file;
 
-import com.tflow.model.data.record.RecordAttributes;
-import com.tflow.model.data.record.RecordData;
 import com.tflow.model.data.record.JSONRecordData;
+import com.tflow.model.data.record.RecordData;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
-import org.apache.kafka.common.serialization.Deserializer;
-import org.slf4j.LoggerFactory;
 
-public class JSONDeserializer implements Deserializer<Object> {
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 
-    public Object deserialize(String topic, byte[] data) {
-        if (data == null)
-            return null;
+/* TODO: need to create JavaInputStream & JavaOutputStream */
+public class JSONInputStream extends ObjectInputStream implements ReadSerialize {
+    public JSONInputStream(InputStream in) throws IOException {
+        super(in);
 
-        /* for Read Consumer */
-        if (data.length == 16) {
-            return SerializeUtil.deserializeHeader(data);
-        }
+    }
 
+    @Override
+    public Object readSerialize() throws IOException, ClassNotFoundException {
         Object object = null;
         try {
-            object = SerializeUtil.fromTJson(data);
+            object = SerializeUtil.fromTJson(readAllBytes());
         } catch (Exception ex) {
-            throw new SerializationException(ex.getMessage(), ex);
+            throw new IOException("Deserialize from TJson failed, ", ex);
         }
 
         /* for Request Consumer */
@@ -39,6 +38,7 @@ public class JSONDeserializer implements Deserializer<Object> {
         } catch (Error | Exception ex) {
             throw new SerializationException(ex.getMessage(), ex);
         }
-    }
 
+
+    }
 }

@@ -1,9 +1,6 @@
 package com.tflow.model.editor;
 
-import java.io.Serializable;
-
-public abstract class PlugListener implements Serializable {
-    private static final long serialVersionUID = 2021121709996660053L;
+public abstract class PlugListener {
 
     protected LinePlug plug;
 

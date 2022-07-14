@@ -2,6 +2,7 @@ package com.tflow.model.data;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.List;
@@ -12,8 +13,9 @@ import java.util.List;
  * 2. call Owner.createPlugListener
  **/
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class LinePlugData extends TWData implements Serializable {
-    private static final long serialVersionUID = 2021121709996660050L;
+    private static final transient long serialVersionUID = 2021121709996660050L;
 
     private String plug;
 

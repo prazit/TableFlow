@@ -3,14 +3,41 @@ package com.tflow.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class SerializeUtil {
+
+    private static Gson gson;
+
+    private static void initGson() {
+        if (gson == null)
+            gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+    }
+
+    public static Gson getGson() {
+        initGson();
+        return gson;
+    }
+
+    public static Deserializer getDeserializer(String deserializerClassName) throws Exception {
+        Class deserializerClass = Class.forName(deserializerClassName);
+        Constructor constructor = deserializerClass.getConstructor();
+        return (Deserializer) constructor.newInstance();
+    }
+
+    public static Serializer getSerializer(String serializerClassName) throws Exception {
+        Class serializerClass = Class.forName(serializerClassName);
+        Constructor constructor = serializerClass.getConstructor();
+        return (Serializer) constructor.newInstance();
+    }
 
     public static byte[] serialize(Object object) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -85,14 +112,38 @@ public class SerializeUtil {
         return value;
     }
 
+    public static String toTJsonString(Object object) {
+        initGson();
+
+        return object.getClass().getName() + "=" + gson.toJson(object);
+    }
+
+    public static Object fromTJsonString(String tJsonString) throws Exception, Error {
+        initGson();
+
+        String[] words = tJsonString.split("[=]", 2);
+
+        Object object = null;
+        try {
+            Class objectClass = Class.forName(words[0]);
+            object = gson.fromJson(words[1], objectClass);
+        } catch (Error | Exception ex) {
+            LoggerFactory.getLogger(SerializeUtil.class).error("fromTJson error: ", ex);
+            throw ex;
+        }
+
+        return object;
+    }
+
     public static byte[] toTJson(Object object) {
-        Gson gson = new GsonBuilder()/*.setPrettyPrinting()*/.create();
+        initGson();
+
         String tJsonString = object.getClass().getName() + "=" + gson.toJson(object);
         return tJsonString.getBytes(StandardCharsets.ISO_8859_1);
     }
 
-    public static Object fromTJson(byte[] tJson) throws Exception {
-        Gson gson = new GsonBuilder().create();
+    public static Object fromTJson(byte[] tJson) throws Exception, Error {
+        initGson();
 
         String tJsonString = new String(tJson, StandardCharsets.ISO_8859_1);
         String[] words = tJsonString.split("[=]", 2);
@@ -101,7 +152,7 @@ public class SerializeUtil {
         try {
             Class objectClass = Class.forName(words[0]);
             object = gson.fromJson(words[1], objectClass);
-        } catch (Exception ex) {
+        } catch (Error | Exception ex) {
             LoggerFactory.getLogger(SerializeUtil.class).error("fromTJson error: ", ex);
             throw ex;
         }

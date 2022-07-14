@@ -1,14 +1,14 @@
-package com.tflow.kafka;
+package com.tflow.model.data.record;
 
 import java.io.Serializable;
 
-public class KafkaRecordValue implements Serializable {
-    private static final long serialVersionUID = 2022061609996660002L;
+public class RecordData implements Serializable {
+    private static final transient long serialVersionUID = 2022061609996660002L;
 
     private Object data;
     private Object additional;
 
-    public KafkaRecordValue(Object data, Object additional) {
+    public RecordData(Object data, Object additional) {
         this.data = data;
         this.additional = additional;
     }
