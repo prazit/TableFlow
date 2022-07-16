@@ -1,6 +1,6 @@
 package com.tflow.trcmd;
 
-import com.tflow.kafka.KafkaEnvironmentConfigs;
+import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.TWcmd;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -11,7 +11,6 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
@@ -24,7 +23,7 @@ public class TRcmd {
 
     private boolean polling;
 
-    private KafkaEnvironmentConfigs kafkaEnvironmentConfigs;
+    private EnvironmentConfigs environmentConfigs;
 
     public TRcmd() {
         /*nothing*/
@@ -45,7 +44,7 @@ public class TRcmd {
 
         Deserializer deserializer = null;
         try {
-            deserializer = SerializeUtil.getDeserializer(kafkaEnvironmentConfigs.getKafkaDeserializer());
+            deserializer = SerializeUtil.getDeserializer(environmentConfigs.getKafkaDeserializer());
         } catch (Exception ex) {
             log.error("Deserializer creation error: ", ex);
             return;
@@ -74,7 +73,7 @@ public class TRcmd {
                 }
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                ReadProjectCommand readProjectCommand = new ReadProjectCommand(key, value, kafkaEnvironmentConfigs, dataProducer, dataTopic);
+                ReadProjectCommand readProjectCommand = new ReadProjectCommand(key, value, environmentConfigs, dataProducer, dataTopic);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
@@ -98,7 +97,7 @@ public class TRcmd {
 
     private KafkaConsumer<String, byte[]> createConsumer() {
         /*TODO: need to load consumer configuration*/
-        kafkaEnvironmentConfigs = KafkaEnvironmentConfigs.DEVELOPMENT;
+        environmentConfigs = EnvironmentConfigs.DEVELOPMENT;
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("group.id", "trcmd");
@@ -122,7 +121,7 @@ public class TRcmd {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.serializer", "com.tflow.kafka.ObjectSerializer");
+        props.put("value.serializer", environmentConfigs.getKafkaSerializer());
         return new KafkaProducer<String, Object>(props);
     }
 

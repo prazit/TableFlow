@@ -1,27 +1,21 @@
 package com.tflow.wcmd;
 
-import com.tflow.file.ReadSerialize;
-import com.tflow.file.WriteSerialize;
-import com.tflow.kafka.KafkaEnvironmentConfigs;
-import com.tflow.model.data.record.RecordAttributesData;
-import com.tflow.model.data.record.RecordAttributes;
-import com.tflow.model.data.record.RecordData;
+import com.tflow.kafka.EnvironmentConfigs;
+import com.tflow.kafka.KafkaRecord;
 import com.tflow.kafka.ProjectFileType;
-import com.tflow.model.mapper.RecordAttributesMapper;
+import com.tflow.model.data.record.RecordAttributesData;
+import com.tflow.model.data.record.RecordData;
+import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.DateTimeUtil;
-import com.tflow.util.FileUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.Date;
-
-/*TODO: need to append last command to the list of command in history folder
-   put file in the step folder
-   split file by max-file-size from configuration*/
 
 /**
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
@@ -31,16 +25,17 @@ public class UpdateProjectCommand extends KafkaCommand {
 
     private Logger log = LoggerFactory.getLogger(UpdateProjectCommand.class);
 
-    public UpdateProjectCommand(String key, Object value, KafkaEnvironmentConfigs kafkaEnvironmentConfigs) {
-        super(key, value, kafkaEnvironmentConfigs);
+    public UpdateProjectCommand(String key, Object value, EnvironmentConfigs environmentConfigs) {
+        super(key, value, environmentConfigs);
     }
 
     @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException, SerializationException {
-        RecordData recordData = (RecordData) value;
+        RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
+        RecordData recordData = mapper.map((KafkaRecord) value);
         ProjectFileType projectFileType = validate((String) key, recordData);
+        RecordAttributesData additional = recordData.getAdditional();
 
-        RecordAttributesData additional = (RecordAttributesData) recordData.getAdditional();
         Date now = DateTimeUtil.now();
         additional.setModifiedDate(now);
 
@@ -49,11 +44,11 @@ public class UpdateProjectCommand extends KafkaCommand {
 
             /*move existing Data File to Transaction folder*/
             File historyFile = getHistoryFile(projectFileType, additional);
-            RecordData historyRecord = readFrom(file);
+            RecordData historyRecord = (RecordData) readFrom(file);
             writeTo(historyFile, historyRecord);
 
             /*need created-info from history*/
-            RecordAttributesData historyAdditional = (RecordAttributesData) historyRecord.getAdditional();
+            RecordAttributesData historyAdditional = historyRecord.getAdditional();
             additional.setCreatedDate(historyAdditional.getCreatedDate());
             additional.setCreatedUserId(historyAdditional.getCreatedUserId());
             additional.setCreatedClientId(historyAdditional.getCreatedClientId());
@@ -73,81 +68,8 @@ public class UpdateProjectCommand extends KafkaCommand {
         }
     }
 
-    private void remove(File file) {
-        try {
-            if (!file.delete()) throw new Exception("file.delete() return false.");
-        } catch (Exception ex) {
-            log.warn("remove( file: {} ) failed! {}", file, ex.getMessage());
-        }
-    }
-
-    private RecordData readFrom(File file) throws IOException, ClassNotFoundException, InstantiationException {
-
-        RecordData recordData = null;
-        FileInputStream fileIn = new FileInputStream(file);
-
-        /*-- normal cast to known object --*/
-        ObjectInputStream in = createObjectInputStream(kafkaEnvironmentConfigs.getInputStream(), fileIn);
-        ReadSerialize readSerialize = (ReadSerialize) in;
-        recordData = (RecordData) readSerialize.readSerialize();
-        in.close();
-        fileIn.close();
-
-        log.info("readFrom( file: {} ). kafkafRecordValue.additional = {}", file, recordData.getAdditional());
-        return recordData;
-    }
-
-    /**
-     * IMPORTANT: replace only.
-     */
-    private void writeTo(File file, RecordData recordData) throws IOException, InstantiationException, SerializationException {
-        FileUtil.autoCreateParentDir(file);
-        FileOutputStream fileOut = new FileOutputStream(file, false);
-        ObjectOutputStream objectOutputStream = createObjectOutputStream(kafkaEnvironmentConfigs.getOutputStream(), fileOut);
-        ((WriteSerialize) objectOutputStream).writeSerialize(recordData);
-        objectOutputStream.close();
-        fileOut.close();
-    }
-
     private File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {
-        /*TODO: need history root path from configuration*/
-        String rootPath = "/Apps/TFlow/hist";
-        return getFile(projectFileType, additional, rootPath, DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS"));
-    }
-
-    private File getFile(ProjectFileType projectFileType, RecordAttributesData additional) {
-        /*TODO: need project data root path from configuration*/
-        String rootPath = "/Apps/TFlow/project";
-        return getFile(projectFileType, additional, rootPath, "");
-    }
-
-    private File getFile(ProjectFileType projectFileType, RecordAttributesData additional, String rootPath, String postFix) {
-        String path;
-
-        switch (projectFileType.getRequireType()) {
-            case 2:
-                path = "/" + additional.getProjectId() + "/" + additional.getStepId();
-                break;
-
-            case 3:
-                path = "/" + additional.getProjectId() + "/" + additional.getStepId() + "/" + additional.getDataTableId();
-                break;
-
-            case 4:
-                path = "/" + additional.getProjectId() + "/" + additional.getStepId() + "/" + additional.getTransformTableId();
-                break;
-
-            default: //case 1:
-                path = "/" + additional.getProjectId();
-        }
-
-        return new File(rootPath + path + "/" + getFileName(projectFileType.getPrefix(), additional.getRecordId()) + postFix);
-    }
-
-    private String getFileName(String prefix, String recordId) {
-        if (prefix.endsWith("list"))
-            return prefix;
-        return prefix + recordId;
+        return getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath(), DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS") + environmentConfigs.getDataFileExt());
     }
 
     /**
@@ -163,7 +85,7 @@ public class UpdateProjectCommand extends KafkaCommand {
         }
 
         /*check required data for the KafkaKey*/
-        RecordAttributes additional = (RecordAttributes) recordData.getAdditional();
+        RecordAttributesData additional = recordData.getAdditional();
         int requireType = fileType.getRequireType();
 
         // recordId is required on all require types.
@@ -191,10 +113,7 @@ public class UpdateProjectCommand extends KafkaCommand {
             throw new InvalidParameterException("Additional.TransformTableId is required for operation('" + fileType.name() + "')");
         }
 
-        RecordAttributesMapper mapper = Mappers.getMapper(RecordAttributesMapper.class);
-        RecordAttributesData recordAttributesData = mapper.map(additional);
-        recordAttributesData.setFileType(fileType);
-        recordData.setAdditional(recordAttributesData);
+        additional.setFileType(fileType);
         return fileType;
     }
 

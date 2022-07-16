@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class RecordAttributesData implements Serializable {
     private static final transient long serialVersionUID = 2022061609996660001L;
 

@@ -1,11 +1,11 @@
 package com.tflow.kafka;
 
-import com.tflow.model.data.record.RecordData;
-import com.tflow.model.data.record.JSONRecordData;
-import com.tflow.model.data.record.RecordAttributes;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
+import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
 
 public class JSONSerializer implements Serializer<Object> {
     public byte[] serialize(String topic, Object data) {
@@ -18,23 +18,31 @@ public class JSONSerializer implements Serializer<Object> {
         }
 
         /* for Write Producer, for Read Producer */
-        if (data instanceof RecordData) {
+        byte[] serialized;
+        if (data instanceof KafkaRecord) {
             try {
-                RecordData recordData = (RecordData) data;
-                JSONRecordData jsonData = new JSONRecordData();
-                jsonData.setData((String) SerializeUtil.toTJsonString(recordData.getData()));
-                jsonData.setAdditional((RecordAttributes) recordData.getAdditional());
-                return SerializeUtil.toTJson(jsonData);
+                KafkaRecord kafkaRecord = (KafkaRecord) data;
+
+                JSONKafkaRecord jsonKafkaRecord = new JSONKafkaRecord();
+                jsonKafkaRecord.setData(SerializeUtil.toTJsonString(kafkaRecord.getData()));
+                jsonKafkaRecord.setAdditional(kafkaRecord.getAdditional());
+
+                serialized = SerializeUtil.toTJson(jsonKafkaRecord);
             } catch (Exception ex) {
                 throw new SerializationException(": ", ex);
             }
         }
 
         /* for Request Producer, for Commit function */
-        try {
-            return SerializeUtil.toTJson(data);
-        } catch (Exception ex) {
-            throw new SerializationException(": ", ex);
+        else {
+            try {
+                serialized = SerializeUtil.toTJson(data);
+            } catch (Exception ex) {
+                throw new SerializationException(": ", ex);
+            }
         }
+
+        LoggerFactory.getLogger(JSONSerializer.class).warn("JSONSerialize: serialized={}", new String(serialized, StandardCharsets.ISO_8859_1));
+        return serialized;
     }
 }

@@ -12,5 +12,6 @@
     <orderEntry type="library" name="logback" level="project" />
     <orderEntry type="module" module-name="TWcmd" />
     <orderEntry type="library" name="json" level="project" />
+    <orderEntry type="library" name="mapstruct" level="project" />
   </component>
 </module>

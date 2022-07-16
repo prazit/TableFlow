@@ -1,15 +1,15 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.*;
-import com.tflow.model.data.record.RecordAttributes;
-import com.tflow.model.data.record.RecordData;
+import com.tflow.kafka.KafkaRecord;
+import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
-import com.tflow.model.mapper.RecordAttributesMapper;
+import com.tflow.model.mapper.RecordMapper;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
@@ -437,7 +437,7 @@ public class EditorController extends Controller {
         ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(projectDataManager.testBuffer);
         for (ProjectDataWriteBuffer projectDataWriteBuffer : testList) {
             ProjectFileType projectFileType = projectDataWriteBuffer.getFileType();
-            RecordAttributes additional = projectDataWriteBuffer.getAdditional();
+            KafkaRecordAttributes additional = projectDataWriteBuffer.getAdditional();
 
             log.warn("testKafkaSendMessage begin: getData(projectFileType:{}, additional:{})", projectFileType, additional);
             Object data = projectDataManager.getData(projectFileType, additional);
@@ -455,18 +455,18 @@ public class EditorController extends Controller {
             }
 
             try {
-                RecordData recordData = (RecordData) data;
-                Object serialized = recordData.getData();
+                KafkaRecord kafkaRecord = (KafkaRecord) data;
+                Object serialized = kafkaRecord.getData();
                 Object object;
                 if (serialized instanceof String) {
                     log.warn("serialized is String");
-                    object = SerializeUtil.deserialize((String) recordData.getData());
+                    object = SerializeUtil.deserialize((String) kafkaRecord.getData());
                 } else {
                     log.warn("serialized is byte[]");
-                    object = SerializeUtil.deserialize((byte[]) recordData.getData());
+                    object = SerializeUtil.deserialize((byte[]) kafkaRecord.getData());
                 }
                 log.warn("testKafkaSendMessage: getData.returned object({}) = {}", object.getClass().getName(), object);
-                log.warn("testKafkaSendMessage end: getData(projectFileType:{}).returned additional = {}", projectFileType, recordData.getAdditional());
+                log.warn("testKafkaSendMessage end: getData(projectFileType:{}).returned additional = {}", projectFileType, kafkaRecord.getAdditional());
             } catch (Exception ex) {
                 log.error("testKafkaSendMessage end: cast to DataTable failed: ", ex);
             }
@@ -504,28 +504,28 @@ public class EditorController extends Controller {
         }
     }
 
-    private void testConvertByteArrayAndString(RecordData recordData) {
+    private void testConvertByteArrayAndString(KafkaRecord kafkaRecord) {
         /*#1 using ByteStream*/
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(recordData);
+            objectOutputStream.writeObject(kafkaRecord);
             objectOutputStream.close();
 
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-            RecordData deserilizedRecordData = (RecordData) objectInputStream.readObject();
+            KafkaRecord deserilizedKafkaRecord = (KafkaRecord) objectInputStream.readObject();
             objectInputStream.close();
             log.warn("testConvertByteArrayAndString: #1 serilizedKafkaRecordValue: {}", Arrays.toString(byteArrayOutputStream.toByteArray()));
-            log.warn("testConvertByteArrayAndString: #1 deserilizedKafkaRecordValue: {}", deserilizedRecordData);
+            log.warn("testConvertByteArrayAndString: #1 deserilizedKafkaRecordValue: {}", deserilizedKafkaRecord);
 
             String value = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.ISO_8859_1);
             byteArrayInputStream = new ByteArrayInputStream(value.getBytes(StandardCharsets.ISO_8859_1));
             log.warn("testConvertByteArrayAndString: #2 serilizedKafkaRecordValue: {}", Arrays.toString(value.getBytes()));
             objectInputStream = new ObjectInputStream(byteArrayInputStream);
-            deserilizedRecordData = (RecordData) objectInputStream.readObject();
+            deserilizedKafkaRecord = (KafkaRecord) objectInputStream.readObject();
             objectInputStream.close();
-            log.warn("testConvertByteArrayAndString: #2 deserilizedKafkaRecordValue: {}", deserilizedRecordData);
+            log.warn("testConvertByteArrayAndString: #2 deserilizedKafkaRecordValue: {}", deserilizedKafkaRecord);
 
         } catch (Exception ex) {
             log.error("testConvertByteArrayAndString: ", ex);
@@ -589,13 +589,13 @@ public class EditorController extends Controller {
     }
 
     public void testReadKafkaRecordValue() {
-        RecordData recordData = null;
+        KafkaRecord kafkaRecord = null;
         try {
             FileInputStream fileIn = new FileInputStream("/Apps/TFlow/tmp/TestSerialize.ser");
 
             /*-- normal cast to known object --*/
             ObjectInputStream in = new ObjectInputStream(fileIn);
-            recordData = (RecordData) in.readObject();
+            kafkaRecord = (KafkaRecord) in.readObject();
             in.close();
 
             fileIn.close();
@@ -605,12 +605,12 @@ public class EditorController extends Controller {
             log.error("List<Action> class not found", c);
         }
 
-        if (recordData == null) {
+        if (kafkaRecord == null) {
             log.error("KafkaRecordValue is Null");
             return;
         }
 
-        log.info("kafkaRecordValue = {}", recordData.toString());
+        log.info("kafkaRecordValue = {}", kafkaRecord.toString());
     }
 
     public void testScanSerialize() {
@@ -649,12 +649,12 @@ public class EditorController extends Controller {
 
     public void testWriteKafkaRecordValue() {
         List<Action> history = workspace.getProject().getActiveStep().getHistory();
-        RecordAttributes additional = new RecordAttributes();
+        KafkaRecordAttributes additional = new KafkaRecordAttributes();
         additional.setProjectId(workspace.getProject().getName());
         additional.setClientId(3);
         additional.setUserId(23);
-        RecordData recordData = new RecordData(history, additional);
-        testWriteSerialize(recordData, null, null);
+        KafkaRecord kafkaRecord = new KafkaRecord(history, additional);
+        testWriteSerialize(kafkaRecord, null, null);
     }
 
     public void testWriteHeader() {
@@ -701,20 +701,22 @@ public class EditorController extends Controller {
     public void testToJson() {
         Project project = workspace.getProject();
         ProjectMapper mapper = projectDataManager.mapper;
-        RecordAttributesMapper recordAttributesMapper = Mappers.getMapper(RecordAttributesMapper.class);
+        RecordMapper recordMapper = Mappers.getMapper(RecordMapper.class);
 
-        RecordAttributes recordAttributes = new RecordAttributes();
-        recordAttributes.setProjectId("P1");
-        recordAttributes.setRecordId("P1");
-        recordAttributes.setClientId(workspace.getClient().getId());
-        recordAttributes.setUserId(workspace.getUser().getId());
+        KafkaRecordAttributes kafkaRecordAttributes = new KafkaRecordAttributes();
+        kafkaRecordAttributes.setProjectId("P1");
+        kafkaRecordAttributes.setRecordId("P1");
+        kafkaRecordAttributes.setClientId(workspace.getClient().getId());
+        kafkaRecordAttributes.setUserId(workspace.getUser().getId());
 
         String data = new String(SerializeUtil.toTJson(mapper.map(project)), StandardCharsets.ISO_8859_1);
-        String additional = new String(SerializeUtil.toTJson(recordAttributesMapper.map(recordAttributes)), StandardCharsets.ISO_8859_1);
-        RecordData recordData = new RecordData(data,additional);
+
+        KafkaRecord kafkaRecord = new KafkaRecord();
+        kafkaRecord.setData(data);
+        kafkaRecord.setAdditional(kafkaRecordAttributes);
 
         log.warn("testToJson: serializing...");
-        String json = new String(SerializeUtil.toTJson(recordData), StandardCharsets.ISO_8859_1);
+        String json = new String(SerializeUtil.toTJson(kafkaRecord), StandardCharsets.ISO_8859_1);
         log.warn("testToJson: serialized = \n{}", json);
     }
 

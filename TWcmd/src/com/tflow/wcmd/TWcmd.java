@@ -1,7 +1,6 @@
 package com.tflow.wcmd;
 
-import com.tflow.kafka.KafkaEnvironmentConfigs;
-import com.tflow.model.data.ProjectData;
+import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -13,12 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -26,7 +22,7 @@ public class TWcmd {
 
     private Logger log = LoggerFactory.getLogger(TWcmd.class);
 
-    private KafkaEnvironmentConfigs kafkaEnvironmentConfigs;
+    private EnvironmentConfigs environmentConfigs;
     private boolean polling;
 
     public TWcmd() {
@@ -38,7 +34,7 @@ public class TWcmd {
         Properties props = new Properties();
 
         /*TODO: need configuration for all values below*/
-        kafkaEnvironmentConfigs = KafkaEnvironmentConfigs.DEVELOPMENT;
+        environmentConfigs = EnvironmentConfigs.DEVELOPMENT;
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("group.id", "twcmd");
         props.put("enable.auto.commit", "true");
@@ -55,7 +51,7 @@ public class TWcmd {
 
         Deserializer deserializer = null;
         try {
-            deserializer = SerializeUtil.getDeserializer(kafkaEnvironmentConfigs.getKafkaDeserializer());
+            deserializer = SerializeUtil.getDeserializer(environmentConfigs.getKafkaDeserializer());
         } catch (Exception ex) {
             log.error("Deserializer creation error: ", ex);
             return;
@@ -89,7 +85,7 @@ public class TWcmd {
                 }
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(key, value, kafkaEnvironmentConfigs);
+                UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(key, value, environmentConfigs);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/

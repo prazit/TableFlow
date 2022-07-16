@@ -1,12 +1,13 @@
 package com.tflow.kafka;
 
-import com.tflow.model.data.record.RecordAttributes;
-import com.tflow.model.data.record.RecordData;
-import com.tflow.model.data.record.JSONRecordData;
+import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.mapstruct.factory.Mappers;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
 
 public class JSONDeserializer implements Deserializer<Object> {
 
@@ -19,6 +20,7 @@ public class JSONDeserializer implements Deserializer<Object> {
             return SerializeUtil.deserializeHeader(data);
         }
 
+        LoggerFactory.getLogger(JSONDeserializer.class).warn("JSONDeserialize: received={}", new String(data, StandardCharsets.ISO_8859_1));
         Object object = null;
         try {
             object = SerializeUtil.fromTJson(data);
@@ -27,15 +29,17 @@ public class JSONDeserializer implements Deserializer<Object> {
         }
 
         /* for Request Consumer */
-        if (!(object instanceof JSONRecordData)) {
+        if (!(object instanceof JSONKafkaRecord)) {
             return object;
         }
 
         /* for Write Consumer, for Read Consumer*/
+        RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
         try {
-            JSONRecordData jsonRecordData = (JSONRecordData) object;
+            JSONKafkaRecord jsonRecordData = (JSONKafkaRecord) object;
             Object dataObject = SerializeUtil.fromTJsonString(jsonRecordData.getData());
-            return new RecordData(dataObject, jsonRecordData.getAdditional());
+            LoggerFactory.getLogger(JSONDeserializer.class).warn("JSONDeserialize: deserialized-object={}", dataObject.getClass().getName());
+            return new KafkaRecord(dataObject, jsonRecordData.getAdditional());
         } catch (Error | Exception ex) {
             throw new SerializationException(ex.getMessage(), ex);
         }

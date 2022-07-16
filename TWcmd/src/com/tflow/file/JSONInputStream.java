@@ -2,18 +2,19 @@ package com.tflow.file;
 
 import com.tflow.model.data.record.JSONRecordData;
 import com.tflow.model.data.record.RecordData;
+import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
+import org.mapstruct.factory.Mappers;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 
-/* TODO: need to create JavaInputStream & JavaOutputStream */
-public class JSONInputStream extends ObjectInputStream implements ReadSerialize {
+public class JSONInputStream extends DataInputStream implements SerializeReader {
+
     public JSONInputStream(InputStream in) throws IOException {
         super(in);
-
     }
 
     @Override
@@ -30,15 +31,20 @@ public class JSONInputStream extends ObjectInputStream implements ReadSerialize 
             return object;
         }
 
-        /* for Write Consumer, for Read Consumer*/
+        /* for Write Consumer */
+        RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
         try {
             JSONRecordData jsonRecordData = (JSONRecordData) object;
             Object dataObject = SerializeUtil.fromTJsonString(jsonRecordData.getData());
-            return new RecordData(dataObject, jsonRecordData.getAdditional());
+
+            RecordData recordData = new RecordData();
+            recordData.setData(dataObject);
+            recordData.setAdditional(jsonRecordData.getAdditional());
+
+            return recordData;
         } catch (Error | Exception ex) {
             throw new SerializationException(ex.getMessage(), ex);
         }
-
 
     }
 }

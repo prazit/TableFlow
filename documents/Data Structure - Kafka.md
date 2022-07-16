@@ -31,15 +31,26 @@ user2(Opener)
 end
 
 subgraph Web
-write[<b>Write Producer</b><small><br/>Record<br/>RecordAttributes</small>]
+write[<b>Write Producer</b><small><br/>KafkaRecord<br/>KafkaRecordAttributes</small>]
 request[Request Producer]
 reader[Reader Consumer]
 end
 
+subgraph Kafka
+serializer[JSONSerializer]
+deserializer[JSONDeserializer]
+requestserializer[JSONSerializer]
+requestdeserializer[JSONDeserializer]
+readserializer[JSONSerializer]
+readdeserializer[JSONDeserializer]
+end
+
 subgraph Services
-writer[Write Consumer]
-receiver[Request Consumer]
+writer[<b>Write Consumer</b><small><br/>RecordData<br/>RecordAttributesData</small>]
+receiver[<b>Request Consumer</b><small><br/>RecordAttributesData</small>]
 read[Read Producer]
+JSONOutputStream
+JSONInputStream
 end
 
 subgraph Storage
@@ -47,12 +58,18 @@ storage((Data))
 end
 
 user-->write
-write--: <small><br/>JsonRecordData<br/>JavaRecordData<br/>RecordAttributesData<br/></small> :-->writer
-writer-->storage
-
+write--: <small><br/>KafkaRecord<br/>KafkaRecordAttributes<br/></small> :-->serializer
+serializer--: <br/>JSONKafkaRecord<br/>KafkaRecordAttributes<br/> :-->deserializer
+deserializer--: <small><br/>KafkaRecord<br/>KafkaRecordAttributes<br/></small> :-->writer
+writer--: <br/>RecordData<br/>RecordAttributesData<br/> :-->JSONOutputStream
+JSONOutputStream--: <small><br/>JsonRecordData<br/>RecordAttributesData<br/></small> :-->storage
+writer--: <br/>RecordData<br/>RecordAttributesData<br/> :---JSONInputStream
+JSONInputStream--: <small><br/>JsonRecordData<br/>RecordAttributesData<br/></small> :---storage
 
 user2-->request
-request-->receiver
+request--: <small><br/>KafkaRecordAttributes<br/></small> :-->requestserializer
+requestserializer--: <br/>KafkaRecordAttributes<br/> :-->requestdeserializer
+requestdeserializer--: <small><br/>KafkaRecordAttributes<br/></small> :-->receiver
 receiver-->read
 read---storage
 
