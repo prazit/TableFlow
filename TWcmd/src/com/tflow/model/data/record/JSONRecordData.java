@@ -10,6 +10,7 @@ import java.io.Serializable;
 public class JSONRecordData implements Serializable {
     private static final transient long serialVersionUID = 2022061609996660002L;
 
-    private String data;
+    private String dataClass;
+    private Object data;
     private RecordAttributesData additional;
 }

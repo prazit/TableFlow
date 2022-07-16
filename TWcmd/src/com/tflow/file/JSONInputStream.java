@@ -1,5 +1,6 @@
 package com.tflow.file;
 
+import com.google.gson.Gson;
 import com.tflow.model.data.record.JSONRecordData;
 import com.tflow.model.data.record.RecordData;
 import com.tflow.model.mapper.RecordMapper;
@@ -32,10 +33,12 @@ public class JSONInputStream extends DataInputStream implements SerializeReader 
         }
 
         /* for Write Consumer */
-        RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
+        JSONRecordData jsonRecordData = (JSONRecordData) object;
+        Class dataClass = Class.forName(jsonRecordData.getDataClass());
+        Gson gson = SerializeUtil.getGson();
         try {
-            JSONRecordData jsonRecordData = (JSONRecordData) object;
-            Object dataObject = SerializeUtil.fromTJsonString(jsonRecordData.getData());
+            String dataJson = gson.toJson(jsonRecordData.getData());
+            Object dataObject = gson.fromJson(dataJson, dataClass);
 
             RecordData recordData = new RecordData();
             recordData.setData(dataObject);

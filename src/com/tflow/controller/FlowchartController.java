@@ -35,8 +35,13 @@ public class FlowchartController extends Controller {
          * need "Tower.Event"
          */
 
-        /*-- Handle all events --*/
         Step step = getStep();
+        if (step.getIndex() < 0) {
+            log.warn("FlowchartController.createEventHandlers: need to load step data before open step flowchart");
+            return;
+        }
+
+        /*-- Handle all events --*/
         step.getEventManager()
                 .removeHandlers(EventName.LINE_ADDED)
                 .addHandler(EventName.LINE_ADDED, new EventHandler() {

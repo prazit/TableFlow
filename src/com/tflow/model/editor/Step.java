@@ -461,7 +461,7 @@ public class Step implements Selectable, HasEvent {
                 //", lineList:" + lineList +
                 ", lastLineClientIndex:" + lastLineClientIndex +
                 ", startPlug:" + startPlug.getPlug() +
-                ", activeObject:" + activeObject.getSelectableId() +
+                ", activeObject:" + ((activeObject == null) ? "null" : activeObject.getSelectableId()) +
                 ", zoom:" + zoom +
                 ", showStepList:" + showStepList +
                 ", showPropertyList:" + showPropertyList +

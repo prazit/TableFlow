@@ -3,7 +3,6 @@ package com.tflow.model.data.record;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
 public class ClientRecordData implements Serializable {
@@ -11,5 +10,5 @@ public class ClientRecordData implements Serializable {
 
     private long userId;
     private long clientId;
-    private LocalDateTime expiredDate;
+    private long expiredDate;
 }

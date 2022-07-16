@@ -3,9 +3,6 @@ package com.tflow.kafka;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
 
 public class JSONSerializer implements Serializer<Object> {
     public byte[] serialize(String topic, Object data) {
@@ -42,7 +39,7 @@ public class JSONSerializer implements Serializer<Object> {
             }
         }
 
-        LoggerFactory.getLogger(JSONSerializer.class).warn("JSONSerialize: serialized={}", new String(serialized, StandardCharsets.ISO_8859_1));
+        /*LoggerFactory.getLogger(JSONSerializer.class).warn("JSONSerialize: serialized={}", new String(serialized, StandardCharsets.ISO_8859_1));*/
         return serialized;
     }
 }

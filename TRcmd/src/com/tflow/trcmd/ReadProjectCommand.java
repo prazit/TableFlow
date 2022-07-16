@@ -20,7 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.security.InvalidParameterException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
@@ -100,12 +103,18 @@ public class ReadProjectCommand extends KafkaCommand {
 
     private void writeNewClientTo(File clientFile, RecordAttributesData additional) throws IOException, InstantiationException {
         ClientRecordData newClientRecordData = mapper.toClientRecordData(additional);
-        newClientRecordData.setExpiredDate(LocalDateTime.now().plusSeconds(environmentConfigs.getClientFileTimeoutMs()));
+        newClientRecordData.setExpiredDate(getMilli(environmentConfigs.getClientFileTimeoutMs()));
         writeTo(clientFile, newClientRecordData);
     }
 
-    private boolean isExpired(LocalDateTime expiredDate) {
-        return LocalDateTime.now().isAfter(expiredDate);
+    private long getMilli(long plusMilliSeconds) {
+        LocalDateTime localDateTime = LocalDateTime.now().plusSeconds(plusMilliSeconds);
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault());
+        return zonedDateTime.toInstant().toEpochMilli();
+    }
+
+    private boolean isExpired(long expiredDate) {
+        return expiredDate < getMilli(0);
     }
 
     public boolean isMyClient(ClientRecordData clientRecordData, RecordAttributesData additional) {
@@ -114,7 +123,7 @@ public class ReadProjectCommand extends KafkaCommand {
     }
 
     private File getClientFile(RecordAttributesData additional) {
-        return new File(environmentConfigs.getProjectRootPath() + additional.getProjectId() + "/client");
+        return new File(environmentConfigs.getProjectRootPath() + additional.getProjectId() + "/client" + environmentConfigs.getDataFileExt());
     }
 
     private String copyTemplateToNewProject(RecordAttributesData additional) {
@@ -137,7 +146,15 @@ public class ReadProjectCommand extends KafkaCommand {
     }
 
     private void sendObject(String key, Object object) {
-        dataProducer.send(new ProducerRecord<String, Object>(topic, key, object));
+        Object record;
+        if (object instanceof RecordData) {
+            RecordData recordData = (RecordData) object;
+            KafkaRecord kafkaRecord = new KafkaRecord(recordData.getData(), mapper.map(recordData.getAdditional()));
+            record = kafkaRecord;
+        } else {
+            record = object;
+        }
+        dataProducer.send(new ProducerRecord<String, Object>(topic, key, record));
     }
 
     /**

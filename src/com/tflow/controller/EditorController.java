@@ -62,13 +62,12 @@ public class EditorController extends Controller {
     @PostConstruct
     public void onCreation() {
         projectDataManager = new ProjectDataManager(workspace.getEnvironment());
-        Project project = workspace.getProject();
-        project.setManager(projectDataManager);
+        workspace.getProject().setManager(projectDataManager);
         testOpenProject();
 
         leftPanelTitle = "Step List";
         initActionPriorityMap();
-        initStepList(project);
+        initStepList(workspace.getProject());
         //refreshActionList(project);
     }
 
@@ -80,8 +79,8 @@ public class EditorController extends Controller {
 
     private void initStepList(Project project) {
         projectName = project.getName();
-        refreshStepList(project.getStepList());
         selectStep(project.getActiveStepIndex(), false);
+        refreshStepList(project.getStepList());
     }
 
     public void refreshActionList() {
@@ -485,11 +484,11 @@ public class EditorController extends Controller {
 
     public void testOpenProject() {
         Project project = null;
-        log.info("testOpenProject: Project(Before) = {}", SerializeUtil.getGson().toJson(projectDataManager.mapper.map(workspace.getProject())));
+        log.info("testOpenProject: Project(Before) = {}", workspace.getProject());
         log.info("testOpenProject: calling projectDataManager.getProject");
         try {
             /*TODO: need to test open new project from template (projectId < 0)*/
-            project = projectDataManager.getProject(workspace, "P1");
+            project = projectDataManager.getProject(workspace);
         } catch (ProjectDataException ex) {
             log.error("Error from server: {}", ex.getMessage());
         } catch (ClassCastException ex) {
@@ -499,9 +498,33 @@ public class EditorController extends Controller {
         if (project == null) {
             log.warn("testOpenProject: getProject return NULL, you may need to create some and then click menu Test > Save Full Project.");
         } else {
-            workspace.setProject(project);
-            log.info("testOpenProject: Project(After) = {}", SerializeUtil.getGson().toJson(projectDataManager.mapper.map(project)));
+            log.info("testOpenProject: Project(After) = {}", project);
         }
+    }
+
+    public void testOpenStep(int stepIndex) {
+        Project project = workspace.getProject();
+        List<Step> stepList = project.getStepList();
+        log.info("testOpenStep: StepList(Before) = {}", Arrays.toString(stepList.toArray()));
+
+        Step step = stepList.get(stepIndex);
+        if (step.getIndex() >= 0) {
+            /*loaded before*/
+            log.warn("testOpenStep: step is loaded before, stepIndex={}, step.index={}", stepIndex, step.getIndex());
+            return;
+        }
+
+        try {
+            log.info("testOpenStep: Step(Before) = {}", step);
+            log.info("testOpenStep: calling projectDataManager.getStep");
+            step = projectDataManager.getStep(project, stepIndex);
+            log.info("testOpenStep: Step(After) = {}", step);
+        } catch (ProjectDataException ex) {
+            log.error("testOpenStep: error from TRcmd service: {}", ex.getMessage());
+        } catch (Exception ex) {
+            log.error("", ex);
+        }
+
     }
 
     private void testConvertByteArrayAndString(KafkaRecord kafkaRecord) {
@@ -738,7 +761,9 @@ public class EditorController extends Controller {
 
     public void selectStep(int stepIndex, boolean refresh) {
         Project project = workspace.getProject();
-        if (stepIndex < 0 || stepIndex >= project.getStepList().size()) {
+        int size = project.getStepList().size();
+        if (stepIndex < 0 || stepIndex >= size) {
+            log.warn("selectStep(stepIndex:{}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", size, stepIndex);
             stepIndex = 0;
         }
 
@@ -748,12 +773,15 @@ public class EditorController extends Controller {
         project.setActiveStepIndex(stepIndex);
         Step activeStep = project.getActiveStep();
         if (activeStep == null) {
+            log.warn("selectStep(stepIndex:{}) activeStep({}) is null!", stepIndex, project.getActiveStepIndex());
             if (stepIndex == 0) {
                 log.warn("selectStep(0) with empty stepList, then call addStep().");
                 addStep();
             }
             return;
         }
+
+        testOpenStep(stepIndex);
 
         zoom = activeStep.getZoom();
         showStepList = activeStep.isShowStepList();

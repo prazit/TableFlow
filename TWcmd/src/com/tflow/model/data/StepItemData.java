@@ -12,5 +12,6 @@ public class StepItemData extends TWData implements Serializable {
 
     private int id;
     private String name;
+    private int index = -1;
 
 }

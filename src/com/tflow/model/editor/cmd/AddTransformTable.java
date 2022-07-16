@@ -93,29 +93,40 @@ public class AddTransformTable extends Command {
         // save TransformTable data including ColumnFxTable
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), step.getOwner(), transformTable.getId(), step.getId(), 0, transformTable.getId());
+        int stepId = step.getId();
+        int transformTableId = transformTable.getId();
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), project, transformTableId, stepId, 0, transformTableId);
 
         // save TransformTable list
-        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), step.getOwner(), 1, step.getId());
-
-        // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), project, 1, stepId);
 
         // save Object(DataTable) at the endPlug.
         if (sourceTable instanceof TransformTable) {
-            projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), 0, sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) sourceTable), project, sourceTable.getId(), stepId, 0, sourceTable.getId());
         } else {
-            projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) sourceTable), step.getOwner(), sourceTable.getId(), step.getId(), sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) sourceTable), project, sourceTable.getId(), stepId, sourceTable.getId());
+        }
+
+        // Notice: this command copy all columns from source table that need to save Column List and Column Data too
+        // save Column list
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(transformTable.getColumnList()), project, 1, stepId, 0, transformTableId);
+
+        // save Column Data
+        for (DataColumn dataColumn : transformTable.getColumnList()) {
+            projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), stepId, 0, transformTableId);
         }
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), stepId);
+
+        // save Line data
+        projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), stepId);
 
         // save Tower data
-        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
 
         // save Floor data (both TransformTable and ColumnFxTable)
-        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
     }
 
     private SourceType getSourceType(DataTable sourceTable) {

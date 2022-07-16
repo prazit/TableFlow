@@ -1,5 +1,6 @@
 package com.tflow.kafka;
 
+import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
@@ -517,11 +518,12 @@ public class ProjectDataManager {
      * TODO: need to support open new project from template (projectId < 0)
      **/
     @SuppressWarnings("unchecked")
-    public Project getProject(Workspace workspace, String projectId) throws ClassCastException, ProjectDataException {
-
-        /*get project, to know the project is not edit by another */
+    public Project getProject(Workspace workspace) throws ClassCastException, ProjectDataException {
+        String projectId = workspace.getProject().getId();
         long clientId = workspace.getClient().getId();
         long userId = workspace.getUser().getId();
+
+        /*get project, to know the project is not edit by another */
         Object data = getData(ProjectFileType.PROJECT, new KafkaRecordAttributes(clientId, userId, projectId, projectId));
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwer(workspace);
@@ -529,7 +531,7 @@ public class ProjectDataManager {
 
         /*get db-list*/
         data = getData(ProjectFileType.DB_LIST, project, "1");
-        List<Integer> databaseIdList = (List<Integer>) throwExceptionOnError(data);
+        List<Integer> databaseIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
         Map<Integer, Database> databaseMap = new HashMap<>();
         project.setDatabaseMap(databaseMap);
 
@@ -541,7 +543,7 @@ public class ProjectDataManager {
 
         /*get sftp-list*/
         data = getData(ProjectFileType.SFTP_LIST, project, "2");
-        List<Integer> sftpIdList = (List<Integer>) throwExceptionOnError(data);
+        List<Integer> sftpIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
         Map<Integer, SFTP> sftpMap = new HashMap<>();
         project.setSftpMap(sftpMap);
 
@@ -553,7 +555,7 @@ public class ProjectDataManager {
 
         /*get local-list*/
         data = getData(ProjectFileType.LOCAL_LIST, project, "3");
-        List<Integer> localIdList = (List<Integer>) throwExceptionOnError(data);
+        List<Integer> localIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
         Map<Integer, Local> localMap = new HashMap<>();
         project.setLocalMap(localMap);
 
@@ -577,9 +579,10 @@ public class ProjectDataManager {
 
         /*get step-list*/
         data = getData(ProjectFileType.STEP_LIST, project, "5");
-        List<StepItemData> stepItemDataList = (List<StepItemData>) throwExceptionOnError(data);
+        List<StepItemData> stepItemDataList = mapper.fromLinkedTreeMap((List<LinkedTreeMap>) throwExceptionOnError(data));
         project.setStepList(mapper.toStepList(stepItemDataList));
 
+        workspace.setProject(project);
         return project;
     }
 
@@ -590,17 +593,14 @@ public class ProjectDataManager {
      * TODO: flowchart-client: need to update Client file for heartbeat of the working-project.
      **/
     @SuppressWarnings("unchecked")
-    private Step getStep(long clientId, long userId, Project project, int stepIndex) throws Exception {
-        String projectId = project.getId();
+    public Step getStep(Project project, int stepIndex) throws Exception {
         List<Step> stepList = project.getStepList();
-        Step stepModel = stepList.remove(stepIndex);
+        Step stepModel = stepList.get(stepIndex);
         int stepId = stepModel.getId();
 
         /*get step*/
         Object data = getData(ProjectFileType.STEP, project, stepId, stepId);
-        stepList.remove(stepIndex);
         Step step = mapper.map((StepData) throwExceptionOnError(data));
-        stepList.add(stepIndex, step);
 
         /*get each tower in step*/
         List<Integer> towerIdList = Arrays.asList(step.getDataTower().getId(), step.getTransformTower().getId(), step.getOutputTower().getId());
@@ -629,7 +629,7 @@ public class ProjectDataManager {
 
         /*get data-table-list*/
         data = getData(ProjectFileType.DATA_TABLE_LIST, project, 1, stepId);
-        List<Integer> dataTableIdList = (List<Integer>) throwExceptionOnError(data);
+        List<Integer> dataTableIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
         List<DataTable> dataTableList = new ArrayList<>();
         step.setDataList(dataTableList);
 
@@ -646,7 +646,7 @@ public class ProjectDataManager {
 
             /*get column-list*/
             data = getData(ProjectFileType.DATA_COLUMN_LIST, project, 1, stepId, dataTableId);
-            List<Integer> columnIdList = (List<Integer>) throwExceptionOnError(data);
+            List<Integer> columnIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
             List<DataColumn> columnList = new ArrayList<>();
             dataTable.setColumnList(columnList);
 
@@ -661,7 +661,7 @@ public class ProjectDataManager {
 
             /*get output-list*/
             data = getData(ProjectFileType.DATA_OUTPUT_LIST, project, 1, stepId, dataTableId);
-            List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
+            List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
             List<DataFile> outputList = new ArrayList<>();
             dataTable.setOutputList(outputList);
 
@@ -678,12 +678,12 @@ public class ProjectDataManager {
 
         /*get transform-table-list*/
         data = getData(ProjectFileType.TRANSFORM_TABLE_LIST, project, 9, stepId);
-        List<Integer> transformTableIdList = (List<Integer>) throwExceptionOnError(data);
+        List<Integer> transformTableIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
         List<TransformTable> transformTableList = new ArrayList<>();
         step.setTransformList(transformTableList);
 
         /*get each transform-table in transform-table-list*/
-        for (Integer transformTableId : dataTableIdList) {
+        for (Integer transformTableId : transformTableIdList) {
             data = getData(ProjectFileType.TRANSFORM_TABLE, project, transformTableId, stepId, 0, transformTableId);
             TransformTable transformTable = mapper.map((TransformTableData) throwExceptionOnError(data));
             transformTable.setOwner(step);
@@ -691,7 +691,7 @@ public class ProjectDataManager {
 
             /*get tranform-column-list*/
             data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, project, 1, stepId, 0, transformTableId);
-            List<Integer> columnIdList = (List<Integer>) throwExceptionOnError(data);
+            List<Integer> columnIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
             List<DataColumn> columnList = new ArrayList<>();
             transformTable.setColumnList(columnList);
 
@@ -719,7 +719,7 @@ public class ProjectDataManager {
 
             /*get tranform-output-list*/
             data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, project, 1, stepId, 0, transformTableId);
-            List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
+            List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
             List<DataFile> outputList = new ArrayList<>();
             transformTable.setOutputList(outputList);
 
@@ -734,7 +734,7 @@ public class ProjectDataManager {
 
             /*get tranformation-list*/
             data = getData(ProjectFileType.TRANSFORMATION_LIST, project, 1, stepId, 0, transformTableId);
-            List<Integer> fxIdList = (List<Integer>) throwExceptionOnError(data);
+            List<Integer> fxIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
             List<TableFx> fxList = new ArrayList<>();
             transformTable.setFxList(fxList);
 
@@ -751,7 +751,7 @@ public class ProjectDataManager {
 
         /*get line-list at the end*/
         data = getData(ProjectFileType.LINE_LIST, project, stepId, stepId);
-        List<Integer> lineIdList = (List<Integer>) throwExceptionOnError(data);
+        List<Integer> lineIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
         List<Line> lineList = new ArrayList<>();
         step.setLineList(lineList);
 
@@ -763,6 +763,8 @@ public class ProjectDataManager {
         }
 
         /*regenerate selectableMap*/
+        stepList.remove(stepIndex);
+        stepList.add(stepIndex, step);
         project.setActiveStepIndex(step.getIndex());
 
         /*TODO: all LinePlugData need to
@@ -839,19 +841,8 @@ public class ProjectDataManager {
             return errorCode;
         }
 
-        Object object = null;
-        try {
-            KafkaRecord kafkaRecord = (KafkaRecord) data;
-            Object serialized = kafkaRecord.getData();
-            if (serialized instanceof String) {
-                object = SerializeUtil.deserialize((String) kafkaRecord.getData());
-            } else {
-                object = SerializeUtil.deserialize((byte[]) kafkaRecord.getData());
-            }
-        } catch (Exception ex) {
-            log.error("getData.deserialize error: {}", ex.getMessage());
-            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
-        }
+        KafkaRecord kafkaRecord = (KafkaRecord) data;
+        Object object = kafkaRecord.getData();
 
         if (object == null) {
             log.error("getData.return null object");

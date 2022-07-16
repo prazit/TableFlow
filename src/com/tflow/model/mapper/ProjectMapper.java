@@ -1,5 +1,6 @@
 package com.tflow.model.mapper;
 
+import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSource;
@@ -13,12 +14,15 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/* Notice: modify mapper during running need to manual Rebuild Artifact before redeploy again */
 @Mapper(componentModel = "default",
         imports = {
                 Collectors.class,
@@ -95,10 +99,6 @@ public interface ProjectMapper {
     })*/
     Project map(ProjectData projectData);
 
-    @Mappings({
-            @Mapping(target = "name", ignore = true),
-            @Mapping(target = "index", expression = "java(-1)")
-    })
     Step map(StepItemData stepItemData);
 
     Step map(StepData stepData);
@@ -142,6 +142,7 @@ public interface ProjectMapper {
 
     /*---- ALL ABOUT ID ----*/
 
+
     default Integer id(Step step) {
         return step.getId();
     }
@@ -164,6 +165,10 @@ public interface ProjectMapper {
 
     default Integer id(ColumnFx columnFx) {
         return (columnFx == null) ? -1 : columnFx.getId();
+    }
+
+    default Integer id(TableFx tableFx) {
+        return tableFx.getId();
     }
 
     default Integer id(Tower tower) {
@@ -226,6 +231,18 @@ public interface ProjectMapper {
 
     List<StepItemData> fromStepList(List<Step> stepList);
 
+    default List<StepItemData> fromLinkedTreeMap(List<LinkedTreeMap> linkedTreeMapList) {
+        List<StepItemData> stepItemDataList = new ArrayList<>();
+        for (LinkedTreeMap linkedTreeMap : linkedTreeMapList) {
+            StepItemData stepItemData = new StepItemData();
+            stepItemData.setId(((Double) linkedTreeMap.get("id")).intValue());
+            stepItemData.setName((String) linkedTreeMap.get("name"));
+            stepItemData.setIndex(((Double) linkedTreeMap.get("index")).intValue());
+            stepItemDataList.add(stepItemData);
+        }
+        return stepItemDataList;
+    }
+
     List<Integer> fromDataTableList(List<DataTable> dataList);
 
     List<Integer> fromDataFileList(List<DataFile> dataFileList);
@@ -240,7 +257,6 @@ public interface ProjectMapper {
 
     List<Integer> fromFloorList(List<Floor> floorList);
 
+    List<Integer> fromDoubleList(List<Double> doubleList);
 
-
-    /*----*/
 }

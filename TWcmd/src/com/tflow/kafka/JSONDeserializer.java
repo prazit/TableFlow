@@ -5,9 +5,6 @@ import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.mapstruct.factory.Mappers;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
 
 public class JSONDeserializer implements Deserializer<Object> {
 
@@ -20,7 +17,7 @@ public class JSONDeserializer implements Deserializer<Object> {
             return SerializeUtil.deserializeHeader(data);
         }
 
-        LoggerFactory.getLogger(JSONDeserializer.class).warn("JSONDeserialize: received={}", new String(data, StandardCharsets.ISO_8859_1));
+        /*LoggerFactory.getLogger(JSONDeserializer.class).warn("JSONDeserialize: received={}", new String(data, StandardCharsets.ISO_8859_1));*/
         Object object = null;
         try {
             object = SerializeUtil.fromTJson(data);
@@ -38,7 +35,7 @@ public class JSONDeserializer implements Deserializer<Object> {
         try {
             JSONKafkaRecord jsonRecordData = (JSONKafkaRecord) object;
             Object dataObject = SerializeUtil.fromTJsonString(jsonRecordData.getData());
-            LoggerFactory.getLogger(JSONDeserializer.class).warn("JSONDeserialize: deserialized-object={}", dataObject.getClass().getName());
+            /*LoggerFactory.getLogger(JSONDeserializer.class).warn("JSONDeserialize: deserialized-object={}", dataObject.getClass().getName());*/
             return new KafkaRecord(dataObject, jsonRecordData.getAdditional());
         } catch (Error | Exception ex) {
             throw new SerializationException(ex.getMessage(), ex);

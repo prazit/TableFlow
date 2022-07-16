@@ -25,7 +25,9 @@ public class JSONOutputStream extends DataOutputStream implements SerializeWrite
                 RecordData recordData = (RecordData) obj;
 
                 JSONRecordData jsonData = new JSONRecordData();
-                jsonData.setData(SerializeUtil.toTJsonString(recordData.getData()));
+                Object data = recordData.getData();
+                jsonData.setDataClass(data.getClass().getName());
+                jsonData.setData(data);
                 jsonData.setAdditional(recordData.getAdditional());
 
                 write(SerializeUtil.toTJson(jsonData));

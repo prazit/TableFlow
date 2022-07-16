@@ -18,7 +18,7 @@ Kafka
 | record-value      | JSON Formatted is work fine (Object > String(JSON) > Byte[])<br/>Java Serialize is work fine (Object > Byte[](JavaSerial))                                                                                                |
 | consumer-group-id | group id เดียวกันจะมีเพียง 1 consumer ที่ได้รับ message สำหรับทำ load balancing<br/><br/>เฉพาะกรณี Writer มีการประมวลผลข้อมูลนาน ก่อนจะบันทึกผลลัพธ์<br/>และกรณี Reader มีการประมวลผลข้อมูลนาน ก่อนจะตอบสนองผลลัพธ์กลับไป |
 
-## 
+### 
 
 ## MESSAGE FLOW
 
@@ -48,7 +48,7 @@ end
 subgraph Services
 writer[<b>Write Consumer</b><small><br/>RecordData<br/>RecordAttributesData</small>]
 receiver[<b>Request Consumer</b><small><br/>RecordAttributesData</small>]
-read[Read Producer]
+read[<b>Read Producer</b><small><br/>RecordData<br/>RecordAttributesData</small>]
 JSONOutputStream
 JSONInputStream
 end
@@ -70,11 +70,13 @@ user2-->request
 request--: <small><br/>KafkaRecordAttributes<br/></small> :-->requestserializer
 requestserializer--: <br/>KafkaRecordAttributes<br/> :-->requestdeserializer
 requestdeserializer--: <small><br/>KafkaRecordAttributes<br/></small> :-->receiver
-receiver-->read
-read---storage
+receiver--: <br/>RecordAttributesData<br/> :-->read
+read--: <small><br/>RecordData<br/>RecordAttributesData<br/></small> :---JSONInputStream
 
 user2---reader
-reader---read
+reader--: <br/>KafkaRecord<br/>KafkaRecordAttributes<br/> :---readserializer
+readserializer--: <br/>JSONKafkaRecord<br/>KafkaRecordAttributes<br/> :---readdeserializer
+readdeserializer--: <small><br/>KafkaRecord<br/>KafkaRecordAttributes<br/></small> :---read
 ```
 
 ###### 
