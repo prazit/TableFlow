@@ -14,16 +14,20 @@ public class TransformTable extends DataTable {
 
     /*for ProjectMapper*/
     public TransformTable() {
-        /*nothing*/
+        init();
     }
 
     public TransformTable(String name, String sourceSelectableId, SourceType sourceType, String idColName, String endPlug, String startPlug, Step owner) {
         super(name, null,  idColName,  endPlug, startPlug, owner);
         this.sourceSelectableId = sourceSelectableId;
         this.sourceType = sourceType;
+        init();
+    }
+
+    private void init() {
+        setRoomType(RoomType.TRANSFORM_TABLE);
         fxList = new ArrayList<>();
         columnFxTable = new ColumnFxTable(this);
-        this.setRoomType(RoomType.TRANSFORM_TABLE);
     }
 
     public SourceType getSourceType() {

@@ -79,7 +79,7 @@ public class EditorController extends Controller {
 
     private void initStepList(Project project) {
         projectName = project.getName();
-        selectStep(project.getActiveStepIndex(), false);
+        selectStep(project.getActiveStepIndex(), true);
         refreshStepList(project.getStepList());
     }
 
@@ -291,6 +291,12 @@ public class EditorController extends Controller {
                     for (DataColumn sourceColumn : sourceTable.getColumnList()) {
                         selectItemList.add(new SelectItem(sourceColumn.getSelectableId(), sourceColumn.getName()));
                     }
+                }
+                break;
+
+            case DATASOURCE:
+                for (DataSourceSelector dataSourceSelector : activeStep.getDataSourceSelectorList()) {
+                    selectItemList.add(new SelectItem(dataSourceSelector.getId(), dataSourceSelector.getType() + ":" + dataSourceSelector.getName()));
                 }
                 break;
 
@@ -837,13 +843,40 @@ public class EditorController extends Controller {
     }
 
     /**
-     * TODO: need action for removeDataSource.
+     * TODO: need action for removeDataSourceSelector.
      */
+    public void addDataSourceSelector() {
+        Project project = workspace.getProject();
+        Step step = project.getActiveStep();
+
+        DataSourceSelector dataSourceSelector = new DataSourceSelector("untitled", DataSourceType.LOCAL, project.newElementId());
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_SOURCE_SELECTOR, dataSourceSelector);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        try {
+            new AddDataSourceSelector(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Add DataSourceSelector Failed!", e);
+            FacesUtil.addError("Add DataSourceSelector Failed with Internal Command Error!");
+            return;
+        }
+
+        refreshActionList(project);
+
+        selectObject(dataSourceSelector.getSelectableId());
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        FacesUtil.addInfo("DataSourceSelector[" + dataSourceSelector.getName() + "] added.");
+        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+    }
+
     public void addLocal() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        Local local = new Local("Untitled", "/", project.newElementId());
+        Local local = new Local("Untitled", "/");
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, local);
@@ -863,14 +896,14 @@ public class EditorController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("Local[" + local.getName() + "] added.");
-        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+        FacesUtil.runClientScript(JavaScript.refreshLocalList.getScript());
     }
 
     public void addDBConnection() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        Database database = new Database("Untitled", Dbms.ORACLE, project.newElementId());
+        Database database = new Database("Untitled", Dbms.ORACLE);
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, database);
@@ -890,14 +923,14 @@ public class EditorController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("Database[" + database.getName() + "] added.");
-        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+        FacesUtil.runClientScript(JavaScript.refreshDatabaseList.getScript());
     }
 
     public void addSFTPConnection() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        SFTP sftp = new SFTP("Untitled", "/", project.newElementId());
+        SFTP sftp = new SFTP("Untitled", "/");
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, sftp);
@@ -917,7 +950,7 @@ public class EditorController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("SFTP[" + sftp.getName() + "] added.");
-        FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+        FacesUtil.runClientScript(JavaScript.refreshSFTPList.getScript());
     }
 
     /**

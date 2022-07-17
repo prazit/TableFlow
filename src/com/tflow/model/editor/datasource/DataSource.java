@@ -1,17 +1,13 @@
 package com.tflow.model.editor.datasource;
 
-import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.room.Room;
 
-import java.io.Serializable;
-
-public class DataSource extends Room implements Serializable {
+public class DataSource extends Room {
 
     protected int id;
     protected DataSourceType type;
     protected String name;
     protected String image;
-    protected LinePlug plug;
 
     public int getId() {
         return id;
@@ -45,21 +41,12 @@ public class DataSource extends Room implements Serializable {
         this.image = image;
     }
 
-    public LinePlug getPlug() {
-        return plug;
-    }
-
-    public void setPlug(LinePlug plug) {
-        this.plug = plug;
-    }
-
     @Override
     public String toString() {
         return "{" +
                 "id:" + id +
                 ", type:" + type +
                 ", name:'" + name + '\'' +
-                ", plug:" + plug +
                 '}';
     }
 }

@@ -36,12 +36,11 @@ public class Database extends DataSource implements Selectable {
         this.id = id;
     }
 
-    public Database(String name, Dbms dbms, String plug) {
+    public Database(String name, Dbms dbms) {
         this.dbms = dbms;
         setType(DataSourceType.DATABASE);
         setImage("database.png");
         setName(name);
-        setPlug(new StartPlug(plug));
         userEncrypted = true;
         passwordEncrypted = true;
         propList = new HashMap<>();
@@ -138,12 +137,12 @@ public class Database extends DataSource implements Selectable {
 
     @Override
     public LinePlug getStartPlug() {
-        return plug;
+        return null;
     }
 
     @Override
     public void setStartPlug(LinePlug startPlug) {
-        this.plug = startPlug;
+        /*nothing*/
     }
 
     @Override

@@ -9,6 +9,10 @@ package com.tflow.model.editor;
  */
 public enum JavaScript {
 
+    refreshDatabaseList("refreshDatabaseList();"),
+    refreshSFTPList("refreshSFTPList();"),
+    refreshLocalList("refreshLocalList();"),
+
     refreshFlowChart("refreshFlowChart();"),
     refreshStepList("refreshStepList();"),
 

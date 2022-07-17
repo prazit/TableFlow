@@ -2,6 +2,8 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.DataSourceData;
+import com.tflow.model.data.DatabaseData;
 import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
@@ -28,17 +30,6 @@ public class RemoveDataSource extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Map<String, Selectable> selectableMap = step.getSelectableMap();
 
-        /*remove remaining lines on startPlug*/
-        List<DataFile> dataFileList = new ArrayList<>();
-        List<Line> lineList = new ArrayList<>(dataSource.getPlug().getLineList());
-        for (Line line : lineList) {
-            /*need to remove dataSource from dataFile at the end of line*/
-            DataFile dataFile = (DataFile) selectableMap.get(line.getEndSelectableId());
-            step.removeLine(line);
-            dataFile.setDataSource(null);
-            dataFileList.add(dataFile);
-        }
-
         /*remove from Tower*/
         Floor floor = dataSource.getFloor();
         int roomIndex = dataSource.getRoomIndex();
@@ -49,19 +40,46 @@ public class RemoveDataSource extends Command {
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_SOURCE, dataSource);
-        paramMap.put(CommandParamKey.DATA_FILE_LIST, dataFileList);
 
-        // no DataSource to save here // Notice: don't remove data-source from project because of data-sources are shared between steps, go to Project page to manage all data-sources
-
-        // save Line data
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
-        for (Line line : lineList) {
-            projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), step.getId());
+        DataSourceData dataSourceData;
+        ProjectFileType fileType;
+        ProjectFileType listFileType;
+        List<Integer> idList;
+        switch (dataSource.getType()) {
+            case DATABASE:
+                fileType = ProjectFileType.DB;
+                listFileType = ProjectFileType.DB_LIST;
+                dataSourceData = mapper.map((Database) dataSource);
+                idList = mapper.fromMap(project.getDatabaseMap());
+                break;
+            case SFTP:
+                fileType = ProjectFileType.SFTP;
+                listFileType = ProjectFileType.SFTP_LIST;
+                dataSourceData = mapper.map((SFTP) dataSource);
+                idList = mapper.fromMap(project.getSftpMap());
+                break;
+            case LOCAL:
+                fileType = ProjectFileType.LOCAL;
+                listFileType = ProjectFileType.LOCAL_LIST;
+                dataSourceData = mapper.map((Local) dataSource);
+                idList = mapper.fromMap(project.getLocalMap());
+                break;
+            default: //case SYSTEM:
+                fileType = ProjectFileType.DS;
+                listFileType = ProjectFileType.DS_LIST;
+                dataSourceData = null;
+                idList = null;
         }
 
-        // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, 1, step.getId());
+        if (idList != null) {
+            // save DataSource data
+            projectDataManager.addData(fileType, dataSourceData, project, dataSource.getId());
+
+            // save DataSource list
+            projectDataManager.addData(listFileType, idList, project);
+        }
 
         // save Tower data
         Tower tower = floor.getTower();

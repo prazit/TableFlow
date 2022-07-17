@@ -13,6 +13,7 @@ public class DatabaseData extends DataSourceData {
     private String dbms;
     private String url;
     private String driver;
+
     private String user;
     private String password;
     private int retry;

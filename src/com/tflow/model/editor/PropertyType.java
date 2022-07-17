@@ -18,6 +18,7 @@ public enum PropertyType {
     INT(0, DataType.INTEGER),
 
     DBMS(Dbms.ORACLE, true),
+    DATASOURCE(-1, true),
     DATASOURCETYPE(DataSourceType.LOCAL, true),
     FILETYPE(DataFileType.IN_MD, true),
     COLUMNFUNCTION(ColumnFunction.LOOKUP, true),

@@ -6,6 +6,8 @@ public enum CommandParamKey {
     ACTION,
 
     DATA_SOURCE,
+    DATA_SOURCE_SELECTOR,
+    DATA_SOURCE_SELECTOR_LIST,
 
     DATA_FILE,
     DATA_FILE_LIST,

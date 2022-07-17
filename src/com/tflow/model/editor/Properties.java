@@ -33,6 +33,10 @@ public enum Properties {
             ".:activeObject:selectableId:Active Object:ReadOnly",
             "selectableMap:Selectable Map:ReadOnly"
     ),
+    STEP_DATA_SOURCE(
+            "type:Data Source Type:DATASOURCETYPE",
+            "dataSourceId:Data Source:DATASOURCE::type"
+    ),
     DATA_BASE(
             "name:Name:String",
             "--:Connection:--",

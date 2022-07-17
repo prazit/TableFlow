@@ -80,10 +80,7 @@
                                         <p:submenu label="Add">
                                             <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addStep}" update="stepForm,propertyForm"/>
                                             <p:divider/>
-                                            <p:menuitem value="Root Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="stepForm,propertyForm"/>
-                                            <p:menuitem value="FTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="stepForm,propertyForm"/>
-                                            <p:menuitem value="DataBase Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="stepForm,propertyForm"/>
-                                            <p:divider/>
+                                            <p:menuitem value="Data Source" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataSourceSelector}" update="stepForm,propertyForm"/>
                                             <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="stepForm,propertyForm"/>
                                         </p:submenu>
 
@@ -137,7 +134,7 @@
                             </f:facet>
 
                             <!-- TODO: change flowchart.xhtml to blank.xhtml, then put flowchart.xhtml in the refreshFlowchart js-function -->
-                            <iframe id="flowchart" src="flowchart.xhtml"></iframe>
+                            <iframe id="flowchart" src="blank.html"></iframe>
 
                         </p:panel>
                     </p:splitterPanel>

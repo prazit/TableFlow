@@ -109,7 +109,7 @@ public class AddDataTable extends Command {
         columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", project.newElementId(), dataTable));
         columnList.add(new DataColumn(4, DataType.DATE, "Date Column", project.newElementId(), dataTable));
 
-        Local myComputer = new Local("MyComputer", "C:/myData/", project.newElementId());
+        Local myComputer = new Local("MyComputer", "C:/myData/");
         DataFile outputCSVFile = new DataFile(
                 myComputer,
                 DataFileType.OUT_CSV,

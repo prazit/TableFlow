@@ -20,11 +20,10 @@ public class Local extends DataSource implements Selectable {
         this.id = id;
     }
 
-    public Local(String name, String rootPath, String plug) {
+    public Local(String name, String rootPath) {
         setName(name);
         setType(DataSourceType.LOCAL);
         setImage("local.png");
-        setPlug(new StartPlug(plug));
         this.rootPath = rootPath;
         pathHistory = new ArrayList<>();
         this.setRoomType(RoomType.DATA_SOURCE);
@@ -56,12 +55,12 @@ public class Local extends DataSource implements Selectable {
 
     @Override
     public LinePlug getStartPlug() {
-        return plug;
+        return null;
     }
 
     @Override
     public void setStartPlug(LinePlug startPlug) {
-        this.plug = startPlug;
+        /*nothing*/
     }
 
     @Override

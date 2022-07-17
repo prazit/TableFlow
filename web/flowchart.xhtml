@@ -25,7 +25,9 @@
         <h:outputScript library="js" name="plain-draggable.min.js" target="head"/>
         <h:outputScript library="js" name="leader-line.min.js" target="head"/>
         <h:outputScript library="js" name="flowchart.js#{app.forceReloadResources}" target="head"/>
+        <p:importEnum type="com.tflow.model.editor.DataType" var="DataType"/>
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
+        <p:importEnum type="com.tflow.model.editor.datasource.DataSourceType" var="DataSourceType"/>
 
         <div class="flow-chart" style="visibility: hidden">
             <h:form id="editorForm">
@@ -50,6 +52,7 @@
                     <h1 style="color: var(--surface-c);">#{flowchartCtl.step.name}</h1>
                 </p:outputPanel>
 
+                <!-- TODO: change DataSource to DataSourceSelector, same things in the JavaScript files -->
                 <p:outputPanel styleClass="source section" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">
                     <table>
                         <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">
@@ -57,15 +60,14 @@
                                 <td>
                                     <p:outputPanel rendered="#{floor.roomList[0].roomType==RoomType.DATA_SOURCE}" styleClass="data-source selectable#{flowchartCtl.active(floor.roomList[0])} #{floor.roomList[0].type.name().toLowerCase()}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[0].selectableId}"/>
+                                        <b>DATASOURCE</b>
                                         <p:remoteCommand name="update#{floor.roomList[0].selectableId}" update="@parent" oncomplete="updateComplete('#{floor.roomList[0].selectableId}')"/>
 
                                         <p>#{floor.roomList[0].name}</p>
-                                        <p:graphicImage library="images" name="#{floor.roomList[0].image}"/>
+                                        <p:graphicImage library="images" name="#{floor.roomList[0].type.image}"/>
 
                                         <span>#{floor.roomList[0].type}</span>
-                                        <p:importEnum type="com.tflow.model.editor.datasource.DataSourceType" var="DataSourceType"/>
-                                        <p:outputLabel rendered="#{DataSourceType.DATABASE==floor.roomList[0].type}">#{floor.roomList[0].dbms}</p:outputLabel>
-                                        <div class="#{floor.roomList[0].plug.styleClass}" id="#{floor.roomList[0].plug}"></div>
+                                        <div class="#{floor.roomList[0].startPlug.styleClass}" id="#{floor.roomList[0].startPlug}"></div>
                                     </p:outputPanel>
                                     <p:spacer rendered="#{floor.roomList[0].roomType!=RoomType.DATA_SOURCE}"/>
                                 </td>

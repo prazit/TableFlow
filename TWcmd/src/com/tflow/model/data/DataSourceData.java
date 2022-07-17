@@ -14,5 +14,5 @@ public class DataSourceData extends TWData implements Serializable {
     protected String type;
     protected String name;
     protected String image;
-    protected LinePlugData plug;
+
 }

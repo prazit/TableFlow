@@ -3,6 +3,8 @@ package com.tflow.wcmd;
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaRecord;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.DatabaseData;
+import com.tflow.model.data.SFTPData;
 import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
 import com.tflow.model.mapper.RecordMapper;
@@ -12,6 +14,7 @@ import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
@@ -64,8 +67,29 @@ public class UpdateProjectCommand extends KafkaCommand {
             remove(file);
         } else {
             log.info("writeTo( file: {}, additional: {} )", file, additional);
+            encrypt(recordData);
             writeTo(file, recordData);
         }
+    }
+
+    private void encrypt(RecordData recordData) {
+        /*need to decrypt/encrypt user and password depend on userEncrypted/passwordEncrypted*/
+        Object data = recordData.getData();
+        if (data instanceof DatabaseData) {
+            DatabaseData databaseData = (DatabaseData) data;
+            databaseData.setUser(encrypt(databaseData.getUser()));
+            databaseData.setPassword(encrypt(databaseData.getPassword()));
+
+        } else if (data instanceof SFTPData) {
+            SFTPData sftpData = (SFTPData) data;
+            sftpData.setUser(encrypt(sftpData.getUser()));
+            sftpData.setPassword(encrypt(sftpData.getPassword()));
+        }
+    }
+
+    private String encrypt(String data) {
+        /*TODO: need 2 Ways encryption from Data Conversion Project*/
+        return data;
     }
 
     private File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {

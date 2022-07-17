@@ -33,11 +33,10 @@ public class SFTP extends DataSource implements Selectable {
         this.id = id;
     }
 
-    public SFTP(String name, String rootPath, String plug) {
+    public SFTP(String name, String rootPath) {
         setName(name);
         setType(DataSourceType.SFTP);
         setImage("ftp.png");
-        setPlug(new StartPlug(plug));
         this.rootPath = rootPath;
         pathHistory = new ArrayList<>();
         this.setRoomType(RoomType.DATA_SOURCE);
@@ -110,12 +109,12 @@ public class SFTP extends DataSource implements Selectable {
 
     @Override
     public LinePlug getStartPlug() {
-        return plug;
+        return null;
     }
 
     @Override
     public void setStartPlug(LinePlug startPlug) {
-        this.plug = startPlug;
+        /*nothing*/
     }
 
     @Override

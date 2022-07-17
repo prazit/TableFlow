@@ -4,7 +4,9 @@ function refreshStepList() {
 }
 
 function refreshFlowChart() {
-    document.getElementById('flowchart').src += '?refresh=1';
+    var src = document.getElementById('flowchart').src;
+    src = src.replaceAll("blank.html", "flowchart.xhtml") + '?refresh=1';
+    document.getElementById('flowchart').src = src;
     refreshToolbars();
 }
 
@@ -151,7 +153,7 @@ function lineEnd() {
 function serverStart() {
     /*show progress and disable all server action (allow client action)*/
     $('.container').addClass('server');
-    contentReady(function() {
+    contentReady(function () {
         contentWindow.$('.flow-chart').addClass('server');
     });
 }
@@ -159,7 +161,7 @@ function serverStart() {
 function serverEnd() {
     /*hide progress bar and enable all server action*/
     $('.container').removeClass('server');
-    contentReady(function() {
+    contentReady(function () {
         contentWindow.$('.flow-chart').removeClass('server');
     });
 }

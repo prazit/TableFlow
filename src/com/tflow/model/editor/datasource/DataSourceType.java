@@ -2,9 +2,19 @@ package com.tflow.model.editor.datasource;
 
 public enum DataSourceType {
 
-    DATABASE,
-    SFTP,
-    LOCAL,
-    SYSTEM,
+    DATABASE("database.png"),
+    SFTP("sftp.png"),
+    LOCAL("local.png"),
+    SYSTEM("environment.png"),
     ;
+
+    private String image;
+
+    DataSourceType(String image) {
+        this.image = image;
+    }
+
+    public String getImage() {
+        return image;
+    }
 }

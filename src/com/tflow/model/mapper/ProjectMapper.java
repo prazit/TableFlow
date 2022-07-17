@@ -3,10 +3,7 @@ package com.tflow.model.mapper;
 import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.datasource.DataSource;
-import com.tflow.model.editor.datasource.Database;
-import com.tflow.model.editor.datasource.Local;
-import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import org.jboss.weld.manager.Transform;
@@ -45,12 +42,6 @@ public interface ProjectMapper {
 
     /*---- MAP BETWEEN OBJECT ----*/
 
-    /*@Mappings({
-            @Mapping(target = "databaseList", expression = "java(project.getDatabaseMap().values().stream().map(Database::getId).collect(Collectors.toList()))"),
-            @Mapping(target = "sftpList", expression = "java(project.getSftpMap().values().stream().map(SFTP::getId).collect(Collectors.toList()))"),
-            @Mapping(target = "localList", expression = "java(project.getLocalMap().values().stream().map(Local::getId).collect(Collectors.toList()))"),
-            @Mapping(target = "variableList", expression = "java(project.getVariableMap().values().stream().map(Variable::getName).collect(Collectors.toList()))"),
-    })*/
     ProjectData map(Project project);
 
     @Mappings({
@@ -60,6 +51,8 @@ public interface ProjectMapper {
             @Mapping(target = "activeObject", source = "activeObject.selectableId"),
     })
     StepData map(Step step);
+
+    DataSourceSelectorData map(DataSourceSelector dataSourceSelector);
 
     DatabaseData map(Database database);
 
@@ -90,18 +83,13 @@ public interface ProjectMapper {
 
     FloorData map(Floor floor);
 
-
-    /*@Mappings({
-            @Mapping(target = "databaseMap", expression = "java(projectData.getDatabaseList().stream().map(Database::new).collect(Collectors.toMap(Database::getId,item->{return item;})))"),
-            @Mapping(target = "sftpMap", expression = "java(projectData.getSftpList().stream().map(SFTP::new).collect(Collectors.toMap(SFTP::getId,item->{return item;})))"),
-            @Mapping(target = "localMap", expression = "java(projectData.getLocalList().stream().map(Local::new).collect(Collectors.toMap(Local::getId,item->{return item;})))"),
-            @Mapping(target = "variableMap", expression = "java(projectData.getVariableList().stream().map(Variable::new).collect(Collectors.toMap(Variable::getName,item->{return item;})))"),
-    })*/
     Project map(ProjectData projectData);
 
     Step map(StepItemData stepItemData);
 
     Step map(StepData stepData);
+
+    DataSourceSelector map(DataSourceSelectorData dataSourceSelectorData);
 
     Database map(DatabaseData databaseData);
 
@@ -259,4 +247,5 @@ public interface ProjectMapper {
 
     List<Integer> fromDoubleList(List<Double> doubleList);
 
+    List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
 }

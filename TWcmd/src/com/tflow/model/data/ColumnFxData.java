@@ -7,11 +7,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-/**
- * TODO: after getData
- * 1. call createStartPlug after regenSelectableMap
- * 2. call createEndPlug after regenSelectableMap
- **/
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class ColumnFxData extends TWData implements Serializable {

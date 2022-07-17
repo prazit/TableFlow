@@ -163,6 +163,7 @@ public class ProjectDataManager {
         props.put("batch.size", 16384);
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
+        props.put("request.timeout.ms", 30000);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", "UTF-8");
         props.put("value.serializer", environmentConfigs.getKafkaSerializer());
@@ -600,12 +601,14 @@ public class ProjectDataManager {
 
         /*get step*/
         Object data = getData(ProjectFileType.STEP, project, stepId, stepId);
-        Step step = mapper.map((StepData) throwExceptionOnError(data));
+        StepData stepData = (StepData) throwExceptionOnError(data);
+        Step step = mapper.map(stepData);
 
         /*get each tower in step*/
         List<Integer> towerIdList = Arrays.asList(step.getDataTower().getId(), step.getTransformTower().getId(), step.getOutputTower().getId());
         List<Tower> towerList = new ArrayList<>();
         List<Floor> floorList;
+        List<LinePlug> linePlugList = new ArrayList<>();
         for (Integer towerId : towerIdList) {
             data = getData(ProjectFileType.TOWER, project, towerId, stepId);
             Tower tower = mapper.map((TowerData) throwExceptionOnError(data));
@@ -626,6 +629,10 @@ public class ProjectDataManager {
         step.setOutputTower(towerList.get(2));
 
         /*TODO: DataSource, DataFile, DataTable, TransformTable, ColumnFxTable need to put in Tower*/
+
+        /*TODO: get data-source-selector-list*/
+
+        /*TODO: get data-source-selector*/
 
         /*get data-table-list*/
         data = getData(ProjectFileType.DATA_TABLE_LIST, project, 1, stepId);
@@ -657,6 +664,7 @@ public class ProjectDataManager {
                 dataColumn = mapper.map((DataColumnData) throwExceptionOnError(data));
                 dataColumn.setOwner(dataTable);
                 columnList.add(dataColumn);
+                linePlugList.add(dataColumn.getStartPlug());
             }
 
             /*get output-list*/
@@ -696,6 +704,7 @@ public class ProjectDataManager {
             transformTable.setColumnList(columnList);
 
             /*get each tranform-column in tranform-column-list*/
+            List<ColumnFx> columnFxList = transformTable.getColumnFxTable().getColumnFxList();
             TransformColumn transformColumn;
             ColumnFx columnFx;
             for (Integer columnId : columnIdList) {
@@ -703,6 +712,8 @@ public class ProjectDataManager {
                 transformColumn = mapper.map((TransformColumnData) throwExceptionOnError(data));
                 transformColumn.setOwner(transformTable);
                 columnList.add(transformColumn);
+                linePlugList.add(transformColumn.getStartPlug());
+                linePlugList.add(transformColumn.getEndPlug());
 
                 /*get each tranform-columnfx in tranform-table(columnFxTable)*/
                 ColumnFx fx = transformColumn.getFx();
@@ -711,8 +722,11 @@ public class ProjectDataManager {
                     columnFx = mapper.map((ColumnFxData) throwExceptionOnError(data));
                     columnFx.setOwner(transformColumn);
                     transformColumn.setFx(columnFx);
+                    columnFxList.add(columnFx);
+                    linePlugList.add(columnFx.getStartPlug());
                     for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
                         columnFxPlug.setOwner(columnFx);
+                        linePlugList.add(columnFxPlug);
                     }
                 }
             }
@@ -766,11 +780,18 @@ public class ProjectDataManager {
         stepList.remove(stepIndex);
         stepList.add(stepIndex, step);
         project.setActiveStepIndex(step.getIndex());
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
 
-        /*TODO: all LinePlugData need to
+        /*after regen selectableMap*/
+        step.setActiveObject(selectableMap.get(stepData.getActiveObject()));
+
+        /*TODO: ColumnFxData: call createStartPlug and createEndPlug.*/
+
+        /*TODO: (continue at DatabaseData) find all LinePlugData in Data Package, all of them need to
          * 1. find each Line by id (line in lineList)
          * 2. call Owner.createPlugListener
          */
+
 
         return step;
     }

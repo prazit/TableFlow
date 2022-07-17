@@ -1,9 +1,10 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.datasource.DataSource;
+import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.room.Tower;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ public class Step implements Selectable, HasEvent {
     private int index;
 
     private List<Action> history;
+    private List<DataSourceSelector> dataSourceSelectorList;
     private List<DataTable> dataList;
     private List<TransformTable> transformList;
     private List<DataFile> outputList;
@@ -61,6 +63,7 @@ public class Step implements Selectable, HasEvent {
     private void init(String name, Project owner) {
         this.name = name;
         history = new ArrayList<>();
+        dataSourceSelectorList = new ArrayList<>();
         dataList = new ArrayList<>();
         transformList = new ArrayList<>();
         outputList = new ArrayList<>();
@@ -106,6 +109,14 @@ public class Step implements Selectable, HasEvent {
 
     public void setHistory(List<Action> history) {
         this.history = history;
+    }
+
+    public List<DataSourceSelector> getDataSourceSelectorList() {
+        return dataSourceSelectorList;
+    }
+
+    public void setDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList) {
+        this.dataSourceSelectorList = dataSourceSelectorList;
     }
 
     public List<DataTable> getDataList() {
@@ -452,6 +463,7 @@ public class Step implements Selectable, HasEvent {
                 ", name:'" + name + '\'' +
                 ", index:" + index +
                 ", history:" + history +
+                ", dataSourceSelectorList:" + dataSourceSelectorList +
                 ", dataList:" + dataList +
                 ", transformList:" + transformList +
                 ", outputList:" + outputList +
