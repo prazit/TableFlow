@@ -145,6 +145,10 @@ public class Tower {
         return owner;
     }
 
+    public void setOwner(Step owner) {
+        this.owner = owner;
+    }
+
     public List<Selectable> getSelectableList() {
         List<Selectable> selectableList = new ArrayList<>();
         for (Floor floor : floorList) {

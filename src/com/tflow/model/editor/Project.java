@@ -139,6 +139,22 @@ public class Project {
         this.manager = manager;
     }
 
+    public int getLastElementId() {
+        return lastElementId;
+    }
+
+    public void setLastElementId(int lastElementId) {
+        this.lastElementId = lastElementId;
+    }
+
+    public int getLastUniqueId() {
+        return lastUniqueId;
+    }
+
+    public void setLastUniqueId(int lastUniqueId) {
+        this.lastUniqueId = lastUniqueId;
+    }
+
     @Override
     public String toString() {
         return "{" +

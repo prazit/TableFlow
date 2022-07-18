@@ -93,6 +93,7 @@ public class FlowchartController extends Controller {
     public String active(Selectable selectable) {
         Step step = getStep();
         Selectable activeObject = step.getActiveObject();
+        if (activeObject == null) return "";
 
         String selectableId = selectable.getSelectableId();
         String activeSelectableId = activeObject.getSelectableId();

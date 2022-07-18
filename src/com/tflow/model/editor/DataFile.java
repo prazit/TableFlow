@@ -27,7 +27,13 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
 
     /*for projectMapper*/
     public DataFile() {
-        /*nothing*/
+        init();
+    }
+
+    /* for projectMapper */
+    public DataFile(Integer id) {
+        this.id = id;
+        init();
     }
 
     public DataFile(DataSource dataSource, DataFileType type, String name, String path, String endPlug, String startPlug) {
@@ -35,16 +41,15 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         this.type = type;
         this.name = name;
         this.path = path;
-        this.propertyMap = new HashMap<>();
-        type.getProperties().initPropertyMap(propertyMap);
         this.endPlug = new EndPlug(endPlug);
         createStartPlug(startPlug);
-        this.setRoomType(RoomType.DATA_FILE);
+        init();
+        type.getProperties().initPropertyMap(propertyMap);
     }
 
-    /* for stepMapper */
-    public DataFile(Integer id) {
-        this.id = id;
+    private void init() {
+        this.propertyMap = new HashMap<>();
+        this.setRoomType(RoomType.DATA_FILE);
     }
 
     private void createStartPlug(String plugId) {

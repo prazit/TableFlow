@@ -30,11 +30,15 @@ public class DataColumn implements Serializable, Selectable {
 
     private void createStartPlug(String stringPlug) {
         this.startPlug = new StartPlug(stringPlug);
-        this.createPlugListeners();
+        createStartPlugListener();
     }
 
     /*call after projectMapper*/
     public void createPlugListeners() {
+        createStartPlugListener();
+    }
+
+    private void createStartPlugListener() {
         startPlug.setListener(new PlugListener(startPlug) {
             @Override
             public void plugged(Line line) {

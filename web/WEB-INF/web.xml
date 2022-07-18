@@ -19,6 +19,6 @@
     </context-param>
 
     <!--TODO: create page for org.apache.kafka.common.errors.TimeoutException-->
-    <!--TODO: create page for viewexpired-->
+    <!--TODO: create page for javax.faces.application.ViewExpiredException-->
     <!--<context-root>/tFlow</context-root>-->
 </web-app>

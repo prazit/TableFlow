@@ -512,7 +512,8 @@ public class EditorController extends Controller {
         }
 
         if (project == null) {
-            log.warn("testOpenProject: getProject return NULL, you may need to create some and then click menu Test > Save Full Project.");
+            log.warn("testOpenProject: getProject return NULL, automatic call 'Test > Save Full Project'.");
+            testSaveProjectTemplate();
         } else {
             log.info("testOpenProject: Project(After) = {}", project);
         }

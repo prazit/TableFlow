@@ -71,13 +71,21 @@ public class AddDataTable extends Command {
         // save Object(DataFile) at the endPlug.
         projectDataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, dataFile.getId(), stepId);
 
-        // Notice: this command extract columns from Data-File that need to save Column List and Column Data too
+        // Notice: this command extract columns from Data-File that need to save Column List, Column Data, Output List and Output Data too
         // save Column list
         projectDataManager.addData(ProjectFileType.DATA_COLUMN_LIST, mapper.fromDataColumnList(dataTable.getColumnList()), project, 1, stepId, dataTableId);
 
         // save Column Data
         for (DataColumn dataColumn : dataTable.getColumnList()) {
             projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), project, dataColumn.getId(), stepId, dataTableId);
+        }
+
+        // save Output list
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(dataTable.getOutputList()), project, 1, stepId, dataTableId);
+
+        // save Output Data
+        for (DataFile outputFile : dataTable.getOutputList()) {
+            projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), stepId, dataTableId);
         }
 
         // save Line list

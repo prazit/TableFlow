@@ -107,13 +107,29 @@ public class AddTransformTable extends Command {
             projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) sourceTable), project, sourceTable.getId(), stepId, sourceTable.getId());
         }
 
-        // Notice: this command copy all columns from source table that need to save Column List and Column Data too
+        // Notice: this command copy all columns from source table that need to save Column List, Column Data, Output List, Output Data too
         // save Column list
         projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(transformTable.getColumnList()), project, 1, stepId, 0, transformTableId);
 
         // save Column Data
         for (DataColumn dataColumn : transformTable.getColumnList()) {
             projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), stepId, 0, transformTableId);
+        }
+
+        // save Transformation List
+        projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(transformTable.getFxList()), project, 1, stepId, 0, transformTableId);
+
+        // save Transformation Data
+        for (TableFx tableFx : transformTable.getFxList()) {
+            projectDataManager.addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), project, tableFx.getId(), stepId, 0, transformTableId);
+        }
+
+        // save Output List
+        projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromDataFileList(transformTable.getOutputList()), project, 1, stepId, 0, transformTableId);
+
+        // save Output Data
+        for (DataFile outputFile : transformTable.getOutputList()) {
+            projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), stepId, 0, transformTableId);
         }
 
         // save Line list

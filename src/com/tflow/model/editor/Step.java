@@ -20,6 +20,22 @@ public class Step implements Selectable, HasEvent {
 
     private List<Action> history;
     private List<DataSourceSelector> dataSourceSelectorList;
+
+    /**
+     * TODO: need to add DataFile list
+     * 1. Step
+     * 2. StepData
+     * 3. ProjectFileType.DATA_FILE_LIST
+     * 4. AddDataFile
+     * 5. RemoveDataFile
+     * 6. ProjectDataManager.addStep (move from dataTable to step after DATA_SOURCE_SELECTOR)
+     *    + add ProjectFileType.DATA_FILE_LIST
+     *    + add ProjectFileType.DATA_FILE
+     * 7. ProjectDataManager.getStep (move from dataTable to step after DATA_SOURCE_SELECTOR)
+     *    + get ProjectFileType.DATA_FILE_LIST
+     *    + get ProjectFileType.DATA_FILE
+     **/
+
     private List<DataTable> dataList;
     private List<TransformTable> transformList;
     private List<DataFile> outputList;
@@ -328,6 +344,7 @@ public class Step implements Selectable, HasEvent {
      * Internal use to remove line from the step without history.
      */
     public void removeLine(Line line) {
+        if (line == null) return;
         lineList.remove(line);
 
         LinePlug startPlug = line.getStartPlug();

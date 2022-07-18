@@ -114,12 +114,12 @@ public class SerializeUtil {
 
     public static String toTJsonString(Object object) {
         initGson();
-
-        return object.getClass().getName() + "=" + gson.toJson(object);
+        return (object == null) ? null : object.getClass().getName() + "=" + gson.toJson(object);
     }
 
     public static Object fromTJsonString(String tJsonString) throws Exception, Error {
         initGson();
+        if (tJsonString == null) return null;
 
         String[] words = tJsonString.split("[=]", 2);
 
@@ -137,13 +137,14 @@ public class SerializeUtil {
 
     public static byte[] toTJson(Object object) {
         initGson();
-
+        if (object == null) return null;
         String tJsonString = object.getClass().getName() + "=" + gson.toJson(object);
         return tJsonString.getBytes(StandardCharsets.ISO_8859_1);
     }
 
     public static Object fromTJson(byte[] tJson) throws Exception, Error {
         initGson();
+        if (tJson == null) return null;
 
         String tJsonString = new String(tJson, StandardCharsets.ISO_8859_1);
         String[] words = tJsonString.split("[=]", 2);
