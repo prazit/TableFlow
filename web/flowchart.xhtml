@@ -52,7 +52,6 @@
                     <h1 style="color: var(--surface-c);">#{flowchartCtl.step.name}</h1>
                 </p:outputPanel>
 
-                <!-- TODO: change DataSource to DataSourceSelector, same things in the JavaScript files -->
                 <p:outputPanel styleClass="source section" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">
                     <table>
                         <p:repeat value="#{flowchartCtl.step.dataTower.floorList}" var="floor">

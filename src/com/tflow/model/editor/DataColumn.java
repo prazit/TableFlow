@@ -24,13 +24,18 @@ public class DataColumn implements Serializable, Selectable {
         this.index = index;
         this.type = type;
         this.name = name;
-        this.startPlug = createStartPlug(startPlug);
+        createStartPlug(startPlug);
         this.owner = owner;
     }
 
-    private LinePlug createStartPlug(String stringPlug) {
-        LinePlug plug = new StartPlug(stringPlug);
-        plug.setListener(new PlugListener(plug) {
+    private void createStartPlug(String stringPlug) {
+        this.startPlug = new StartPlug(stringPlug);
+        this.createPlugListeners();
+    }
+
+    /*call after projectMapper*/
+    public void createPlugListeners() {
+        startPlug.setListener(new PlugListener(startPlug) {
             @Override
             public void plugged(Line line) {
                 plug.setPlugged(true);
@@ -46,7 +51,6 @@ public class DataColumn implements Serializable, Selectable {
                 owner.connectionRemoved();
             }
         });
-        return plug;
     }
 
     public int getId() {

@@ -38,7 +38,7 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         this.propertyMap = new HashMap<>();
         type.getProperties().initPropertyMap(propertyMap);
         this.endPlug = new EndPlug(endPlug);
-        this.startPlug = createStartPlug(startPlug);
+        createStartPlug(startPlug);
         this.setRoomType(RoomType.DATA_FILE);
     }
 
@@ -47,10 +47,13 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         this.id = id;
     }
 
-    private StartPlug createStartPlug(String plugId) {
-        StartPlug startPlug = new StartPlug(plugId);
+    private void createStartPlug(String plugId) {
+        startPlug = new StartPlug(plugId);
         startPlug.setExtractButton(true);
+        createStartPlugListener();
+    }
 
+    private void createStartPlugListener() {
         startPlug.setListener(new PlugListener(startPlug) {
             @Override
             public void plugged(Line line) {
@@ -63,8 +66,11 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
                 plug.setPlugged(plugged);
             }
         });
+    }
 
-        return startPlug;
+    public void createPlugListeners() {
+        createStartPlugListener();
+        endPlug.createDefaultPlugListener();
     }
 
     public int getId() {

@@ -22,20 +22,20 @@ public class LinePlug {
 
     /*for ProjectMapper*/
     public LinePlug() {
-        /*nothing*/
+        createDefaultPlugListener();
     }
 
     public LinePlug(String plug) {
         this.plug = plug;
         lineList = new ArrayList<>();
         removeButtonTip = "";
-        defaultPlugListener();
+        createDefaultPlugListener();
     }
 
     /**
      * This is default listener for End Plug only.
      */
-    private void defaultPlugListener() {
+    public void createDefaultPlugListener() {
         listener = new PlugListener(this) {
             @Override
             public void plugged(Line line) {

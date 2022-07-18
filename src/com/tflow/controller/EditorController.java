@@ -61,14 +61,22 @@ public class EditorController extends Controller {
 
     @PostConstruct
     public void onCreation() {
-        projectDataManager = new ProjectDataManager(workspace.getEnvironment());
-        workspace.getProject().setManager(projectDataManager);
-        testOpenProject();
+        if (workspace.getProject().getId().compareTo("TEST") == 0) {
+            // TODO: move this script block to Open Project Page
+            workspace.getProject().setId("P1");
+            projectDataManager = new ProjectDataManager(workspace.getEnvironment());
+            workspace.getProject().setManager(projectDataManager);
+            testOpenProject();
+        }
 
         leftPanelTitle = "Step List";
         initActionPriorityMap();
-        initStepList(workspace.getProject());
-        //refreshActionList(project);
+        initStepList();
+    }
+
+    public void reloadProject() {
+        workspace.reloadProject();
+        onCreation();
     }
 
     private void initActionPriorityMap() {
@@ -77,7 +85,8 @@ public class EditorController extends Controller {
         actionPriorityMap.put("AML", 2);
     }
 
-    private void initStepList(Project project) {
+    private void initStepList() {
+        Project project = workspace.getProject();
         projectName = project.getName();
         selectStep(project.getActiveStepIndex(), true);
         refreshStepList(project.getStepList());
@@ -483,7 +492,8 @@ public class EditorController extends Controller {
     public void testSaveProjectTemplate() {
         log.info("testSaveProject: started");
 
-        projectDataManager.addProjectAs("P1", workspace.getProject());
+        Project project = workspace.getProject();
+        projectDataManager.addProjectAs(project.getId(), project);
 
         log.info("testSaveProject: completed");
     }
@@ -514,12 +524,6 @@ public class EditorController extends Controller {
         log.info("testOpenStep: StepList(Before) = {}", Arrays.toString(stepList.toArray()));
 
         Step step = stepList.get(stepIndex);
-        if (step.getIndex() >= 0) {
-            /*loaded before*/
-            log.warn("testOpenStep: step is loaded before, stepIndex={}, step.index={}", stepIndex, step.getIndex());
-            return;
-        }
-
         try {
             log.info("testOpenStep: Step(Before) = {}", step);
             log.info("testOpenStep: calling projectDataManager.getStep");
@@ -769,15 +773,11 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         int size = project.getStepList().size();
         if (stepIndex < 0 || stepIndex >= size) {
-            log.warn("selectStep(stepIndex:{}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", size, stepIndex);
+            log.warn("selectStep(stepIndex:{}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", stepIndex, size);
             stepIndex = 0;
         }
 
-        int prevStepIndex = project.getActiveStepIndex();
-        /*if (prevStepIndex == stepIndex) return;*/
-
-        project.setActiveStepIndex(stepIndex);
-        Step activeStep = project.getActiveStep();
+        Step activeStep = project.getStepList().get(stepIndex);
         if (activeStep == null) {
             log.warn("selectStep(stepIndex:{}) activeStep({}) is null!", stepIndex, project.getActiveStepIndex());
             if (stepIndex == 0) {
@@ -787,7 +787,12 @@ public class EditorController extends Controller {
             return;
         }
 
-        testOpenStep(stepIndex);
+        if (activeStep.getIndex() < 0) {
+            log.warn("selectStep({}): step loading...", stepIndex);
+            testOpenStep(stepIndex);
+        } else {
+            project.setActiveStepIndex(stepIndex);
+        }
 
         zoom = activeStep.getZoom();
         showStepList = activeStep.isShowStepList();

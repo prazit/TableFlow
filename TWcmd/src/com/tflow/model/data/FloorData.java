@@ -11,9 +11,7 @@ import java.util.List;
 public class FloorData extends TWData implements Serializable {
     private static final transient long serialVersionUID = 2021121909996660020L;
 
-    private int id;
     private int index;
-    private int tower;
 
     private List<RoomData> roomList;
 

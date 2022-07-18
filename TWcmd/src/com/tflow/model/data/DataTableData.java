@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class DataTableData extends TWData implements Serializable {
+public class DataTableData extends RoomData implements Serializable {
     private static final transient long serialVersionUID = 2021121709996660030L;
 
     private int id;

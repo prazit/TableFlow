@@ -19,19 +19,24 @@ public class Floor {
 
     /*for projectMapper*/
     public Floor() {
-        /*nothing*/
+        init();
+    }
+
+    /*for StepMapper*/
+    public Floor(Integer id) {
+        this.id = id;
+        init();
     }
 
     public Floor(int id, int index, Tower owner) {
         this.id = id;
         this.index = index;
         this.tower = owner;
-        roomList = new ArrayList<>();
+        init();
     }
 
-    /*for StepMapper*/
-    public Floor(Integer id) {
-        this.id = id;
+    private void init() {
+        roomList = new ArrayList<>();
     }
 
     public int getId() {
@@ -73,18 +78,18 @@ public class Floor {
         this.roomList = roomList;
     }
 
-    public void setRoom(int roomIndex, Room room) {
+    public void setRoom(int roomIndex, Room roomer) {
         if (roomIndex < 0 || roomIndex >= roomList.size()) {
-            log.warn("Invalid roomIndex : Floor[{}].setRoom(roomIndex:{}, room)", index, roomIndex);
+            log.warn("Invalid roomIndex : Floor[index:{}].setRoom(roomIndex:{}, room)", index, roomIndex);
             return;
         }
 
         Room old = roomList.remove(roomIndex);
         old.setRoomIndex(0);
 
-        room.setRoomIndex(roomIndex);
-        room.setFloor(this);
-        roomList.add(roomIndex, room);
+        roomer.setRoomIndex(roomIndex);
+        roomer.setFloor(this);
+        roomList.add(roomIndex, roomer);
     }
 
     public boolean isEmpty() {

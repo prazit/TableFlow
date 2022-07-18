@@ -15,8 +15,6 @@ public class LineData extends TWData implements Serializable {
     private String endSelectableId;
 
     private int clientIndex;
-    private LinePlugData startPlug;
-    private LinePlugData endPlug;
     private String type;
     private String text;
 

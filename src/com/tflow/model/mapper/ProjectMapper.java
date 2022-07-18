@@ -85,6 +85,7 @@ public interface ProjectMapper {
 
     Project map(ProjectData projectData);
 
+    @Mapping(target = "index", expression = "java(-1)" /* Notice: index >= 0 = Working Data, index < 0 = Label Data */)
     Step map(StepItemData stepItemData);
 
     Step map(StepData stepData);
@@ -225,7 +226,6 @@ public interface ProjectMapper {
             StepItemData stepItemData = new StepItemData();
             stepItemData.setId(((Double) linkedTreeMap.get("id")).intValue());
             stepItemData.setName((String) linkedTreeMap.get("name"));
-            stepItemData.setIndex(((Double) linkedTreeMap.get("index")).intValue());
             stepItemDataList.add(stepItemData);
         }
         return stepItemDataList;

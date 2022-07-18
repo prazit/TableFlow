@@ -12,8 +12,11 @@ public class Room {
     private transient Logger log = LoggerFactory.getLogger(Room.class);
 
     private String elementId;
-    private int roomIndex;
     private RoomType roomType;
+
+    private int roomIndex;
+    private int floorIndex;
+
     private Floor floor;
 
     public String getElementId() {
@@ -32,6 +35,14 @@ public class Room {
         this.roomIndex = roomIndex;
     }
 
+    public int getFloorIndex() {
+        return floorIndex;
+    }
+
+    public void setFloorIndex(int floorIndex) {
+        this.floorIndex = floorIndex;
+    }
+
     public RoomType getRoomType() {
         return roomType;
     }
@@ -46,6 +57,7 @@ public class Room {
 
     public void setFloor(Floor floor) {
         this.floor = floor;
+        if (floor != null) this.floorIndex = floor.getIndex();
     }
 
     @Override

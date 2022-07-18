@@ -95,9 +95,10 @@
 
                                         <p:submenu label="Testing">
                                             <p:submenu label="Kafka">
-                                                <p:menuitem value="Send Message | Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testGetData}"/>
-                                                <p:menuitem value="Send Message | Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>
-                                                <p:menuitem value="Send Message | Save Project as Template" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSaveProjectTemplate}"/>
+                                                <p:menuitem value="Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testGetData}"/>
+                                                <p:menuitem value="Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>
+                                                <p:menuitem value="Save Project as Template" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSaveProjectTemplate}"/>
+                                                <p:menuitem value="Reset Proejct" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.reloadProject}"/>
                                             </p:submenu>
                                             <p:submenu label="Java Serialize">
                                                 <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>

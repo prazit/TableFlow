@@ -23,19 +23,24 @@ public class Tower {
 
     /*for StepMapper*/
     public Tower() {
-        /*nothing*/
+        init();
     }
 
     /*for StepMapper*/
     public Tower(int id) {
         this.id = id;
+        init();
     }
 
     public Tower(int id, int roomsOnAFloor, Step owner) {
         this.id = id;
         this.roomsOnAFloor = roomsOnAFloor;
-        floorList = new ArrayList<>();
         this.owner = owner;
+        init();
+    }
+
+    private void init() {
+        floorList = new ArrayList<>();
     }
 
     public int getId() {
@@ -152,6 +157,14 @@ public class Tower {
         return floorList.isEmpty();
     }
 
+    public int getRoomsOnAFloor() {
+        return roomsOnAFloor;
+    }
+
+    public void setRoomsOnAFloor(int roomsOnAFloor) {
+        this.roomsOnAFloor = roomsOnAFloor;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -160,5 +173,15 @@ public class Tower {
                 ", roomsOnAFloor:" + roomsOnAFloor +
                 ", activeRoom:" + activeRoom +
                 '}';
+    }
+
+    public void setRoom(int floorIndex, int roomIndex, Room roomer) {
+        if (floorIndex < 0 || floorIndex >= floorList.size()) {
+            log.warn("Invalid roomIndex : Tower[id:{}].setRoom(floorIndex:{}, roomIndex:{}, roomer:{})", id, floorIndex, roomIndex, roomer.getRoomType());
+            return;
+        }
+
+        Floor floor = floorList.get(floorIndex);
+        floor.setRoom(roomIndex, roomer);
     }
 }

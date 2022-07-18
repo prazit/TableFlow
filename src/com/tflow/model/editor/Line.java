@@ -1,7 +1,5 @@
 package com.tflow.model.editor;
 
-import java.io.Serializable;
-
 public class Line {
 
     private int id;

@@ -3,10 +3,13 @@ package com.tflow.kafka;
 import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
+import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.*;
 import com.tflow.system.Environment;
@@ -603,36 +606,52 @@ public class ProjectDataManager {
         Object data = getData(ProjectFileType.STEP, project, stepId, stepId);
         StepData stepData = (StepData) throwExceptionOnError(data);
         Step step = mapper.map(stepData);
+        step.setOwner(project);
 
         /*get each tower in step*/
         List<Integer> towerIdList = Arrays.asList(step.getDataTower().getId(), step.getTransformTower().getId(), step.getOutputTower().getId());
         List<Tower> towerList = new ArrayList<>();
-        List<Floor> floorList;
-        List<LinePlug> linePlugList = new ArrayList<>();
         for (Integer towerId : towerIdList) {
             data = getData(ProjectFileType.TOWER, project, towerId, stepId);
             Tower tower = mapper.map((TowerData) throwExceptionOnError(data));
             towerList.add(tower);
 
-            /*get each floor in tower*/
-            floorList = new ArrayList<>();
-            for (Floor fl : tower.getFloorList()) {
-                data = getData(ProjectFileType.FLOOR, project, fl.getId(), stepId);
-                Floor floor = mapper.map((FloorData) throwExceptionOnError(data));
+            /*create each floor in tower*/
+            int roomsOnAFloor = tower.getRoomsOnAFloor();
+            List<Floor> floorList = tower.getFloorList();
+            for (int floorIndex = 0; floorIndex < floorList.size(); floorIndex++) {
+                Floor floor = floorList.get(floorIndex);
+                floor.setIndex(floorIndex);
                 floor.setTower(tower);
-                floorList.add(floor);
+
+                /*create each room in a floor*/
+                List<Room> roomList = floor.getRoomList();
+                roomList.clear();
+                for (int index = 0; index < roomsOnAFloor; index++) {
+                    roomList.add(new EmptyRoom(index, floor));
+                }
             }
-            tower.setFloorList(floorList);
+            towerList.add(tower);
         }
         step.setDataTower(towerList.get(0));
         step.setTransformTower(towerList.get(1));
         step.setOutputTower(towerList.get(2));
 
-        /*TODO: DataSource, DataFile, DataTable, TransformTable, ColumnFxTable need to put in Tower*/
+        /*get data-source-selector-list*/
+        data = getData(ProjectFileType.DATA_SOURCE_SELECTOR_LIST, project, 1, stepId);
+        List<Integer> dataSourceSelectorIdList = mapper.fromDoubleList(((List<Double>) throwExceptionOnError(data)));
+        List<DataSourceSelector> dataSourceSelectorList = new ArrayList<>();
+        step.setDataSourceSelectorList(dataSourceSelectorList);
 
-        /*TODO: get data-source-selector-list*/
-
-        /*TODO: get data-source-selector*/
+        /*get data-source-selector*/
+        for (Integer dataSourceSelectorId : dataSourceSelectorIdList) {
+            data = getData(ProjectFileType.DATA_SOURCE_SELECTOR, project, dataSourceSelectorId, stepId);
+            DataSourceSelector dataSourceSelector = mapper.map((DataSourceSelectorData) throwExceptionOnError(data));
+            dataSourceSelector.setOwner(step);
+            dataSourceSelectorList.add(dataSourceSelector);
+            step.getDataTower().setRoom(dataSourceSelector.getFloorIndex(), dataSourceSelector.getRoomIndex(), dataSourceSelector);
+            dataSourceSelector.createPlugListeners();
+        }
 
         /*get data-table-list*/
         data = getData(ProjectFileType.DATA_TABLE_LIST, project, 1, stepId);
@@ -646,10 +665,15 @@ public class ProjectDataManager {
             DataTable dataTable = mapper.map((DataTableData) throwExceptionOnError(data));
             dataTable.setOwner(step);
             dataTableList.add(dataTable);
+            step.getDataTower().setRoom(dataTable.getFloorIndex(), dataTable.getRoomIndex(), dataTable);
+            dataTable.createPlugListeners();
 
             /*get data-file in data-table*/
             data = getData(ProjectFileType.DATA_FILE, project, dataTable.getDataFile().getId(), stepId, dataTableId);
-            dataTable.setDataFile(mapper.map((DataFileData) throwExceptionOnError(data)));
+            DataFile dataFile = mapper.map((DataFileData) throwExceptionOnError(data));
+            dataTable.setDataFile(dataFile);
+            step.getDataTower().setRoom(dataFile.getFloorIndex(), dataFile.getRoomIndex(), dataFile);
+            dataFile.createPlugListeners();
 
             /*get column-list*/
             data = getData(ProjectFileType.DATA_COLUMN_LIST, project, 1, stepId, dataTableId);
@@ -664,7 +688,7 @@ public class ProjectDataManager {
                 dataColumn = mapper.map((DataColumnData) throwExceptionOnError(data));
                 dataColumn.setOwner(dataTable);
                 columnList.add(dataColumn);
-                linePlugList.add(dataColumn.getStartPlug());
+                dataColumn.createPlugListeners();
             }
 
             /*get output-list*/
@@ -696,6 +720,11 @@ public class ProjectDataManager {
             TransformTable transformTable = mapper.map((TransformTableData) throwExceptionOnError(data));
             transformTable.setOwner(step);
             transformTableList.add(transformTable);
+            step.getDataTower().setRoom(transformTable.getFloorIndex(), transformTable.getRoomIndex(), transformTable);
+            transformTable.createPlugListeners();
+
+            ColumnFxTable columnFxTable = transformTable.getColumnFxTable();
+            step.getDataTower().setRoom(columnFxTable.getFloorIndex(), columnFxTable.getRoomIndex(), columnFxTable);
 
             /*get tranform-column-list*/
             data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, project, 1, stepId, 0, transformTableId);
@@ -704,7 +733,7 @@ public class ProjectDataManager {
             transformTable.setColumnList(columnList);
 
             /*get each tranform-column in tranform-column-list*/
-            List<ColumnFx> columnFxList = transformTable.getColumnFxTable().getColumnFxList();
+            List<ColumnFx> columnFxList = columnFxTable.getColumnFxList();
             TransformColumn transformColumn;
             ColumnFx columnFx;
             for (Integer columnId : columnIdList) {
@@ -712,8 +741,7 @@ public class ProjectDataManager {
                 transformColumn = mapper.map((TransformColumnData) throwExceptionOnError(data));
                 transformColumn.setOwner(transformTable);
                 columnList.add(transformColumn);
-                linePlugList.add(transformColumn.getStartPlug());
-                linePlugList.add(transformColumn.getEndPlug());
+                transformColumn.createPlugListeners();
 
                 /*get each tranform-columnfx in tranform-table(columnFxTable)*/
                 ColumnFx fx = transformColumn.getFx();
@@ -723,11 +751,10 @@ public class ProjectDataManager {
                     columnFx.setOwner(transformColumn);
                     transformColumn.setFx(columnFx);
                     columnFxList.add(columnFx);
-                    linePlugList.add(columnFx.getStartPlug());
                     for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
                         columnFxPlug.setOwner(columnFx);
-                        linePlugList.add(columnFxPlug);
                     }
+                    columnFx.createPlugListeners();
                 }
             }
 
@@ -782,16 +809,11 @@ public class ProjectDataManager {
         project.setActiveStepIndex(step.getIndex());
         Map<String, Selectable> selectableMap = step.getSelectableMap();
 
-        /*after regen selectableMap*/
         step.setActiveObject(selectableMap.get(stepData.getActiveObject()));
-
-        /*TODO: ColumnFxData: call createStartPlug and createEndPlug.*/
-
-        /*TODO: (continue at DatabaseData) find all LinePlugData in Data Package, all of them need to
-         * 1. find each Line by id (line in lineList)
-         * 2. call Owner.createPlugListener
-         */
-
+        for (Line line : lineList) {
+            line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
+            line.setEndPlug(((HasEndPlug) selectableMap.get(line.getStartSelectableId())).getEndPlug());
+        }
 
         return step;
     }

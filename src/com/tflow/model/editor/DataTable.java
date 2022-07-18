@@ -46,8 +46,8 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
         this.query = "";
         this.idColName = idColName;
         this.noTransform = false;
-        this.endPlug = createEndPlug(endPlug);
-        this.startPlug = createStartPlug(startPlug);
+        createEndPlug(endPlug);
+        createStartPlug(startPlug);
         this.startPlug.setTransferButton(true);
         connectionCount = 0;
         this.columnList = new ArrayList<>();
@@ -56,10 +56,13 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
         eventManager = new EventManager(this);
     }
 
-    private EndPlug createEndPlug(String plugId) {
-        EndPlug startPlug = new EndPlug(plugId);
+    private void createEndPlug(String plugId) {
+        endPlug = new EndPlug(plugId);
+        createEndPlugListener();
+    }
 
-        startPlug.setListener(new PlugListener(startPlug) {
+    private void createEndPlugListener() {
+        endPlug.setListener(new PlugListener(endPlug) {
             @Override
             public void plugged(Line line) {
                 plug.setPlugged(true);
@@ -73,14 +76,15 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
                 plug.setRemoveButton(false);
             }
         });
-
-        return startPlug;
     }
 
-    private StartPlug createStartPlug(String plugId) {
-        StartPlug startPlug = new StartPlug(plugId);
+    private void createStartPlug(String plugId) {
+        startPlug = new StartPlug(plugId);
         startPlug.setTransferButton(true);
+        createStartPlugListener();
+    }
 
+    private void createStartPlugListener() {
         startPlug.setListener(new PlugListener(startPlug) {
             @Override
             public void plugged(Line line) {
@@ -95,8 +99,12 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
                 connectionRemoved();
             }
         });
+    }
 
-        return startPlug;
+    /*call after ProjectMapper*/
+    public void createPlugListeners() {
+        createStartPlugListener();
+        createEndPlugListener();
     }
 
     public int getId() {
@@ -284,4 +292,5 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
                 ", outputList:" + Arrays.toString(outputList.toArray()) +
                 '}';
     }
+
 }

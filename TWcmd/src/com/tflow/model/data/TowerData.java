@@ -12,5 +12,6 @@ public class TowerData extends TWData implements Serializable {
     private static final transient long serialVersionUID = 2021121909996660010L;
 
     private int id;
+    private int roomsOnAFloor;
     private List<Integer> floorList;
 }

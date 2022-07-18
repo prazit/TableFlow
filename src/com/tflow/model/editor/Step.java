@@ -182,6 +182,10 @@ public class Step implements Selectable, HasEvent {
         return owner;
     }
 
+    public void setOwner(Project owner) {
+        this.owner = owner;
+    }
+
     public DataTable getDataTable(int sourceId) {
         for (DataTable dataTable : dataList) {
             if (dataTable.getId() == sourceId) {

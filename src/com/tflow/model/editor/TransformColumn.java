@@ -13,18 +13,22 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug, DataTable owner) {
         super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug, owner);
         dataColName = "" + name;
-        this.endPlug = createEndPlug(endPlug);
+        createEndPlug(endPlug);
     }
 
     public TransformColumn(int index, DataType type, String name, String endPlug, String startPlug, DataTable owner) {
         super(index, type, name, startPlug, owner);
         dataColName = "" + name;
-        this.endPlug = createEndPlug(endPlug);
+        createEndPlug(endPlug);
     }
 
-    private LinePlug createEndPlug(String endPlug) {
-        LinePlug plug = new EndPlug(endPlug);
-        plug.setListener(new PlugListener(plug) {
+    private void createEndPlug(String endPlugId) {
+        endPlug = new EndPlug(endPlugId);
+        createEndPlugListener();
+    }
+
+    private void createEndPlugListener() {
+        endPlug.setListener(new PlugListener(endPlug) {
             @Override
             public void plugged(Line line) {
                 plug.setPlugged(true);
@@ -40,7 +44,13 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
                 owner.connectionRemoved();
             }
         });
-        return plug;
+    }
+
+    /*call after projectMapper*/
+    @Override
+    public void createPlugListeners() {
+        super.createPlugListeners();
+        createEndPlugListener();
     }
 
     public String getDataColName() {

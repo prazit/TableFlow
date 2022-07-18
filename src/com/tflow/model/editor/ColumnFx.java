@@ -31,7 +31,7 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
     public ColumnFx(ColumnFunction function, String name, String startPlug, DataColumn owner) {
         this.name = name;
         this.function = function;
-        this.startPlug = createStartPlug(startPlug);
+        createStartPlug(startPlug);
         this.owner = owner;
         eventManager = new EventManager(this);
         propertyMap = new HashMap<>();
@@ -45,10 +45,14 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
         this.id = id;
     }
 
-    private StartPlug createStartPlug(String plugId) {
-        StartPlug startPlug = new StartPlug(plugId);
+    private void createStartPlug(String plugId) {
+        startPlug = new StartPlug(plugId);
         startPlug.setExtractButton(true);
 
+        createStartPlugListener();
+    }
+
+    private void createStartPlugListener() {
         startPlug.setListener(new PlugListener(startPlug) {
             @Override
             public void plugged(Line line) {
@@ -63,13 +67,21 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
             }
         });
 
-        return startPlug;
+
+    }
+
+    /*call after projectMapper*/
+    public void createPlugListeners() {
+        createStartPlugListener();
+        for (ColumnFxPlug columnFxPlug : endPlugList) {
+            columnFxPlug.createDefaultPlugListener();
+        }
     }
 
     /**
      * Need to re-create endPlugList again after the function is changed.
      */
-    private void createEndPlugList() {
+    public void createEndPlugList() {
         Step step = owner.getOwner().getOwner();
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         Project project = step.getOwner();
@@ -86,9 +98,10 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
         String endPlugId;
         for (PropertyView propertyView : function.getProperties().getPlugPropertyList()) {
             endPlugId = project.newElementId();
+            /*Notice: columnFxPlug use defaultPlugListener*/
             ColumnFxPlug columnFxPlug = new ColumnFxPlug(project.newUniqueId(), propertyView.getType().getDataType(), propertyView.getLabel(), endPlugId, this);
             endPlugList.add(columnFxPlug);
-            /*need to update selectableMap for each*/
+            /*update selectableMap for each*/
             selectableMap.put(columnFxPlug.getSelectableId(), columnFxPlug);
         }
     }
@@ -114,7 +127,7 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
     }
 
     public void setFunction(ColumnFunction function) {
-        if(this.function == function) return;
+        if (this.function == function) return;
         this.function = function;
         createEndPlugList();
     }

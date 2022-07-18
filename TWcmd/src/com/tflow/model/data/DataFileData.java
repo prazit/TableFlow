@@ -12,7 +12,7 @@ import java.util.Map;
  **/
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class DataFileData extends TWData implements Serializable {
+public class DataFileData extends RoomData implements Serializable {
     private static final transient long serialVersionUID = 2021121709996660020L;
 
     private int id;
