@@ -94,6 +94,9 @@
                                         </p:submenu>
 
                                         <p:submenu label="Testing">
+                                            <p:submenu label="Properties">
+                                                <p:menuitem value="Check Enum Update On Redeploy" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testEnumUpdateOnRedeploy}"/>
+                                            </p:submenu>
                                             <p:submenu label="Kafka">
                                                 <p:menuitem value="Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testGetData}"/>
                                                 <p:menuitem value="Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>

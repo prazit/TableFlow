@@ -15,6 +15,8 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface RecordMapper {
 
+    KafkaRecordAttributes copy(KafkaRecordAttributes kafkaRecordAttributes);
+
     @Mappings({
             @Mapping(target = "modifiedClientId", source = "clientId"),
             @Mapping(target = "modifiedUserId", source = "userId")

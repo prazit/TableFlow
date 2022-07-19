@@ -10,6 +10,7 @@ import com.tflow.model.mapper.ProjectMapper;
 import java.util.List;
 import java.util.Map;
 
+/*This command shared between DataTable and TransformTable*/
 public class AddOutputFile extends Command {
 
     @Override
@@ -39,15 +40,26 @@ public class AddOutputFile extends Command {
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.OUTPUT_FILE, outputFile);
 
-        // save OutputFile data
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), step.getId(), dataTable.getId());
+        if (dataTable instanceof TransformTable) {
+            // save OutputFile data
+            projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), step.getId(), 0, dataTable.getId());
 
-        // save OutputFile list
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, outputFile.getId(), step.getId(), dataTable.getId());
+            // save OutputFile list
+            projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, outputFile.getId(), step.getId(), 0, dataTable.getId());
+        } else {
+            // save OutputFile data
+            projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), step.getId(), dataTable.getId());
+
+            // save OutputFile list
+            projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, outputFile.getId(), step.getId(), dataTable.getId());
+        }
 
         // no line, tower, floor to save here
+
+        // save Project data: need to update Project record every Action that call the newUniqueId*/
+        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
     }
 
 }

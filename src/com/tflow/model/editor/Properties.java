@@ -23,6 +23,10 @@ public enum Properties {
     /*TODO: selectable object need lock/unlock status to enable/disable some properties with lock marked*/
 
     /*TODO: client side: lets call the properties listener after value-changed*/
+    TEST_REDEPLOY(
+            "version.1.0.0",
+            "version.1.0.1"
+    ),
 
     STEP(
             "name:Name:String:refreshStepList();",
@@ -84,16 +88,22 @@ public enum Properties {
             "name:Parameter Name:String"
     ),
 
+    INPUT_TXT(
+            "type:Type:FileType:in:refreshProperties();",
+            "name:File name:String"
+    ),
+    INPUT_CSV(
+            "type:Type:FileType:in:refreshProperties();",
+            "name:File name:String"
+    ),
     INPUT_SQL(
             "type:Type:FileType:in:refreshProperties();",
-            ".:dataSource:name:DB Connection:DBConnection",
             "name:File name:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
     ),
     INPUT_MARKDOWN(
             "type:Type:FileType:in:refreshProperties();",
-            "dataSource:FTP/SFTP:SFTP",
             "name:File name:String" /*TODO: do this after file structure is completed, change String of name to Upload. //"name:Filename:Upload:md,txt",*/
     ),
     INPUT_ENVIRONMENT(

@@ -48,6 +48,9 @@ public class AddTableFx extends Command {
         projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(tableFxList), step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no line, tower, floor to save here
+
+        // save Project data: need to update Project record every Action that call the newUniqueId*/
+        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
     }
 
 }

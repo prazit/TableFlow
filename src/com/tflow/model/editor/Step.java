@@ -65,6 +65,7 @@ public class Step implements Selectable, HasEvent {
         this.name = name;
         history = new ArrayList<>();
         dataSourceSelectorList = new ArrayList<>();
+        fileList = new ArrayList<>();
         dataList = new ArrayList<>();
         transformList = new ArrayList<>();
         outputList = new ArrayList<>();

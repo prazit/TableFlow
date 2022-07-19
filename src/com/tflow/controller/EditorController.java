@@ -2,6 +2,7 @@ package com.tflow.controller;
 
 import com.tflow.kafka.*;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
@@ -59,13 +60,8 @@ public class EditorController extends Controller {
 
     @PostConstruct
     public void onCreation() {
-        if (workspace.getProject().getId().compareTo("TEST") == 0) {
-            // TODO: move this script block to Open Project Page
-            workspace.getProject().setId("P1");
-            projectDataManager = new ProjectDataManager(workspace.getEnvironment());
-            workspace.getProject().setManager(projectDataManager);
-            testOpenProject();
-        }
+        projectDataManager = new ProjectDataManager(workspace.getEnvironment());
+        workspace.getProject().setManager(projectDataManager);
 
         leftPanelTitle = "Step List";
         initActionPriorityMap();
@@ -86,7 +82,7 @@ public class EditorController extends Controller {
     private void initStepList() {
         Project project = workspace.getProject();
         projectName = project.getName();
-        selectStep(project.getActiveStepIndex(), true);
+        selectStep(project.getActiveStepIndex(), false);
         refreshStepList(project.getStepList());
     }
 
@@ -511,9 +507,10 @@ public class EditorController extends Controller {
 
         if (project == null) {
             log.warn("testOpenProject: getProject return NULL, automatic call 'Test > Save Full Project'.");
-            testSaveProjectTemplate();
         } else {
             log.info("testOpenProject: Project(After) = {}", project);
+            FacesUtil.addInfo("Project[" + project.getName() + "] loaded.");
+            FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
         }
     }
 
@@ -531,7 +528,7 @@ public class EditorController extends Controller {
         } catch (ProjectDataException ex) {
             log.error("testOpenStep: error from TRcmd service: {}", ex.getMessage());
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error("testOpenStep: unexpected error occurred, ", ex);
         }
 
     }
@@ -562,6 +559,10 @@ public class EditorController extends Controller {
         } catch (Exception ex) {
             log.error("testConvertByteArrayAndString: ", ex);
         }
+    }
+
+    public void testEnumUpdateOnRedeploy() {
+        log.warn("testEnumUpdateOnRedeploy: {}",Properties.TEST_REDEPLOY.getPrototypeList());
     }
 
     @SuppressWarnings("unchecked")

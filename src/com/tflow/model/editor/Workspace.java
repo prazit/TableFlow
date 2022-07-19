@@ -38,7 +38,7 @@ public class Workspace implements Serializable {
 
     public void reloadProject() {
         // TODO: do this after AddProject action is completed, remove mockup project and mockup step here.
-        project = new Project("TEST", "Test Project");
+        project = new Project("P1", "Test Project");
         project.setOwer(this);
         project.getStepList().add(new Step("Test Step 1", project));
     }

@@ -82,10 +82,6 @@ public class RemoveTransformTable extends Command {
         // save Tower data
         Tower tower = floor.getTower();
         projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
-
-        // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, (TWData) null, project, floor.getId(), step.getId());
-
     }
 
 }

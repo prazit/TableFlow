@@ -99,8 +99,9 @@ public class AddDataSource extends Command {
         // save Tower data
         projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
 
-        // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
+        // save Project data: need to update Project record every Action that call the newUniqueId*/
+        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+
     }
 
 }

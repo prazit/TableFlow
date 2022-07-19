@@ -9,6 +9,7 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
 
+import java.util.List;
 import java.util.Map;
 
 public class AddDataFile extends Command {
@@ -35,6 +36,8 @@ public class AddDataFile extends Command {
             dataTable = (DataTable) paramMap.get(CommandParamKey.DATA_TABLE);
             dataFile.setOwner(dataTable);
         }
+        List<DataFile> fileList = step.getFileList();
+        fileList.add(dataFile);
 
         Floor floor = tower.getAvailableFloor(1, false);
         floor.setRoom(1, dataFile);
@@ -59,7 +62,7 @@ public class AddDataFile extends Command {
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
         int stepId = step.getId();
-        projectDataManager.addData(ProjectFileType.DATA_FILE_LIST, mapper.fromDataFileList(step.getFileList()), project, 0, stepId);
+        projectDataManager.addData(ProjectFileType.DATA_FILE_LIST, mapper.fromDataFileList(fileList), project, 0, stepId);
 
         // save DataFile data
         projectDataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, dataFile.getId(), stepId);
@@ -77,8 +80,8 @@ public class AddDataFile extends Command {
         // save Tower data
         projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
 
-        // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
+        // save Project data: need to update Project record every Action that call the newUniqueId*/
+        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
     }
 
 }

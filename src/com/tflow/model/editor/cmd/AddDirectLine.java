@@ -47,6 +47,9 @@ public class AddDirectLine extends Command {
         projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), step.getId());
 
         // no tower, floor to save here
+
+        // save Project data: need to update Project record every Action that call the newUniqueId*/
+        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
     }
 
 }

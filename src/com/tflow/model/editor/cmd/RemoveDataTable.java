@@ -72,9 +72,6 @@ public class RemoveDataTable extends Command {
         // save Tower data
         Tower tower = floor.getTower();
         projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
-
-        // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
     }
 
 }

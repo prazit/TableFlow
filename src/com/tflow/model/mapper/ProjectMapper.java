@@ -1,6 +1,7 @@
 package com.tflow.model.mapper;
 
 import com.google.gson.internal.LinkedTreeMap;
+import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.*;
@@ -36,7 +37,6 @@ import java.util.stream.Collectors;
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface ProjectMapper {
-
 
     /*---- MAP BETWEEN OBJECT ----*/
 
@@ -79,6 +79,7 @@ public interface ProjectMapper {
 
     LineData map(Line newLine);
 
+    @Mapping(target = "roomsOnAFloor", expression = "java(tower.getFloorList().size() == 0 ? 0 : tower.getFloor(0).getRoomList().size())")
     TowerData map(Tower tower);
 
     FloorData map(Floor floor);

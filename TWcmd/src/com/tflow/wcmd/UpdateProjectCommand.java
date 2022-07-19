@@ -2,6 +2,7 @@ package com.tflow.wcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaRecord;
+import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DatabaseData;
 import com.tflow.model.data.SFTPData;
@@ -34,7 +35,7 @@ public class UpdateProjectCommand extends KafkaCommand {
     @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException, SerializationException {
         RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
-        RecordData recordData = mapper.map((KafkaRecord) value);
+        RecordData recordData = mapper.map((KafkaRecord) this.value);
         ProjectFileType projectFileType = validate(key, recordData);
         RecordAttributesData additional = recordData.getAdditional();
 
@@ -137,8 +138,36 @@ public class UpdateProjectCommand extends KafkaCommand {
         }
 
         additional.setFileType(fileType);
+        normalizeAttributes(additional);
+
         return fileType;
     }
 
+    private void normalizeAttributes(RecordAttributesData additional) {
+        ProjectFileType fileType = additional.getFileType();
+        switch (fileType.getRequireType()) {
+            case 1: // projectId
+                additional.setStepId(null);
+                additional.setDataTableId(null);
+                additional.setTransformTableId(null);
+                break;
+
+            case 2: // projectId, stepId
+                additional.setDataTableId(null);
+                additional.setTransformTableId(null);
+                break;
+
+            case 3: // projectId, stepId, dataTableId
+                additional.setTransformTableId(null);
+                break;
+
+            case 4: // projectId, stepId, transformTableId
+                additional.setDataTableId(null);
+                break;
+        }
+        if (fileType.getPrefix().endsWith("list")) {
+            additional.setRecordId(null);
+        }
+    }
 
 }

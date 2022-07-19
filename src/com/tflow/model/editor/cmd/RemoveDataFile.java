@@ -27,6 +27,9 @@ public class RemoveDataFile extends Command {
         Project project = step.getOwner();
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
+        List<DataFile> fileList = step.getFileList();
+        fileList.remove(dataFile);
+
         /*remove remaining lines on startPlug (startPlug connect to many DataTable)*/
         LinePlug startPlug = dataFile.getStartPlug();
         List<Line> removedLineList = new ArrayList<>(startPlug.getLineList());
@@ -58,7 +61,7 @@ public class RemoveDataFile extends Command {
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
         int stepId = step.getId();
-        projectDataManager.addData(ProjectFileType.DATA_FILE_LIST, step.getFileList(), project, 0, stepId);
+        projectDataManager.addData(ProjectFileType.DATA_FILE_LIST, fileList, project, 0, stepId);
 
         // save DataFile data
         projectDataManager.addData(ProjectFileType.DATA_FILE, (TWData) null, project, dataFile.getId(), stepId);
@@ -74,9 +77,6 @@ public class RemoveDataFile extends Command {
         // save Tower data
         Tower tower = floor.getTower();
         projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
-
-        // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
     }
 
 }

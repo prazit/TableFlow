@@ -429,11 +429,6 @@ public class ProjectDataManager {
         List<Tower> towerList = Arrays.asList(step.getDataTower(), step.getTransformTower(), step.getOutputTower());
         for (Tower tower : towerList) {
             addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
-
-            /*add each floor in tower*/
-            for (Floor floor : tower.getFloorList()) {
-                addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
-            }
         }
 
         /*add data-source-selector-list*/
@@ -794,7 +789,7 @@ public class ProjectDataManager {
             /*get each transform-output in transform-output-list*/
             OutputFile outputFile;
             for (Integer outputId : outputIdList) {
-                data = getData(ProjectFileType.TRANSFORM_OUTPUT, project, 1, stepId, 0, transformTableId);
+                data = getData(ProjectFileType.TRANSFORM_OUTPUT, project, outputId, stepId, 0, transformTableId);
                 outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
                 outputFile.setOwner(transformTable);
                 outputList.add(outputFile);
@@ -841,7 +836,12 @@ public class ProjectDataManager {
         for (Line line : lineList) {
             log.warn("line={}", line);
             line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
-            line.setEndPlug(((HasEndPlug) selectableMap.get(line.getEndSelectableId())).getEndPlug());
+
+            try {
+                line.setEndPlug(((HasEndPlug) selectableMap.get(line.getEndSelectableId())).getEndPlug());
+            } catch (NullPointerException ex) {
+                log.error("endSelectableId:{} not found", line.getEndSelectableId());
+            }
         }
 
         return step;

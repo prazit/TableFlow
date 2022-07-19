@@ -134,7 +134,7 @@
                                                 <input name="selectableId" type="hidden" value="#{output.selectableId}"/>
                                                 <p:remoteCommand name="update#{output.selectableId}" update="@parent" oncomplete="updateComplete('#{output.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{output.type.image}"/>
-                                                <label>#{output.dataSource.name} - (#{output.name})</label>
+                                                <label>#{output.type.dataSourceType.name()} : #{output.name}</label>
                                                 <div class="#{output.startPlug.styleClass}" id="#{output.startPlug}"></div>
                                             </p:outputPanel>
 
@@ -254,7 +254,7 @@
                                                     <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
                                                     <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="updateComplete('#{toutput.selectableId}')"/>
                                                     <p:graphicImage library="images" name="#{toutput.type.image}"/>
-                                                    <label>#{toutput.dataSource.name} - (#{toutput.name})</label>
+                                                    <label>#{toutput.type.dataSourceType.name()} - (#{toutput.name})</label>
                                                     <div class="#{toutput.startPlug.styleClass}" id="#{toutput.startPlug}"></div>
                                                 </p:outputPanel>
 

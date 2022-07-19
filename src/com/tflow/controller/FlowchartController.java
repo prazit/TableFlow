@@ -320,6 +320,7 @@ public class FlowchartController extends Controller {
         return addDirectLine(dataSourceId, dataFileId, false);
     }
 
+    /*TODO: Test > Get Project and then AddColumnFx*/
     private Action addColumnFx(DataColumn sourceColumn, TransformColumn transformColumn) {
         log.warn("addLookup(sourceColumn:{}, targetColumn:{})", sourceColumn.getSelectableId(), transformColumn.getSelectableId());
         Step step = getStep();
@@ -603,22 +604,22 @@ public class FlowchartController extends Controller {
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
         paramMap.put(CommandParamKey.STEP, step);
 
-        DataFile dataFile;
+        OutputFile outputFile;
         try {
             Action action = new AddOutputFile(paramMap);
             action.execute();
-            dataFile = (DataFile) action.getResultMap().get(ActionResultKey.DATA_FILE);
+            outputFile = (OutputFile) action.getResultMap().get(ActionResultKey.OUTPUT_FILE);
         } catch (RequiredParamException e) {
             log.error("Add Table Function Failed!", e);
             FacesUtil.addError("Add Table Function Failed with Internal Command Error!");
             return;
         }
 
-        step.setActiveObject(dataFile);
+        step.setActiveObject(outputFile);
 
-        FacesUtil.addInfo("OutputFile[" + dataFile.getSelectableId() + "] added.");
+        FacesUtil.addInfo("OutputFile[" + outputFile.getSelectableId() + "] added.");
 
-        jsBuilder.pre(JavaScript.selectAfterUpdateEm, dataFile.getSelectableId());
+        jsBuilder.pre(JavaScript.selectAfterUpdateEm, outputFile.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, dataTable.getSelectableId());
 
