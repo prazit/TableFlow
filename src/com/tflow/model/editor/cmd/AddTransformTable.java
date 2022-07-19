@@ -36,7 +36,6 @@ public class AddTransformTable extends Command {
         TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), project.newElementId(), project.newElementId(), step);
         transformTable.setLevel(sourceTable.getLevel() + 1);
 
-        Room sourceRoom = (Room) sourceTable;
         List<DataColumn> sourceColumnList = sourceTable.getColumnList();
 
         /*copy column from source-table*/
@@ -47,7 +46,7 @@ public class AddTransformTable extends Command {
         }
 
         /*put this transform-table on the same floor of source table*/
-        int floorIndex = sourceRoom.getFloor().getIndex();
+        int floorIndex = sourceTable.getFloor().getIndex();
         Floor floor = tower.getFloor(floorIndex);
         int roomIndex = 1;
         if (floor == null) {
@@ -57,7 +56,7 @@ public class AddTransformTable extends Command {
             }
         } else if (!floor.isEmpty()) {
             List<Room> roomList = floor.getRoomList();
-            if (roomList.get(roomList.size() - 1).equals(sourceRoom)) {
+            if (roomList.get(roomList.size() - 1).equals(sourceTable)) {
                 /*case: floor already used by source table then add 2 rooms to the right*/
                 tower.addRoom(2, null);
                 roomIndex = roomList.size() - 1;
@@ -104,7 +103,7 @@ public class AddTransformTable extends Command {
         if (sourceTable instanceof TransformTable) {
             projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) sourceTable), project, sourceTable.getId(), stepId, 0, sourceTable.getId());
         } else {
-            projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) sourceTable), project, sourceTable.getId(), stepId, sourceTable.getId());
+            projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(sourceTable), project, sourceTable.getId(), stepId, sourceTable.getId());
         }
 
         // Notice: this command copy all columns from source table that need to save Column List, Column Data, Output List, Output Data too

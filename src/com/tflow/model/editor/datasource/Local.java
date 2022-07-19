@@ -3,7 +3,6 @@ package com.tflow.model.editor.datasource;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;
-import com.tflow.model.editor.StartPlug;
 import com.tflow.model.editor.room.RoomType;
 
 import java.util.*;

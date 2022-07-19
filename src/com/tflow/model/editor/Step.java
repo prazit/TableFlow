@@ -1,7 +1,6 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.action.Action;
-import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.room.Tower;
 
@@ -72,7 +71,7 @@ public class Step implements Selectable, HasEvent {
         lineList = new ArrayList<>();
         lastLineClientIndex = 0;
         startPlug = new StartPlug("step");
-        zoom = Double.valueOf(100);
+        zoom = 100d;
         this.owner = owner;
         selectableMap = new HashMap<>();
         showStepList = true;

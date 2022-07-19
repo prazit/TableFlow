@@ -34,7 +34,7 @@ public class AddColumnFx extends Command {
             targetColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
             sourceColumn = (DataColumn) paramMap.get(CommandParamKey.DATA_COLUMN);
             columnFunction = (ColumnFunction) paramMap.get(CommandParamKey.COLUMN_FUNCTION);
-            columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), (DataColumn) targetColumn);
+            columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), targetColumn);
             columnFx.setId(project.newUniqueId());
             propertyMap = columnFx.getPropertyMap();
             initPropertyMap(propertyMap, sourceColumn);
@@ -91,7 +91,7 @@ public class AddColumnFx extends Command {
         if (sourceColumn instanceof TransformColumn) {
             projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) sourceColumn), project, sourceColumn.getId(), step.getId(), 0, sourceColumn.getOwner().getId());
         } else {
-            projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) sourceColumn), project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
+            projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(sourceColumn), project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
         }
 
         // save Object(TargetColumn) at the endPlug of line2

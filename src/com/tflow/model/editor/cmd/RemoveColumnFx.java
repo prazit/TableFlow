@@ -66,7 +66,7 @@ public class RemoveColumnFx extends Command {
             if (dataColumn instanceof TransformColumn) {
                 projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), step.getId(), 0, dataColumn.getOwner().getId());
             } else {
-                projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) dataColumn), project, dataColumn.getId(), step.getId(), dataColumn.getOwner().getId());
+                projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), project, dataColumn.getId(), step.getId(), dataColumn.getOwner().getId());
             }
         }
 

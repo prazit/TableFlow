@@ -22,7 +22,6 @@ public class TWcmd {
 
     private Logger log = LoggerFactory.getLogger(TWcmd.class);
 
-    private EnvironmentConfigs environmentConfigs;
     private boolean polling;
 
     public TWcmd() {
@@ -34,7 +33,7 @@ public class TWcmd {
         Properties props = new Properties();
 
         /*TODO: need configuration for all values below*/
-        environmentConfigs = EnvironmentConfigs.DEVELOPMENT;
+        EnvironmentConfigs environmentConfigs = EnvironmentConfigs.DEVELOPMENT;
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("group.id", "twcmd");
         props.put("enable.auto.commit", "true");
@@ -43,7 +42,7 @@ public class TWcmd {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", StandardCharsets.UTF_8.name());
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<String, byte[]>(props);
+        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
 
         String topic = "project-write";
         consumer.subscribe(Collections.singletonList(topic));

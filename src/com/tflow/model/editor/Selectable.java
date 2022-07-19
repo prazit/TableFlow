@@ -6,14 +6,14 @@ public interface Selectable {
 
     /*TODO: need Locked-Status(locked mode, unlocked mode) to disable some properties, as example: File-Type cannot change after extract data structure*/
 
-    public Properties getProperties();
+    Properties getProperties();
 
-    public String getSelectableId();
+    String getSelectableId();
 
-    public LinePlug getStartPlug();
+    LinePlug getStartPlug();
 
-    public void setStartPlug(LinePlug startPlug);
+    void setStartPlug(LinePlug startPlug);
 
-    public Map<String, Object> getPropertyMap();
+    Map<String, Object> getPropertyMap();
 
 }

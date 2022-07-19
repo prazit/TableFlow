@@ -1,8 +1,6 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.*;
-import com.tflow.kafka.KafkaRecord;
-import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
@@ -1114,8 +1112,7 @@ public class EditorController extends Controller {
     public void stepListTabChanged(TabChangeEvent event) {
         String id = event.getTab().getId();
         log.warn("stepListTabChanged(event:{}, tabId:{})", event, id);
-        int activeTabIndex = 1;
-        stepListActiveTab = activeTabIndex;
+        stepListActiveTab = 1;
         workspace.getProject().getActiveStep().setStepListActiveTab(stepListActiveTab);
     }
 

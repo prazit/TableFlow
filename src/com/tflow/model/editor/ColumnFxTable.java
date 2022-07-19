@@ -3,7 +3,6 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 

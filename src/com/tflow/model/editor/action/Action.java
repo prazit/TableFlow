@@ -38,7 +38,7 @@ public abstract class Action {
     protected abstract void initUndoCommands();
 
     public Action() {
-        resultMap = new HashMap<ActionResultKey, Object>();
+        resultMap = new HashMap<>();
         initAction();
     }
 

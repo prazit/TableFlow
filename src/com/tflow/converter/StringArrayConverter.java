@@ -1,20 +1,10 @@
 package com.tflow.converter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.el.ValueExpression;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
 
 @FacesConverter(value = "StringArray")
 public class StringArrayConverter implements Converter {
@@ -24,9 +14,9 @@ public class StringArrayConverter implements Converter {
         String separator = getSeparator(context, component);
 
         String[] strings = (String[]) object;
-        String joined = "";
+        StringBuilder joined = new StringBuilder();
         for (String string : strings) {
-            joined += separator + string;
+            joined.append(separator).append(string);
         }
         return joined.substring(1);
     }

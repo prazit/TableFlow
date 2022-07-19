@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Tower {
@@ -74,7 +75,7 @@ public class Tower {
         if (floor == null) {
             floorList = this.floorList;
         } else {
-            floorList = Arrays.asList(floor);
+            floorList = Collections.singletonList(floor);
         }
 
         Project project = floorList.get(0).getTower().getOwner().getOwner();

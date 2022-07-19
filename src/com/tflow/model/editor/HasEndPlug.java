@@ -2,8 +2,8 @@ package com.tflow.model.editor;
 
 public interface HasEndPlug {
 
-    public LinePlug getEndPlug();
+    LinePlug getEndPlug();
 
-    public void setEndPlug(LinePlug endPlug);
+    void setEndPlug(LinePlug endPlug);
 
 }

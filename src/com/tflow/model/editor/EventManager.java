@@ -2,7 +2,6 @@ package com.tflow.model.editor;
 
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

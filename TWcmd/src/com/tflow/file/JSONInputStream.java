@@ -3,10 +3,8 @@ package com.tflow.file;
 import com.google.gson.Gson;
 import com.tflow.model.data.record.JSONRecordData;
 import com.tflow.model.data.record.RecordData;
-import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
-import org.mapstruct.factory.Mappers;
 
 import java.io.DataInputStream;
 import java.io.IOException;

@@ -442,7 +442,7 @@ function startup() {
     var parentWindow = window.parent;
     $('.section').each(function (i, e) {
         $(e).height(parentWindow.outerHeight * 10);
-    })
+    });
 
     /*zoom to current value*/
     parentWindow.zoomStart();

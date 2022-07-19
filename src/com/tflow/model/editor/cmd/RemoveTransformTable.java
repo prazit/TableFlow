@@ -9,7 +9,6 @@ import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
-import org.jboss.weld.manager.Transform;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +72,7 @@ public class RemoveTransformTable extends Command {
             if (table instanceof TransformTable) {
                 projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) table), project, table.getId(), step.getId(), 0, table.getId());
             } else {
-                projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) table), project, table.getId(), step.getId(), table.getId());
+                projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(table), project, table.getId(), step.getId(), table.getId());
             }
         }
 

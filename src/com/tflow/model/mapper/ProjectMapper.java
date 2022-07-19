@@ -6,17 +6,14 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
-import org.jboss.weld.manager.Transform;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /* Notice: modify mapper during running need to manual Rebuild Artifact before redeploy again */
@@ -217,7 +214,7 @@ public interface ProjectMapper {
     }
 
 
-    default List<Integer> fromMap(Map<Integer, ? extends Object> map) {
+    default List<Integer> fromMap(Map<Integer, ?> map) {
         return new ArrayList<>(map.keySet());
     }
 

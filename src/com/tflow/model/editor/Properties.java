@@ -1,7 +1,6 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.view.PropertyView;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;

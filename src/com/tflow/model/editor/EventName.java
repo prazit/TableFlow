@@ -10,6 +10,6 @@ public enum EventName {
     /*Event as status notifier*/
     PROPERTY_CHANGED,
     LINE_REMOVED,
-    LINE_ADDED;
+    LINE_ADDED
 
 }

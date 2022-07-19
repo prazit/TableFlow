@@ -6,6 +6,6 @@ import java.io.IOException;
 
 public interface SerializeWriter {
 
-    public void writeSerialize(Object obj) throws IOException, SerializationException;
+    void writeSerialize(Object obj) throws IOException, SerializationException;
 
 }

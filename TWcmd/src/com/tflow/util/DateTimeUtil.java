@@ -157,10 +157,9 @@ public class DateTimeUtil {
 
     public static BigDecimal getManDays(long minutes) {
         BigDecimal m = new BigDecimal(minutes);
-        BigDecimal result = m.divide(MANDAYS_MINUTE, DEFAULT_SCALE, RoundingMode.HALF_UP)
+        //        log.debug("getManDay. (minutes: {}, manDays: {} MD.)",minutes,result);
+        return m.divide(MANDAYS_MINUTE, DEFAULT_SCALE, RoundingMode.HALF_UP)
                 .divide(MANDAYS_HOUR, DEFAULT_SCALE, RoundingMode.HALF_UP);
-//        log.debug("getManDay. (minutes: {}, manDays: {} MD.)",minutes,result);
-        return result;
     }
 
     public static BigDecimal getTotalMD(Long... minutes) {

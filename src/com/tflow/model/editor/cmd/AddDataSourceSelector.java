@@ -2,8 +2,6 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
-import com.tflow.model.data.DataSourceData;
-import com.tflow.model.editor.DataFile;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.Step;
@@ -51,8 +49,7 @@ public class AddDataSourceSelector extends Command {
         dataSourceSelectorList = step.getDataSourceSelectorList();
         dataSourceSelectorList.add(dataSourceSelector);
 
-        Selectable selectable = (Selectable) dataSourceSelector;
-        step.getSelectableMap().put(selectable.getSelectableId(), selectable);
+        step.getSelectableMap().put(((Selectable) dataSourceSelector).getSelectableId(), dataSourceSelector);
 
         /*for Action.executeUndo()*/
 

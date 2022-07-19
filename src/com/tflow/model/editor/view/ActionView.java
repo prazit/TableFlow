@@ -2,8 +2,6 @@ package com.tflow.model.editor.view;
 
 import com.tflow.model.editor.action.Action;
 
-import java.io.Serializable;
-
 public class ActionView {
 
     /*TODO: need to add Log information such as Time, Duration...*/

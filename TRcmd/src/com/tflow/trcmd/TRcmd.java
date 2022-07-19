@@ -111,7 +111,7 @@ public class TRcmd {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", "UTF-8");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        return new KafkaConsumer<String, byte[]>(props);
+        return new KafkaConsumer<>(props);
     }
 
     private KafkaProducer<String, Object> createProducer() {
@@ -126,7 +126,7 @@ public class TRcmd {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", StandardCharsets.UTF_8.name());
         props.put("value.serializer", environmentConfigs.getKafkaSerializer());
-        return new KafkaProducer<String, Object>(props);
+        return new KafkaProducer<>(props);
     }
 
     public void stop() {

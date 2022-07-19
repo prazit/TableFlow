@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class FlowchartController extends Controller {
         String selectableId = selectable.getSelectableId();
         String activeSelectableId = activeObject.getSelectableId();
 
-        return (activeObject != null && selectableId.compareTo(activeSelectableId) == 0) ? " active" : "";
+        return selectableId.compareTo(activeSelectableId) == 0 ? " active" : "";
     }
 
     /**

@@ -4,6 +4,6 @@ public enum Dbms {
 
     ORACLE,
     DB2,
-    MYSQL;
+    MYSQL
 
 }

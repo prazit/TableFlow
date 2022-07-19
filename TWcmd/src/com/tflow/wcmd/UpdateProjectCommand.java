@@ -14,7 +14,6 @@ import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
@@ -36,7 +35,7 @@ public class UpdateProjectCommand extends KafkaCommand {
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException, SerializationException {
         RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
         RecordData recordData = mapper.map((KafkaRecord) value);
-        ProjectFileType projectFileType = validate((String) key, recordData);
+        ProjectFileType projectFileType = validate(key, recordData);
         RecordAttributesData additional = recordData.getAdditional();
 
         Date now = DateTimeUtil.now();

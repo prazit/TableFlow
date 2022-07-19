@@ -1,15 +1,10 @@
 package com.tflow.trcmd;
 
-import com.tflow.file.SerializeReader;
-import com.tflow.file.SerializeWriter;
 import com.tflow.kafka.*;
 import com.tflow.model.data.record.ClientRecordData;
-import com.tflow.kafka.KafkaRecord;
-import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
 import com.tflow.model.mapper.RecordMapper;
-import com.tflow.util.FileUtil;
 import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.KafkaCommand;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -20,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.security.InvalidParameterException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -142,19 +136,18 @@ public class ReadProjectCommand extends KafkaCommand {
     }
 
     private void sendObject(String key, long clientId, long statusCode) {
-        dataProducer.send(new ProducerRecord<String, Object>(topic, key, SerializeUtil.serializeHeader(clientId, statusCode)));
+        dataProducer.send(new ProducerRecord<>(topic, key, SerializeUtil.serializeHeader(clientId, statusCode)));
     }
 
     private void sendObject(String key, Object object) {
         Object record;
         if (object instanceof RecordData) {
             RecordData recordData = (RecordData) object;
-            KafkaRecord kafkaRecord = new KafkaRecord(recordData.getData(), mapper.map(recordData.getAdditional()));
-            record = kafkaRecord;
+            record = new KafkaRecord(recordData.getData(), mapper.map(recordData.getAdditional()));
         } else {
             record = object;
         }
-        dataProducer.send(new ProducerRecord<String, Object>(topic, key, record));
+        dataProducer.send(new ProducerRecord<>(topic, key, record));
     }
 
     /**

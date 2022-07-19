@@ -1,7 +1,5 @@
 package com.tflow.model.editor;
 
-import java.io.Serializable;
-
 public abstract class EventHandler {
 
     protected EventName eventName;

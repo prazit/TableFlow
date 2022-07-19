@@ -4,5 +4,5 @@ import java.io.IOException;
 
 public interface SerializeReader {
 
-    public Object readSerialize() throws IOException, ClassNotFoundException;
+    Object readSerialize() throws IOException, ClassNotFoundException;
 }

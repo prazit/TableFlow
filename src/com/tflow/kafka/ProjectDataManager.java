@@ -170,7 +170,7 @@ public class ProjectDataManager {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", "UTF-8");
         props.put("value.serializer", environmentConfigs.getKafkaSerializer());
-        producer = new KafkaProducer<String, Object>(props);
+        producer = new KafkaProducer<>(props);
 
         return true;
     }
@@ -191,7 +191,7 @@ public class ProjectDataManager {
 
         props.put("group.id", "tflow" + clientId);
 
-        subscribeTo(dataTopic, consumer = new KafkaConsumer<String, byte[]>(props));
+        subscribeTo(dataTopic, consumer = new KafkaConsumer<>(props));
 
         try {
             deserializer = SerializeUtil.getDeserializer(environmentConfigs.getKafkaDeserializer());
@@ -284,7 +284,7 @@ public class ProjectDataManager {
             kafkaRecord = new KafkaRecord(writeCommand.getDataObject(), additional);
             log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) started.", fileType.name(), recordId);
 
-            producer.send(new ProducerRecord<String, Object>(writeTopic, key, kafkaRecord));
+            producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
             projectDataWriteBufferList.remove(writeCommand);
             testBuffer.add(writeCommand);
 
@@ -295,7 +295,7 @@ public class ProjectDataManager {
     public void addData(ProjectFileType fileType, List<Integer> idList, Project project) {
         Workspace workspace = project.getOwner();
         KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
-        addData(fileType, (Object) idList, additional);
+        addData(fileType, idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project) {
@@ -307,7 +307,7 @@ public class ProjectDataManager {
     public void addData(ProjectFileType fileType, List idList, Project project, String recordId) {
         Workspace workspace = project.getOwner();
         KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
-        addData(fileType, (Object) idList, additional);
+        addData(fileType, idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, String recordId) {
@@ -325,7 +325,7 @@ public class ProjectDataManager {
     public void addData(ProjectFileType fileType, List idList, Project project, int recordId, int stepId) {
         Workspace workspace = project.getOwner();
         KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
-        addData(fileType, (Object) idList, additional);
+        addData(fileType, idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId) {
@@ -338,7 +338,7 @@ public class ProjectDataManager {
         Workspace workspace = project.getOwner();
         KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
-        addData(fileType, (Object) idList, additional);
+        addData(fileType, idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId, int dataTableId) {
@@ -352,7 +352,7 @@ public class ProjectDataManager {
         Workspace workspace = project.getOwner();
         KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
-        addData(fileType, (Object) idList, additional);
+        addData(fileType, idList, additional);
     }
 
     public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
@@ -495,25 +495,25 @@ public class ProjectDataManager {
             /*add Transform-table*/
             addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), project, transformTableId, stepId, 0, transformTableId);
 
-            /*add tranform-column-list*/
+            /*add transform-column-list*/
             List<DataColumn> columnList = transformTable.getColumnList();
             addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(columnList), project, 5, stepId, 0, transformTableId);
 
-            /*add each tranform-column in tranform-column-list*/
+            /*add each transform-column in transform-column-list*/
             for (DataColumn dataColumn : columnList) {
                 addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), stepId, 0, transformTableId);
             }
 
-            /*add each tranform-columnfx in tranform-table(columnFxTable)*/
+            /*add each transform-columnfx in transform-table(columnFxTable)*/
             for (ColumnFx columnFx : transformTable.getColumnFxTable().getColumnFxList()) {
                 addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), project, columnFx.getId(), stepId, 0, transformTableId);
             }
 
-            /*add tranform-output-list*/
+            /*add transform-output-list*/
             List<OutputFile> outputList = transformTable.getOutputList();
             addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 6, stepId, 0, transformTableId);
 
-            /*add each tranform-output in tranform-output-list*/
+            /*add each transform-output in transform-output-list*/
             for (OutputFile output : outputList) {
                 addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(output), project, output.getId(), stepId, 0, transformTableId);
             }
@@ -753,13 +753,13 @@ public class ProjectDataManager {
             ColumnFxTable columnFxTable = transformTable.getColumnFxTable();
             step.getTransformTower().setRoom(columnFxTable.getFloorIndex(), columnFxTable.getRoomIndex(), columnFxTable);
 
-            /*get tranform-column-list*/
+            /*get transform-column-list*/
             data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, project, 1, stepId, 0, transformTableId);
             List<Integer> columnIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
             List<DataColumn> columnList = new ArrayList<>();
             transformTable.setColumnList(columnList);
 
-            /*get each tranform-column in tranform-column-list*/
+            /*get each transform-column in transform-column-list*/
             List<ColumnFx> columnFxList = columnFxTable.getColumnFxList();
             TransformColumn transformColumn;
             ColumnFx columnFx;
@@ -770,7 +770,7 @@ public class ProjectDataManager {
                 columnList.add(transformColumn);
                 transformColumn.createPlugListeners();
 
-                /*get each tranform-columnfx in tranform-table(columnFxTable)*/
+                /*get each transform-columnfx in transform-table(columnFxTable)*/
                 ColumnFx fx = transformColumn.getFx();
                 if (fx != null) {
                     data = getData(ProjectFileType.TRANSFORM_COLUMNFX, project, fx.getId(), stepId, 0, transformTableId);
@@ -785,13 +785,13 @@ public class ProjectDataManager {
                 }
             }
 
-            /*get tranform-output-list*/
+            /*get transform-output-list*/
             data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, project, 1, stepId, 0, transformTableId);
             List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
             List<OutputFile> outputList = new ArrayList<>();
             transformTable.setOutputList(outputList);
 
-            /*get each tranform-output in tranform-output-list*/
+            /*get each transform-output in transform-output-list*/
             OutputFile outputFile;
             for (Integer outputId : outputIdList) {
                 data = getData(ProjectFileType.TRANSFORM_OUTPUT, project, 1, stepId, 0, transformTableId);
@@ -936,7 +936,7 @@ public class ProjectDataManager {
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
 
-        producer.send(new ProducerRecord<String, Object>(readTopic, fileType.name(), additional));
+        producer.send(new ProducerRecord<>(readTopic, fileType.name(), additional));
         log.info("requestData completed.");
 
         return 1L;

@@ -9,6 +9,6 @@ public enum ActionResultKey {
     TRANSFORM_TABLE,
     DATA_FILE,
     OUTPUT_FILE,
-    COLUMN_FX;
+    COLUMN_FX
 
 }

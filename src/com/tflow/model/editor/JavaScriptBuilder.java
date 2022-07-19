@@ -71,7 +71,7 @@ public class JavaScriptBuilder {
         Arrays.sort(sorted);
 
         for (Object key : sorted) {
-            stringBuilder.append(sortMap.get((Integer) key));
+            stringBuilder.append(sortMap.get(key));
         }
 
         return stringBuilder.toString();
