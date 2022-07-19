@@ -27,7 +27,7 @@ public class AddDataFile extends Command {
             /*execute*/
             dataTable = null;
 
-            dataFile = new DataFile(DataFileType.IN_MD, "Untitled", "/", project.newElementId(), project.newElementId());
+            dataFile = new DataFile(DataFileType.IN_MD, "/", project.newElementId(), project.newElementId());
             dataFile.setId(project.newUniqueId());
 
         } else {

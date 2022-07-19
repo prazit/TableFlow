@@ -4,8 +4,8 @@ public class FTPFile extends DataFile {
 
     private String ftpName;
 
-    public FTPFile(String ftpName, DataFileType type, String localName, String localPath, String endPlug, String startPlug) {
-        super(type, localName, localPath, endPlug, startPlug);
+    public FTPFile(String ftpName, DataFileType type, String localPath, String endPlug, String startPlug) {
+        super(type, localPath, endPlug, startPlug);
         this.ftpName = ftpName;
     }
 

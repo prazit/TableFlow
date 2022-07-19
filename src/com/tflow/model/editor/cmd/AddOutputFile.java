@@ -5,10 +5,8 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
-import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.mapper.ProjectMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,33 +19,33 @@ public class AddOutputFile extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Project project = step.getOwner();
 
-        DataFile dataFile = (DataFile) paramMap.get(CommandParamKey.DATA_FILE);
-        if(dataFile == null) {
+        OutputFile outputFile = (OutputFile) paramMap.get(CommandParamKey.OUTPUT_FILE);
+        if (outputFile == null) {
             // for AddOutputFile
-            dataFile = new DataFile(DataFileType.OUT_MD, "Untitled", "/", project.newElementId(), project.newElementId());
-            dataFile.setId(project.newUniqueId());
+            outputFile = new OutputFile(DataFileType.OUT_MD, DataFileType.OUT_MD.getDefaultName(), project.newElementId(), project.newElementId());
+            outputFile.setId(project.newUniqueId());
         }/*else{
             // nothing for RemoveOutputFile.Undo
         }*/
 
-        List<DataFile> outputList = dataTable.getOutputList();
-        outputList.add(dataFile);
+        List<OutputFile> outputList = dataTable.getOutputList();
+        outputList.add(outputFile);
 
-        step.getSelectableMap().put(dataFile.getSelectableId(), dataFile);
+        step.getSelectableMap().put(outputFile.getSelectableId(), outputFile);
 
         /*for Action.executeUndo()*/
-        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+        paramMap.put(CommandParamKey.OUTPUT_FILE, outputFile);
 
         /*Action Result*/
-        action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
+        action.getResultMap().put(ActionResultKey.OUTPUT_FILE, outputFile);
 
         // save OutputFile data
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(dataFile), project, dataFile.getId(), step.getId(), dataTable.getId());
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), step.getId(), dataTable.getId());
 
         // save OutputFile list
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, dataFile.getId(), step.getId(), dataTable.getId());
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, outputFile.getId(), step.getId(), dataTable.getId());
 
         // no line, tower, floor to save here
     }

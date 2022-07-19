@@ -12,6 +12,9 @@ public enum CommandParamKey {
     DATA_FILE,
     DATA_FILE_LIST,
 
+    OUTPUT_FILE,
+    OUTPUT_FILE_LIST,
+
     DATA_TABLE,
     DATA_COLUMN,
 

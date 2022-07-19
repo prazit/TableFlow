@@ -15,30 +15,30 @@ public class RemoveOutputFile extends Command {
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        DataFile dataFile = (DataFile) paramMap.get(CommandParamKey.DATA_FILE);
+        OutputFile outputFile = (OutputFile) paramMap.get(CommandParamKey.OUTPUT_FILE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Project project = step.getOwner();
 
-        DataTable dataTable = (DataTable) dataFile.getOwner();
-        List<DataFile> outputList = dataTable.getOutputList();
-        outputList.remove(dataFile);
+        DataTable dataTable = (DataTable) outputFile.getOwner();
+        List<OutputFile> outputList = dataTable.getOutputList();
+        outputList.remove(outputFile);
 
-        step.getSelectableMap().remove(dataFile.getSelectableId(), dataFile);
+        step.getSelectableMap().remove(outputFile.getSelectableId(), outputFile);
 
         /*for Action.executeUndo()*/
-        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+        paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
 
         /*Action Result*/
-        action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
+        action.getResultMap().put(ActionResultKey.OUTPUT_FILE, outputFile);
 
         // save OutputFile data
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, (TWData) null, project, dataFile.getId(), step.getId(), dataTable.getId());
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT, (TWData) null, project, outputFile.getId(), step.getId(), dataTable.getId());
 
         // save OutputFile list
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, dataFile.getId(), step.getId(), dataTable.getId());
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 0, step.getId(), dataTable.getId());
 
         // no line, tower, floor to save here
     }

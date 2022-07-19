@@ -11,7 +11,7 @@ import java.util.Map;
 public class DataFile extends Room implements Selectable, HasEndPlug {
     private transient Logger log = LoggerFactory.getLogger(DataFile.class);
 
-    private int id;
+    protected int id;
     private DataFileType type;
     private String name;
     private String path;
@@ -34,9 +34,9 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         init();
     }
 
-    public DataFile(DataFileType type, String name, String path, String endPlug, String startPlug) {
+    public DataFile(DataFileType type, String path, String endPlug, String startPlug) {
         this.type = type;
-        this.name = name;
+        this.name = type.getDefaultName();
         this.path = path;
         this.endPlug = new EndPlug(endPlug);
         createStartPlug(startPlug);

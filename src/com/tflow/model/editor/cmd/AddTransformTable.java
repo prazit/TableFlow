@@ -125,10 +125,11 @@ public class AddTransformTable extends Command {
         }
 
         // save Output List
-        projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromDataFileList(transformTable.getOutputList()), project, 1, stepId, 0, transformTableId);
+        List<OutputFile> outputList = transformTable.getOutputList();
+        projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 1, stepId, 0, transformTableId);
 
         // save Output Data
-        for (DataFile outputFile : transformTable.getOutputList()) {
+        for (OutputFile outputFile : outputList) {
             projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), stepId, 0, transformTableId);
         }
 

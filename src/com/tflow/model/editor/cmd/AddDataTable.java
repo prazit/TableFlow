@@ -81,10 +81,11 @@ public class AddDataTable extends Command {
         }
 
         // save Output list
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(dataTable.getOutputList()), project, 1, stepId, dataTableId);
+        List<OutputFile> outputList = dataTable.getOutputList();
+        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 1, stepId, dataTableId);
 
         // save Output Data
-        for (DataFile outputFile : dataTable.getOutputList()) {
+        for (OutputFile outputFile : outputList) {
             projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), stepId, dataTableId);
         }
 
@@ -117,15 +118,14 @@ public class AddDataTable extends Command {
         columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", project.newElementId(), dataTable));
         columnList.add(new DataColumn(4, DataType.DATE, "Date Column", project.newElementId(), dataTable));
 
-        DataFile outputCSVFile = new DataFile(
+        OutputFile outputCSVFile = new OutputFile(
                 DataFileType.OUT_CSV,
-                "output.csv",
                 "out/",
                 project.newElementId(),
                 project.newElementId()
         );
 
-        List<DataFile> outputList = dataTable.getOutputList();
+        List<OutputFile> outputList = dataTable.getOutputList();
         outputList.add(outputCSVFile);
 
         DataTableUtil.generateId(step.getSelectableMap(), dataTable, project);

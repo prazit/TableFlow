@@ -109,8 +109,8 @@ public enum Properties {
     ),
 
     OUTPUT_TXT(
-            "type:Type:FileType:out:refreshProperties();",
-            "dataSource:FTP/SFTP:SFTP",
+            "type:Output Type:FileType:out:refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -127,8 +127,8 @@ public enum Properties {
             ".:propertyMap:format:Format:TxtFormat"
     ),
     OUTPUT_CSV(
-            "type:Type:FileType:out:refreshProperties();",
-            "dataSource:FTP/SFTP:SFTP",
+            "type:Output Type:FileType:out:refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -145,8 +145,8 @@ public enum Properties {
             ".:propertyMap:dateTimeFormat:DateTime Format:String"
     ),
     OUTPUT_MARKDOWN(
-            "type:Type:FileType:out:refreshProperties();",
-            "dataSource:FTP/SFTP:SFTP",
+            "type:Output Type:FileType:out:refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "name:File Name:String",
             "path:File Path:String",
             "--:Extra Options:--",
@@ -163,8 +163,8 @@ public enum Properties {
             ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean"
     ),
     OUTPUT_SQL(
-            "type:Type:FileType:out:refreshProperties();",
-            "dataSource:FTP/SFTP:SFTP",
+            "type:Output Type:FileType:out:refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -182,8 +182,8 @@ public enum Properties {
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBINSERT(
-            "type:Type:FileType:out:refreshProperties();",
-            "dataSource:DB Connection:DBConnection",
+            "type:Output Type:FileType:out:refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String",
@@ -192,8 +192,8 @@ public enum Properties {
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBUPDATE(
-            "type:Type:FileType:out:refreshProperties();",
-            "dataSource:DB Connection:DBConnection",
+            "type:Output Type:FileType:out:refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String",

@@ -475,11 +475,11 @@ public class ProjectDataManager {
             }
 
             /*add output-list*/
-            List<DataFile> outputList = dataTable.getOutputList();
-            addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, 2, stepId, dataTableId);
+            List<OutputFile> outputList = dataTable.getOutputList();
+            addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 2, stepId, dataTableId);
 
             /*add each output in output-list*/
-            for (DataFile output : outputList) {
+            for (OutputFile output : outputList) {
                 addData(ProjectFileType.DATA_OUTPUT, mapper.map(output), project, output.getId(), stepId, dataTableId);
             }
         }
@@ -510,11 +510,11 @@ public class ProjectDataManager {
             }
 
             /*add tranform-output-list*/
-            List<DataFile> outputList = transformTable.getOutputList();
-            addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, 6, stepId, 0, transformTableId);
+            List<OutputFile> outputList = transformTable.getOutputList();
+            addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 6, stepId, 0, transformTableId);
 
             /*add each tranform-output in tranform-output-list*/
-            for (DataFile output : outputList) {
+            for (OutputFile output : outputList) {
                 addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(output), project, output.getId(), stepId, 0, transformTableId);
             }
 
@@ -721,14 +721,14 @@ public class ProjectDataManager {
             /*get output-list*/
             data = getData(ProjectFileType.DATA_OUTPUT_LIST, project, 1, stepId, dataTableId);
             List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-            List<DataFile> outputList = new ArrayList<>();
+            List<OutputFile> outputList = new ArrayList<>();
             dataTable.setOutputList(outputList);
 
             /*get each output in output-list*/
-            DataFile outputFile;
+            OutputFile outputFile;
             for (Integer outputId : outputIdList) {
-                data = getData(ProjectFileType.DATA_COLUMN, project, outputId, stepId, dataTableId);
-                outputFile = mapper.map((DataFileData) throwExceptionOnError(data));
+                data = getData(ProjectFileType.DATA_OUTPUT, project, outputId, stepId, dataTableId);
+                outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
                 outputFile.setOwner(dataTable);
                 outputList.add(outputFile);
             }
@@ -788,14 +788,14 @@ public class ProjectDataManager {
             /*get tranform-output-list*/
             data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, project, 1, stepId, 0, transformTableId);
             List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-            List<DataFile> outputList = new ArrayList<>();
+            List<OutputFile> outputList = new ArrayList<>();
             transformTable.setOutputList(outputList);
 
             /*get each tranform-output in tranform-output-list*/
-            DataFile outputFile;
+            OutputFile outputFile;
             for (Integer outputId : outputIdList) {
                 data = getData(ProjectFileType.TRANSFORM_OUTPUT, project, 1, stepId, 0, transformTableId);
-                outputFile = mapper.map((DataFileData) throwExceptionOnError(data));
+                outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
                 outputFile.setOwner(transformTable);
                 outputList.add(outputFile);
             }

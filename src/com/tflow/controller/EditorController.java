@@ -855,7 +855,7 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        DataSourceSelector dataSourceSelector = new DataSourceSelector("untitled", DataSourceType.LOCAL, project.newElementId());
+        DataSourceSelector dataSourceSelector = new DataSourceSelector("Untitled", DataSourceType.LOCAL, project.newElementId());
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE_SELECTOR, dataSourceSelector);

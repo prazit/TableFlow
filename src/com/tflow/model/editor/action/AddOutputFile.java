@@ -30,7 +30,7 @@ public class AddOutputFile extends Action {
     @Override
     protected void initUndoCommands() {
         setUndoParams(
-                CommandParamKey.DATA_FILE,
+                CommandParamKey.OUTPUT_FILE,
                 CommandParamKey.STEP
         );
         setUndoCommands(new com.tflow.model.editor.cmd.RemoveOutputFile());

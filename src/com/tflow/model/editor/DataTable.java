@@ -17,7 +17,7 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
     private String query;
     private String idColName;
     private List<DataColumn> columnList;
-    private List<DataFile> outputList;
+    private List<OutputFile> outputList;
 
     /*noTransform can use Auto Generated Value*/
     private boolean noTransform;
@@ -176,11 +176,11 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
         this.columnList = columnList;
     }
 
-    public List<DataFile> getOutputList() {
+    public List<OutputFile> getOutputList() {
         return outputList;
     }
 
-    public void setOutputList(List<DataFile> outputList) {
+    public void setOutputList(List<OutputFile> outputList) {
         this.outputList = outputList;
     }
 

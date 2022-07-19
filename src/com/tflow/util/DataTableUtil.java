@@ -80,7 +80,7 @@ public class DataTableUtil {
             column.setId(project.newUniqueId());
         }
 
-        for (DataFile output : dataTable.getOutputList()) {
+        for (OutputFile output : dataTable.getOutputList()) {
             output.setOwner(dataTable);
             output.setId(project.newUniqueId());
         }

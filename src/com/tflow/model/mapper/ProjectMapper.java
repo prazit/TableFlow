@@ -63,6 +63,8 @@ public interface ProjectMapper {
 
     DataFileData map(DataFile dataFile);
 
+    OutputFileData map(OutputFile dataFile);
+
     VariableData map(Variable variableData);
 
     DataTableData map(DataTable dataTable);
@@ -103,6 +105,8 @@ public interface ProjectMapper {
 
     DataFile map(DataFileData dataFileData);
 
+    OutputFile map(OutputFileData outputFileData);
+
     DataTable map(DataTableData dataTableData);
 
     DataColumn map(DataColumnData dataColumnData);
@@ -123,6 +127,8 @@ public interface ProjectMapper {
     Floor map(FloorData floorData);
 
     Line map(LineData lineData);
+
+    LinePlug map(LinePlugData linePlugData);
 
     List<Step> toStepList(List<StepItemData> stepItemDataList);
 
@@ -236,6 +242,8 @@ public interface ProjectMapper {
 
     List<Integer> fromDataFileList(List<DataFile> dataFileList);
 
+    List<Integer> fromOutputFileList(List<OutputFile> outputList);
+
     List<Integer> fromDataColumnList(List<DataColumn> columnList);
 
     List<Integer> fromTransformTableList(List<TransformTable> transformList);
@@ -249,4 +257,5 @@ public interface ProjectMapper {
     List<Integer> fromDoubleList(List<Double> doubleList);
 
     List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
+
 }
