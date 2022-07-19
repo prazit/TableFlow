@@ -54,25 +54,29 @@ public class RemoveDataFile extends Command {
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_FILE, dataFile);
 
-        // save DataFile data
+        // save DataFile list
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.DATA_FILE, (TWData) null, project, dataFile.getId(), step.getId());
+        int stepId = step.getId();
+        projectDataManager.addData(ProjectFileType.DATA_FILE_LIST, step.getFileList(), project, 0, stepId);
+
+        // save DataFile data
+        projectDataManager.addData(ProjectFileType.DATA_FILE, (TWData) null, project, dataFile.getId(), stepId);
 
         // save Line data
         for (Line line : removedLineList) {
-            projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), stepId);
         }
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, 1, step.getId());
+        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, 1, stepId);
 
         // save Tower data
         Tower tower = floor.getTower();
-        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
 
         // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
     }
 
 }

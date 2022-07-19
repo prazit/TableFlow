@@ -27,7 +27,7 @@ public class AddDataFile extends Command {
             /*execute*/
             dataTable = null;
 
-            dataFile = new DataFile(null, DataFileType.IN_MD, "Untitled", "/", project.newElementId(), project.newElementId());
+            dataFile = new DataFile(DataFileType.IN_MD, "Untitled", "/", project.newElementId(), project.newElementId());
             dataFile.setId(project.newUniqueId());
 
         } else {
@@ -55,26 +55,30 @@ public class AddDataFile extends Command {
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
 
-        // save DataFile data
+        // save DataFile list
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, dataFile.getId(), step.getId());
+        int stepId = step.getId();
+        projectDataManager.addData(ProjectFileType.DATA_FILE_LIST, mapper.fromDataFileList(step.getFileList()), project, 0, stepId);
+
+        // save DataFile data
+        projectDataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, dataFile.getId(), stepId);
 
         if (newLine != null) {
             // save Line data
-            projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), stepId);
 
             // save Line list
-            projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), step.getId());
+            projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), stepId);
 
             // no object at the startPlug to save here
         }
 
         // save Tower data
-        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
 
         // save Floor data
-        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
     }
 
 }

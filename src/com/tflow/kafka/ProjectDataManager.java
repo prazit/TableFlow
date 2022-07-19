@@ -259,6 +259,7 @@ public class ProjectDataManager {
 
     /**
      * TODO: need to run ProjectWriteCommand in another thread, this process guarantee success no need to wait for it.
+     * TODO: need to update Client-Data-file before execute first command
      */
     private void commit() {
         if (commitWaiting) return;
@@ -424,103 +425,114 @@ public class ProjectDataManager {
         int stepId = step.getId();
         addData(ProjectFileType.STEP, mapper.map(step), project, stepId, stepId);
 
-        /*get each tower in step*/
+        /*add each tower in step*/
         List<Tower> towerList = Arrays.asList(step.getDataTower(), step.getTransformTower(), step.getOutputTower());
         for (Tower tower : towerList) {
             addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
 
-            /*get each floor in tower*/
+            /*add each floor in tower*/
             for (Floor floor : tower.getFloorList()) {
                 addData(ProjectFileType.FLOOR, mapper.map(floor), project, floor.getId(), stepId);
             }
         }
 
-        /*get data-source-selector-list*/
+        /*add data-source-selector-list*/
         List<DataSourceSelector> dataSourceSelectorList = step.getDataSourceSelectorList();
         addData(ProjectFileType.DATA_SOURCE_SELECTOR_LIST, mapper.fromDataSourceSelectorList(dataSourceSelectorList), project, 0, stepId);
 
-        /*get data-source-selector*/
+        /*add data-source-selector*/
         for (DataSourceSelector dataSourceSelector : dataSourceSelectorList) {
             addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map(dataSourceSelector), project, dataSourceSelector.getId(), stepId);
         }
 
-        /*get data-table-list*/
+        /*add data-file-list*/
+        List<DataFile> dataFileList = step.getFileList();
+        addData(ProjectFileType.DATA_FILE_LIST, mapper.fromDataFileList(dataFileList), project, 0, stepId);
+
+        /*add data-file*/
+        for (DataFile dataFile : dataFileList) {
+            addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, dataFile.getId(), stepId);
+        }
+
+        /*add data-table-list*/
         List<DataTable> dataList = step.getDataList();
         addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), project, 1, stepId);
 
-        /*get each data-table in data-table-list*/
+        /*add each data-table in data-table-list*/
         for (DataTable dataTable : dataList) {
             int dataTableId = dataTable.getId();
 
-            /*get data-file in data-table*/
-            DataFile dataFile = dataTable.getDataFile();
-            addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, 1, stepId, dataTableId);
+            /*add data-table*/
+            addData(ProjectFileType.DATA_TABLE, mapper.map(dataTable), project, dataTableId, stepId, dataTableId);
 
-            /*get column-list*/
+            /*add column-list*/
             List<DataColumn> columnList = dataTable.getColumnList();
             addData(ProjectFileType.DATA_COLUMN_LIST, mapper.fromDataColumnList(columnList), project, 2, stepId, dataTableId);
 
-            /*get each column in column-list*/
+            /*add each column in column-list*/
             for (DataColumn dataColumn : columnList) {
                 addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), project, dataColumn.getId(), stepId, dataTableId);
             }
 
-            /*get output-list*/
+            /*add output-list*/
             List<DataFile> outputList = dataTable.getOutputList();
             addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, 2, stepId, dataTableId);
 
-            /*get each output in output-list*/
+            /*add each output in output-list*/
             for (DataFile output : outputList) {
                 addData(ProjectFileType.DATA_OUTPUT, mapper.map(output), project, output.getId(), stepId, dataTableId);
             }
         }
 
-        /*get transform-table-list*/
+        /*add transform-table-list*/
         List<TransformTable> transformList = step.getTransformList();
         addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), project, 4, stepId);
 
-        /*get each transform-table in transform-table-list*/
+        /*add each transform-table in transform-table-list*/
         for (TransformTable transformTable : transformList) {
             int transformTableId = transformTable.getId();
 
-            /*get tranform-column-list*/
+            /*add Transform-table*/
+            addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), project, transformTableId, stepId, 0, transformTableId);
+
+            /*add tranform-column-list*/
             List<DataColumn> columnList = transformTable.getColumnList();
             addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(columnList), project, 5, stepId, 0, transformTableId);
 
-            /*get each tranform-column in tranform-column-list*/
+            /*add each tranform-column in tranform-column-list*/
             for (DataColumn dataColumn : columnList) {
                 addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), stepId, 0, transformTableId);
             }
 
-            /*get each tranform-columnfx in tranform-table(columnFxTable)*/
+            /*add each tranform-columnfx in tranform-table(columnFxTable)*/
             for (ColumnFx columnFx : transformTable.getColumnFxTable().getColumnFxList()) {
                 addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), project, columnFx.getId(), stepId, 0, transformTableId);
             }
 
-            /*get tranform-output-list*/
+            /*add tranform-output-list*/
             List<DataFile> outputList = transformTable.getOutputList();
             addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromDataFileList(outputList), project, 6, stepId, 0, transformTableId);
 
-            /*get each tranform-output in tranform-output-list*/
+            /*add each tranform-output in tranform-output-list*/
             for (DataFile output : outputList) {
                 addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(output), project, output.getId(), stepId, 0, transformTableId);
             }
 
-            /*get tranformation-list*/
+            /*add tranformation-list*/
             List<TableFx> fxList = transformTable.getFxList();
             addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(fxList), project, 7, stepId, 0, transformTableId);
 
-            /*get each tranformation in tranformation-list*/
+            /*add each tranformation in tranformation-list*/
             for (TableFx tableFx : fxList) {
                 addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), project, tableFx.getId(), stepId, 0, transformTableId);
             }
         }
 
-        /*get line-list at the end*/
+        /*add line-list at the end*/
         List<Line> lineList = step.getLineList();
         addData(ProjectFileType.LINE_LIST, mapper.fromLineList(lineList), project, 8, stepId);
 
-        /*get each line in line-list*/
+        /*add each line in line-list*/
         for (Line line : lineList) {
             addData(ProjectFileType.LINE, mapper.map(line), project, line.getId(), stepId);
         }
@@ -599,12 +611,6 @@ public class ProjectDataManager {
         return project;
     }
 
-    /**
-     * TODO: TRcmd: need to remove Client file checker from TRcmd
-     * TODO: TRcmd: Project List: need to create new Project when projectId < 0 (TRcmd to TWcmd)
-     * TODO: commit(): need to update Client file before execute first command
-     * TODO: flowchart-client: need to update Client file for heartbeat of the working-project.
-     **/
     @SuppressWarnings("unchecked")
     public Step getStep(Project project, int stepIndex) throws Exception {
         List<Step> stepList = project.getStepList();
@@ -662,6 +668,20 @@ public class ProjectDataManager {
             dataSourceSelector.createPlugListeners();
         }
 
+        /*get data-file-list*/
+        data = getData(ProjectFileType.DATA_FILE_LIST, project, 1, stepId);
+        List<Integer> dataFileIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<DataFile> dataFileList = new ArrayList<>();
+        step.setFileList(dataFileList);
+
+        /*get data-file*/
+        for (Integer dataFileId : dataFileIdList) {
+            data = getData(ProjectFileType.DATA_FILE, project, dataFileId, stepId);
+            DataFile dataFile = mapper.map((DataFileData) throwExceptionOnError(data));
+            dataFileList.add(dataFile);
+            step.getDataTower().setRoom(dataFile.getFloorIndex(), dataFile.getRoomIndex(), dataFile);
+        }
+
         /*get data-table-list*/
         data = getData(ProjectFileType.DATA_TABLE_LIST, project, 1, stepId);
         List<Integer> dataTableIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
@@ -677,12 +697,10 @@ public class ProjectDataManager {
             step.getDataTower().setRoom(dataTable.getFloorIndex(), dataTable.getRoomIndex(), dataTable);
             dataTable.createPlugListeners();
 
-            /*get data-file in data-table*/
-            data = getData(ProjectFileType.DATA_FILE, project, dataTable.getDataFile().getId(), stepId, dataTableId);
-            DataFile dataFile = mapper.map((DataFileData) throwExceptionOnError(data));
+            /*get data-file in data-table by id*/
+            DataFile dataFile = step.getFile(dataTable.getDataFile().getId());
             dataTable.setDataFile(dataFile);
-            step.getDataTower().setRoom(dataFile.getFloorIndex(), dataFile.getRoomIndex(), dataFile);
-            dataFile.createPlugListeners();
+            dataFile.setOwner(dataTable);
 
             /*get column-list*/
             data = getData(ProjectFileType.DATA_COLUMN_LIST, project, 1, stepId, dataTableId);

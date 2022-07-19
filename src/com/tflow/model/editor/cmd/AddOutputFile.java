@@ -24,7 +24,7 @@ public class AddOutputFile extends Command {
         DataFile dataFile = (DataFile) paramMap.get(CommandParamKey.DATA_FILE);
         if(dataFile == null) {
             // for AddOutputFile
-            dataFile = new DataFile(null, DataFileType.OUT_MD, "Untitled", "/", project.newElementId(), project.newElementId());
+            dataFile = new DataFile(DataFileType.OUT_MD, "Untitled", "/", project.newElementId(), project.newElementId());
             dataFile.setId(project.newUniqueId());
         }/*else{
             // nothing for RemoveOutputFile.Undo

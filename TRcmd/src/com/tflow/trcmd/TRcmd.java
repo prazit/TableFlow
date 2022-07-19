@@ -17,6 +17,10 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
+/**
+ * TODO: need to remove Client-Data-File-Checker after complete the Heartbeat function
+ * TODO: Project Page Command to create new project: when request projectId < 0 (TRcmd send message to TWcmd)
+ **/
 public class TRcmd {
 
     private Logger log = LoggerFactory.getLogger(TWcmd.class);

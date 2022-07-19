@@ -319,6 +319,9 @@ function contentReady(func, label) {
     }, 100);
 }
 
+/**
+ * TODO: need to update Client-Data-File for heartbeat of the working-project.
+ **/
 $(function () {
     leftPanel = $('.left-panel');
     leftGutter = $('.left-panel + .ui-splitter-gutter');

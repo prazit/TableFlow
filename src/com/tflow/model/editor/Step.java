@@ -21,21 +21,7 @@ public class Step implements Selectable, HasEvent {
     private List<Action> history;
     private List<DataSourceSelector> dataSourceSelectorList;
 
-    /**
-     * TODO: need to add DataFile list
-     * 1. Step
-     * 2. StepData
-     * 3. ProjectFileType.DATA_FILE_LIST
-     * 4. AddDataFile
-     * 5. RemoveDataFile
-     * 6. ProjectDataManager.addStep (move from dataTable to step after DATA_SOURCE_SELECTOR)
-     *    + add ProjectFileType.DATA_FILE_LIST
-     *    + add ProjectFileType.DATA_FILE
-     * 7. ProjectDataManager.getStep (move from dataTable to step after DATA_SOURCE_SELECTOR)
-     *    + get ProjectFileType.DATA_FILE_LIST
-     *    + get ProjectFileType.DATA_FILE
-     **/
-
+    private List<DataFile> fileList;
     private List<DataTable> dataList;
     private List<TransformTable> transformList;
     private List<DataFile> outputList;
@@ -133,6 +119,23 @@ public class Step implements Selectable, HasEvent {
 
     public void setDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList) {
         this.dataSourceSelectorList = dataSourceSelectorList;
+    }
+
+    public List<DataFile> getFileList() {
+        return fileList;
+    }
+
+    public void setFileList(List<DataFile> fileList) {
+        this.fileList = fileList;
+    }
+
+    public DataFile getFile(int id) {
+        for (DataFile dataFile : fileList) {
+            if (id == dataFile.getId()) {
+                return dataFile;
+            }
+        }
+        return null;
     }
 
     public List<DataTable> getDataList() {
@@ -485,6 +488,7 @@ public class Step implements Selectable, HasEvent {
                 ", index:" + index +
                 ", history:" + history +
                 ", dataSourceSelectorList:" + dataSourceSelectorList +
+                ", fileList:" + fileList +
                 ", dataList:" + dataList +
                 ", transformList:" + transformList +
                 ", outputList:" + outputList +

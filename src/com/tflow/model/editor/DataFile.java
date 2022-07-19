@@ -1,6 +1,5 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     private transient Logger log = LoggerFactory.getLogger(DataFile.class);
 
     private int id;
-    private DataSource dataSource;
     private DataFileType type;
     private String name;
     private String path;
@@ -36,8 +34,7 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         init();
     }
 
-    public DataFile(DataSource dataSource, DataFileType type, String name, String path, String endPlug, String startPlug) {
-        this.dataSource = dataSource;
+    public DataFile(DataFileType type, String name, String path, String endPlug, String startPlug) {
         this.type = type;
         this.name = name;
         this.path = path;
@@ -84,14 +81,6 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
     }
 
     public DataFileType getType() {
