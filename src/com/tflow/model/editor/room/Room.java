@@ -60,13 +60,13 @@ public class Room {
         if (floor != null) this.floorIndex = floor.getIndex();
     }
 
-    @Override
-    public String toString() {
+    public String toFloorString() {
         return "{" +
-                (this instanceof Selectable ? "selectableId:'" + ((Selectable) this).getSelectableId() + '\'' : "selectableId: false") +
+                (this instanceof Selectable ? "selectableId:'" + ((Selectable) this).getSelectableId() + '\'' : "selectableId: null") +
                 ", elementId:'" + elementId + '\'' +
                 ", roomIndex:" + roomIndex +
                 ", roomType:" + roomType +
+                ", class:'" + getClass().getName() + "'" +
                 '}';
     }
 }

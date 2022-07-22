@@ -38,6 +38,11 @@ public class ReadProjectCommand extends KafkaCommand {
     }
 
     @Override
+    public void info(String message, Object... objects) {
+        log.info(message, objects);
+    }
+
+    @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException {
         mapper = Mappers.getMapper(RecordMapper.class);
         RecordAttributesData additional = mapper.map((KafkaRecordAttributes) value);

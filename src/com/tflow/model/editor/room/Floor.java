@@ -79,9 +79,11 @@ public class Floor {
     }
 
     public void setRoom(int roomIndex, Room roomer) {
-        if (roomIndex < 0 || roomIndex >= roomList.size()) {
+        if (roomIndex < 0) {
             log.error("Invalid roomIndex : Floor[{}].setRoom(roomIndex:{}, roomCount:{})", index, roomIndex, roomList.size());
             return;
+        } else if (roomIndex >= roomList.size()) {
+            tower.addRoom(roomIndex - roomList.size() + 1);
         }
 
         Room old = roomList.remove(roomIndex);
@@ -123,7 +125,19 @@ public class Floor {
     public String toString() {
         return "{" +
                 "index:" + index +
-                ", roomList:" + Arrays.toString(roomList.toArray()) +
+                ", roomList:" + roomListString() +
                 '}';
+    }
+
+    private String roomListString() {
+        if (roomList.size() == 0) return "[]";
+
+        StringBuilder stringBuilder = new StringBuilder("[");
+        for (Room room : roomList) {
+            stringBuilder.append(room.toFloorString());
+            stringBuilder.append(", ");
+        }
+        stringBuilder.replace(stringBuilder.length() - 1, stringBuilder.length(), "]");
+        return stringBuilder.toString();
     }
 }

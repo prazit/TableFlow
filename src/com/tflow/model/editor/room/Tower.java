@@ -18,7 +18,6 @@ public class Tower {
     private int id;
     private List<Floor> floorList;
     private int roomsOnAFloor;
-    private Room activeRoom;
 
     private Step owner;
 
@@ -66,6 +65,12 @@ public class Tower {
         this.floorList = floorList;
     }
 
+    public void addRoom(int count) {
+        for (Floor floor : floorList) {
+            addRoom(count, floor);
+        }
+    }
+
     /**
      * @param count number of rooms to add
      * @param floor if null means add rooms to all floors in this tower, otherwise add rooms to the specified floor.
@@ -78,7 +83,8 @@ public class Tower {
             floorList = Collections.singletonList(floor);
         }
 
-        Project project = floorList.get(0).getTower().getOwner().getOwner();
+        Floor firstFloor = floorList.get(0);
+        Project project = firstFloor.getTower().getOwner().getOwner();
         for (Floor fl : floorList) {
             List<Room> roomList = fl.getRoomList();
             int roomIndex = roomList.size();
@@ -87,6 +93,16 @@ public class Tower {
                 roomList.add(emptyRoom);
                 roomIndex++;
             }
+        }
+        roomsOnAFloor = firstFloor.getRoomList().size();
+    }
+
+    public void addFloor(int count) {
+        int flIndex = floorList.size();
+        for (int c = 0; c < count; c++) {
+            Floor floor = new Floor(owner.getOwner().newUniqueId(), flIndex++, this);
+            floorList.add(floor);
+            addRoom(roomsOnAFloor, floor);
         }
     }
 
@@ -114,19 +130,11 @@ public class Tower {
         if (floor == null) {
             int flIndex = newFloorIndex < 0 ? floorList.size() : newFloorIndex;
             floor = new Floor(owner.getOwner().newUniqueId(), flIndex, this);
-            addRoom(roomsOnAFloor, floor);
             floorList.add(flIndex, floor);
+            addRoom(roomsOnAFloor, floor);
         }
 
         return floor;
-    }
-
-    public Room getActiveRoom() {
-        return activeRoom;
-    }
-
-    public void setActiveRoom(Room activeRoom) {
-        this.activeRoom = activeRoom;
     }
 
     /**
@@ -174,16 +182,17 @@ public class Tower {
     public String toString() {
         return "{" +
                 "id:" + id +
-                /*", floorList:" + Arrays.toString(floorList.toArray()) +*/
+                ", floorList:" + Arrays.toString(floorList.toArray()) +
                 ", roomsOnAFloor:" + roomsOnAFloor +
-                ", activeRoom:" + activeRoom +
                 '}';
     }
 
     public void setRoom(int floorIndex, int roomIndex, Room roomer) {
-        if (floorIndex < 0 || floorIndex >= floorList.size()) {
+        if (floorIndex < 0) {
             log.error("Invalid floorIndex : Tower[id:{}].setRoom(floorIndex:{}, floorCount:{}, roomIndex:{}, roomer:{})", id, floorIndex, floorList.size(), roomIndex, roomer.getRoomType());
             return;
+        } else if (floorIndex >= floorList.size()) {
+            addFloor(floorIndex - floorList.size() + 1);
         }
 
         Floor floor = floorList.get(floorIndex);

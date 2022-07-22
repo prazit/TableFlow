@@ -82,6 +82,7 @@ public class EditorController extends Controller {
     public void reloadProject() {
         workspace.resetProject();
         onCreation();
+        javaScriptBuilder.post(JavaScript.refreshFlowChart.getScript()).runOnClient();
     }
 
     private void initActionPriorityMap() {
@@ -142,11 +143,12 @@ public class EditorController extends Controller {
     private void refreshStepList(List<Step> stepList) {
         stepMenu = new DefaultMenuModel();
         List<MenuElement> menuItemList = stepMenu.getElements();
+        int index = 0;
         for (Step step : stepList) {
             menuItemList.add(DefaultMenuItem.builder()
                     .value(step.getName())
                     .icon("pi pi-home")
-                    .command("${editorCtl.selectStep(" + step.getIndex() + ")}")
+                    .command("${editorCtl.selectStep(" + (index++) + ")}")
                     .update("actionForm,propertyForm")
                     .build()
             );
@@ -505,8 +507,10 @@ public class EditorController extends Controller {
 
     public void testOpenProject() {
         Project project = null;
+        String oldProjectId = workspace.getProject().getId();
         try {
             /*TODO: need to test open new project from template (projectId < 0)*/
+            workspace.getProject().setId("P1");
             project = projectDataManager.getProject(workspace);
         } catch (ProjectDataException ex) {
             log.error("testOpenProject: error from server({})", ex.getMessage());
@@ -516,9 +520,11 @@ public class EditorController extends Controller {
 
         if (project == null) {
             log.error("testOpenProject: getProject return NULL.");
+            workspace.getProject().setId(oldProjectId);
         } else {
             log.info("testOpenProject: getProject runturn Project{}", project);
-            selectStep(project.getActiveStepIndex(), true);
+            initStepList();
+            preRenderComponent();
         }
     }
 
@@ -772,10 +778,11 @@ public class EditorController extends Controller {
     }
 
     public void selectStep(int stepIndex) {
+        log.warn("selectStep:fromClient(stepIndex:{})", stepIndex);
         selectStep(stepIndex, true);
     }
 
-    public void selectStep(int stepIndex, boolean refresh) {
+    private void selectStep(int stepIndex, boolean refresh) {
         Project project = workspace.getProject();
         int size = project.getStepList().size();
         if (stepIndex < 0 || stepIndex >= size) {
@@ -1084,16 +1091,23 @@ public class EditorController extends Controller {
         }
 
         Step step = workspace.getProject().getActiveStep();
-
         Map<String, Selectable> selectableMap = step.getSelectableMap();
-
         Selectable activeObject = selectableMap.get(selectableId);
         if (activeObject == null) {
             setPropertySheet(null);
             return;
         }
 
-        step.setActiveObject(activeObject);
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.SELECTABLE, activeObject);
+        paramMap.put(CommandParamKey.STEP, step);
+        try {
+            new SelectObject(paramMap).execute();
+        } catch (RequiredParamException e) {
+            log.error("Select Object Failed!", e);
+            FacesUtil.addError("Select Object Failed with Internal Command Error!");
+            return;
+        }
         setPropertySheet(activeObject);
     }
 

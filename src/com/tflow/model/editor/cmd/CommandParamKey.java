@@ -5,8 +5,10 @@ public enum CommandParamKey {
     WORKSPACE,
     PROJECT,
     DATA_MANAGER,
+
     STEP,
     ACTION,
+    SELECTABLE,
 
     DATA_SOURCE,
     DATA_SOURCE_SELECTOR,

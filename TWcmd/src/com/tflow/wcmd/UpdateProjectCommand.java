@@ -33,6 +33,11 @@ public class UpdateProjectCommand extends KafkaCommand {
     }
 
     @Override
+    public void info(String message, Object... objects) {
+        log.info(message, objects);
+    }
+
+    @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException, SerializationException {
         RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
         RecordData recordData = mapper.map((KafkaRecord) this.value);
@@ -63,10 +68,8 @@ public class UpdateProjectCommand extends KafkaCommand {
         }
 
         if (recordData.getData() == null) {
-            log.info("remove( file: {}, additional: {} )", file, additional);
             remove(file);
         } else {
-            log.info("writeTo( file: {}, additional: {} )", file, additional);
             encrypt(recordData);
             writeTo(file, recordData);
         }

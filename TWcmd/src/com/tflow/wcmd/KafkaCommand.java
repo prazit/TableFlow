@@ -83,6 +83,7 @@ public abstract class KafkaCommand {
 
 
     protected void remove(File file) throws IOException {
+        info("remove(file: {})", file);
         try {
             if (!file.delete()) throw new IOException("remove( file: " + file + " ) failed! file.delete() return false.");
         } catch (Exception ex) {
@@ -91,6 +92,7 @@ public abstract class KafkaCommand {
     }
 
     protected Object readFrom(File file) throws IOException, ClassNotFoundException, InstantiationException {
+        info("readFrom(file:{})", file);
 
         Object object = null;
         FileInputStream fileIn = new FileInputStream(file);
@@ -109,6 +111,8 @@ public abstract class KafkaCommand {
      * Notice: IMPORTANT: this function perform replace only.
      */
     protected void writeTo(File file, Object object) throws IOException, InstantiationException, SerializationException {
+        info("writeTo(file:{})", file);
+
         FileUtil.autoCreateParentDir(file);
         FileOutputStream fileOut = new FileOutputStream(file, false);
         OutputStream outputStream = createOutputStream(environmentConfigs.getOutputStream(), fileOut);
@@ -117,6 +121,7 @@ public abstract class KafkaCommand {
         fileOut.close();
     }
 
+    public abstract void info(String message, Object... objects);
 
     public abstract void execute() throws UnsupportedOperationException, IOException, ClassNotFoundException, InstantiationException;
 }

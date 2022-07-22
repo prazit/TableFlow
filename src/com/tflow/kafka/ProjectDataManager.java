@@ -532,6 +532,9 @@ public class ProjectDataManager {
             addData(ProjectFileType.LINE, mapper.map(line), project, line.getId(), stepId);
         }
 
+        // update Step List
+        addData(ProjectFileType.STEP_LIST, mapper.fromStepList(project.getStepList()), project, "");
+
         // update Project data: need to update Project record every Action that call the newUniqueId*/
         addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
     }

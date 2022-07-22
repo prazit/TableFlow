@@ -82,7 +82,6 @@ public class TRcmd {
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
-                    log.info("readProjectCommand(offset: {}, key: {}) started.", offset, key);
                     readProjectCommand.execute();
                     log.info("readProjectCommand completed.");
                 } catch (InvalidParameterException inex) {
