@@ -161,14 +161,16 @@ public abstract class Action {
 
         /*this action need ID before add to history*/
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
-        Project project = step.getOwner();
-        List<Action> history = step.getHistory();
-        setId(project.newUniqueId());
-        if (chain) {
-            previousChain = history.get(history.size() - 1);
-            previousChain.setNextChain(this);
+        if (step != null) {
+            Project project = step.getOwner();
+            List<Action> history = step.getHistory();
+            setId(project.newUniqueId());
+            if (chain) {
+                previousChain = history.get(history.size() - 1);
+                previousChain.setNextChain(this);
+            }
+            history.add(this);
         }
-        history.add(this);
 
         resultMap.clear();
 
@@ -183,11 +185,12 @@ public abstract class Action {
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         List<Action> history = step.getHistory();
 
+        if (!isCanUndo())
+            throw new UnsupportedOperationException("Action '" + getName() + "' is not support UNDO. " + toString());
+
         int lastActionIndex = history.size() - 1;
         if (history.get(lastActionIndex).getId() != getId())
             throw new UnsupportedOperationException("Action '" + getName() + "' is not last action in the history. " + toString());
-        if (!isCanUndo())
-            throw new UnsupportedOperationException("Action '" + getName() + "' is not support UNDO. " + toString());
 
         resultMap.clear();
 
@@ -202,14 +205,15 @@ public abstract class Action {
         }
     }
 
-    private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap,
-                               boolean undo) throws RequiredParamException {
+    private void requiredParam(List<CommandParamKey> paramList, Map<CommandParamKey, Object> paramMap, boolean undo) throws RequiredParamException {
         for (CommandParamKey required : paramList) {
             if (!required.isOptional() && !paramMap.containsKey(required)) {
                 throw new RequiredParamException(required, this, undo);
             }
         }
-        if (!paramMap.containsKey(CommandParamKey.STEP)) {
+        if (!paramMap.containsKey(CommandParamKey.STEP)
+                && !paramMap.containsKey(CommandParamKey.PROJECT)
+                && !paramMap.containsKey(CommandParamKey.WORKSPACE)) {
             throw new RequiredParamException(CommandParamKey.STEP, this, undo);
         }
     }

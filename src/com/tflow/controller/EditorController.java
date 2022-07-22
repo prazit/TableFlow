@@ -56,20 +56,31 @@ public class EditorController extends Controller {
     private Map<String, Integer> actionPriorityMap;
     private boolean fullActionList;
 
+    private JavaScriptBuilder javaScriptBuilder;
     private ProjectDataManager projectDataManager;
 
     @PostConstruct
     public void onCreation() {
+        javaScriptBuilder = new JavaScriptBuilder();
         projectDataManager = new ProjectDataManager(workspace.getEnvironment());
-        workspace.getProject().setManager(projectDataManager);
+
+        Project project = workspace.getProject();
+        if (project == null) {
+            createNewProject();
+        }
 
         leftPanelTitle = "Step List";
         initActionPriorityMap();
         initStepList();
     }
 
+    public void preRenderComponent() {
+        log.warn("preRenderComponent: javaScriptBuilder={}", javaScriptBuilder);
+        javaScriptBuilder.runOnClient(true);
+    }
+
     public void reloadProject() {
-        workspace.reloadProject();
+        workspace.resetProject();
         onCreation();
     }
 
@@ -494,34 +505,29 @@ public class EditorController extends Controller {
 
     public void testOpenProject() {
         Project project = null;
-        log.info("testOpenProject: Project(Before) = {}", workspace.getProject());
-        log.info("testOpenProject: calling projectDataManager.getProject");
         try {
             /*TODO: need to test open new project from template (projectId < 0)*/
             project = projectDataManager.getProject(workspace);
         } catch (ProjectDataException ex) {
-            log.error("Error from server: {}", ex.getMessage());
+            log.error("testOpenProject: error from server({})", ex.getMessage());
         } catch (ClassCastException ex) {
-            log.error("", ex);
+            log.error("testOpenProject:", ex);
         }
 
         if (project == null) {
-            log.warn("testOpenProject: getProject return NULL, automatic call 'Test > Save Full Project'.");
+            log.error("testOpenProject: getProject return NULL.");
         } else {
-            log.info("testOpenProject: Project(After) = {}", project);
-            FacesUtil.addInfo("Project[" + project.getName() + "] loaded.");
-            FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+            log.info("testOpenProject: getProject runturn Project{}", project);
+            selectStep(project.getActiveStepIndex(), true);
         }
     }
 
-    public void testOpenStep(int stepIndex) {
+    private void loadStepData(int stepIndex) {
         Project project = workspace.getProject();
         List<Step> stepList = project.getStepList();
-        log.info("testOpenStep: StepList(Before) = {}", Arrays.toString(stepList.toArray()));
 
         Step step = stepList.get(stepIndex);
         try {
-            log.info("testOpenStep: Step(Before) = {}", step);
             log.info("testOpenStep: calling projectDataManager.getStep");
             step = projectDataManager.getStep(project, stepIndex);
             log.info("testOpenStep: Step(After) = {}", step);
@@ -562,7 +568,7 @@ public class EditorController extends Controller {
     }
 
     public void testEnumUpdateOnRedeploy() {
-        log.warn("testEnumUpdateOnRedeploy: {}",Properties.TEST_REDEPLOY.getPrototypeList());
+        log.warn("testEnumUpdateOnRedeploy: {}", Properties.TEST_REDEPLOY.getPrototypeList());
     }
 
     @SuppressWarnings("unchecked")
@@ -773,34 +779,39 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         int size = project.getStepList().size();
         if (stepIndex < 0 || stepIndex >= size) {
-            log.warn("selectStep(stepIndex:{}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", stepIndex, size);
+            log.warn("selectStep({}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", stepIndex, size);
             stepIndex = 0;
         }
 
-        Step activeStep = project.getStepList().get(stepIndex);
-        if (activeStep == null) {
-            log.warn("selectStep(stepIndex:{}) activeStep({}) is null!", stepIndex, project.getActiveStepIndex());
+        Step step = null;
+        try {
+            step = project.getStepList().get(stepIndex);
+        } catch (IndexOutOfBoundsException ex) {
             if (stepIndex == 0) {
-                log.warn("selectStep(0) with empty stepList, then call addStep().");
-                addStep();
+                log.warn("selectStep(0) on new project, then call addStep().");
+                step = addStep();
             }
+        }
+
+        if (step == null) {
+            log.warn("selectStep({}): no step at index {}", stepIndex, stepIndex);
             return;
         }
 
-        if (activeStep.getIndex() < 0) {
-            log.warn("selectStep({}): step loading...", stepIndex);
-            testOpenStep(stepIndex);
+        if (step.getIndex() < 0) {
+            log.warn("selectStep({}): load step data...", stepIndex);
+            loadStepData(stepIndex);
         } else {
             project.setActiveStepIndex(stepIndex);
         }
 
-        zoom = activeStep.getZoom();
-        showStepList = activeStep.isShowStepList();
-        showPropertyList = activeStep.isShowPropertyList();
-        showActionButtons = activeStep.isShowActionButtons();
-        stepListActiveTab = activeStep.getStepListActiveTab();
+        zoom = step.getZoom();
+        showStepList = step.isShowStepList();
+        showPropertyList = step.isShowPropertyList();
+        showActionButtons = step.isShowActionButtons();
+        stepListActiveTab = step.getStepListActiveTab();
 
-        Selectable activeObject = activeStep.getActiveObject();
+        Selectable activeObject = step.getActiveObject();
         if (activeObject == null) {
             selectObject(null);
         } else {
@@ -809,11 +820,8 @@ public class EditorController extends Controller {
 
         refreshActionList(project);
 
-        StringBuilder jsBuilder = new StringBuilder();
-        if (refresh) {
-            jsBuilder.append(JavaScript.refreshFlowChart.getScript());
-        }
-        FacesUtil.runClientScript(jsBuilder.toString());
+        javaScriptBuilder.post(JavaScript.refreshFlowChart.getScript());
+        if (refresh) javaScriptBuilder.runOnClient();
     }
 
     public void submitZoom() {
@@ -825,26 +833,48 @@ public class EditorController extends Controller {
         activeStep.setZoom(Double.valueOf(zoom));
     }
 
-    public void addStep() {
+    public void requestAddStep() {
         Project project = workspace.getProject();
-        Step step = new Step("Untitled", project);
-
-        Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.STEP, step);
-
-        try {
-            new AddStep(paramMap).execute();
-        } catch (RequiredParamException e) {
-            log.error("Add Step Failed!", e);
-            FacesUtil.addError("Add Step Failed with Internal Command Error!");
-            return;
-        }
+        Step step = addStep();
+        selectStep(step.getIndex());
 
         refreshStepList(project.getStepList());
-        selectStep(step.getIndex());
 
         FacesUtil.addInfo("Step[" + step.getName() + "] added.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
+    }
+
+
+    private void createNewProject() {
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.WORKSPACE, workspace);
+        paramMap.put(CommandParamKey.DATA_MANAGER, projectDataManager);
+
+        try {
+            new AddProject(paramMap).execute();
+        } catch (RequiredParamException ex) {
+            log.error("Create New Project Failed!", ex);
+            FacesUtil.addError("Create New Project with Internal Command Error!");
+        }
+    }
+
+    private Step addStep() {
+        Project project = workspace.getProject();
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.PROJECT, project);
+
+        AddStep action;
+        try {
+            action = new AddStep(paramMap);
+            action.execute();
+        } catch (RequiredParamException e) {
+            log.error("Add Step Failed!", e);
+            FacesUtil.addError("Add Step Failed with Internal Command Error!");
+            return null;
+        }
+
+        return (Step) action.getResultMap().get(ActionResultKey.STEP);
     }
 
     /**
@@ -1042,6 +1072,7 @@ public class EditorController extends Controller {
      */
     public void selectObject() {
         String selectableId = FacesUtil.getRequestParam("selectableId");
+        log.warn("selectObject:fromClient(selectableId:'{}')", selectableId);
         selectObject(selectableId);
     }
 
@@ -1106,13 +1137,13 @@ public class EditorController extends Controller {
         if (actionButtons != null) {
             showActionButtons = Boolean.parseBoolean(actionButtons);
             step.setShowActionButtons(showActionButtons);
-            log.warn("setToolPanel(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
+            log.warn("setToolPanel:fromClient(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
         }
     }
 
     public void stepListTabChanged(TabChangeEvent event) {
         String id = event.getTab().getId();
-        log.warn("stepListTabChanged(event:{}, tabId:{})", event, id);
+        log.warn("stepListTabChanged:fromClient(event:{}, tabId:{})", event, id);
         stepListActiveTab = 1;
         workspace.getProject().getActiveStep().setStepListActiveTab(stepListActiveTab);
     }
@@ -1120,7 +1151,7 @@ public class EditorController extends Controller {
     public void propertyChanged(PropertyView property) {
         Selectable activeObject = workspace.getProject().getActiveStep().getActiveObject();
         Object value = getPropertyValue(activeObject, property);
-        log.warn("propertyChanged(property:{}, value:{})", property, value);
+        log.warn("propertyChanged:fromClient(property:{}, value:{})", property, value);
 
         if (activeObject instanceof HasEvent) {
             HasEvent hasEvent = (HasEvent) activeObject;

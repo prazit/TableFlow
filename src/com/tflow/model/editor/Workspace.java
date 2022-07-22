@@ -33,14 +33,11 @@ public class Workspace implements Serializable {
         client = new Client();
         client.setId(1);
 
-        reloadProject();
+        resetProject();
     }
 
-    public void reloadProject() {
-        // TODO: do this after AddProject action is completed, remove mockup project and mockup step here.
-        project = new Project("P1", "Test Project");
-        project.setOwer(this);
-        project.getStepList().add(new Step("Test Step 1", project));
+    public void resetProject() {
+        project = null;
     }
 
     public Project getProject() {

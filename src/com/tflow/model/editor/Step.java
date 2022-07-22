@@ -56,6 +56,7 @@ public class Step implements Selectable, HasEvent {
 
     public Step(String name, Project owner) {
         init(name, owner);
+        this.id = owner.newUniqueId();
         dataTower = new Tower(owner.newUniqueId(), 3, this);
         transformTower = new Tower(owner.newUniqueId(), 2, this);
         outputTower = new Tower(owner.newUniqueId(), 2, this);

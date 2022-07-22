@@ -80,7 +80,7 @@ public class Floor {
 
     public void setRoom(int roomIndex, Room roomer) {
         if (roomIndex < 0 || roomIndex >= roomList.size()) {
-            log.warn("Invalid roomIndex : Floor[index:{}].setRoom(roomIndex:{}, room)", index, roomIndex);
+            log.error("Invalid roomIndex : Floor[{}].setRoom(roomIndex:{}, roomCount:{})", index, roomIndex, roomList.size());
             return;
         }
 

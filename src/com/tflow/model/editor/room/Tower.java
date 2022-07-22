@@ -182,7 +182,7 @@ public class Tower {
 
     public void setRoom(int floorIndex, int roomIndex, Room roomer) {
         if (floorIndex < 0 || floorIndex >= floorList.size()) {
-            log.warn("Invalid roomIndex : Tower[id:{}].setRoom(floorIndex:{}, roomIndex:{}, roomer:{})", id, floorIndex, roomIndex, roomer.getRoomType());
+            log.error("Invalid floorIndex : Tower[id:{}].setRoom(floorIndex:{}, floorCount:{}, roomIndex:{}, roomer:{})", id, floorIndex, floorList.size(), roomIndex, roomer.getRoomType());
             return;
         }
 

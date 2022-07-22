@@ -110,8 +110,7 @@ public class FlowchartController extends Controller {
             jsBuilder.append(line.getJsAdd());
         }
         jsBuilder.post(JavaScript.postStartup);
-
-        FacesUtil.runClientScript(jsBuilder.toDeferString());
+        jsBuilder.runOnClient(true);
     }
 
     /**
@@ -157,7 +156,7 @@ public class FlowchartController extends Controller {
         if (!jsBuilder.isEmpty()) {
             jsBuilder.pre(JavaScript.lineStart);
             jsBuilder.post(JavaScript.lineEnd);
-            FacesUtil.runClientScript(jsBuilder.toString());
+            jsBuilder.runOnClient();
         }
     }
 
@@ -235,7 +234,7 @@ public class FlowchartController extends Controller {
             jsBuilder.post(JavaScript.updateEm, line.getEndSelectableId());
         }
         //}
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
     }
 
     /**
@@ -293,7 +292,7 @@ public class FlowchartController extends Controller {
         if (friendSelectableId != null && selectableMap.containsKey(friendSelectableId)) {
             jsBuilder.post(JavaScript.updateEm, friendSelectableId);
         }
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
     }
 
     private void removeDirectLine(Line line, boolean chain) {
@@ -396,7 +395,7 @@ public class FlowchartController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.post(JavaScript.refreshFlowChart);
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
     }
 
     /**
@@ -442,7 +441,7 @@ public class FlowchartController extends Controller {
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList)
                 .post(JavaScript.refreshFlowChart);
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
 
         /*TODO: issue: after refresh, the activeObject is not dataTable*/
     }
@@ -490,7 +489,7 @@ public class FlowchartController extends Controller {
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.refreshFlowChart);
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
     }
 
     /*TODO: need Action for RemoveColumn*/
@@ -534,7 +533,7 @@ public class FlowchartController extends Controller {
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, transformColumn.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, transformTable.getSelectableId());
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
     }
 
     /*TODO: need Action for RemoveTransformation*/
@@ -578,7 +577,7 @@ public class FlowchartController extends Controller {
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, tableFx.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, transformTable.getSelectableId());
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
     }
 
     /*TODO: need Action for RemoveOutput*/
@@ -622,8 +621,7 @@ public class FlowchartController extends Controller {
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, outputFile.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, dataTable.getSelectableId());
-
-        FacesUtil.runClientScript(jsBuilder.toString());
+        jsBuilder.runOnClient();
     }
 
     /**

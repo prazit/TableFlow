@@ -532,6 +532,8 @@ public class ProjectDataManager {
             addData(ProjectFileType.LINE, mapper.map(line), project, line.getId(), stepId);
         }
 
+        // update Project data: need to update Project record every Action that call the newUniqueId*/
+        addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
     }
 
     /**
@@ -924,7 +926,7 @@ public class ProjectDataManager {
     }
 
     private long requestData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.info("requestData( fileType:{}, recordId:{} ) started.", fileType.name(), additional.getRecordId());
+        log.info("requestData( fileType:{}, recordId:{} )", fileType.name(), additional.getRecordId());
 
         if (!ready(producer)) {
             log.warn("requestData: producer not ready to send message");
@@ -937,13 +939,11 @@ public class ProjectDataManager {
         }
 
         producer.send(new ProducerRecord<>(readTopic, fileType.name(), additional));
-        log.info("requestData completed.");
-
         return 1L;
     }
 
     private Object captureData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.warn("captureData(fileType:{}, additional:{}) started", fileType, additional);
+        log.warn("captureData(fileType:{}, additional:{})", fileType, additional);
 
         /*TODO: timeout and maxTry need to load from configuration*/
         Object data = null;
@@ -959,7 +959,6 @@ public class ProjectDataManager {
 
             records = consumer.poll(duration);
             if (records == null || records.count() == 0) {
-                log.warn("consumer.poll return empty records!");
                 retry--;
                 if (retry == 0) {
                     log.warn("exceed max try({}) stop consumer.poll.", maxTry);
@@ -969,7 +968,6 @@ public class ProjectDataManager {
 
             } else {
                 retry = maxTry;
-                log.warn("consumer.poll return {} record(s).", records.count());
             }
 
             for (ConsumerRecord<String, byte[]> record : records) {
@@ -980,7 +978,6 @@ public class ProjectDataManager {
 
                 // find data message
                 if (gotHeader) {
-                    log.warn("try to deserialize data message.");
                     try {
                         data = deserializer.deserialize("", value);
                     } catch (Exception ex) {
@@ -988,14 +985,11 @@ public class ProjectDataManager {
                         polling = false;
                         break;
                     }
-
-                    log.warn("got data message.");
                     polling = false;
                     break;
                 }
 
                 // find header message
-                log.warn("try to deserialize header message.");
 
                 if (!fileType.isMe(key)) {
                     // ignore other messages
@@ -1023,7 +1017,6 @@ public class ProjectDataManager {
                 }
 
                 gotHeader = true;
-                log.warn("got header message.");
             }
         }
 

@@ -79,6 +79,8 @@ public class AddColumnFx extends Command {
         // save TransformColumn data
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
+
+        // save TransformColumnFx data
         projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), project, columnFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no TransformColumnFx list to save here, it already saved in the AddTransformTable
@@ -94,7 +96,7 @@ public class AddColumnFx extends Command {
             projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(sourceColumn), project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
         }
 
-        // save Object(TargetColumn) at the endPlug of line2
+        // save TransformColumn(TargetColumn) at the endPlug of line2
         projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(targetColumn), project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // save Line list

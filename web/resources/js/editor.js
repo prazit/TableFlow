@@ -174,10 +174,14 @@ function scrollToObj(active) {
         /*return;*/
     }
 
+    if (active === undefined || active.length === 0) {
+        active = contentWindow.$(".selectable.step");
+    }
+
     if (active.hasClass('step')) {
         /*scroll to first data-source*/
         var ds = contentWindow.$('.data-source');
-        if (ds.length === 0) return;
+        if (ds.length === 0) {return;}
         active = ds.first();
     }
 

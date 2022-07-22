@@ -4,6 +4,8 @@ import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
+import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.List;
@@ -13,29 +15,23 @@ public class AddStep extends Command {
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        Step step = (Step) paramMap.get(CommandParamKey.STEP);
-        Project project = step.getOwner();
-
-        int stepId = project.newUniqueId();
-        step.setId(stepId);
-
+        Project project = (Project) paramMap.get(CommandParamKey.PROJECT);
+        Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         List<Step> stepList = project.getStepList();
-        int stepIndex = stepList.size();
-        step.setIndex(stepIndex);
 
+        Step step = new Step("Untitled", project);
+        step.setIndex(stepList.size());
         stepList.add(step);
+
+        /*for Action.executeUndo()*/
+        paramMap.put(CommandParamKey.STEP, step);
+
+        /*Action Result*/
+        Map<ActionResultKey, Object> resultMap = action.getResultMap();
+        resultMap.put(ActionResultKey.STEP, step);
 
         // save Step data
         ProjectDataManager projectDataManager = project.getManager();
-        ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, stepId, stepId);
-
-        // save Step List
-        projectDataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList(stepList), project, stepId, stepId);
-
-        // no line, tower, floor to save here
-
-        // save Project data: need to update Project record every Action that call the newUniqueId*/
-        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+        projectDataManager.addStep(step, project);
     }
 }

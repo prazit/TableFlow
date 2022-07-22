@@ -2,6 +2,8 @@ package com.tflow.model.editor.action;
 
 public enum ActionResultKey {
 
+    PROJECT,
+    STEP,
     DATA_TABLE,
     LINE_LIST,
     TABLE_FX,

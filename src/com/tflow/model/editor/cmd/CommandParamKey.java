@@ -2,6 +2,9 @@ package com.tflow.model.editor.cmd;
 
 public enum CommandParamKey {
 
+    WORKSPACE,
+    PROJECT,
+    DATA_MANAGER,
     STEP,
     ACTION,
 

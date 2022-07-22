@@ -17,6 +17,8 @@
     </h:head>
     <h:body>
         <h:outputScript library="js" name="editor.js#{editorCtl.forceReloadResources}" target="head"/>
+        <f:event type="preRenderComponent" listener="#{editorCtl.preRenderComponent}"/>
+
         <script>console.log('-- first-line of editor --');</script>
         <div class="container">
             <ui:include src="resources/exceptionMessage.xhtml"/>
@@ -78,7 +80,7 @@
 
                                     <p:menubar>
                                         <p:submenu label="Add">
-                                            <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addStep}" update="stepForm,propertyForm"/>
+                                            <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.requestAddStep}" update="stepForm,propertyForm"/>
                                             <p:divider/>
                                             <p:menuitem value="Data Source" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataSourceSelector}" update="stepForm,propertyForm"/>
                                             <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="stepForm,propertyForm"/>

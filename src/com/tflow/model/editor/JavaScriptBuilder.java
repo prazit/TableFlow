@@ -1,5 +1,9 @@
 package com.tflow.model.editor;
 
+import com.tflow.util.FacesUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +15,8 @@ import java.util.Map;
  * jQuery Defer option (toDeferString).
  */
 public class JavaScriptBuilder {
+
+    private Logger log = LoggerFactory.getLogger(JavaScriptBuilder.class);
 
     private Map<String, Integer> preMap;
     private Map<String, Integer> jsMap;
@@ -100,6 +106,12 @@ public class JavaScriptBuilder {
         return this;
     }
 
+    private void clearAll(){
+        preMap.clear();
+        jsMap.clear();
+        postMap.clear();
+    }
+
     @Override
     public String toString() {
         if (postMap.containsKey(JavaScript.refreshFlowChart.getScript())) {
@@ -108,18 +120,26 @@ public class JavaScriptBuilder {
             post(JavaScript.refreshFlowChart);
         }
 
-        String javascript = getJavaScript(preMap) + getJavaScript(jsMap) + getJavaScript(postMap);
-        preMap.clear();
-        jsMap.clear();
-        postMap.clear();
-        return javascript;
-    }
-
-    public String toDeferString() {
-        return "$(function(){" + toString() + "});";
+        return getJavaScript(preMap) + getJavaScript(jsMap) + getJavaScript(postMap);
     }
 
     public boolean isEmpty() {
         return preMap.isEmpty() && jsMap.isEmpty() && postMap.isEmpty();
+    }
+
+    public void runOnClient() {
+        runOnClient(false);
+    }
+
+
+    public void runOnClient(boolean defer) {
+        String javaScript = toString();
+        if (javaScript.isEmpty()) return;
+        clearAll();
+
+        if (defer) javaScript = "$(function(){" + javaScript + "});";
+        log.warn("runOnClient:{}", javaScript);
+
+        FacesUtil.runClientScript(javaScript);
     }
 }

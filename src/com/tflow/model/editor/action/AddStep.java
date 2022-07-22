@@ -21,7 +21,7 @@ public class AddStep  extends Action {
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.STEP
+                CommandParamKey.PROJECT
         );
         setCommands(new com.tflow.model.editor.cmd.AddStep());
     }
