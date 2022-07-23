@@ -38,15 +38,20 @@ public class AddDirectLine extends Command {
         /*notify status*/
         step.getEventManager().fireEvent(EventName.LINE_ADDED, newLine);
 
-        // save Line data
+        /*TODO: need to update data of object at both sides of line*/
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
+
+        // save Line data
         projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());
 
         // save Line list
         projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), step.getId());
 
         // no tower, floor to save here
+
+        // save Step data: need to update Step record every Line added*/
+        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
         projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());

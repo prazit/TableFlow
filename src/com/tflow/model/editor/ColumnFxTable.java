@@ -4,6 +4,7 @@ import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ColumnFxTable extends Room {
@@ -31,5 +32,13 @@ public class ColumnFxTable extends Room {
 
     public void setOwnerTable(TransformTable ownerTable) {
         this.ownerTable = ownerTable;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "ownerTable:'" + ownerTable.getSelectableId() + "'" +
+                ", columnFxList:" + Arrays.toString(columnFxList.toArray()) +
+                '}';
     }
 }

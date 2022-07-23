@@ -17,6 +17,7 @@ public class StepData extends TWData implements Serializable {
     private int dataTower;
     private int transformTower;
     private int outputTower;
+    private int lastLineClientIndex;
 
     private String activeObject;
 

@@ -3,6 +3,7 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.room.RoomType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TransformTable extends DataTable {
@@ -65,5 +66,26 @@ public class TransformTable extends DataTable {
     @Override
     public Properties getProperties() {
         return Properties.TRANSFORM_TABLE;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", name:'" + name + '\'' +
+                ", index:" + index +
+                ", level:" + level +
+                ", idColName:'" + idColName + '\'' +
+                ", noTransform:" + noTransform +
+                ", endPlug:" + endPlug +
+                ", startPlug:" + startPlug +
+                ", connectionCount:" + connectionCount +
+                ", columnList:" + Arrays.toString(columnList.toArray()) +
+                ", outputList:" + Arrays.toString(outputList.toArray()) +
+                ", sourceType:" + sourceType +
+                ", sourceSelectableId:'" + sourceSelectableId + '\'' +
+                ", fxList:" + Arrays.toString(fxList.toArray()) +
+                ", columnFxTable:" + columnFxTable +
+                '}';
     }
 }

@@ -31,6 +31,13 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * TODO: all changes within Project must do within Command to make sure the updated data already sent to Server.
+ * 1. check all PlugListeners to find who made change to data.
+ *    > Project, Step, DataSourceSelector, DataFile, DataTable, DataColumn, ColumnFxTable, TransformTable, ColumnFx
+ * 2. all Selectable object in topic 1. need event for PROPERTY_CHANGING to call the Action to make change for that.
+ * 3. check all Events to find who made change to data.
+ **/
 @ViewScoped
 @Named("editorCtl")
 public class EditorController extends Controller {
@@ -500,7 +507,7 @@ public class EditorController extends Controller {
         log.info("testSaveProject: started");
 
         Project project = workspace.getProject();
-        projectDataManager.addProjectAs(project.getId(), project);
+        projectDataManager.addProjectAs("P1", project);
 
         log.info("testSaveProject: completed");
     }
@@ -1162,6 +1169,7 @@ public class EditorController extends Controller {
         workspace.getProject().getActiveStep().setStepListActiveTab(stepListActiveTab);
     }
 
+    /*TODO: need to capture value-changing instead of value-changed and send to event to call Action/Command at the end*/
     public void propertyChanged(PropertyView property) {
         Selectable activeObject = workspace.getProject().getActiveStep().getActiveObject();
         Object value = getPropertyValue(activeObject, property);

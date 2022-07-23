@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class DataColumn implements Serializable, Selectable {
 
-    private int id;
+    protected int id;
     protected int index;
     protected DataType type;
     protected String name;
@@ -125,11 +125,12 @@ public class DataColumn implements Serializable, Selectable {
     @Override
     public String toString() {
         return "{" +
-                "index:" + index +
-                ", selectableId:'" + ((Selectable) this).getSelectableId() + '\'' +
-                ", type:'" + type + '\'' +
+                "id:" + id +
+                ", index:" + index +
                 ", name:'" + name + '\'' +
+                ", type:'" + type + '\'' +
                 ", startPlug:'" + startPlug + '\'' +
+                ", selectableId:'" + getSelectableId() + '\'' +
                 '}';
     }
 }

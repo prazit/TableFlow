@@ -36,12 +36,16 @@ public class AddColumnFx extends Command {
             columnFunction = (ColumnFunction) paramMap.get(CommandParamKey.COLUMN_FUNCTION);
             columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), targetColumn);
             columnFx.setId(project.newUniqueId());
+            columnFx.setOwner(targetColumn);
+            targetColumn.setFx(columnFx);
             propertyMap = columnFx.getPropertyMap();
             initPropertyMap(propertyMap, sourceColumn);
         } else {
             /*Action 'RemoveColumnFx'.executeUndo*/
             propertyMap = columnFx.getPropertyMap();
             targetColumn = (TransformColumn) columnFx.getOwner();
+            targetColumn.setFx(null);
+            columnFx.setOwner(null);
             String sourceSelectableId = (String) propertyMap.get("sourceColumn");
             sourceColumn = (DataColumn) selectableMap.get(sourceSelectableId);
             columnFunction = columnFx.getFunction();
@@ -76,7 +80,6 @@ public class AddColumnFx extends Command {
         resultMap.put(ActionResultKey.LINE_LIST, lineList);
         resultMap.put(ActionResultKey.COLUMN_FX, columnFx);
 
-        // save TransformColumn data
         ProjectDataManager projectDataManager = project.getManager();
         ProjectMapper mapper = projectDataManager.mapper;
 
@@ -96,13 +99,16 @@ public class AddColumnFx extends Command {
             projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(sourceColumn), project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
         }
 
-        // save TransformColumn(TargetColumn) at the endPlug of line2
+        // save TransformColumn data (TargetColumn) at the endPlug of line2
         projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(targetColumn), project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // save Line list
         projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, line1.getId(), step.getId());
 
         // no tower, floor to save here
+
+        // save Step data: need to update Step record every Line added*/
+        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
         projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());

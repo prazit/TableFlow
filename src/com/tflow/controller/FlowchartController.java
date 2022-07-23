@@ -337,6 +337,7 @@ public class FlowchartController extends Controller {
         } catch (RequiredParamException e) {
             log.error("Add ColumnFx Failed!", e);
             FacesUtil.addError("Add ColumnFx Failed with Internal Command Error!");
+            return action;
         }
 
         ColumnFx columnFx = (ColumnFx) action.getResultMap().get(ActionResultKey.COLUMN_FX);
@@ -346,7 +347,9 @@ public class FlowchartController extends Controller {
         }
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        jsBuilder.post(JavaScript.refreshFlowChart);
+        jsBuilder.pre(JavaScript.refreshStepList)
+                .post(JavaScript.refreshFlowChart)
+                .runOnClient();
 
         return action;
     }
@@ -440,8 +443,8 @@ public class FlowchartController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList)
-                .post(JavaScript.refreshFlowChart);
-        jsBuilder.runOnClient();
+                .post(JavaScript.refreshFlowChart)
+                .runOnClient();
 
         /*TODO: issue: after refresh, the activeObject is not dataTable*/
     }
@@ -487,9 +490,7 @@ public class FlowchartController extends Controller {
         FacesUtil.addInfo("Table[" + transformTable.getName() + "] added.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        jsBuilder.pre(JavaScript.refreshStepList);
-        jsBuilder.post(JavaScript.refreshFlowChart);
-        jsBuilder.runOnClient();
+        jsBuilder.pre(JavaScript.refreshStepList).post(JavaScript.refreshFlowChart).runOnClient();
     }
 
     /*TODO: need Action for RemoveColumn*/

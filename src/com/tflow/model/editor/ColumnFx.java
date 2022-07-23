@@ -66,8 +66,6 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
                 plug.setRemoveButton(false);
             }
         });
-
-
     }
 
     /*call after projectMapper*/
@@ -126,12 +124,13 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
         return function;
     }
 
+    /*TODO: change Function like this need the Action to update related data to server*/
     public void setFunction(ColumnFunction function) {
-        if (this.function == function) return;
+        boolean genEndPlugList = this.function != function && this.function != null;
         this.function = function;
-        createEndPlugList();
+        if (genEndPlugList) createEndPlugList();
     }
-
+    
     public Map<String, Object> getPropertyMap() {
         return propertyMap;
     }

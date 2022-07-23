@@ -83,4 +83,20 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     public Properties getProperties() {
         return Properties.TRANSFORM_COLUMN;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                " id:" + id +
+                ", index:" + index +
+                ", dataColName:'" + dataColName + '\'' +
+                ", name:'" + name + '\'' +
+                ", type:" + type +
+                ", fx:" + fx +
+                ", endPlug:" + endPlug +
+                ", startPlug:" + startPlug +
+                ", selectableId:'" + getSelectableId() + '\'' +
+                ", owner:" + owner.getSelectableId() +
+                '}';
+    }
 }

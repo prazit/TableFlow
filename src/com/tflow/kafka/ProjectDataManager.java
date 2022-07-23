@@ -741,6 +741,7 @@ public class ProjectDataManager {
         List<TransformTable> transformTableList = new ArrayList<>();
         step.setTransformList(transformTableList);
 
+        /*TODO: find bugs on client-side at the second TransformTable, some data are lost*/
         /*get each transform-table in transform-table-list*/
         for (Integer transformTableId : transformTableIdList) {
             data = getData(ProjectFileType.TRANSFORM_TABLE, project, transformTableId, stepId, 0, transformTableId);
@@ -836,11 +837,16 @@ public class ProjectDataManager {
         project.setActiveStepIndex(step.getIndex());
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         log.warn("ProjectDataManager.getStep: selectableMap = {}", selectableMap);
+        log.warn("ProjectDataManager.getStep: tranformTableList = {}", Arrays.toString(transformTableList.toArray()));
 
         step.setActiveObject(selectableMap.get(stepData.getActiveObject()));
         for (Line line : lineList) {
             log.warn("line={}", line);
-            line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
+            try {
+                line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
+            } catch (NullPointerException ex) {
+                log.error("startSelectableId:{} not found", line.getStartSelectableId());
+            }
 
             try {
                 line.setEndPlug(((HasEndPlug) selectableMap.get(line.getEndSelectableId())).getEndPlug());

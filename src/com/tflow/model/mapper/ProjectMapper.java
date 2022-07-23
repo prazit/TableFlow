@@ -79,7 +79,7 @@ public interface ProjectMapper {
 
     LineData map(Line newLine);
 
-    @Mapping(target = "roomsOnAFloor", expression = "java(tower.getFloorList().size() == 0 ? 0 : tower.getFloor(0).getRoomList().size())")
+    /*@Mapping(target = "roomsOnAFloor", expression = "java(tower.getFloorList().size() == 0 ? 0 : tower.getFloor(0).getRoomList().size())")*/
     TowerData map(Tower tower);
 
     FloorData map(Floor floor);

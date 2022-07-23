@@ -9,26 +9,26 @@ import java.util.*;
 
 public class DataTable extends Room implements Selectable, HasDataFile, HasEndPlug, HasEvent {
 
-    private int id;
-    private String name;
-    private int index;
-    private int level;
-    private DataFile dataFile;
-    private String query;
-    private String idColName;
-    private List<DataColumn> columnList;
-    private List<OutputFile> outputList;
+    protected int id;
+    protected String name;
+    protected int index;
+    protected int level;
+    protected DataFile dataFile;
+    protected String query;
+    protected String idColName;
+    protected List<DataColumn> columnList;
+    protected List<OutputFile> outputList;
 
     /*noTransform can use Auto Generated Value*/
-    private boolean noTransform;
+    protected boolean noTransform;
 
-    private LinePlug endPlug;
-    private LinePlug startPlug;
-    private int connectionCount;
+    protected LinePlug endPlug;
+    protected LinePlug startPlug;
+    protected int connectionCount;
 
-    private Step owner;
+    protected Step owner;
 
-    private EventManager eventManager;
+    protected EventManager eventManager;
 
     /*for ProjectMapper*/
     public DataTable() {
@@ -234,6 +234,10 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
 
     public int getConnectionCount() {
         return connectionCount;
+    }
+
+    public void setConnectionCount(int connectionCount) {
+        this.connectionCount = connectionCount;
     }
 
     @Override

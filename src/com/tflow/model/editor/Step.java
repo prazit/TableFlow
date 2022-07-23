@@ -476,6 +476,14 @@ public class Step implements Selectable, HasEvent {
         }
     }
 
+    public int getLastLineClientIndex() {
+        return lastLineClientIndex;
+    }
+
+    public void setLastLineClientIndex(int lastLineClientIndex) {
+        this.lastLineClientIndex = lastLineClientIndex;
+    }
+
     public int newLineClientIndex() {
         return ++lastLineClientIndex;
     }
