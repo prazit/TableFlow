@@ -18,7 +18,7 @@
         <script>console.log('-- first-line of flow-chart --');</script>
 
         <input name="selectableId" type="hidden" value="#{flowchartCtl.step.selectableId}"/>
-        <p:remoteCommand name="update#{flowchartCtl.step.selectableId}" oncomplete="updateComplete('#{flowchartCtl.step.selectableId}')"/>
+        <p:remoteCommand name="update#{flowchartCtl.step.selectableId}" oncomplete="updateComplete('#{flowchartCtl.step.selectableId}')" update="editorForm:stepName"/>
 
         <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
@@ -48,8 +48,14 @@
                     console.log('drawLines(): flowchart refreshed.');
                 });</script>
 
-                <p:outputPanel style="position: fixed;padding: var(--padding);margin: var(--margin);">
+                <p:outputPanel id="stepName" style="position:fixed;top:48px;padding: var(--padding);margin: var(--margin);">
                     <h1 style="color: var(--surface-c);">#{flowchartCtl.step.name}</h1>
+                </p:outputPanel>
+
+                <p:outputPanel id="projectName" style="position: fixed;padding: var(--padding);margin: var(--margin);" styleClass="step project selectable#{flowchartCtl.active(flowchartCtl.step.owner)}">
+                    <input name="selectableId" type="hidden" value="#{flowchartCtl.step.owner.selectableId}"/>
+                    <p:remoteCommand name="update#{flowchartCtl.step.owner.selectableId}" update="@parent" oncomplete="updateComplete('#{flowchartCtl.step.owner.selectableId}')"/>
+                    <h3 style="color: var(--surface-c);">#{flowchartCtl.step.owner.name}</h3>
                 </p:outputPanel>
 
                 <p:outputPanel styleClass="source section" rendered="#{!flowchartCtl.step.dataTower.isEmpty()}">

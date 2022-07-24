@@ -45,7 +45,9 @@ public class UpdateProjectCommand extends KafkaCommand {
         RecordAttributesData additional = recordData.getAdditional();
 
         Date now = DateTimeUtil.now();
-        additional.setModifiedDate(now);
+        long dateDiffMs = now.getTime() - additional.getModifiedDate().getTime();
+        long maxDiff = 50000; //TODO: load maxDiff from configuration.
+        if( dateDiffMs < maxDiff ) additional.setModifiedDate(now);
 
         File file = getFile(projectFileType, additional);
         if (file.exists()) {

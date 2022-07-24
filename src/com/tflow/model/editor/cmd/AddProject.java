@@ -15,7 +15,7 @@ public class AddProject extends Command {
         /*TODO: need to get new project id from Project List*/
         Project project = new Project("NewProject", "Untitled");
         project.setDataManager(projectDataManager);
-        project.setOwer(workspace);
+        project.setOwner(workspace);
         workspace.setProject(project);
 
         // save Project

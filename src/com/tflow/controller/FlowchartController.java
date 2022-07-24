@@ -4,6 +4,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
+import com.tflow.model.editor.room.Room;
 import com.tflow.util.FacesUtil;
 
 import javax.annotation.PostConstruct;
@@ -287,9 +288,15 @@ public class FlowchartController extends Controller {
         jsBuilder.pre(JavaScript.lineStart);
         jsBuilder.append(JavaScript.lineEnd);
         if (selectableMap.containsKey(selectableId)) {
+            /*TODO: need to change to UpdateFloor by (floorIndex)
+            Room room = (Room) selectable;
+            jsBuilder.post(JavaScript.updateFl, room.getFloorIndex());*/
             jsBuilder.post(JavaScript.updateEm, selectableId);
         }
         if (friendSelectableId != null && selectableMap.containsKey(friendSelectableId)) {
+            /*TODO: need to change to UpdateFloor by (floorIndex)
+            Room room = (Room) friend;
+            jsBuilder.post(JavaScript.updateFl, room.getFloorIndex());*/
             jsBuilder.post(JavaScript.updateEm, friendSelectableId);
         }
         jsBuilder.runOnClient();

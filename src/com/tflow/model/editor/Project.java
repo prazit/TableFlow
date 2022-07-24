@@ -1,16 +1,20 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectDataManager;
+import com.tflow.model.editor.action.AddProject;
+import com.tflow.model.editor.action.RequiredParamException;
+import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.util.FacesUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Project {
+public class Project implements Selectable {
     private String id;
     private String name;
     private Batch batch;
@@ -27,26 +31,31 @@ public class Project {
     private int lastElementId;
     private int lastUniqueId;
 
+    private Map<String, Object> propertyMap;
+
     private transient Workspace owner;
 
     private transient ProjectDataManager dataManager;
 
-    private transient EventManager eventManager;
-
     /*for ProjectMapper*/
     public Project() {
-        stepList = new ArrayList<>();
+        init();
     }
 
     public Project(String id, String name) {
         this.id = id;
         activeStepIndex = -1;
         this.name = name;
-        stepList = new ArrayList<>();
         databaseMap = new HashMap<>();
         sftpMap = new HashMap<>();
         localMap = new HashMap<>();
         variableMap = new HashMap<>();
+        init();
+    }
+
+    private void init() {
+        stepList = new ArrayList<>();
+        propertyMap = new HashMap<>();
     }
 
     public String getId() {
@@ -129,7 +138,7 @@ public class Project {
         return owner;
     }
 
-    public void setOwer(Workspace workspace) {
+    public void setOwner(Workspace workspace) {
         this.owner = workspace;
     }
 
@@ -193,4 +202,28 @@ public class Project {
         return stepList.get(activeStepIndex);
     }
 
+    @Override
+    public String getSelectableId() {
+        return id;
+    }
+
+    @Override
+    public LinePlug getStartPlug() {
+        return null;
+    }
+
+    @Override
+    public void setStartPlug(LinePlug startPlug) {
+        /*nothing*/
+    }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.PROJECT;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return propertyMap;
+    }
 }

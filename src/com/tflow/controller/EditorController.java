@@ -33,10 +33,11 @@ import java.util.*;
 
 /**
  * TODO: all changes within Project must do within Command to make sure the updated data already sent to Server.
- * SelectableObjects: Project, Step, DataSourceSelector, DataFile, DataTable, DataColumn, ColumnFxTable, TransformTable, ColumnFx
- * 1. all Selectable object above need event for PROPERTY_CHANGED to call the Action to make change for that.
- * 2. check all Events to find who made change to data.
- * 3. check all PlugListeners to find who made change to data.
+ * SelectableObjects: Project, Step, DataSourceSelector, DataFile, DataTable, DataColumn, ColumnFxTable, TransformTable, ColumnFx.
+ * Event Concept: update UI from Command using Step-Events as Event Trigger.
+ * 1. [done] all Selectable object above need event for PROPERTY_CHANGED to call the Action to make change for that.
+ * 2. [done] check all Events to find who made change to data.
+ * 3. [...] check all PlugListeners to find who made change to data.
  **/
 @ViewScoped
 @Named("editorCtl")
@@ -98,7 +99,6 @@ public class EditorController extends Controller {
 
     private void initStepList() {
         Project project = workspace.getProject();
-        projectName = project.getName();
         selectStep(project.getActiveStepIndex(), false);
         refreshStepList(project.getStepList());
     }
@@ -145,7 +145,9 @@ public class EditorController extends Controller {
         return priority;
     }
 
+    /*TODO: issue: after select step with index = -1, loaded step contains index = 0*/
     private void refreshStepList(List<Step> stepList) {
+        projectName = workspace.getProject().getName();
         stepMenu = new DefaultMenuModel();
         List<MenuElement> menuItemList = stepMenu.getElements();
         int index = 0;
@@ -262,10 +264,11 @@ public class EditorController extends Controller {
         log.warn(msg);
     }
 
-    public List<SelectItem> getItemList(PropertyType type, String[] params) throws ClassNotFoundException {
+    public List<SelectItem> getItemList(PropertyType type, String[] params) throws ClassNotFoundException, ClassCastException {
         List<SelectItem> selectItemList = new ArrayList<>();
 
-        Step activeStep = workspace.getProject().getActiveStep();
+        Project project = workspace.getProject();
+        Step activeStep = project.getActiveStep();
         Selectable activeObject = activeStep.getActiveObject();
 
         switch (type) {
@@ -299,7 +302,7 @@ public class EditorController extends Controller {
 
                 int level = activeDataTable.getLevel();
                 for (DataTable dataTable : activeStep.getDataList()) {
-                    if (dataTable.getLevel() >= level) /*list all tables before current table only*/ continue;
+                    if (dataTable.getLevel() >= level) /*list all tables who appear before current table only*/ continue;
                     selectItemList.add(new SelectItem(dataTable.getSelectableId(), dataTable.getName()));
                 }
                 break;
@@ -316,8 +319,20 @@ public class EditorController extends Controller {
                 break;
 
             case DATASOURCE:
-                for (DataSourceSelector dataSourceSelector : activeStep.getDataSourceSelectorList()) {
-                    selectItemList.add(new SelectItem(dataSourceSelector.getId(), dataSourceSelector.getType() + ":" + dataSourceSelector.getName()));
+                DataSourceType dataSourceType = null;
+                if (!params[0].isEmpty()) {
+                    dataSourceType = DataSourceType.valueOf(params[0]);
+                } else if (!params[1].isEmpty()) {
+                    dataSourceType = (DataSourceType) getPropertyValue(activeObject, params[1]);
+                }
+                if (dataSourceType == null || dataSourceType == DataSourceType.DATABASE) for (Database database : project.getDatabaseMap().values()) {
+                    selectItemList.add(new SelectItem(database.getId(), database.getDbms() + ":" + database.getName()));
+                }
+                if (dataSourceType == null || dataSourceType == DataSourceType.LOCAL) for (Local local : project.getLocalMap().values()) {
+                    selectItemList.add(new SelectItem(local.getId(), local.getName() + ":" + local.getRootPath()));
+                }
+                if (dataSourceType == null || dataSourceType == DataSourceType.SFTP) for (SFTP sftp : project.getSftpMap().values()) {
+                    selectItemList.add(new SelectItem(sftp.getId(), sftp.getName() + ":" + sftp.getRootPath()));
                 }
                 break;
 
@@ -412,6 +427,9 @@ public class EditorController extends Controller {
 
     private Object getPropertyValue(Selectable selectable, PropertyView property) {
         Object value = null;
+        if (property == null) {
+            return value;
+        }
 
         if (property.hasParent())
             /*by getParent().getValue() method, the parent always be the PropertyMap*/
@@ -1169,15 +1187,23 @@ public class EditorController extends Controller {
         workspace.getProject().getActiveStep().setStepListActiveTab(stepListActiveTab);
     }
 
-    /*TODO: need to capture value-changing instead of value-changed and send to event to call Action/Command at the end*/
     public void propertyChanged(PropertyView property) {
         Selectable activeObject = workspace.getProject().getActiveStep().getActiveObject();
-        Object value = getPropertyValue(activeObject, property);
-        log.warn("propertyChanged:fromClient(property:{}, value:{})", property, value);
+        Object oldValue = property.getOldValue();
+        Object newValue = getPropertyValue(activeObject, property);
+        property.setNewValue(newValue);
+        log.warn("propertyChanged:fromClient(property:{}, oldValue:{}, newValue:{})", property.getLabel(), oldValue, newValue);
 
-        if (activeObject instanceof HasEvent) {
-            HasEvent hasEvent = (HasEvent) activeObject;
-            hasEvent.getEventManager().fireEvent(EventName.PROPERTY_CHANGED, property);
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.STEP, workspace.getProject().getActiveStep());
+        paramMap.put(CommandParamKey.SELECTABLE, activeObject);
+        paramMap.put(CommandParamKey.PROPERTY, property);
+
+        try {
+            new ChangePropertyValue(paramMap).execute();
+        } catch (RequiredParamException ex) {
+            log.error("Change Property Value Failed!", ex);
+            FacesUtil.addError("Change property value failed with Internal Command Error!");
         }
     }
 }

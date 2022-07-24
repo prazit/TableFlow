@@ -1,6 +1,8 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.view.PropertyView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +30,12 @@ public enum Properties {
             "version.1.0.1"
     ),
 
+    PROJECT(
+            "name:Name:String:refreshStepList();",
+            "activeStepIndex:Active Step Index:ReadOnly",
+            "lastUniqueId:Last Unique ID:ReadOnly",
+            "lastElementId:Last Element ID:ReadOnly"
+    ),
     STEP(
             "name:Name:String:refreshStepList();",
             "--:Debug Only:--",
@@ -37,7 +45,8 @@ public enum Properties {
             "selectableMap:Selectable Map:ReadOnly"
     ),
     STEP_DATA_SOURCE(
-            "type:Data Source Type:DATASOURCETYPE",
+            "name:Name:String",
+            "type:Data Source Type:DATASOURCETYPE:@propertyForm.scrollPanel",
             "dataSourceId:Data Source:DATASOURCE::type"
     ),
     DATA_BASE(
@@ -209,9 +218,9 @@ public enum Properties {
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
-    ),
+    )
 
-    /*TODO: need complete list for Parameters or Function Prototypes*/
+    /*TODO: need complete list for Parameters or Function Prototypes*/,
     CFX_LOOKUP(
             "name:Title:String",
             "function:Function:ColumnFunction",
@@ -249,8 +258,7 @@ public enum Properties {
     TFX_SORT(
             "name:File Name:String"
 
-    ),
-    ;
+    );
 
     private List<String> prototypeList;
     private List<PropertyView> propertyList;
@@ -286,7 +294,8 @@ public enum Properties {
                 return propertyView;
         }
 
-        return new PropertyView();
+        LoggerFactory.getLogger(Properties.class).warn("getPropertyView: property(var:{}) not found!", propertyVar);
+        return null;
     }
 
     /**
@@ -313,6 +322,9 @@ public enum Properties {
         String[] params = new String[]{};
         int length = prototypes.length;
 
+        Logger log = LoggerFactory.getLogger(Properties.class);
+        log.warn("toPropertyView: prototypes={} from prototypeString='{}'", Arrays.toString(prototypes), prototypeString);
+
         if (prototypes[0].equals("--")) {
             /*separator*/
             propView.setType(PropertyType.SEPARATOR);
@@ -321,6 +333,7 @@ public enum Properties {
             propertyList.add(propView);
             return null;
         } else if (prototypes[0].equals(".")) {
+            /*var with parent*/
             if (length > 5)
                 params = Arrays.copyOfRange(prototypes, 5, length);
             propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
@@ -328,6 +341,7 @@ public enum Properties {
             propView.setVar(prototypes[2]);
             propView.setVarParent(prototypes[1]);
         } else {
+            /*var without parent*/
             if (length > 3)
                 params = Arrays.copyOfRange(prototypes, 3, length);
             propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
@@ -340,7 +354,7 @@ public enum Properties {
         for (int i = paramCount - 1; i >= 0; i--) {
             if (params[i].contains("@")) {
                 paramCount = i;
-                propView.setUpdate(params[i].substring(1));
+                propView.setUpdate(params[i].substring(1).replaceAll("[.]", ":"));
             } else if (params[i].endsWith(";")) {
                 paramCount = i;
                 propView.setJavaScript(params[i]);

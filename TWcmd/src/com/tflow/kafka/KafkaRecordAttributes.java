@@ -1,6 +1,7 @@
 package com.tflow.kafka;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class KafkaRecordAttributes implements Serializable {
     private static final transient long serialVersionUID = 2022061609996660001L;
@@ -15,6 +16,7 @@ public class KafkaRecordAttributes implements Serializable {
     /* Transaction Field Group: all fields are required */
     private long clientId;
     private long userId;
+    private Date modifiedDate;
 
     public KafkaRecordAttributes() {
         /*nothing*/
@@ -97,6 +99,14 @@ public class KafkaRecordAttributes implements Serializable {
         this.userId = userId;
     }
 
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -105,8 +115,9 @@ public class KafkaRecordAttributes implements Serializable {
                 ", dataTableId:'" + dataTableId + '\'' +
                 ", transformTableId:'" + transformTableId + '\'' +
                 ", recordId:'" + recordId + '\'' +
-                ", modifiedClientId:" + clientId +
-                ", modifiedUserId:" + userId +
+                ", clientId:" + clientId +
+                ", userId:" + userId +
+                ", modifiedDate:" + userId +
                 '}';
     }
 }

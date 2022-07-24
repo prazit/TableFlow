@@ -13,6 +13,7 @@ import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.*;
 import com.tflow.system.Environment;
+import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -378,7 +379,9 @@ public class ProjectDataManager {
         if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId for ProjectDataManager.addData(" + fileType + ")");
         if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId for ProjectDataManager.addData(" + fileType + ")");
 
+        additional.setModifiedDate(DateTimeUtil.now());
         projectDataWriteBufferList.add(new ProjectDataWriteBuffer(fileType, object, additional));
+
         commit();
     }
 
@@ -551,7 +554,7 @@ public class ProjectDataManager {
         /*get project, to know the project is not edit by another */
         Object data = getData(ProjectFileType.PROJECT, new KafkaRecordAttributes(clientId, userId, projectId, projectId));
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
-        project.setOwer(workspace);
+        project.setOwner(workspace);
         project.setDataManager(this);
 
         /*get db-list*/

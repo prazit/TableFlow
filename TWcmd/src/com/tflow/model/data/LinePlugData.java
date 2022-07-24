@@ -7,11 +7,6 @@ import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * TODO: after getData
- * 1. find each Line by id (line in lineList)
- * 2. call Owner.createPlugListener
- **/
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class LinePlugData extends TWData implements Serializable {

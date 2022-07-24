@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class DataTable extends Room implements Selectable, HasDataFile, HasEndPlug, HasEvent {
+public class DataTable extends Room implements Selectable, HasDataFile, HasEndPlug {
 
     protected int id;
     protected String name;
@@ -27,8 +27,6 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
     protected int connectionCount;
 
     protected Step owner;
-
-    protected EventManager eventManager;
 
     /*for ProjectMapper*/
     public DataTable() {
@@ -53,7 +51,6 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
         this.columnList = new ArrayList<>();
         this.outputList = new ArrayList<>();
         this.setRoomType(RoomType.DATA_TABLE);
-        eventManager = new EventManager(this);
     }
 
     private void createEndPlug(String plugId) {
@@ -238,11 +235,6 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
 
     public void setConnectionCount(int connectionCount) {
         this.connectionCount = connectionCount;
-    }
-
-    @Override
-    public EventManager getEventManager() {
-        return eventManager;
     }
 
     @Override

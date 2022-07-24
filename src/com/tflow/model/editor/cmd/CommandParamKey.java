@@ -9,6 +9,7 @@ public enum CommandParamKey {
     STEP,
     ACTION,
     SELECTABLE,
+    PROPERTY,
 
     DATA_SOURCE,
     DATA_SOURCE_SELECTOR,

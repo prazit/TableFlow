@@ -4,12 +4,7 @@ import com.tflow.model.editor.view.PropertyView;
 
 import java.util.*;
 
-/**
- * <b>Event</b><br/>
- * <li>REMOVE</li> occurs when the Remove-Button on startPlug is clicked.
- * <li>PROPERTY_CHANGED</li>  occurs after the value of property is changed.
- */
-public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
+public class ColumnFx implements Selectable, HasEndPlug {
 
     private int id;
     private String name;
@@ -21,8 +16,6 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
 
     private DataColumn owner;
 
-    private EventManager eventManager;
-
     /*for projectMapper*/
     public ColumnFx() {
         /*nothing*/
@@ -33,7 +26,6 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
         this.function = function;
         createStartPlug(startPlug);
         this.owner = owner;
-        eventManager = new EventManager(this);
         propertyMap = new HashMap<>();
         endPlugList = new ArrayList<>();
         createEndPlugList();
@@ -145,11 +137,6 @@ public class ColumnFx implements Selectable, HasEndPlug, HasEvent {
 
     public void setEndPlugList(List<ColumnFxPlug> endPlugList) {
         this.endPlugList = endPlugList;
-    }
-
-    @Override
-    public EventManager getEventManager() {
-        return eventManager;
     }
 
     @Override

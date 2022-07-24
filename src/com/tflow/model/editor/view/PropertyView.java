@@ -19,6 +19,9 @@ public class PropertyView {
     private String update;
     private String javaScript;
 
+    private Object oldValue;
+    private Object newValue;
+
     public PropertyView() {
         update = "@this";
         javaScript = "";
@@ -88,6 +91,22 @@ public class PropertyView {
         this.javaScript = javaScript;
     }
 
+    public Object getOldValue() {
+        return oldValue;
+    }
+
+    public void setOldValue(Object oldValue) {
+        this.oldValue = oldValue;
+    }
+
+    public Object getNewValue() {
+        return newValue;
+    }
+
+    public void setNewValue(Object newValue) {
+        this.newValue = newValue;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -98,6 +117,7 @@ public class PropertyView {
                 ", update:'" + update + '\'' +
                 ", javaScript:'" + javaScript + '\'' +
                 ", params:" + Arrays.toString(params) +
+                ", value:" + oldValue +
                 '}';
     }
 }

@@ -423,7 +423,9 @@ public class Step implements Selectable, HasEvent {
     }
 
     private void collectSelectableToMap() {
+        Project project = this.getOwner();
         selectableMap = new HashMap<>();
+        selectableMap.put(project.getSelectableId(), project);
         selectableMap.put(this.getSelectableId(), this);
 
         if (getActiveObject() == null) {

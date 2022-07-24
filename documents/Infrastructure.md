@@ -107,6 +107,121 @@ write2---nas;
 | Hadoop     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Spark      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
+## 
+
+## UI UPDATER (Current)
+
+> **Event Usage**: update UI from Command using Step-Events as Event Trigger .
+
+```mermaid
+graph LR;
+
+subgraph Flowchart Controller Class
+Controller[1 : Event Listener]
+EventHandler[Event Handler]
+    subgraph JavaScript
+    JavaScriptBuilder[Java Script Builder]
+    JavaScriptRunner[Java Script Runner]
+    end
+ParameterMap((Parameter Map))
+end
+
+subgraph Action Class
+Action[2 : Action]
+Command[Command]
+View((View Models))
+ActionParameter((Parameter Map))
+ResultMap((Result Map))
+ViewModifier[View Modifier]
+DataManager((Data Manager))
+DataSaver[Data Saver]
+StepEventManager((Step : Event Manager))
+EventTrigger[Event Trigger]
+end
+
+subgraph Client Browser
+Client[Java Script : UI Updater]
+UserEvent
+end
+
+Controller-->ParameterMap
+ParameterMap-->Action
+Controller-->Action
+Controller-->JavaScriptRunner
+ResultMap-->Controller
+Action-->Command
+StepEventManager-->ActionParameter
+DataManager-->ActionParameter
+Command-->DataSaver
+DataSaver-->DataManager
+Command-->ViewModifier
+ViewModifier-->View
+View-->ActionParameter
+ActionParameter
+View-->ResultMap
+Command-->EventTrigger
+EventTrigger-->StepEventManager
+StepEventManager-->EventHandler
+EventHandler-->JavaScriptBuilder
+JavaScriptBuilder-->JavaScriptRunner
+JavaScriptRunner-->Client
+
+
+Client-->UserEvent-->Controller
+```
+
+## UI UPDATER (Improved)
+
+```mermaid
+graph LR;
+
+subgraph Editor Controller Class
+Controller[1 : Event Listener]
+JavaScriptRunner[Java Script Runner]
+ParameterMap((Parameter Map))
+end
+
+subgraph Action Class
+Action[2 : Action]
+Command[Command]
+View((View Models))
+ActionParameter((Parameter Map))
+ResultMap((Result Map))
+ViewModifier[View Modifier]
+DataManager((Data Manager))
+DataSaver[Data Saver]
+UIUpdater[UI Updater]
+JavaScriptBuilder((Java Script Builder))
+end
+
+subgraph Client Browser
+Client[Java Script : UI Updater]
+UserEvent
+end
+
+JavaScriptRunner-->Client
+Controller-->ParameterMap
+ParameterMap-->Action
+Controller-->Action
+Controller-->JavaScriptRunner
+ResultMap-->Controller
+Action-->Command
+DataManager-->ActionParameter
+Command-->DataSaver
+DataSaver-->DataManager
+Command-->ViewModifier
+ViewModifier-->View
+View-->ActionParameter
+ActionParameter
+View-->ResultMap
+Command-->UIUpdater
+UIUpdater-->JavaScriptBuilder
+JavaScriptBuilder-->ActionParameter
+
+
+Client-->UserEvent-->Controller
+```
+
 ----
 
 -- end of document --
