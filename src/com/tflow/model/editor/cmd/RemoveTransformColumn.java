@@ -33,7 +33,7 @@ public class RemoveTransformColumn extends Command {
         action.getResultMap().put(ActionResultKey.TRANSFORM_COLUMN, transformColumn);
 
         // save TransformColumn data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, (TWData) null, project, transformColumn.getId(), step.getId(), 0, transformTable.getId());
 

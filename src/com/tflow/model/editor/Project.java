@@ -29,7 +29,9 @@ public class Project {
 
     private transient Workspace owner;
 
-    private transient ProjectDataManager manager;
+    private transient ProjectDataManager dataManager;
+
+    private transient EventManager eventManager;
 
     /*for ProjectMapper*/
     public Project() {
@@ -131,12 +133,12 @@ public class Project {
         this.owner = workspace;
     }
 
-    public ProjectDataManager getManager() {
-        return manager;
+    public ProjectDataManager getDataManager() {
+        return dataManager;
     }
 
-    public void setManager(ProjectDataManager manager) {
-        this.manager = manager;
+    public void setDataManager(ProjectDataManager dataManager) {
+        this.dataManager = dataManager;
     }
 
     public int getLastElementId() {

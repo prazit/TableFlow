@@ -40,7 +40,7 @@ public class AddOutputFile extends Command {
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.OUTPUT_FILE, outputFile);
 
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         if (dataTable instanceof TransformTable) {
             // save OutputFile data

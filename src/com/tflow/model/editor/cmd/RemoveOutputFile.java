@@ -33,7 +33,7 @@ public class RemoveOutputFile extends Command {
         action.getResultMap().put(ActionResultKey.OUTPUT_FILE, outputFile);
 
         // save OutputFile data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         projectDataManager.addData(ProjectFileType.DATA_OUTPUT, (TWData) null, project, outputFile.getId(), step.getId(), dataTable.getId());
 

@@ -1,12 +1,10 @@
 package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
-import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
-import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -31,7 +29,7 @@ public class AddStep extends Command {
         resultMap.put(ActionResultKey.STEP, step);
 
         // save Step data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         projectDataManager.addStep(step, project);
     }
 }

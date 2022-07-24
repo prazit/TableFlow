@@ -28,7 +28,7 @@ public class RemoveDirectLine extends Command {
 
         // save Line data
         Project project = step.getOwner();
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), step.getId());
 

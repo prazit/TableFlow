@@ -39,7 +39,7 @@ public class AddDirectLine extends Command {
         step.getEventManager().fireEvent(EventName.LINE_ADDED, newLine);
 
         /*TODO: need to update data of object at both sides of line*/
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
 
         // save Line data

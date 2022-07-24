@@ -58,7 +58,7 @@ public class AddDataTable extends Command {
         action.getResultMap().put(ActionResultKey.DATA_TABLE, dataTable);
 
         // save DataTable data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         int dataTableId = dataTable.getId();
         int stepId = step.getId();

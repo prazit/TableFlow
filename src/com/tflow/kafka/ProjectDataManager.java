@@ -552,7 +552,7 @@ public class ProjectDataManager {
         Object data = getData(ProjectFileType.PROJECT, new KafkaRecordAttributes(clientId, userId, projectId, projectId));
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwer(workspace);
-        project.setManager(this);
+        project.setDataManager(this);
 
         /*get db-list*/
         data = getData(ProjectFileType.DB_LIST, project, "1");

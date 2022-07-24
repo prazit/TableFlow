@@ -40,7 +40,7 @@ public class AddTableFx extends Command {
         action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
 
         // save Transformation data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         projectDataManager.addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
 

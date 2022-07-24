@@ -52,7 +52,7 @@ public class RemoveDataTable extends Command {
         paramMap.put(CommandParamKey.DATA_FILE, dataTable.getDataFile());
 
         // save DataTable data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         int dataTableId = dataTable.getId();
         projectDataManager.addData(ProjectFileType.DATA_TABLE, (TWData) null, project, dataTableId, step.getId(), dataTableId);

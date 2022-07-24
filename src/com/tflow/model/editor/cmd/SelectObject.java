@@ -25,7 +25,7 @@ public class SelectObject extends Command {
 
         // save Step Data for ActiveObject
         Project project = step.getOwner();
-        ProjectDataManager dataManager = project.getManager();
+        ProjectDataManager dataManager = project.getDataManager();
         int stepId = step.getId();
         dataManager.addData(ProjectFileType.STEP, dataManager.mapper.map(step), project, stepId, stepId);
     }

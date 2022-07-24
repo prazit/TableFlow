@@ -59,7 +59,7 @@ public class AddDataFile extends Command {
         action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
 
         // save DataFile list
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         int stepId = step.getId();
         projectDataManager.addData(ProjectFileType.DATA_FILE_LIST, mapper.fromDataFileList(fileList), project, 0, stepId);

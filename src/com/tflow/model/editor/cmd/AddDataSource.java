@@ -50,7 +50,7 @@ public class AddDataSource extends Command {
         /*Undo action will put dataSource at old room*/
         floor.setRoom(roomIndex, dataSource);
 
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         ProjectFileType fileType;
         ProjectFileType listFileType;

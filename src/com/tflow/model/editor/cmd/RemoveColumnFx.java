@@ -47,7 +47,7 @@ public class RemoveColumnFx extends Command {
 
         // save TransformColumnFx data
         Project project = step.getOwner();
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, (TWData) null, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
 

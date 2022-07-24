@@ -33,10 +33,10 @@ import java.util.*;
 
 /**
  * TODO: all changes within Project must do within Command to make sure the updated data already sent to Server.
- * 1. check all PlugListeners to find who made change to data.
- *    > Project, Step, DataSourceSelector, DataFile, DataTable, DataColumn, ColumnFxTable, TransformTable, ColumnFx
- * 2. all Selectable object in topic 1. need event for PROPERTY_CHANGING to call the Action to make change for that.
- * 3. check all Events to find who made change to data.
+ * SelectableObjects: Project, Step, DataSourceSelector, DataFile, DataTable, DataColumn, ColumnFxTable, TransformTable, ColumnFx
+ * 1. all Selectable object above need event for PROPERTY_CHANGED to call the Action to make change for that.
+ * 2. check all Events to find who made change to data.
+ * 3. check all PlugListeners to find who made change to data.
  **/
 @ViewScoped
 @Named("editorCtl")
@@ -64,12 +64,10 @@ public class EditorController extends Controller {
     private boolean fullActionList;
 
     private JavaScriptBuilder javaScriptBuilder;
-    private ProjectDataManager projectDataManager;
 
     @PostConstruct
     public void onCreation() {
         javaScriptBuilder = new JavaScriptBuilder();
-        projectDataManager = new ProjectDataManager(workspace.getEnvironment());
 
         Project project = workspace.getProject();
         if (project == null) {
@@ -462,13 +460,14 @@ public class EditorController extends Controller {
     }
 
     public void testGetData() {
-        ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(projectDataManager.testBuffer);
+        ProjectDataManager dataManager = workspace.getProject().getDataManager();
+        ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(dataManager.testBuffer);
         for (ProjectDataWriteBuffer projectDataWriteBuffer : testList) {
             ProjectFileType projectFileType = projectDataWriteBuffer.getFileType();
             KafkaRecordAttributes additional = projectDataWriteBuffer.getAdditional();
 
             log.warn("testKafkaSendMessage begin: getData(projectFileType:{}, additional:{})", projectFileType, additional);
-            Object data = projectDataManager.getData(projectFileType, additional);
+            Object data = dataManager.getData(projectFileType, additional);
             if (data == null) {
                 log.error("testKafkaSendMessage end: getData.returned data = null");
                 continue;
@@ -499,7 +498,7 @@ public class EditorController extends Controller {
                 log.error("testKafkaSendMessage end: cast to DataTable failed: ", ex);
             }
 
-            projectDataManager.testBuffer.remove(projectDataWriteBuffer);
+            dataManager.testBuffer.remove(projectDataWriteBuffer);
         }
     }
 
@@ -507,18 +506,19 @@ public class EditorController extends Controller {
         log.info("testSaveProject: started");
 
         Project project = workspace.getProject();
-        projectDataManager.addProjectAs("P1", project);
+        project.getDataManager().addProjectAs("P1", project);
 
         log.info("testSaveProject: completed");
     }
 
     public void testOpenProject() {
         Project project = null;
-        String oldProjectId = workspace.getProject().getId();
+        Project workspaceProject = workspace.getProject();
+        String oldProjectId = workspaceProject.getId();
         try {
             /*TODO: need to test open new project from template (projectId < 0)*/
-            workspace.getProject().setId("P1");
-            project = projectDataManager.getProject(workspace);
+            workspaceProject.setId("P1");
+            project = workspaceProject.getDataManager().getProject(workspace);
         } catch (ProjectDataException ex) {
             log.error("testOpenProject: error from server({})", ex.getMessage());
         } catch (ClassCastException ex) {
@@ -527,7 +527,7 @@ public class EditorController extends Controller {
 
         if (project == null) {
             log.error("testOpenProject: getProject return NULL.");
-            workspace.getProject().setId(oldProjectId);
+            workspaceProject.setId(oldProjectId);
         } else {
             log.info("testOpenProject: getProject runturn Project{}", project);
             initStepList();
@@ -542,7 +542,7 @@ public class EditorController extends Controller {
         Step step = stepList.get(stepIndex);
         try {
             log.info("testOpenStep: calling projectDataManager.getStep");
-            step = projectDataManager.getStep(project, stepIndex);
+            step = project.getDataManager().getStep(project, stepIndex);
             log.info("testOpenStep: Step(After) = {}", step);
         } catch (ProjectDataException ex) {
             log.error("testOpenStep: error from TRcmd service: {}", ex.getMessage());
@@ -752,7 +752,7 @@ public class EditorController extends Controller {
 
     public void testToJson() {
         Project project = workspace.getProject();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectMapper mapper = project.getDataManager().mapper;
         RecordMapper recordMapper = Mappers.getMapper(RecordMapper.class);
 
         KafkaRecordAttributes kafkaRecordAttributes = new KafkaRecordAttributes();
@@ -862,7 +862,7 @@ public class EditorController extends Controller {
     private void createNewProject() {
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.WORKSPACE, workspace);
-        paramMap.put(CommandParamKey.DATA_MANAGER, projectDataManager);
+        paramMap.put(CommandParamKey.DATA_MANAGER, new ProjectDataManager(workspace.getEnvironment()));
 
         try {
             new AddProject(paramMap).execute();

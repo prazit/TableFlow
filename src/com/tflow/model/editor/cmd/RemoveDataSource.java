@@ -3,7 +3,6 @@ package com.tflow.model.editor.cmd;
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataSourceData;
-import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSource;
@@ -39,7 +38,7 @@ public class RemoveDataSource extends Command {
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_SOURCE, dataSource);
 
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         DataSourceData dataSourceData;
         ProjectFileType fileType;

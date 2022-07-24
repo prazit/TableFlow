@@ -56,7 +56,7 @@ public class AddDataSourceSelector extends Command {
         /*Action Result*/
 
         // save DataSourceSelector data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         int stepId = step.getId();
         projectDataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map(dataSourceSelector), project, dataSourceSelector.getId(), stepId );

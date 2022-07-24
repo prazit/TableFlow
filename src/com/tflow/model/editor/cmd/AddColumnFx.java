@@ -80,7 +80,7 @@ public class AddColumnFx extends Command {
         resultMap.put(ActionResultKey.LINE_LIST, lineList);
         resultMap.put(ActionResultKey.COLUMN_FX, columnFx);
 
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
 
         // save TransformColumnFx data

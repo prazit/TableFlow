@@ -55,7 +55,7 @@ public class RemoveTransformTable extends Command {
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
 
         // save TransformTable data
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         projectDataManager.addData(ProjectFileType.TRANSFORM_TABLE, (TWData) null, project, transformTable.getId(), step.getId(), 0, transformTable.getId());
 

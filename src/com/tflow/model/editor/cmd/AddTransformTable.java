@@ -90,7 +90,7 @@ public class AddTransformTable extends Command {
         action.getResultMap().put(ActionResultKey.TRANSFORM_TABLE, transformTable);
 
         // save TransformTable data including ColumnFxTable
-        ProjectDataManager projectDataManager = project.getManager();
+        ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
         int stepId = step.getId();
         int transformTableId = transformTable.getId();
