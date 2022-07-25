@@ -748,7 +748,6 @@ public class ProjectDataManager {
         List<TransformTable> transformTableList = new ArrayList<>();
         step.setTransformList(transformTableList);
 
-        /*TODO: find bugs on client-side at the second TransformTable, some data are lost*/
         /*get each transform-table in transform-table-list*/
         for (Integer transformTableId : transformTableIdList) {
             data = getData(ProjectFileType.TRANSFORM_TABLE, project, transformTableId, stepId, 0, transformTableId);
@@ -759,6 +758,8 @@ public class ProjectDataManager {
             transformTable.createPlugListeners();
 
             ColumnFxTable columnFxTable = transformTable.getColumnFxTable();
+            columnFxTable.setFloorIndex(transformTable.getFloorIndex());
+            columnFxTable.setRoomIndex(transformTable.getRoomIndex() - 1);
             step.getTransformTower().setRoom(columnFxTable.getFloorIndex(), columnFxTable.getRoomIndex(), columnFxTable);
 
             /*get transform-column-list*/
@@ -817,7 +818,7 @@ public class ProjectDataManager {
             /*get each tranformation in tranformation-list*/
             /*need Transformmation Model, find "addData(ProjectFileType.TRANSFORMATION" then use Mapper*/
             for (Integer fxId : fxIdList) {
-                data = getData(ProjectFileType.TRANSFORMATION, project, 1, stepId, 0, transformTableId);
+                data = getData(ProjectFileType.TRANSFORMATION, project, fxId, stepId, 0, transformTableId);
                 TableFx tableFx = mapper.map((TableFxData) throwExceptionOnError(data));
                 tableFx.setOwner(transformTable);
                 fxList.add(tableFx);

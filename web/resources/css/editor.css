@@ -178,6 +178,7 @@ body .ui-panel.function.active .ui-panel-titlebar,
     background-color: var(--surface-c);
 }
 
+.step.selectable:hover,
 .data-source.selectable:hover,
 .data-file.selectable:hover,
 .step-output.selectable:hover,

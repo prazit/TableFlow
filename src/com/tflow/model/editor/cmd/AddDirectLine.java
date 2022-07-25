@@ -2,10 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
-import com.tflow.model.editor.EventName;
-import com.tflow.model.editor.Line;
-import com.tflow.model.editor.Project;
-import com.tflow.model.editor.Step;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
@@ -39,9 +36,20 @@ public class AddDirectLine extends Command {
         /*notify status*/
         step.getEventManager().fireEvent(EventName.LINE_ADDED, newLine);
 
-        /*TODO: need to update data of object at both sides of line*/
         ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
+
+        // save Object at startPlug.
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
+        Selectable selectable = selectableMap.get(newLine.getStartSelectableId());
+        if (!saveSelectableData(selectable, step)) {
+            throw new UnsupportedOperationException("Save data of Unsupported Type " + selectable.getClass().getName() + "(" + selectable.getSelectableId() + ")");
+        }
+
+        // save Object at endPlug.
+        if (!saveSelectableData(selectableMap.get(newLine.getEndSelectableId()), step)) {
+            throw new UnsupportedOperationException("Save data of Unsupported Type " + selectable.getClass().getName() + "(" + selectable.getSelectableId() + ")");
+        }
 
         // save Line data
         projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());

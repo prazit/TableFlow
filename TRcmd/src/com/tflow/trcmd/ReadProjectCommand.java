@@ -70,7 +70,7 @@ public class ReadProjectCommand extends KafkaCommand {
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
             sendObject(key, additional.getModifiedClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
-            log.warn("File not found: {}", file.getName());
+            log.warn("File not found: {}", file.getAbsolutePath());
             return;
         }
 

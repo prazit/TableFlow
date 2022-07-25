@@ -39,6 +39,8 @@ import java.util.*;
  * 1. [done] all Selectable object above need event for PROPERTY_CHANGED to call the Action to make change for that.
  * 2. [done] check all Events to find who made change to data.
  * 3. [...] check all PlugListeners to find who made change to data.
+ *    + Q:need to know Action to triggered the PlugListener, then save owner of the PlugListener in that Action.
+ *    + A:Triggers are in Command already (addLine, removeLine) and modified before save data.
  **/
 @ViewScoped
 @Named("editorCtl")

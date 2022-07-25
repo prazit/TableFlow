@@ -32,26 +32,18 @@ public class ChangePropertyValue extends Command {
         property.setNewValue(oldValue);
         /*paramMap.put(CommandParamKey.PROPERTY, property);*/
 
-        // result
+        // result map
+
+        // Specific: ColumnFx.function is changed
+        if (selectable instanceof ColumnFx && property.getVar().compareTo("function") == 0) {
+            createEndPlugList((ColumnFx) selectable);
+        }
 
         // save data
-        int stepId = step.getId();
-        Project project = step.getOwner();
-        ProjectDataManager dataManager = project.getDataManager();
-        ProjectMapper mapper = dataManager.mapper;
-        if (selectable instanceof DataColumn) dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) selectable), project, ((DataColumn) selectable).getId(), step.getId(), ((DataColumn) selectable).getOwner().getId());
-        else if (selectable instanceof ColumnFx) {
-            createEndPlugList((ColumnFx) selectable);
-            dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map((ColumnFx) selectable), project, ((ColumnFx) selectable).getId(), step.getId(), 0, ((ColumnFx) selectable).getOwner().getOwner().getId());
-        } else if (selectable instanceof DataFile) dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) selectable), project, ((DataFile) selectable).getId(), stepId);
-        else if (selectable instanceof DataSourceSelector) dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map((DataSourceSelector) selectable), project, ((DataSourceSelector) selectable).getId(), stepId);
-        else if (selectable instanceof TransformTable) dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) selectable), project, ((TransformTable) selectable).getId(), stepId, 0, ((TransformTable) selectable).getId());
-        else if (selectable instanceof DataTable) dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) selectable), project, ((DataTable) selectable).getId(), stepId, ((DataTable) selectable).getId());
-        else if (selectable instanceof Step) dataManager.addData(ProjectFileType.STEP, mapper.map((Step) selectable), project, ((Step) selectable).getId(), stepId);
-        else if (selectable instanceof Project) dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) selectable), project, ((Project) selectable).getId());
-        else throw new UnsupportedOperationException("Change Property Value of Unknown Object Type " + selectable.getClass().getName() + ", property=" + property);
+        if (!saveSelectableData(selectable, step)) {
+            throw new UnsupportedOperationException("Change Property Value of Unknown Object Type " + selectable.getClass().getName() + ", property=" + property);
+        }
     }
-
 
     private String propertyToMethod(String propertyName) {
         return "set" +

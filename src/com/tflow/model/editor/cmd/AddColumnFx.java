@@ -85,14 +85,13 @@ public class AddColumnFx extends Command {
         ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
 
+        // save TransformColumn data (TargetColumn) at the endPlug of line2
+        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(targetColumn), project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
+
         // save TransformColumnFx data
         projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), project, columnFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no TransformColumnFx list to save here, it already saved in the AddTransformTable
-
-        // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, mapper.map(line1), project, line1.getId(), step.getId());
-        projectDataManager.addData(ProjectFileType.LINE, mapper.map(line2), project, line2.getId(), step.getId());
 
         // save Object(SourceColumn) at the startPlug of line1
         if (sourceColumn instanceof TransformColumn) {
@@ -101,8 +100,9 @@ public class AddColumnFx extends Command {
             projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(sourceColumn), project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
         }
 
-        // save TransformColumn data (TargetColumn) at the endPlug of line2
-        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(targetColumn), project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
+        // save Line data
+        projectDataManager.addData(ProjectFileType.LINE, mapper.map(line1), project, line1.getId(), step.getId());
+        projectDataManager.addData(ProjectFileType.LINE, mapper.map(line2), project, line2.getId(), step.getId());
 
         // save Line list
         projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, line1.getId(), step.getId());

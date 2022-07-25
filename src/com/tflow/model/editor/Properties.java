@@ -91,7 +91,9 @@ public enum Properties {
     ),
     TRANSFORM_COLUMN(
             "type:Data Type:ReadOnly",
-            "name:Column Name:String"
+            "name:Column Name:String",
+            "--: debug :--",
+            "fx:ColumnFx:ReadOnly"
     ),
     FX_PARAM(
             "name:Parameter Name:String"
