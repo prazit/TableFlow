@@ -6,6 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.DataTableUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class AddTableFx extends Command {
         if (tableFx == null) {
             // for AddTableFx
             tableFx = new TableFx(TableFunction.SORT, TableFunction.SORT.getName(), transformTable);
-            tableFx.setId(project.newUniqueId());
+            tableFx.setId(DataTableUtil.newUniqueId(project));
         }/*else{
             // nothing for RemoveTableFx.Undo
         }*/

@@ -8,6 +8,7 @@ import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.DataTableUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -28,8 +29,8 @@ public class AddDataFile extends Command {
             /*execute*/
             dataTable = null;
 
-            dataFile = new DataFile(DataFileType.IN_MD, "/", project.newElementId(), project.newElementId());
-            dataFile.setId(project.newUniqueId());
+            dataFile = new DataFile(DataFileType.IN_MD, "/", DataTableUtil.newElementId(project), DataTableUtil.newElementId(project));
+            dataFile.setId(DataTableUtil.newUniqueId(project));
 
         } else {
             /*executeUndo*/
@@ -48,8 +49,8 @@ public class AddDataFile extends Command {
         /*line between dataFile and dataTable*/
         Line newLine = null;
         if (dataTable != null) {
-            newLine = step.addLine(selectableId, dataTable.getSelectableId());
-            newLine.setId(project.newUniqueId());
+            newLine = addLine(selectableId, dataTable.getSelectableId());
+            newLine.setId(DataTableUtil.newUniqueId(project));
         }
 
         /*for Action.executeUndo()*/

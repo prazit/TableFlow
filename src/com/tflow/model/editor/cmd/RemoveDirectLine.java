@@ -15,7 +15,7 @@ public class RemoveDirectLine extends Command {
         Line line = (Line) paramMap.get(CommandParamKey.LINE);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
 
-        step.removeLine(line);
+        removeLine(line);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.LINE, line);

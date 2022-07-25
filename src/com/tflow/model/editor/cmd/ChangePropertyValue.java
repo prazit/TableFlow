@@ -40,8 +40,10 @@ public class ChangePropertyValue extends Command {
         ProjectDataManager dataManager = project.getDataManager();
         ProjectMapper mapper = dataManager.mapper;
         if (selectable instanceof DataColumn) dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) selectable), project, ((DataColumn) selectable).getId(), step.getId(), ((DataColumn) selectable).getOwner().getId());
-        else if (selectable instanceof ColumnFx) dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map((ColumnFx) selectable), project, ((ColumnFx) selectable).getId(), step.getId(), 0, ((ColumnFx) selectable).getOwner().getOwner().getId());
-        else if (selectable instanceof DataFile) dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) selectable), project, ((DataFile) selectable).getId(), stepId);
+        else if (selectable instanceof ColumnFx) {
+            createEndPlugList((ColumnFx) selectable);
+            dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map((ColumnFx) selectable), project, ((ColumnFx) selectable).getId(), step.getId(), 0, ((ColumnFx) selectable).getOwner().getOwner().getId());
+        } else if (selectable instanceof DataFile) dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) selectable), project, ((DataFile) selectable).getId(), stepId);
         else if (selectable instanceof DataSourceSelector) dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map((DataSourceSelector) selectable), project, ((DataSourceSelector) selectable).getId(), stepId);
         else if (selectable instanceof TransformTable) dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) selectable), project, ((TransformTable) selectable).getId(), stepId, 0, ((TransformTable) selectable).getId());
         else if (selectable instanceof DataTable) dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) selectable), project, ((DataTable) selectable).getId(), stepId, ((DataTable) selectable).getId());

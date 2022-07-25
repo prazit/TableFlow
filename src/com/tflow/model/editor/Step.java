@@ -3,6 +3,7 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.util.DataTableUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,10 +57,10 @@ public class Step implements Selectable, HasEvent {
 
     public Step(String name, Project owner) {
         init(name, owner);
-        this.id = owner.newUniqueId();
-        dataTower = new Tower(owner.newUniqueId(), 3, this);
-        transformTower = new Tower(owner.newUniqueId(), 2, this);
-        outputTower = new Tower(owner.newUniqueId(), 2, this);
+        this.id = DataTableUtil.newUniqueId(owner);
+        dataTower = new Tower(DataTableUtil.newUniqueId(owner), 3, this);
+        transformTower = new Tower(DataTableUtil.newUniqueId(owner), 2, this);
+        outputTower = new Tower(DataTableUtil.newUniqueId(owner), 2, this);
     }
 
     private void init(String name, Project owner) {
@@ -308,186 +309,12 @@ public class Step implements Selectable, HasEvent {
 
     /*== Public Methods ==*/
 
-    /**
-     * Internal use to add new line to the step without history.
-     */
-    public Line addLine(String startSelectableId, String endSelectableId) {
-        Line newLine = new Line(startSelectableId, endSelectableId);
-
-        newLine.setClientIndex(newLineClientIndex());
-        lineList.add(newLine);
-
-        Selectable startSelectable = selectableMap.get(startSelectableId);
-        Selectable endSelectable = selectableMap.get(endSelectableId);
-
-        newLine.setType(getLineType(startSelectable));
-
-        LinePlug startPlug = startSelectable.getStartPlug();
-        startPlug.setPlugged(true);
-        startPlug.getLineList().add(newLine);
-        PlugListener listener = startPlug.getListener();
-        if (listener != null) {
-            listener.plugged(newLine);
-        }
-        newLine.setStartPlug(startPlug);
-
-        HasEndPlug hasEndPlug = (HasEndPlug) endSelectable;
-        LinePlug endPlug = hasEndPlug.getEndPlug();
-        endPlug.setPlugged(true);
-        endPlug.getLineList().add(newLine);
-        listener = endPlug.getListener();
-        if (listener != null) {
-            listener.plugged(newLine);
-        }
-        newLine.setEndPlug(endPlug);
-
-        return newLine;
-    }
-
-    /**
-     * Internal use to remove line from the step without history.
-     */
-    public void removeLine(Line line) {
-        if (line == null) return;
-        lineList.remove(line);
-
-        LinePlug startPlug = line.getStartPlug();
-        startPlug.getLineList().remove(line);
-        PlugListener listener = startPlug.getListener();
-        if (listener != null) {
-            listener.unplugged(line);
-        }
-
-        LinePlug endPlug = line.getEndPlug();
-        endPlug.getLineList().remove(line);
-        listener = endPlug.getListener();
-        if (listener != null) {
-            listener.unplugged(line);
-        }
-    }
-
-    /**
-     * Internal use to remove line from the step without history.
-     */
-    public void removeLine(LinePlug plug) {
-        List<Line> lineList = new ArrayList<>(plug.getLineList());
-        if (lineList.size() > 0) {
-            for (Line line : lineList) {
-                removeLine(line);
-            }
-        }
-    }
-
-    public LineType getLineType(Selectable selectable) {
-        if (selectable instanceof DataColumn) {
-            DataColumn dataColumn = (DataColumn) selectable;
-            return LineType.valueOf(dataColumn.getType().name());
-        } else if (selectable instanceof ColumnFx) {
-            ColumnFx columnFx = (ColumnFx) selectable;
-            return LineType.valueOf(columnFx.getOwner().getType().name());
-        } else {
-            return LineType.TABLE;
-        }
-    }
-
-    public List<Line> getLineByStart(String selectableId) {
-        List<Line> found = new ArrayList<>();
-        for (Line line : lineList) {
-            if (line.getStartSelectableId().equals(selectableId)) {
-                found.add(line);
-            }
-        }
-        return found;
-    }
-
-    public List<Line> getLineByEnd(String selectableId) {
-        List<Line> found = new ArrayList<>();
-        for (Line line : lineList) {
-            if (line.getEndSelectableId().equals(selectableId)) {
-                found.add(line);
-            }
-        }
-        return found;
-    }
-
-    public void refresh() {
-        collectSelectableToMap();
-        assignLineIndexes();
-    }
-
-    private void assignLineIndexes() {
-        int clientIndex = 0;
-        for (Line line : lineList) {
-            line.setClientIndex(clientIndex++);
-        }
-    }
-
-    private void collectSelectableToMap() {
-        Project project = this.getOwner();
-        selectableMap = new HashMap<>();
-        selectableMap.put(project.getSelectableId(), project);
-        selectableMap.put(this.getSelectableId(), this);
-
-        if (getActiveObject() == null) {
-            setActiveObject(this);
-        }
-
-        List<Selectable> selectableList = dataTower.getSelectableList();
-        collectSelectableTo(selectableMap, selectableList);
-
-        selectableList = transformTower.getSelectableList();
-        collectSelectableTo(selectableMap, selectableList);
-
-        selectableList = outputTower.getSelectableList();
-        collectSelectableTo(selectableMap, selectableList);
-    }
-
-    /**
-     * IMPORTANT: when selectable object is added, need to add script to collect them in this function.
-     */
-    private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
-        for (Selectable selectable : selectableList) {
-            map.put(selectable.getSelectableId(), selectable);
-            if (selectable instanceof DataTable) {
-                DataTable dt = (DataTable) selectable;
-
-                for (DataColumn column : dt.getColumnList()) {
-                    map.put(column.getSelectableId(), column);
-                }
-
-                for (DataFile output : dt.getOutputList()) {
-                    map.put(output.getSelectableId(), output);
-                }
-
-                if (selectable instanceof TransformTable) {
-                    TransformTable tt = (TransformTable) selectable;
-                    for (ColumnFx columnFx : tt.getColumnFxTable().getColumnFxList()) {
-                        map.put(columnFx.getSelectableId(), columnFx);
-
-                        for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
-                            map.put(columnFxPlug.getSelectableId(), columnFxPlug);
-                        }
-                    }
-
-                    for (TableFx tableFx : tt.getFxList()) {
-                        map.put(tableFx.getSelectableId(), tableFx);
-                    }
-                }
-
-            }
-        }
-    }
-
     public int getLastLineClientIndex() {
         return lastLineClientIndex;
     }
 
     public void setLastLineClientIndex(int lastLineClientIndex) {
         this.lastLineClientIndex = lastLineClientIndex;
-    }
-
-    public int newLineClientIndex() {
-        return ++lastLineClientIndex;
     }
 
 

@@ -111,16 +111,6 @@ public class Floor {
         return emptyCount == roomList.size();
     }
 
-    public List<Selectable> getSelectableList() {
-        List<Selectable> selectableList = new ArrayList<>();
-        for (Room room : roomList) {
-            if (room instanceof Selectable) {
-                selectableList.add((Selectable) room);
-            }
-        }
-        return selectableList;
-    }
-
     @Override
     public String toString() {
         return "{" +

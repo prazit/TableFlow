@@ -88,10 +88,6 @@ public class Project implements Selectable {
 
     public void setActiveStepIndex(int activeStepIndex) {
         this.activeStepIndex = activeStepIndex;
-
-        Step activeStep = getActiveStep();
-        if (activeStep != null && activeStep.getIndex() >= 0)
-            activeStep.refresh();
     }
 
     public List<Step> getStepList() {
@@ -182,25 +178,6 @@ public class Project implements Selectable {
                 ", lastUniqueId:" + lastUniqueId +
                 '}';
     }
-    /*== Public Methods ==*/
-
-    /**
-     * Generate new element id (unique within the project)
-     *
-     * @return String elementId
-     */
-    public String newElementId() {
-        return "em" + (++lastElementId);
-    }
-
-    public int newUniqueId() {
-        return ++lastUniqueId;
-    }
-
-    public Step getActiveStep() {
-        if (activeStepIndex < 0 || activeStepIndex >= stepList.size()) return null;
-        return stepList.get(activeStepIndex);
-    }
 
     @Override
     public String getSelectableId() {
@@ -226,4 +203,11 @@ public class Project implements Selectable {
     public Map<String, Object> getPropertyMap() {
         return propertyMap;
     }
+
+
+    public Step getActiveStep() {
+        if (activeStepIndex < 0 || activeStepIndex >= stepList.size()) return null;
+        return stepList.get(activeStepIndex);
+    }
+
 }

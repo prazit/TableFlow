@@ -4,6 +4,7 @@ import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
 import com.tflow.model.editor.cmd.Command;
 import com.tflow.model.editor.cmd.CommandParamKey;
+import com.tflow.util.DataTableUtil;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -164,7 +165,7 @@ public abstract class Action {
         if (step != null) {
             Project project = step.getOwner();
             List<Action> history = step.getHistory();
-            setId(project.newUniqueId());
+            setId(DataTableUtil.newUniqueId(project));
             if (chain) {
                 previousChain = history.get(history.size() - 1);
                 previousChain.setNextChain(this);
@@ -175,7 +176,10 @@ public abstract class Action {
         resultMap.clear();
 
         /*notice: add to history before execute to avoid invalid order in history when the action create a chain*/
-        for (Command command : commandList) command.execute(paramMap);
+        for (Command command : commandList) {
+            command.setStep(step);
+            command.execute(paramMap);
+        }
     }
 
     public void executeUndo() throws RequiredParamException, UnsupportedOperationException {
@@ -194,7 +198,10 @@ public abstract class Action {
 
         resultMap.clear();
 
-        for (Command command : undoCommandList) command.execute(paramMap);
+        for (Command command : undoCommandList) {
+            command.setStep(step);
+            command.execute(paramMap);
+        }
 
         /*remove Action from history (FILO)*/
         history.remove(lastActionIndex);

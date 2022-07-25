@@ -14,6 +14,7 @@ import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.DataTableUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class AddDataSource extends Command {
         if (isExecute) {
             floor = tower.getAvailableFloor(0, false);
             roomIndex = 0;
-            id = project.newUniqueId();
+            id = DataTableUtil.newUniqueId(project);
             dataSource.setId(id);
         } else {
             floor = dataSource.getFloor();

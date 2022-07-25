@@ -3,6 +3,7 @@ package com.tflow.model.editor.room;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.Step;
+import com.tflow.util.DataTableUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +90,7 @@ public class Tower {
             List<Room> roomList = fl.getRoomList();
             int roomIndex = roomList.size();
             for (int c = 0; c < count; c++) {
-                EmptyRoom emptyRoom = new EmptyRoom(roomIndex, floor, project.newElementId());
+                EmptyRoom emptyRoom = new EmptyRoom(roomIndex, floor, DataTableUtil.newElementId(project));
                 roomList.add(emptyRoom);
                 roomIndex++;
             }
@@ -100,7 +101,7 @@ public class Tower {
     public void addFloor(int count) {
         int flIndex = floorList.size();
         for (int c = 0; c < count; c++) {
-            Floor floor = new Floor(owner.getOwner().newUniqueId(), flIndex++, this);
+            Floor floor = new Floor(DataTableUtil.newUniqueId(owner.getOwner()), flIndex++, this);
             floorList.add(floor);
             addRoom(roomsOnAFloor, floor);
         }
@@ -129,7 +130,7 @@ public class Tower {
 
         if (floor == null) {
             int flIndex = newFloorIndex < 0 ? floorList.size() : newFloorIndex;
-            floor = new Floor(owner.getOwner().newUniqueId(), flIndex, this);
+            floor = new Floor(DataTableUtil.newUniqueId(owner.getOwner()), flIndex, this);
             floorList.add(flIndex, floor);
             addRoom(roomsOnAFloor, floor);
         }
@@ -156,14 +157,6 @@ public class Tower {
 
     public void setOwner(Step owner) {
         this.owner = owner;
-    }
-
-    public List<Selectable> getSelectableList() {
-        List<Selectable> selectableList = new ArrayList<>();
-        for (Floor floor : floorList) {
-            selectableList.addAll(floor.getSelectableList());
-        }
-        return selectableList;
     }
 
     public boolean isEmpty() {

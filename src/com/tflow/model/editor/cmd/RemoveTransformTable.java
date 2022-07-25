@@ -9,6 +9,7 @@ import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.DataTableUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +35,13 @@ public class RemoveTransformTable extends Command {
         for (Line line : removedLineList) {
             updatedTableList.add((DataTable) selectableMap.get(line.getStartSelectableId()));
         }
-        step.removeLine(endPlug);
+        removeLine(endPlug);
 
         /*remove from Tower*/
         Project project = step.getOwner();
         Floor floor = transformTable.getFloor();
         int roomIndex = transformTable.getRoomIndex();
-        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, project.newElementId()));
+        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, DataTableUtil.newElementId(project)));
 
         /*remove from TransformTable List*/
         List<TransformTable> transformList = step.getTransformList();

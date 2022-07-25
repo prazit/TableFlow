@@ -11,6 +11,7 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.RecordMapper;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.constant.Theme;
+import com.tflow.util.DataTableUtil;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
@@ -145,7 +146,7 @@ public class EditorController extends Controller {
         return priority;
     }
 
-    /*TODO: issue: after select step with index = -1, loaded step contains index = 0*/
+    /*TODO: issue: after select step with index = -1, loaded step always contains index = 0*/
     private void refreshStepList(List<Step> stepList) {
         projectName = workspace.getProject().getName();
         stepMenu = new DefaultMenuModel();
@@ -553,23 +554,6 @@ public class EditorController extends Controller {
         }
     }
 
-    private void loadStepData(int stepIndex) {
-        Project project = workspace.getProject();
-        List<Step> stepList = project.getStepList();
-
-        Step step = stepList.get(stepIndex);
-        try {
-            log.info("testOpenStep: calling projectDataManager.getStep");
-            step = project.getDataManager().getStep(project, stepIndex);
-            log.info("testOpenStep: Step(After) = {}", step);
-        } catch (ProjectDataException ex) {
-            log.error("testOpenStep: error from TRcmd service: {}", ex.getMessage());
-        } catch (Exception ex) {
-            log.error("testOpenStep: unexpected error occurred, ", ex);
-        }
-
-    }
-
     private void testConvertByteArrayAndString(KafkaRecord kafkaRecord) {
         /*#1 using ByteStream*/
         try {
@@ -809,6 +793,7 @@ public class EditorController extends Controller {
 
     private void selectStep(int stepIndex, boolean refresh) {
         Project project = workspace.getProject();
+
         int size = project.getStepList().size();
         if (stepIndex < 0 || stepIndex >= size) {
             log.warn("selectStep({}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", stepIndex, size);
@@ -825,16 +810,19 @@ public class EditorController extends Controller {
             }
         }
 
-        if (step == null) {
-            log.warn("selectStep({}): no step at index {}", stepIndex, stepIndex);
-            return;
-        }
+        /*call action SelectStep*/
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.PROJECT, project);
+        paramMap.put(CommandParamKey.INDEX, stepIndex);
 
-        if (step.getIndex() < 0) {
-            log.warn("selectStep({}): load step data...", stepIndex);
-            loadStepData(stepIndex);
-        } else {
-            project.setActiveStepIndex(stepIndex);
+        try {
+            Action action = new SelectStep(paramMap);
+            action.execute();
+            step = (Step) action.getResultMap().get(ActionResultKey.STEP);
+        } catch (RequiredParamException e) {
+            log.error("Select Step Failed!", e);
+            FacesUtil.addError("Select Step Failed with Internal Command Error!");
+            return;
         }
 
         zoom = step.getZoom();
@@ -916,7 +904,7 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        DataSourceSelector dataSourceSelector = new DataSourceSelector("Untitled", DataSourceType.LOCAL, project.newElementId());
+        DataSourceSelector dataSourceSelector = new DataSourceSelector("Untitled", DataSourceType.LOCAL, DataTableUtil.newElementId(project));
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE_SELECTOR, dataSourceSelector);
@@ -1137,6 +1125,7 @@ public class EditorController extends Controller {
     }
 
     private void setPropertySheet(Selectable activeObject) {
+        log.warn("setPropertySheet(selectable:{})", activeObject);
         if (activeObject == null) {
             this.activeObject = null;
             propertyList = new ArrayList<>();

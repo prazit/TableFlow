@@ -6,6 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.DataTableUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,9 +35,10 @@ public class AddColumnFx extends Command {
             targetColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
             sourceColumn = (DataColumn) paramMap.get(CommandParamKey.DATA_COLUMN);
             columnFunction = (ColumnFunction) paramMap.get(CommandParamKey.COLUMN_FUNCTION);
-            columnFx = new ColumnFx(columnFunction, columnFunction.getName(), project.newElementId(), targetColumn);
-            columnFx.setId(project.newUniqueId());
+            columnFx = new ColumnFx(columnFunction, columnFunction.getName(), DataTableUtil.newElementId(project), targetColumn);
+            columnFx.setId(DataTableUtil.newUniqueId(project));
             columnFx.setOwner(targetColumn);
+            createEndPlugList(columnFx);
             targetColumn.setFx(columnFx);
             propertyMap = columnFx.getPropertyMap();
             initPropertyMap(propertyMap, sourceColumn);
@@ -62,12 +64,12 @@ public class AddColumnFx extends Command {
         /*Notice: draw lines below tested on ColumnFunction.LOOKUP and expect to work for all ColumnFunction*/
 
         /*line between sourceColumn and columnFx*/
-        Line line1 = step.addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
-        line1.setId(project.newUniqueId());
+        Line line1 = addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
+        line1.setId(DataTableUtil.newUniqueId(project));
 
         /*line between columnFx and targetColumn*/
-        Line line2 = step.addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
-        line2.setId(project.newUniqueId());
+        Line line2 = addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
+        line2.setId(DataTableUtil.newUniqueId(project));
 
         lineList.add(line1);
         lineList.add(line2);

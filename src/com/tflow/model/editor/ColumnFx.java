@@ -28,20 +28,19 @@ public class ColumnFx implements Selectable, HasEndPlug {
         this.owner = owner;
         propertyMap = new HashMap<>();
         endPlugList = new ArrayList<>();
-        createEndPlugList();
         function.getProperties().initPropertyMap(propertyMap);
     }
 
     /*for projectMapper*/
-    public ColumnFx(int id) {
-        this.id = id;
-    }
-
     private void createStartPlug(String plugId) {
         startPlug = new StartPlug(plugId);
         startPlug.setExtractButton(true);
 
         createStartPlugListener();
+    }
+
+    public ColumnFx(int id) {
+        this.id = id;
     }
 
     private void createStartPlugListener() {
@@ -68,34 +67,6 @@ public class ColumnFx implements Selectable, HasEndPlug {
         }
     }
 
-    /**
-     * Need to re-create endPlugList again after the function is changed.
-     */
-    public void createEndPlugList() {
-        Step step = owner.getOwner().getOwner();
-        Map<String, Selectable> selectableMap = step.getSelectableMap();
-        Project project = step.getOwner();
-
-        if (endPlugList.size() > 0) {
-            /*need to remove old list from selectableMap before reset the list*/
-            for (ColumnFxPlug columnFxPlug : endPlugList) {
-                selectableMap.remove(columnFxPlug.getSelectableId());
-                step.removeLine(columnFxPlug.getLine());
-            }
-            endPlugList.clear();
-        }
-
-        String endPlugId;
-        for (PropertyView propertyView : function.getProperties().getPlugPropertyList()) {
-            endPlugId = project.newElementId();
-            /*Notice: columnFxPlug use defaultPlugListener*/
-            ColumnFxPlug columnFxPlug = new ColumnFxPlug(project.newUniqueId(), propertyView.getType().getDataType(), propertyView.getLabel(), endPlugId, this);
-            endPlugList.add(columnFxPlug);
-            /*update selectableMap for each*/
-            selectableMap.put(columnFxPlug.getSelectableId(), columnFxPlug);
-        }
-    }
-
     public int getId() {
         return id;
     }
@@ -116,11 +87,8 @@ public class ColumnFx implements Selectable, HasEndPlug {
         return function;
     }
 
-    /*TODO: change Function like this need the Action to update related data to server*/
     public void setFunction(ColumnFunction function) {
-        boolean genEndPlugList = this.function != function && this.function != null;
         this.function = function;
-        if (genEndPlugList) createEndPlugList();
     }
     
     public Map<String, Object> getPropertyMap() {

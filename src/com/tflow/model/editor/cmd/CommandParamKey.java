@@ -35,7 +35,9 @@ public enum CommandParamKey {
     LINE_LIST,
 
     DATA_TEST1,
-    DATA_TEST2;
+    DATA_TEST2,
+
+    INDEX;
 
 
     boolean optional;

@@ -32,13 +32,13 @@ public class RemoveDataTable extends Command {
         LinePlug endPlug = dataTable.getEndPlug();
         Line removedLine = endPlug.getLine();
         DataFile dataFile = (DataFile) step.getSelectableMap().get(removedLine.getStartSelectableId());
-        step.removeLine(removedLine);
+        removeLine(removedLine);
 
         /*remove from Tower*/
         Project project = step.getOwner();
         Floor floor = dataTable.getFloor();
         int roomIndex = dataTable.getRoomIndex();
-        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, project.newElementId()));
+        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, DataTableUtil.newElementId(project)));
 
         /*remove from DataTable List*/
         List<DataTable> dataList = step.getDataList();

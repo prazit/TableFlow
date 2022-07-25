@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,8 +164,9 @@ public class FlowchartController extends Controller {
 
     private void updateLines(JavaScriptBuilder jsBuilder, Selectable selectable) {
         Step step = getStep();
+        List<Line> stepLineList = step.getLineList();
         if (selectable.getStartPlug() != null) {
-            List<Line> lineList = step.getLineByStart(selectable.getSelectableId());
+            List<Line> lineList = getLineByStart(selectable.getSelectableId(), stepLineList);
             for (Line line : lineList) {
                 /*remove old lines that start by this object*/
                 jsBuilder.append(line.getJsRemove());
@@ -174,7 +176,7 @@ public class FlowchartController extends Controller {
         }
 
         if (selectable instanceof HasEndPlug) {
-            List<Line> lineList = step.getLineByEnd(selectable.getSelectableId());
+            List<Line> lineList = getLineByEnd(selectable.getSelectableId(), stepLineList);
             for (Line line : lineList) {
                 /*remove old lines that start by this object*/
                 jsBuilder.append(line.getJsRemove());
@@ -182,6 +184,26 @@ public class FlowchartController extends Controller {
                 jsBuilder.append(line.getJsAdd());
             }
         }
+    }
+
+    private List<Line> getLineByStart(String selectableId, List<Line> lineList) {
+        List<Line> found = new ArrayList<>();
+        for (Line line : lineList) {
+            if (line.getStartSelectableId().equals(selectableId)) {
+                found.add(line);
+            }
+        }
+        return found;
+    }
+
+    private List<Line> getLineByEnd(String selectableId, List<Line> lineList) {
+        List<Line> found = new ArrayList<>();
+        for (Line line : lineList) {
+            if (line.getEndSelectableId().equals(selectableId)) {
+                found.add(line);
+            }
+        }
+        return found;
     }
 
     private Line getRequestedLine() {

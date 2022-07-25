@@ -33,7 +33,7 @@ public class AddTransformTable extends Command {
 
         SourceType sourceType = getSourceType(sourceTable);
 
-        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), project.newElementId(), project.newElementId(), step);
+        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), DataTableUtil.newElementId(project), DataTableUtil.newElementId(project), step);
         transformTable.setLevel(sourceTable.getLevel() + 1);
 
         List<DataColumn> sourceColumnList = sourceTable.getColumnList();
@@ -41,7 +41,7 @@ public class AddTransformTable extends Command {
         /*copy column from source-table*/
         List<DataColumn> columnList = transformTable.getColumnList();
         for (DataColumn dataColumn : sourceColumnList) {
-            columnList.add(new TransformColumn(dataColumn, project.newElementId(), project.newElementId(), transformTable));
+            columnList.add(new TransformColumn(dataColumn, DataTableUtil.newElementId(project), DataTableUtil.newElementId(project), transformTable));
             /*TODO: in the future need explicitly relation, need to add line between columns as DirectTransferFx*/
         }
 
@@ -80,8 +80,8 @@ public class AddTransformTable extends Command {
         transformList.add(transformTable);
 
         /*link from SourceTable to TransformTable*/
-        Line newLine = step.addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
-        newLine.setId(project.newUniqueId());
+        Line newLine = addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
+        newLine.setId(DataTableUtil.newUniqueId(project));
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);

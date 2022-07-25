@@ -9,6 +9,7 @@ import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.DataTableUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +34,17 @@ public class RemoveDataFile extends Command {
         /*remove remaining lines on startPlug (startPlug connect to many DataTable)*/
         LinePlug startPlug = dataFile.getStartPlug();
         List<Line> removedLineList = new ArrayList<>(startPlug.getLineList());
-        step.removeLine(startPlug);
+        removeLine(startPlug);
 
         /*remove remaining line on endPlug (endPlug connect to one DataSource)*/
         LinePlug endPlug = dataFile.getEndPlug();
         removedLineList.add(endPlug.getLine());
-        step.removeLine(endPlug.getLine());
+        removeLine(endPlug.getLine());
 
         /*remove from Tower*/
         Floor floor = dataFile.getFloor();
         int roomIndex = dataFile.getRoomIndex();
-        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, project.newElementId()));
+        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, DataTableUtil.newElementId(project)));
 
         /*remove from DataTable*/
         HasDataFile owner = dataFile.getOwner();

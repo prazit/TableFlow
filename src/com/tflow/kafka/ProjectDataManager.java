@@ -626,6 +626,10 @@ public class ProjectDataManager {
         Step step = mapper.map(stepData);
         step.setOwner(project);
 
+        /*active object need selectableId*/
+        SelectableIdOnly selectableIdOnly = new SelectableIdOnly(stepData.getActiveObject());
+        step.setActiveObject(selectableIdOnly);
+
         /*get each tower in step*/
         List<Integer> towerIdList = Arrays.asList(step.getDataTower().getId(), step.getTransformTower().getId(), step.getOutputTower().getId());
         List<Tower> towerList = new ArrayList<>();
@@ -832,30 +836,6 @@ public class ProjectDataManager {
             data = getData(ProjectFileType.LINE, project, lineId, stepId);
             Line line = mapper.map((LineData) throwExceptionOnError(data));
             lineList.add(line);
-        }
-
-        /*regenerate selectableMap*/
-        stepList.remove(stepIndex);
-        stepList.add(stepIndex, step);
-        project.setActiveStepIndex(step.getIndex());
-        Map<String, Selectable> selectableMap = step.getSelectableMap();
-        log.warn("ProjectDataManager.getStep: selectableMap = {}", selectableMap);
-        log.warn("ProjectDataManager.getStep: tranformTableList = {}", Arrays.toString(transformTableList.toArray()));
-
-        step.setActiveObject(selectableMap.get(stepData.getActiveObject()));
-        for (Line line : lineList) {
-            log.warn("line={}", line);
-            try {
-                line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
-            } catch (NullPointerException ex) {
-                log.error("startSelectableId:{} not found", line.getStartSelectableId());
-            }
-
-            try {
-                line.setEndPlug(((HasEndPlug) selectableMap.get(line.getEndSelectableId())).getEndPlug());
-            } catch (NullPointerException ex) {
-                log.error("endSelectableId:{} not found", line.getEndSelectableId());
-            }
         }
 
         return step;

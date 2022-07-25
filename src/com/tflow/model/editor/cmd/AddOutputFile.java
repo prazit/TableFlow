@@ -6,6 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.DataTableUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,8 @@ public class AddOutputFile extends Command {
         OutputFile outputFile = (OutputFile) paramMap.get(CommandParamKey.OUTPUT_FILE);
         if (outputFile == null) {
             // for AddOutputFile
-            outputFile = new OutputFile(DataFileType.OUT_MD, DataFileType.OUT_MD.getDefaultName(), project.newElementId(), project.newElementId());
-            outputFile.setId(project.newUniqueId());
+            outputFile = new OutputFile(DataFileType.OUT_MD, DataFileType.OUT_MD.getDefaultName(), DataTableUtil.newElementId(project), DataTableUtil.newElementId(project));
+            outputFile.setId(DataTableUtil.newUniqueId(project));
         }/*else{
             // nothing for RemoveOutputFile.Undo
         }*/

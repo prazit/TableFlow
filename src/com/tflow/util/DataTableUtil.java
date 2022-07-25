@@ -7,6 +7,28 @@ import java.util.Map;
 public class DataTableUtil {
 
     /**
+     * Generate new element id (unique within the project)
+     *
+     * @return String elementId
+     */
+    public static String newElementId(Project project) {
+        int lastElementId = project.getLastElementId() + 1;
+        project.setLastElementId(lastElementId);
+        return "em" + lastElementId;
+    }
+
+    /**
+     * Generate new id (unique within the project)
+     *
+     * @return int id
+     */
+    public static int newUniqueId(Project project) {
+        int lastUniqueId = project.getLastUniqueId() + 1;
+        project.setLastUniqueId(lastUniqueId);
+        return lastUniqueId;
+    }
+
+    /**
      * Add all child of DataTable (and TransformTable) to selectable-map.
      *
      * @param selectableMap target map.
@@ -73,16 +95,16 @@ public class DataTableUtil {
      * @param project       used to generate unique id.
      */
     public static void generateId(Map<String, Selectable> selectableMap, DataTable dataTable, Project project) {
-        dataTable.setId(project.newUniqueId());
+        dataTable.setId(newUniqueId(project));
 
         for (DataColumn column : dataTable.getColumnList()) {
             column.setOwner(dataTable);
-            column.setId(project.newUniqueId());
+            column.setId(newUniqueId(project));
         }
 
         for (OutputFile output : dataTable.getOutputList()) {
             output.setOwner(dataTable);
-            output.setId(project.newUniqueId());
+            output.setId(newUniqueId(project));
         }
 
         if (!(dataTable instanceof TransformTable)) return;
@@ -92,12 +114,12 @@ public class DataTableUtil {
         for (DataColumn column : dataTable.getColumnList()) {
             ColumnFx fx = ((TransformColumn) column).getFx();
             if (fx == null) continue;
-            fx.setId(project.newUniqueId());
+            fx.setId(newUniqueId(project));
             fx.setOwner(column);
         }
 
         for (TableFx fx : transformTable.getFxList()) {
-            fx.setId(project.newUniqueId());
+            fx.setId(newUniqueId(project));
             fx.setOwner(transformTable);
         }
     }

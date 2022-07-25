@@ -48,8 +48,8 @@ public class AddDataTable extends Command {
         dataList.add(dataTable);
 
         /*line between DataFile and DataTable*/
-        Line newLine = step.addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
-        newLine.setId(project.newUniqueId());
+        Line newLine = addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
+        newLine.setId(DataTableUtil.newUniqueId(project));
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
@@ -112,19 +112,19 @@ public class AddDataTable extends Command {
         /*TODO: call Extractor.extract*/
 
         /*-- TODO: remove mockup data below, used to test the command --*/
-        DataTable dataTable = new DataTable("Untitled", dataFile, "", project.newElementId(), project.newElementId(), step);
+        DataTable dataTable = new DataTable("Untitled", dataFile, "", DataTableUtil.newElementId(project), DataTableUtil.newElementId(project), step);
 
         List<DataColumn> columnList = dataTable.getColumnList();
-        columnList.add(new DataColumn(1, DataType.STRING, "String Column", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", project.newElementId(), dataTable));
-        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", project.newElementId(), dataTable));
+        columnList.add(new DataColumn(1, DataType.STRING, "String Column", DataTableUtil.newElementId(project), dataTable));
+        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", DataTableUtil.newElementId(project), dataTable));
+        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", DataTableUtil.newElementId(project), dataTable));
+        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", DataTableUtil.newElementId(project), dataTable));
 
         OutputFile outputCSVFile = new OutputFile(
                 DataFileType.OUT_CSV,
                 "out/",
-                project.newElementId(),
-                project.newElementId()
+                DataTableUtil.newElementId(project),
+                DataTableUtil.newElementId(project)
         );
 
         List<OutputFile> outputList = dataTable.getOutputList();

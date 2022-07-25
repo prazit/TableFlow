@@ -23,7 +23,7 @@ public class RemoveColumnFx extends Command {
         /*remove remaining lines on startPlug*/
         LinePlug startPlug = columnFx.getStartPlug();
         List<Line> removedLineList = new ArrayList<>(startPlug.getLineList());
-        step.removeLine(startPlug);
+        removeLine(startPlug);
 
         /*remove remaining line on endPlug*/
         List<DataColumn> updatedColumnList = new ArrayList<>();
@@ -31,7 +31,7 @@ public class RemoveColumnFx extends Command {
             Line line = endPlug.getLine();
             removedLineList.add(line);
             updatedColumnList.add((DataColumn) selectableMap.get(line.getStartSelectableId()));
-            step.removeLine(endPlug);
+            removeLine(endPlug);
         }
 
         /*remove fx from FxTable*/
