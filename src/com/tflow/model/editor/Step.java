@@ -3,7 +3,7 @@ package com.tflow.model.editor;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.room.Tower;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,10 +57,10 @@ public class Step implements Selectable, HasEvent {
 
     public Step(String name, Project owner) {
         init(name, owner);
-        this.id = DataTableUtil.newUniqueId(owner);
-        dataTower = new Tower(DataTableUtil.newUniqueId(owner), 3, this);
-        transformTower = new Tower(DataTableUtil.newUniqueId(owner), 2, this);
-        outputTower = new Tower(DataTableUtil.newUniqueId(owner), 2, this);
+        this.id = ProjectUtil.newUniqueId(owner);
+        dataTower = new Tower(ProjectUtil.newUniqueId(owner), 3, this);
+        transformTower = new Tower(ProjectUtil.newUniqueId(owner), 2, this);
+        outputTower = new Tower(ProjectUtil.newUniqueId(owner), 2, this);
     }
 
     private void init(String name, Project owner) {

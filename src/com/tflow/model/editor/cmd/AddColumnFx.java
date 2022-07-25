@@ -6,7 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,8 +35,8 @@ public class AddColumnFx extends Command {
             targetColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
             sourceColumn = (DataColumn) paramMap.get(CommandParamKey.DATA_COLUMN);
             columnFunction = (ColumnFunction) paramMap.get(CommandParamKey.COLUMN_FUNCTION);
-            columnFx = new ColumnFx(columnFunction, columnFunction.getName(), DataTableUtil.newElementId(project), targetColumn);
-            columnFx.setId(DataTableUtil.newUniqueId(project));
+            columnFx = new ColumnFx(columnFunction, columnFunction.getName(), ProjectUtil.newElementId(project), targetColumn);
+            columnFx.setId(ProjectUtil.newUniqueId(project));
             columnFx.setOwner(targetColumn);
             createEndPlugList(columnFx);
             targetColumn.setFx(columnFx);
@@ -65,11 +65,11 @@ public class AddColumnFx extends Command {
 
         /*line between sourceColumn and columnFx*/
         Line line1 = addLine(sourceColumn.getSelectableId(), columnFx.getSelectableId());
-        line1.setId(DataTableUtil.newUniqueId(project));
+        line1.setId(ProjectUtil.newUniqueId(project));
 
         /*line between columnFx and targetColumn*/
         Line line2 = addLine(columnFx.getSelectableId(), targetColumn.getSelectableId());
-        line2.setId(DataTableUtil.newUniqueId(project));
+        line2.setId(ProjectUtil.newUniqueId(project));
 
         lineList.add(line1);
         lineList.add(line2);

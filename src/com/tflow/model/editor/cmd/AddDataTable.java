@@ -8,7 +8,7 @@ import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class AddDataTable extends Command {
         floor.setRoom(2, dataTable);
 
         /*Add to selectableMap*/
-        DataTableUtil.addTo(step.getSelectableMap(), dataTable, project);
+        ProjectUtil.addTo(step.getSelectableMap(), dataTable, project);
 
         /*Add to DataTable List*/
         List<DataTable> dataList = step.getDataList();
@@ -49,7 +49,7 @@ public class AddDataTable extends Command {
 
         /*line between DataFile and DataTable*/
         Line newLine = addLine(dataFile.getSelectableId(), dataTable.getSelectableId());
-        newLine.setId(DataTableUtil.newUniqueId(project));
+        newLine.setId(ProjectUtil.newUniqueId(project));
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
@@ -112,25 +112,25 @@ public class AddDataTable extends Command {
         /*TODO: call Extractor.extract*/
 
         /*-- TODO: remove mockup data below, used to test the command --*/
-        DataTable dataTable = new DataTable("Untitled", dataFile, "", DataTableUtil.newElementId(project), DataTableUtil.newElementId(project), step);
+        DataTable dataTable = new DataTable("Untitled", dataFile, "", ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), step);
 
         List<DataColumn> columnList = dataTable.getColumnList();
-        columnList.add(new DataColumn(1, DataType.STRING, "String Column", DataTableUtil.newElementId(project), dataTable));
-        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", DataTableUtil.newElementId(project), dataTable));
-        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", DataTableUtil.newElementId(project), dataTable));
-        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", DataTableUtil.newElementId(project), dataTable));
+        columnList.add(new DataColumn(1, DataType.STRING, "String Column", ProjectUtil.newElementId(project), dataTable));
+        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", ProjectUtil.newElementId(project), dataTable));
+        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", ProjectUtil.newElementId(project), dataTable));
+        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", ProjectUtil.newElementId(project), dataTable));
 
         OutputFile outputCSVFile = new OutputFile(
                 DataFileType.OUT_CSV,
                 "out/",
-                DataTableUtil.newElementId(project),
-                DataTableUtil.newElementId(project)
+                ProjectUtil.newElementId(project),
+                ProjectUtil.newElementId(project)
         );
 
         List<OutputFile> outputList = dataTable.getOutputList();
         outputList.add(outputCSVFile);
 
-        DataTableUtil.generateId(step.getSelectableMap(), dataTable, project);
+        ProjectUtil.generateId(step.getSelectableMap(), dataTable, project);
 
         return dataTable;
     }

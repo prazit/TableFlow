@@ -9,7 +9,7 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class AddTransformTable extends Command {
 
         SourceType sourceType = getSourceType(sourceTable);
 
-        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), DataTableUtil.newElementId(project), DataTableUtil.newElementId(project), step);
+        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), step);
         transformTable.setLevel(sourceTable.getLevel() + 1);
 
         List<DataColumn> sourceColumnList = sourceTable.getColumnList();
@@ -41,7 +41,7 @@ public class AddTransformTable extends Command {
         /*copy column from source-table*/
         List<DataColumn> columnList = transformTable.getColumnList();
         for (DataColumn dataColumn : sourceColumnList) {
-            columnList.add(new TransformColumn(dataColumn, DataTableUtil.newElementId(project), DataTableUtil.newElementId(project), transformTable));
+            columnList.add(new TransformColumn(dataColumn, ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), transformTable));
             /*TODO: in the future need explicitly relation, need to add line between columns as DirectTransferFx*/
         }
 
@@ -71,8 +71,8 @@ public class AddTransformTable extends Command {
         floor.setRoom(roomIndex - 1, transformTable.getColumnFxTable());
         floor.setRoom(roomIndex, transformTable);
 
-        DataTableUtil.generateId(step.getSelectableMap(), transformTable, project);
-        DataTableUtil.addTo(step.getSelectableMap(), transformTable, project);
+        ProjectUtil.generateId(step.getSelectableMap(), transformTable, project);
+        ProjectUtil.addTo(step.getSelectableMap(), transformTable, project);
 
         /*Add to TransformTable List*/
         List<TransformTable> transformList = step.getTransformList();
@@ -81,7 +81,7 @@ public class AddTransformTable extends Command {
 
         /*link from SourceTable to TransformTable*/
         Line newLine = addLine(sourceTable.getSelectableId(), transformTable.getSelectableId());
-        newLine.setId(DataTableUtil.newUniqueId(project));
+        newLine.setId(ProjectUtil.newUniqueId(project));
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);

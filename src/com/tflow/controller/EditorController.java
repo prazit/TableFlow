@@ -11,7 +11,7 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.RecordMapper;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.constant.Theme;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
@@ -906,7 +906,7 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        DataSourceSelector dataSourceSelector = new DataSourceSelector("Untitled", DataSourceType.LOCAL, DataTableUtil.newElementId(project));
+        DataSourceSelector dataSourceSelector = new DataSourceSelector("Untitled", DataSourceType.LOCAL, ProjectUtil.newElementId(project));
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE_SELECTOR, dataSourceSelector);

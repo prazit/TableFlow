@@ -13,7 +13,7 @@ import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,7 @@ public class RemoveDataSource extends Command {
         /*remove from Tower*/
         Floor floor = dataSource.getFloor();
         int roomIndex = dataSource.getRoomIndex();
-        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, DataTableUtil.newElementId(project)));
+        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, ProjectUtil.newElementId(project)));
 
         /*remove from selectableMap*/
         selectableMap.remove(((Selectable) dataSource).getSelectableId());

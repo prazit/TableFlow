@@ -6,7 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class AddDirectLine extends Command {
         Project project = step.getOwner();
 
         newLine = addLine(newLine.getStartSelectableId(), newLine.getEndSelectableId());
-        newLine.setId(DataTableUtil.newUniqueId(project));
+        newLine.setId(ProjectUtil.newUniqueId(project));
         newLine.setUser(true);
 
         /*for Action.executeUndo()*/

@@ -6,7 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,9 +132,9 @@ public abstract class Command {
 
         String endPlugId;
         for (PropertyView propertyView : columnFx.getFunction().getProperties().getPlugPropertyList()) {
-            endPlugId = DataTableUtil.newElementId(project);
+            endPlugId = ProjectUtil.newElementId(project);
             /*Notice: columnFxPlug use defaultPlugListener*/
-            ColumnFxPlug columnFxPlug = new ColumnFxPlug(DataTableUtil.newUniqueId(project), propertyView.getType().getDataType(), propertyView.getLabel(), endPlugId, columnFx);
+            ColumnFxPlug columnFxPlug = new ColumnFxPlug(ProjectUtil.newUniqueId(project), propertyView.getType().getDataType(), propertyView.getLabel(), endPlugId, columnFx);
             endPlugList.add(columnFxPlug);
             /*update selectableMap for each*/
             selectableMap.put(columnFxPlug.getSelectableId(), columnFxPlug);

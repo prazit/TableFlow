@@ -4,7 +4,7 @@ import com.tflow.model.editor.*;
 
 import java.util.Map;
 
-public class DataTableUtil {
+public class ProjectUtil {
 
     /**
      * Generate new element id (unique within the project)

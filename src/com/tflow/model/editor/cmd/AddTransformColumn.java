@@ -6,7 +6,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -24,8 +24,8 @@ public class AddTransformColumn extends Command {
         TransformColumn transformColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
         if(transformColumn == null) {
             // for AddTransformColumn
-            transformColumn = new TransformColumn(columnList.size(), DataType.STRING, "Untitled", DataTableUtil.newElementId(project), DataTableUtil.newElementId(project), transformTable);
-            transformColumn.setId(DataTableUtil.newUniqueId(project));
+            transformColumn = new TransformColumn(columnList.size(), DataType.STRING, "Untitled", ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), transformTable);
+            transformColumn.setId(ProjectUtil.newUniqueId(project));
         }/*else{
             //nothing for RemoveTransformColumn.Undo
         }*/

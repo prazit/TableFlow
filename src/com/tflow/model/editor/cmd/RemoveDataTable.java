@@ -9,7 +9,7 @@ import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.DataTableUtil;
+import com.tflow.util.ProjectUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -38,14 +38,14 @@ public class RemoveDataTable extends Command {
         Project project = step.getOwner();
         Floor floor = dataTable.getFloor();
         int roomIndex = dataTable.getRoomIndex();
-        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, DataTableUtil.newElementId(project)));
+        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, ProjectUtil.newElementId(project)));
 
         /*remove from DataTable List*/
         List<DataTable> dataList = step.getDataList();
         dataList.remove(dataTable);
 
         /*remove from selectableMap*/
-        DataTableUtil.removeFrom(step.getSelectableMap(), dataTable);
+        ProjectUtil.removeFrom(step.getSelectableMap(), dataTable);
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
