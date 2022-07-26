@@ -111,7 +111,7 @@ public class FlowchartController extends Controller {
         for (Line line : step.getLineList()) {
             jsBuilder.append(line.getJsAdd());
         }
-        jsBuilder.post(JavaScript.postStartup);
+        jsBuilder.post(JavaScript.postStartup).post(JavaScript.lineEnd);
         jsBuilder.runOnClient(true);
     }
 

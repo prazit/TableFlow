@@ -121,7 +121,11 @@ public class AddDataTable extends Command {
         EmptyRoom emptyRoom = null;
         Room room;
         boolean directBrother = false;
+        int deadLoopDetection = 100;
         for (; emptyRoom == null; ) {
+
+            if (--deadLoopDetection == 0)
+                throw new UnsupportedOperationException("findEmptyRoom: dead loop detected at floorIndex:" + floorIndex + ", roomIndex:" + dataTableRoomIndex);
 
             /*dataTower always has 3 rooms*/
             room = dataTower.getRoom(floorIndex, dataTableRoomIndex);

@@ -98,6 +98,7 @@ function zoom() {
 }
 
 function zoomEnd(submit) {
+    console.log("zoomEnd(submit:" + (submit !== undefined ? submit : false) + ")");
     zoom();
 
     var active = contentWindow.$('.active').first();
@@ -127,8 +128,11 @@ function zoomEnd(submit) {
     if (zooming === zoomValue) return;
 
     zoomValue = zooming;
+    if(tflow.zoomValue == zoomValue) return;
+    tflow.zoomValue = zoomValue;
+
     submitZoom([
-        {name: 'zoom', value: zooming}
+        {name: 'zoom', value: zoomValue}
     ]);
 }
 
@@ -181,7 +185,9 @@ function scrollToObj(active) {
     if (active.hasClass('step')) {
         /*scroll to first data-source*/
         var ds = contentWindow.$('.data-source');
-        if (ds.length === 0) {return;}
+        if (ds.length === 0) {
+            return;
+        }
         active = ds.first();
     }
 

@@ -837,6 +837,8 @@ public class EditorController extends Controller {
     }
 
     public void submitZoom() {
+        /*TODO: need to call StepSetting command to save settings to server*/
+
         String zoom = FacesUtil.getRequestParam("zoom").replaceAll("[%]", "").trim();
         if (zoom.isEmpty()) return;
 

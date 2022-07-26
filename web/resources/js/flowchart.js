@@ -36,12 +36,17 @@ function getSelectableById(selectableId) {
 }
 
 function hideLines() {
+    tflow.needShowLines = true;
     /*for (var i = 0; i < lines.length; i++) {
-        lines[i].hide();
+        // lines[i] hide();
     }*/
 }
 
 function showLines() {
+    if(!tflow.needShowLines) return;
+    tflow.needShowLines = false;
+
+    console.log("showLines.")
     $(lines).each(function (i, line) {
         try {
             line.position();
@@ -211,6 +216,7 @@ function noActiveScrollTo($activeObject) {
 function lineStart() {
     /*start of line creation*/
     lines.lineScroll = {
+        enabled: tflow.ready,
         left: window.scrollX,
         top: window.scrollY
     };
@@ -219,7 +225,7 @@ function lineStart() {
 
 function lineEnd() {
     /*end of line creation*/
-    window.scrollTo(lines.lineScroll);
+    if (lines.lineScroll.enabled) window.scrollTo(lines.lineScroll);
 
     showLines();
 }
