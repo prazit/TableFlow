@@ -10,7 +10,7 @@ function refreshFlowChart() {
     refreshToolbars();
 }
 
-function refreshProperties() {
+function refreshProperties_deprecated() {
     contentReady(function () {
         contentWindow.selectObject(contentWindow.$('.active'));
     }, 'refreshProperties');

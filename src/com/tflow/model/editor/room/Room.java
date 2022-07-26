@@ -64,6 +64,7 @@ public class Room {
         return "{" +
                 (this instanceof Selectable ? "selectableId:'" + ((Selectable) this).getSelectableId() + '\'' : "selectableId: null") +
                 ", elementId:'" + elementId + '\'' +
+                ", floorIndex:" + roomIndex +
                 ", roomIndex:" + roomIndex +
                 ", roomType:" + roomType +
                 ", class:'" + getClass().getName() + "'" +

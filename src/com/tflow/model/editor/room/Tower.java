@@ -98,11 +98,20 @@ public class Tower {
     }
 
     public void addFloor(int count) {
-        int flIndex = floorList.size();
+        addFloor(floorList.size(), count);
+    }
+
+    public void addFloor(int floorIndex, int count) {
+        int flIndex = floorIndex + count - 1;
         for (int c = 0; c < count; c++) {
-            Floor floor = new Floor(ProjectUtil.newUniqueId(owner.getOwner()), flIndex++, this);
-            floorList.add(floor);
+            Floor floor = new Floor(ProjectUtil.newUniqueId(owner.getOwner()), flIndex, this);
+            floorList.add(floorIndex, floor);
             addRoom(roomsOnAFloor, floor);
+            flIndex--;
+        }
+        int size = floorList.size();
+        for (int i = floorIndex; i < size; i++) {
+            floorList.get(i).updateFloorIndex(i);
         }
     }
 
@@ -110,6 +119,12 @@ public class Tower {
         if (floorIndex < 0 || floorIndex >= floorList.size()) return null;
 
         return floorList.get(floorIndex);
+    }
+
+    public Room getRoom(int floorIndex, int roomIndex) {
+        Floor floor = getFloor(floorIndex);
+        if (floor == null) return null;
+        return floor.getRoom(roomIndex);
     }
 
     public Floor getAvailableFloor(int roomIndex, boolean newFloor) {
@@ -181,7 +196,7 @@ public class Tower {
 
     public void setRoom(int floorIndex, int roomIndex, Room roomer) {
         if (floorIndex < 0) {
-            log.error("Invalid floorIndex : Tower[id:{}].setRoom(floorIndex:{}, floorCount:{}, roomIndex:{}, roomer:{})", id, floorIndex, floorList.size(), roomIndex, roomer.getRoomType());
+            log.error("setRoom: Invalid floorIndex : Tower[id:{}].setRoom(floorIndex:{}, floorCount:{}, roomIndex:{}, roomer:{})", id, floorIndex, floorList.size(), roomIndex, roomer.getRoomType());
             return;
         } else if (floorIndex >= floorList.size()) {
             addFloor(floorIndex - floorList.size() + 1);
@@ -189,5 +204,17 @@ public class Tower {
 
         Floor floor = floorList.get(floorIndex);
         floor.setRoom(roomIndex, roomer);
+    }
+
+    public void setEmptyRoom(int floorIndex, int roomIndex) {
+        if (floorIndex < 0) {
+            log.error("setEmptyRoom: Invalid floorIndex : Tower[id:{}].setEmptyRoom(floorIndex:{}, floorCount:{}, roomIndex:{})", id, floorIndex, floorList.size(), roomIndex);
+            return;
+        } else if (floorIndex >= floorList.size()) {
+            addFloor(floorIndex - floorList.size() + 1);
+        }
+
+        Floor floor = floorList.get(floorIndex);
+        floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, ProjectUtil.newElementId(owner.getOwner())));
     }
 }

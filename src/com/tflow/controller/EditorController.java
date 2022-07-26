@@ -32,16 +32,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-/**
- * TODO: all changes within Project must do within Command to make sure the updated data already sent to Server.
- * SelectableObjects: Project, Step, DataSourceSelector, DataFile, DataTable, DataColumn, ColumnFxTable, TransformTable, ColumnFx.
- * Event Concept: update UI from Command using Step-Events as Event Trigger.
- * 1. [done] all Selectable object above need event for PROPERTY_CHANGED to call the Action to make change for that.
- * 2. [done] check all Events to find who made change to data.
- * 3. [...] check all PlugListeners to find who made change to data.
- *    + Q:need to know Action to triggered the PlugListener, then save owner of the PlugListener in that Action.
- *    + A:Triggers are in Command already (addLine, removeLine) and modified before save data.
- **/
 @ViewScoped
 @Named("editorCtl")
 public class EditorController extends Controller {
@@ -1196,5 +1186,9 @@ public class EditorController extends Controller {
             log.error("Change Property Value Failed!", ex);
             FacesUtil.addError("Change property value failed with Internal Command Error!");
         }
+    }
+
+    public void refreshProperties() {
+        setPropertySheet(workspace.getProject().getActiveStep().getActiveObject());
     }
 }

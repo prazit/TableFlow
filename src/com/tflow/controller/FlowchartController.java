@@ -474,8 +474,6 @@ public class FlowchartController extends Controller {
         jsBuilder.pre(JavaScript.refreshStepList)
                 .post(JavaScript.refreshFlowChart)
                 .runOnClient();
-
-        /*TODO: issue: after refresh, the activeObject is not dataTable*/
     }
 
     /**

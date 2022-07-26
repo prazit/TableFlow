@@ -44,6 +44,9 @@ public class RemoveDataTable extends Command {
         List<DataTable> dataList = step.getDataList();
         dataList.remove(dataTable);
 
+        /* TODO: move dataFile to the fl.of first child */
+        /* TODO: set dataFile.owner = first child */
+
         /*remove from selectableMap*/
         ProjectUtil.removeFrom(step.getSelectableMap(), dataTable);
 

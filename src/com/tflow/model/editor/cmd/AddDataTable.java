@@ -5,10 +5,11 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
-import com.tflow.model.editor.room.Floor;
-import com.tflow.model.editor.room.Tower;
+import com.tflow.model.editor.room.*;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -36,8 +37,9 @@ public class AddDataTable extends Command {
 
         /*add to Tower*/
         Tower tower = step.getDataTower();
-        Floor floor = tower.getAvailableFloor(2, false);
-        floor.setRoom(2, dataTable);
+        EmptyRoom emptyRoom = findEmptyRoom(tower, dataTable);
+        Floor floor = tower.getFloor(emptyRoom.getFloorIndex());
+        floor.setRoom(emptyRoom.getRoomIndex(), dataTable);
 
         /*Add to selectableMap*/
         ProjectUtil.addTo(step.getSelectableMap(), dataTable, project);
@@ -102,6 +104,62 @@ public class AddDataTable extends Command {
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
         projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+    }
+
+    /**
+     * Find empty room for DataTable only.
+     */
+    private EmptyRoom findEmptyRoom(Tower dataTower, DataTable dataTable) throws UnsupportedOperationException {
+        DataFile dataFile = dataTable.getDataFile();
+        int dataFileId = dataFile.getId();
+        int dataFileFloorIndex = dataFile.getFloorIndex();
+        int dataFileRoomIndex = dataFile.getRoomIndex();
+        int dataTableRoomIndex = dataFileRoomIndex + 1;
+
+        Logger log = LoggerFactory.getLogger(AddDataTable.class);
+        int floorIndex = dataFileFloorIndex;
+        EmptyRoom emptyRoom = null;
+        Room room;
+        boolean directBrother = false;
+        for (; emptyRoom == null; ) {
+
+            /*dataTower always has 3 rooms*/
+            room = dataTower.getRoom(floorIndex, dataTableRoomIndex);
+            if (room == null) {
+                dataTower.addFloor(floorIndex, 1);
+                emptyRoom = (EmptyRoom) dataTower.getRoom(floorIndex, dataTableRoomIndex);
+                log.warn("foundEmptyRoom({}): at the ground, floorIndex:{}, roomIndex:{}", emptyRoom, floorIndex, dataTableRoomIndex);
+                if (!directBrother) moveDataFileTo(dataTower, floorIndex, dataFile);
+            } else if (RoomType.EMPTY == room.getRoomType()) {
+                emptyRoom = (EmptyRoom) room;
+                log.warn("foundEmptyRoom({}): at the same floor, floorIndex:{}, roomIndex:{}", emptyRoom, floorIndex, dataTableRoomIndex);
+            } else if (/*not empty and */((DataTable) room).getDataFile().getFloorIndex() <= dataFileFloorIndex) {
+                directBrother = ((DataTable) room).getDataFile().getId() == dataFileId;
+                floorIndex++;
+                log.warn("findEmptyRoom: found brother go next floor, floorIndex:{}, roomIndex:{}", floorIndex, dataTableRoomIndex);
+            } else /*not empty and not brothers */ {
+                dataTower.addFloor(floorIndex, 1);
+                emptyRoom = (EmptyRoom) dataTower.getRoom(floorIndex, dataTableRoomIndex);
+                log.warn("foundEmptyRoom({}): under last brother at floorIndex:{}, roomIndex:{}, move dataFile to same floor", emptyRoom, floorIndex, dataTableRoomIndex);
+                if (!directBrother) moveDataFileTo(dataTower, floorIndex, dataFile);
+            }
+
+        }//end for(;emptyRoom == null)
+
+        return emptyRoom;
+    }
+
+    private void moveDataFileTo(Tower dataTower, int floorIndex, DataFile dataFile) throws UnsupportedOperationException {
+        int dataFileFloorIndex = dataFile.getFloorIndex();
+        int dataFileRoomIndex = dataFile.getRoomIndex();
+        Room nextFloorRoom = dataTower.getRoom(floorIndex, dataFileRoomIndex);
+        if (RoomType.EMPTY == nextFloorRoom.getRoomType()) {
+            dataTower.setEmptyRoom(dataFileFloorIndex, dataFileRoomIndex);
+            dataTower.setRoom(floorIndex, dataFileRoomIndex, dataFile);
+        } else /*not empty */ {
+            DataFile existingDataFile = (DataFile) nextFloorRoom;
+            throw new UnsupportedOperationException("moveDataFileTo: floorIndex:" + floorIndex + ", roomIndex:" + dataFileRoomIndex + " is impossible because that room already has DataFile(id:" + existingDataFile.getId() + ", name:" + existingDataFile.getName() + ")");
+        }
     }
 
     private DataTable extractData(DataFile dataFile, Step step) {

@@ -461,6 +461,9 @@ function startup() {
 
     /*make selectable objects*/
     selectableHandle($('.selectable'));
+
+    /**/
+    parentWindow.refreshProperties();
 }
 
 var pLine = {

@@ -6,6 +6,7 @@ import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.room.Floor;
+import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -83,6 +84,8 @@ public interface ProjectMapper {
     TowerData map(Tower tower);
 
     FloorData map(Floor floor);
+
+    RoomData map(Room room);
 
     Project map(ProjectData projectData);
 

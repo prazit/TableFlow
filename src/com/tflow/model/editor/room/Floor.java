@@ -87,10 +87,13 @@ public class Floor {
         }
 
         Room old = roomList.remove(roomIndex);
-        old.setRoomIndex(0);
+        old.setRoomIndex(-1);
+        old.setFloor(null);
+        old.setFloorIndex(-1);
 
         roomer.setRoomIndex(roomIndex);
         roomer.setFloor(this);
+        roomer.setFloorIndex(index);
         roomList.add(roomIndex, roomer);
     }
 
@@ -109,6 +112,19 @@ public class Floor {
             }
         }
         return emptyCount == roomList.size();
+    }
+
+    public Room getRoom(int roomIndex) {
+        if (roomIndex < 0 || roomIndex >= roomList.size()) return null;
+
+        return roomList.get(roomIndex);
+    }
+
+    public void updateFloorIndex(int index) {
+        this.index = index;
+        for (Room room : roomList) {
+            room.setFloorIndex(index);
+        }
     }
 
     @Override

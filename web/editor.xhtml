@@ -151,6 +151,7 @@
                             </f:facet>
 
                             <h:form id="propertyForm">
+                                <p:remoteCommand name="refreshProperties" action="#{editorCtl.refreshProperties}" update="@parent"/>
                                 <p:scrollPanel id="scrollPanel" styleClass="properties" style="height:100%;">
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
                                     <h3>#{editorCtl.activeObject.properties}</h3>

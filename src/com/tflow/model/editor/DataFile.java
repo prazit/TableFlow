@@ -56,16 +56,19 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     }
 
     private void createStartPlugListener() {
+        endPlug.setRemoveButtonTip("Remove DataFile");
         startPlug.setListener(new PlugListener(startPlug) {
             @Override
             public void plugged(Line line) {
                 plug.setPlugged(true);
+                endPlug.setRemoveButton(false);
             }
 
             @Override
             public void unplugged(Line line) {
                 boolean plugged = plug.getLineList().size() > 0;
                 plug.setPlugged(plugged);
+                endPlug.setRemoveButton(true);
             }
         });
     }
