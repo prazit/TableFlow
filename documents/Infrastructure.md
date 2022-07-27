@@ -2,6 +2,8 @@
 
 ----
 
+## TFlow Original
+
 ```mermaid
 graph LR;
 
@@ -65,13 +67,13 @@ balance---front2
 
 manage---admin;
 front---admin;
-front:::active---kafka:::active;
+front---kafka;
 front---kafka;
 front2---kafka2;
 front2---kafka2;
 
 kafka---read;
-kafka---write:::active;
+kafka---write;
 kafka2---read2;
 kafka2---write2;
 
@@ -85,6 +87,92 @@ read---nas;
 write---nas;
 read2---nas;
 write2---nas;
+```
+
+### Add Package System
+
+> **Package Data** : contain information for viewer and index to real binary files
+> 
+> **Binary Data** :  contain binary files that depends on the Package-Type
+> 
+> **Package-Type** : or Project-Type is group of possible DataFile-Types(Input/Ouput) can select from the editor
+> 
+> **1st** : Batch Processing (batch/shell file) : Data Tuple Inputs, Data Tuple Outputs
+> 
+> + **Test Project (easy) : data migration from SCT Project : require Uploaded DataFile**
+> 
+> + Test Project (advanced) : ETL from LH Bank ETL Project
+> 
+> 2nd : Kafka Service : Kafka Consumer Input, Kafka Producer JSON Output, Kafka Producer XML Output
+> 
+> + Test : try to create Project Data Writer using Kafka Service Project
+> 
+> + Test : try to create Project Data Reader using Kafka Service Project
+> 
+> 3rd : Web Service : Http Request Input, Json Output, XML Output
+> 
+> + Test : try to create Project Data Reader using Web Service Project and need some change to Swtich between Kafka & WebService
+> 
+> 4rd : Data Input UI, Html Output (for report or read only viewer) : require Input Validation
+
+```mermaid
+graph LR;
+
+classDef active fill:darkgreen,stroke:yellow,stroke-width:3px;
+classDef ACTIVE fill:red,stroke:white,stroke-width:7px;
+
+        subgraph Front End Server<br/>TFlow Modue
+        front[End Points]
+        pfront[Project Editor]
+        create(Project Data Manager<br/>Convert between Project View & Project Data)
+        pkfront[Package Viewer]:::active
+        export(Package Data Manager<br/>Convert between Package View & Package Data):::active
+        end
+
+        subgraph Kafka Topics
+        pjwrite[Project Write]
+        pjread[Project Read]
+        pkcreate[Package Build]:::active
+        pkread[Package Read]
+        pkdownload[Binary Files Download]
+        end
+
+        subgraph Backend Services
+        write(TWcmd Module<br/>Project Data Writer)
+        read(TRcmd Module<br/>Project Data Reader)
+        pkcreator(Convert Project Data to Package Data<br/>Package Data Writer):::active
+        pkreader(Package Data Reader<br/>Create Zip from Package Data)
+        nas((Project Data))
+        package((Package Data)):::ACTIVE
+        binary((Binary Files)):::active
+        end
+
+front---pfront
+pfront---create;
+create---pjwrite;
+create---pjread;
+
+pjwrite---write;
+pjread---read;
+pjread---pkcreator
+
+write---nas;
+read---nas;
+
+front---pkfront
+pkfront---export
+export---pkcreate
+export---pkread
+export---pkdownload
+
+pkcreate---JsonSerialize---pkcreator
+pkread---Json-Serialize---pkreader
+pkdownload---ByteArraySerialize---pkreader
+
+pkcreator---binary
+pkcreator---package
+pkreader---package
+pkreader---binary
 ```
 
 ## TECHNOLOGIES
@@ -111,7 +199,9 @@ write2---nas;
 
 ## UI UPDATER (Current)
 
-> **Event Usage**: update UI from Command using Step-Events as Event Trigger .
+> **Event Usage**: Update Client-UI using client-JavaScript.
+> 
+> Because command has no knowleadge about JavaScript, command only known about Data-Models and View-Models.
 
 ```mermaid
 graph LR;
@@ -170,7 +260,9 @@ JavaScriptRunner-->Client
 Client-->UserEvent-->Controller
 ```
 
-## UI UPDATER (Improved)
+## UI UPDATER (cancelled)
+
+> Cancelled by Tear Concept: Command has no knowleadge about JavaScript, command only known about Data-Models and View-Models.
 
 ```mermaid
 graph LR;
