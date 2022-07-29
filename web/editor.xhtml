@@ -16,6 +16,7 @@
         <h:outputStylesheet library="css" name="editor.css#{editorCtl.forceReloadResources}" target="head"/>
     </h:head>
     <h:body>
+        <h:outputStylesheet library="css" name="tflow.css#{editorCtl.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="editor.js#{editorCtl.forceReloadResources}" target="head"/>
         <f:event type="preRenderComponent" listener="#{editorCtl.preRenderComponent}"/>
 
@@ -35,11 +36,6 @@
                             <h:form id="stepForm">
                                 <p:tabView id="leftPanel" activeIndex="#{editorCtl.stepListActiveTab}">
                                     <p:tab title="Step" id="stepList">
-                                        <div>
-                                            <span class="label">Project: </span>
-                                            <span class="value">#{editorCtl.projectName}</span>
-                                        </div>
-                                        <p:separator/>
                                         <p:menu model="#{editorCtl.stepMenu}"/>
                                     </p:tab>
                                     <p:tab title="History" id="actionList">
@@ -76,70 +72,11 @@
                         <p:panel header="" styleClass="tool-panel">
                             <f:facet name="actions">
                                 <h:form id="actionForm">
-                                    <p:remoteCommand name="submitZoom" action="#{editorCtl.submitZoom}"/>
-
-                                    <p:menubar>
-                                        <p:submenu label="Add">
-                                            <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.requestAddStep}" update="stepForm,propertyForm"/>
-                                            <p:divider/>
-                                            <p:menuitem value="Data Source" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataSourceSelector}" update="stepForm,propertyForm"/>
-                                            <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="stepForm,propertyForm"/>
-                                        </p:submenu>
-
-                                        <p:divider layout="vertical"/>
-
-                                        <p:submenu label="View">
-                                            <p:menuitem value="Step List" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
-                                            <p:menuitem value="Property List" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
-                                            <p:divider/>
-                                            <p:menuitem value="Table Buttons" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
-                                        </p:submenu>
-
-                                        <p:submenu label="Testing">
-                                            <p:submenu label="Properties">
-                                                <p:menuitem value="Check Enum Update On Redeploy" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testEnumUpdateOnRedeploy}"/>
-                                            </p:submenu>
-                                            <p:submenu label="Kafka">
-                                                <p:menuitem value="Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testGetData}"/>
-                                                <p:menuitem value="Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>
-                                                <p:menuitem value="Save Project as Template" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSaveProjectTemplate}"/>
-                                                <p:menuitem value="Reset Proejct" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.reloadProject}"/>
-                                            </p:submenu>
-                                            <p:submenu label="Java Serialize">
-                                                <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>
-                                                <p:menuitem value="Write (Action List with header)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteHeader}"/>
-                                                <p:menuitem value="Write (Action List with footer)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteFooter}"/>
-                                                <p:menuitem value="Write (Kafka Record Value)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteKafkaRecordValue}"/>
-                                                <p:divider/>
-                                                <p:menuitem value="Read (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadActionList}"/>
-                                                <p:menuitem value="Read (Kafka Record Value)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadKafkaRecordValue}"/>
-                                                <p:menuitem value="Scan (Unknown Object)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testScanSerialize}"/>
-                                            </p:submenu>
-                                            <p:submenu label="Json Serialize">
-                                                <p:menuitem value="toJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testToJson}"/>
-                                                <p:menuitem value="fromJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testFromJson}"/>
-                                            </p:submenu>
-                                        </p:submenu>
-
-                                        <p:divider layout="vertical"/>
-
-                                        <p:menuitem styleClass="zoom-factor">
-                                            <p:outputLabel value="Zoom : "/>
-                                            <p:inputNumber id="zoomFactor" symbol="%" symbolPosition="s"
-                                                           required="true" value="#{editorCtl.zoom}"
-                                                           onkeyup="zoomStart();zoomEnd(1);"/>
-                                        </p:menuitem>
-
-                                        <p:menuitem styleClass="zoom-factor">
-                                            <p:slider for="zoomFactor" minValue="0.01" maxValue="200"
-                                                      step="0.01" range="max" onSlideStart="zoomStart()"
-                                                      onSlide="zoom()" onSlideEnd="zoomEnd(1)"/>
-                                        </p:menuitem>
-                                    </p:menubar>
+                                    <ui:include src="#{editorCtl.editorType.menu}"/>
                                 </h:form>
                             </f:facet>
 
-                            <iframe id="flowchart" src="flowchart.xhtml"></iframe>
+                            <iframe id="flowchart" src="#{editorCtl.editorType.page}"></iframe>
 
                         </p:panel>
                     </p:splitterPanel>
@@ -236,6 +173,7 @@
                 </p:splitter>
             </div>
         </div>
+        <input name="page" value="#{editorCtl.editorType.page}" class="hidden-input"/>
         <script>console.log('-- last-line of editor --');</script>
     </h:body>
 </f:view>

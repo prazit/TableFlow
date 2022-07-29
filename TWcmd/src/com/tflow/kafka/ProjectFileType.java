@@ -1,7 +1,7 @@
 package com.tflow.kafka;
 
 /**
- * IMPORTANT: no patterns for Name and prefix, it up to you ^^.
+ * Notice: no patterns for Name and prefix, it up to you ^^.
  */
 public enum ProjectFileType {
 
@@ -9,6 +9,10 @@ public enum ProjectFileType {
     TEST_TYPE_2("type-2-", 2),
     TEST_TYPE_3("type-3-", 3),
     TEST_TYPE_4("type-4-", 4),
+
+    PACKAGE_LIST("package-list", 1),
+    PACKAGE("", 1),
+    PACKAGE_FILE_LIST("package-file-", 1),
 
     PROJECT("", 1),
     DB_LIST("db-list", 1),

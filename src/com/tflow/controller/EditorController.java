@@ -16,6 +16,7 @@ import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
+import org.apache.kafka.common.utils.Java;
 import org.mapstruct.factory.Mappers;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
@@ -45,6 +46,8 @@ public class EditorController extends Controller {
 
     private List<ActionView> actionList;
 
+    private EditorType editorType;
+
     private List<PropertyView> propertyList;
     private Selectable activeObject;
 
@@ -69,6 +72,7 @@ public class EditorController extends Controller {
         }
 
         leftPanelTitle = "Step List";
+        setEditorType(EditorType.STEP);
         initActionPriorityMap();
         initStepList();
     }
@@ -81,7 +85,7 @@ public class EditorController extends Controller {
     public void reloadProject() {
         workspace.resetProject();
         onCreation();
-        javaScriptBuilder.post(JavaScript.refreshFlowChart.getScript()).runOnClient();
+        javaScriptBuilder.post(JavaScript.refreshFlowChart).runOnClient();
     }
 
     private void initActionPriorityMap() {
@@ -143,11 +147,20 @@ public class EditorController extends Controller {
         projectName = workspace.getProject().getName();
         stepMenu = new DefaultMenuModel();
         List<MenuElement> menuItemList = stepMenu.getElements();
+
+        menuItemList.add(DefaultMenuItem.builder()
+                .value("Project: " + projectName)
+                .icon("pi pi-home")
+                .command("${editorCtl.selectProject()}")
+                .update("actionForm,propertyForm")
+                .build()
+        );
+
         int index = 0;
         for (Step step : stepList) {
             menuItemList.add(DefaultMenuItem.builder()
-                    .value(step.getName())
-                    .icon("pi pi-home")
+                    .value("Step: " + step.getName())
+                    .icon("pi pi-play")
                     .command("${editorCtl.selectStep(" + (index++) + ")}")
                     .update("actionForm,propertyForm")
                     .build()
@@ -249,6 +262,14 @@ public class EditorController extends Controller {
 
     public void setFullActionList(boolean fullActionList) {
         this.fullActionList = fullActionList;
+    }
+
+    public void setEditorType(EditorType editorType) {
+        this.editorType = editorType;
+    }
+
+    public EditorType getEditorType() {
+        return editorType;
     }
 
     /*== Public Methods ==*/
@@ -778,14 +799,24 @@ public class EditorController extends Controller {
         }
     }
 
+    public void selectProject() {
+        setEditorType(EditorType.PROJECT);
+
+        javaScriptBuilder.pre(JavaScript.setFlowChart, editorType.getPage())
+                .post(JavaScript.refreshFlowChart)
+                .runOnClient(true);
+    }
+
     public void selectStep(int stepIndex) {
         log.warn("selectStep:fromClient(stepIndex:{})", stepIndex);
         selectStep(stepIndex, true);
     }
 
     private void selectStep(int stepIndex, boolean refresh) {
-        Project project = workspace.getProject();
 
+        setEditorType(EditorType.STEP);
+
+        Project project = workspace.getProject();
         int size = project.getStepList().size();
         if (stepIndex < 0 || stepIndex >= size) {
             log.warn("selectStep({}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", stepIndex, size);
@@ -832,7 +863,7 @@ public class EditorController extends Controller {
 
         refreshActionList(project);
 
-        javaScriptBuilder.post(JavaScript.refreshFlowChart.getScript());
+        javaScriptBuilder.pre(JavaScript.setFlowChart, editorType.getPage()).post(JavaScript.refreshFlowChart);
         if (refresh) javaScriptBuilder.runOnClient();
     }
 

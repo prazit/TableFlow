@@ -3,8 +3,7 @@
 /*TODO: this is temporary function,
    remove this function when server-side functions are updated to refresh a room or a floor already.*/
 function refreshFlowChart() {
-    document.location += '?refresh=flowchart';
-    window.parent.refreshToolbars();
+    window.parent.refreshFlowChart();
 }
 
 function refreshStepList() {

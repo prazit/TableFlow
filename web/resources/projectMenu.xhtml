@@ -1,0 +1,50 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui">
+
+    <p:menubar>
+        <p:submenu label="Add">
+            <p:menuitem value="Add Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.requestAddStep}" update="stepForm,propertyForm"/>
+            <p:divider/>
+            <p:menuitem value="Add DataBase Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="stepForm,propertyForm"/>
+            <p:menuitem value="Add SFTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="stepForm,propertyForm"/>
+            <p:menuitem value="Add Local Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="stepForm,propertyForm"/>
+        </p:submenu>
+
+        <p:divider layout="vertical"/>
+
+        <p:submenu label="Build">
+            <p:menuitem value="Build Package" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
+            <p:menuitem value="Download Full Package" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+            <p:menuitem value="Download Updated Package" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+        </p:submenu>
+
+        <p:submenu label="Testing">
+            <p:submenu label="Properties">
+                <p:menuitem value="Check Enum Update On Redeploy" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testEnumUpdateOnRedeploy}"/>
+            </p:submenu>
+            <p:submenu label="Kafka">
+                <p:menuitem value="Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testGetData}"/>
+                <p:menuitem value="Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>
+                <p:menuitem value="Save Project as Template" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSaveProjectTemplate}"/>
+                <p:menuitem value="Reset Proejct" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.reloadProject}"/>
+            </p:submenu>
+            <p:submenu label="Java Serialize">
+                <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>
+                <p:menuitem value="Write (Action List with header)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteHeader}"/>
+                <p:menuitem value="Write (Action List with footer)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteFooter}"/>
+                <p:menuitem value="Write (Kafka Record Value)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteKafkaRecordValue}"/>
+                <p:divider/>
+                <p:menuitem value="Read (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadActionList}"/>
+                <p:menuitem value="Read (Kafka Record Value)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadKafkaRecordValue}"/>
+                <p:menuitem value="Scan (Unknown Object)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testScanSerialize}"/>
+            </p:submenu>
+            <p:submenu label="Json Serialize">
+                <p:menuitem value="toJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testToJson}"/>
+                <p:menuitem value="fromJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testFromJson}"/>
+            </p:submenu>
+        </p:submenu>
+    </p:menubar>
+
+</f:view>

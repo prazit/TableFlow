@@ -1,3 +1,7 @@
+function setFlowchart(page) {
+    tflow.page = page;
+}
+
 function refreshStepList() {
     showStepList(leftPanel.css('display') === 'block');
     console.log('refreshStepList completed.');
@@ -5,7 +9,7 @@ function refreshStepList() {
 
 function refreshFlowChart() {
     var src = document.getElementById('flowchart').src;
-    src = src.replaceAll("blank.html", "flowchart.xhtml") + '?refresh=1';
+    src = src.substr(0, src.lastIndexOf("/") + 1) + tflow.page + '?refresh=1';
     document.getElementById('flowchart').src = src;
     refreshToolbars();
 }
@@ -128,7 +132,7 @@ function zoomEnd(submit) {
     if (zooming === zoomValue) return;
 
     zoomValue = zooming;
-    if(tflow.zoomValue == zoomValue) return;
+    if (tflow.zoomValue == zoomValue) return;
     tflow.zoomValue = zoomValue;
 
     submitZoom([
@@ -329,21 +333,8 @@ function contentReady(func, label) {
     }, 100);
 }
 
-/**
- * TODO: need to update Client-Data-File for heartbeat of the working-project.
- **/
-$(function () {
-    leftPanel = $('.left-panel');
-    leftGutter = $('.left-panel + .ui-splitter-gutter');
-    leftToggle = $('.left-panel-toggle').click(toggleLeft).children('.ui-button-icon-left');
-    rightPanel = $('.right-panel');
-    rightGutter = $('.main-panel + .ui-splitter-gutter');
-    rightToggle = $('.right-panel-toggle').click(toggleRight).children('.ui-button-icon-left');
-    contentWindow = document.getElementById('flowchart').contentWindow;
-    refreshToolbars();
-});
-
 var tflow = {
+        page: "blank.xhtml",
         allowScrollDuration: 1000,
         lastScroll: Date.now(),
 
@@ -360,3 +351,18 @@ var tflow = {
     rightPanel, rightGutter, rightToggle,
     zoomValue,
     sections, contentWindow;
+
+/**
+ * TODO: need to update Client-Data-File for heartbeat of the working-project.
+ **/
+$(function () {
+    leftPanel = $('.left-panel');
+    leftGutter = $('.left-panel + .ui-splitter-gutter');
+    leftToggle = $('.left-panel-toggle').click(toggleLeft).children('.ui-button-icon-left');
+    rightPanel = $('.right-panel');
+    rightGutter = $('.main-panel + .ui-splitter-gutter');
+    rightToggle = $('.right-panel-toggle').click(toggleRight).children('.ui-button-icon-left');
+    tflow.page = $('input[name=page]').attr('value');
+    contentWindow = document.getElementById('flowchart').contentWindow;
+    refreshToolbars();
+});

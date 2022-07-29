@@ -13,6 +13,7 @@ public enum JavaScript {
     refreshSFTPList("refreshSFTPList();"),
     refreshLocalList("refreshLocalList();"),
 
+    setFlowChart("setFlowchart('%s');"),
     refreshFlowChart("refreshFlowChart();"),
     refreshStepList("refreshStepList();"),
 
@@ -25,8 +26,7 @@ public enum JavaScript {
     preStartup("LeaderLine.positionByWindowResize = false;"),
     postStartup("startup();"),
 
-    contentWindow("contentWindow."),
-    ;
+    contentWindow("contentWindow.");
 
     private String javascript;
 

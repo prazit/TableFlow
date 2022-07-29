@@ -4,6 +4,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.Package;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
@@ -135,7 +136,11 @@ public interface ProjectMapper {
 
     List<StepItemData> toStepItemDataList(List<Step> stepList);
 
+    Package map(PackageData packageData);
 
+    /*List<PackageFile> map(List<PackageFileData> packageFileData);*/
+
+    /*List<PackageItem> toPackageList(List<PackageItemData> packageItemData);*/
 
     /*---- ALL ABOUT ID ----*/
 

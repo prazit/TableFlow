@@ -1,0 +1,67 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui">
+
+    <p:remoteCommand name="submitZoom" action="#{editorCtl.submitZoom}"/>
+
+    <p:menubar>
+        <p:submenu label="Add">
+            <p:menuitem value="Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.requestAddStep}" update="stepForm,propertyForm"/>
+            <p:divider/>
+            <p:menuitem value="Data Source" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataSourceSelector}" update="stepForm,propertyForm"/>
+            <p:menuitem value="Data File" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDataFile}" update="stepForm,propertyForm"/>
+        </p:submenu>
+
+        <p:divider layout="vertical"/>
+
+        <p:submenu label="View">
+            <p:menuitem value="Step List" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
+            <p:menuitem value="Property List" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+            <p:divider/>
+            <p:menuitem value="Table Buttons" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
+        </p:submenu>
+
+        <p:submenu label="Testing">
+            <p:submenu label="Properties">
+                <p:menuitem value="Check Enum Update On Redeploy" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testEnumUpdateOnRedeploy}"/>
+            </p:submenu>
+            <p:submenu label="Kafka">
+                <p:menuitem value="Get Data" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testGetData}"/>
+                <p:menuitem value="Get Project" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testOpenProject}"/>
+                <p:menuitem value="Save Project as Template" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testSaveProjectTemplate}"/>
+                <p:menuitem value="Reset Proejct" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.reloadProject}"/>
+            </p:submenu>
+            <p:submenu label="Java Serialize">
+                <p:menuitem value="Write (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteActionList}"/>
+                <p:menuitem value="Write (Action List with header)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteHeader}"/>
+                <p:menuitem value="Write (Action List with footer)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteFooter}"/>
+                <p:menuitem value="Write (Kafka Record Value)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testWriteKafkaRecordValue}"/>
+                <p:divider/>
+                <p:menuitem value="Read (Action List)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadActionList}"/>
+                <p:menuitem value="Read (Kafka Record Value)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testReadKafkaRecordValue}"/>
+                <p:menuitem value="Scan (Unknown Object)" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testScanSerialize}"/>
+            </p:submenu>
+            <p:submenu label="Json Serialize">
+                <p:menuitem value="toJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testToJson}"/>
+                <p:menuitem value="fromJSON" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testFromJson}"/>
+            </p:submenu>
+        </p:submenu>
+
+        <p:divider layout="vertical"/>
+
+        <p:menuitem styleClass="zoom-factor">
+            <p:outputLabel value="Zoom : "/>
+            <p:inputNumber id="zoomFactor" symbol="%" symbolPosition="s"
+                           required="true" value="#{editorCtl.zoom}"
+                           onkeyup="zoomStart();zoomEnd(1);"/>
+        </p:menuitem>
+
+        <p:menuitem styleClass="zoom-factor">
+            <p:slider for="zoomFactor" minValue="0.01" maxValue="200"
+                      step="0.01" range="max" onSlideStart="zoomStart()"
+                      onSlide="zoom()" onSlideEnd="zoomEnd(1)"/>
+        </p:menuitem>
+    </p:menubar>
+
+</f:view>
