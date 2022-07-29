@@ -95,11 +95,19 @@ write2---nas;
 > 
 > **Binary Data** :  contain binary files that depends on the Package-Type
 > 
-> **Package-Type** : or Project-Type is group of possible DataFile-Types(Input/Ouput) can select from the editor
+> **Package-Type** : or Project-Type is group of possible DataFile-Types(Input/Ouput)
 > 
 > **1st** : Batch Processing (batch/shell file) : Data Tuple Inputs, Data Tuple Outputs
 > 
-> + **Test Project (easy) : data migration from SCT Project : require Uploaded DataFile**
+> + **Test Project (easy) : data migration from SCT Project : require Uploaded DataFile(sql) : (optional:visual sql editor)**
+>   
+>   + sql input file
+>   
+>   + md input file
+>   
+>   + sql output file
+>   
+>   + md output file
 > 
 > + Test Project (advanced) : ETL from LH Bank ETL Project
 > 
@@ -133,17 +141,15 @@ classDef ACTIVE fill:red,stroke:white,stroke-width:7px;
         pjwrite[Project Write]
         pjread[Project Read]
         pkcreate[Package Build]:::active
-        pkread[Package Read]
         pkdownload[Binary Files Download]
         end
 
         subgraph Backend Services
         write(TWcmd Module<br/>Project Data Writer)
         read(TRcmd Module<br/>Project Data Reader)
-        pkcreator(Convert Project Data to Package Data<br/>Package Data Writer):::active
-        pkreader(Package Data Reader<br/>Create Zip from Package Data)
-        nas((Project Data))
-        package((Package Data)):::ACTIVE
+        pkcreator(Convert Project Data<br/>to Package Data & Binaries):::active
+        pkreader(Create Zip from Package Data)
+        nas((Project Data<br/>Package Data)):::ACTIVE
         binary((Binary Files)):::active
         end
 
@@ -153,8 +159,10 @@ create---pjwrite;
 create---pjread;
 
 pjwrite---write;
+pjwrite--: Package Data :---pkcreator
 pjread---read;
-pjread---pkcreator
+pjread--: Project Data :---pkcreator
+pjread---
 
 write---nas;
 read---nas;
@@ -162,16 +170,13 @@ read---nas;
 front---pkfront
 pkfront---export
 export---pkcreate
-export---pkread
+export--: Package Data :---pjread
 export---pkdownload
 
-pkcreate---JsonSerialize---pkcreator
-pkread---Json-Serialize---pkreader
+pkcreate---pkcreator
 pkdownload---ByteArraySerialize---pkreader
 
 pkcreator---binary
-pkcreator---package
-pkreader---package
 pkreader---binary
 ```
 
