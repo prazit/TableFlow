@@ -69,7 +69,12 @@ body .ui-panelgrid .ui-panelgrid-cell {
     width: 100% !important;
 }
 
-.tool-panel .properties .hidden-input,
+.hidden-input {
+    position: fixed;
+    z-index: 1;
+}
+
+.hidden-input,
 .tool-panel .properties .prev-input,
 .tool-panel .properties .next-input {
     margin: 0;
@@ -165,6 +170,14 @@ body .ui-panel.function .ui-panel-titlebar {
 body .ui-panel.data-table .ui-panel-content,
 body .ui-panel.function .ui-panel-content {
     background-color: var(--surface-e);
+}
+
+.database-panel .selectable,
+.local-panel .selectable,
+.sftp-panel .selectable {
+    display: inline-block;
+    width: 10rem;
+    margin: var(--margin);
 }
 
 .data-source.active, .data-source.selectable.active:hover,

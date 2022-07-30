@@ -21,6 +21,7 @@ public class EventManager {
         List<EventHandler> eventHandlerList = eventHandlerMap.computeIfAbsent(event, k -> new ArrayList<>());
         eventHandlerList.add(handler);
         handler.setManager(this);
+        handler.setHandling(false);
         return this;
     }
 

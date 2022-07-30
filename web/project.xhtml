@@ -14,8 +14,105 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
     </h:head>
-    <h:body style="background-color: var(--surface-a)" styleClass="selectable step#{flowchartCtl.active(flowchartCtl.step)}">
-        <h1>PROJECT PAGE</h1>
+    <h:body style="background-color: var(--surface-a)" styleClass="selectable step#{projectCtl.active(projectCtl.project)}">
+        <script>console.log('-- first-line of flow-chart --');</script>
+
+        <input name="selectableId" type="hidden" value="#{projectCtl.project.selectableId}"/>
+        <p:remoteCommand name="update#{projectCtl.project.selectableId}" oncomplete="updateComplete('#{projectCtl.project.selectableId}')" update="editorForm:projectName"/>
+
+        <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
+        <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="editor-page.js#{app.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="project.js#{app.forceReloadResources}" target="head"/>
+
+        <div class="flow-chart">
+            <h:form id="editorForm">
+                <p:growl id="growl" showDetail="true" escape="false"/>
+                <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
+
+                <p:remoteCommand name="drawLines" action="#{flowchartCtl.drawLines}"/>
+
+                <p:outputPanel id="projectName" style="padding: var(--padding);margin: var(--margin);">
+                    <h1 style="color: var(--surface-c);">Project: #{projectCtl.project.name}</h1>
+                </p:outputPanel>
+
+                <p:accordionPanel style="padding: var(--padding);margin: var(--margin);">
+                    <p:tab title="Data Source">
+
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-user mr-2"/>
+                                <b>Database Connection</b>
+                            </div>
+                        </p:divider>
+
+                        <p:outputPanel styleClass="database-panel">
+                            <p:remoteCommand name="refreshDatabaseList" update="@parent" oncomplete="updatePanelComplete('.database-panel')"/>
+                            <p:repeat value="#{projectCtl.databaseList}" var="database">
+                                <p:outputPanel styleClass="data-source selectable#{projectCtl.active(database)}">
+                                    <input name="selectableId" type="hidden" value="#{database.selectableId}"/>
+                                    <b>#{database.name}</b>
+                                    <p:remoteCommand name="update#{database.selectableId}" update="@parent" oncomplete="updateComplete('#{database.selectableId}')"/>
+                                    <p:graphicImage library="images" name="#{database.image}"/>
+                                    <span>#{database.dbms}</span>
+                                </p:outputPanel>
+                                <p:spacer/>
+                            </p:repeat>
+                        </p:outputPanel>
+
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-user mr-2"/>
+                                <b>Local Root Directory</b>
+                            </div>
+                        </p:divider>
+
+                        <p:outputPanel styleClass="local-panel">
+                            <p:remoteCommand name="refreshLocalList" update="@parent" oncomplete="updatePanelComplete('.local-panel')"/>
+                            <p:repeat value="#{projectCtl.localList}" var="local">
+                                <p:outputPanel styleClass="data-source selectable#{projectCtl.active(local)}">
+                                    <input name="selectableId" type="hidden" value="#{local.selectableId}"/>
+                                    <b>#{local.name}</b>
+                                    <p:remoteCommand name="update#{local.selectableId}" update="@parent" oncomplete="updateComplete('#{local.selectableId}')"/>
+                                    <p:graphicImage library="images" name="#{local.image}"/>
+                                    <span>#{local.rootPath}</span>
+                                </p:outputPanel>
+                                <p:spacer/>
+                            </p:repeat>
+                        </p:outputPanel>
+
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-user mr-2"/>
+                                <b>Remote Root Directory</b>
+                            </div>
+                        </p:divider>
+
+                        <p:outputPanel styleClass="sftp-panel">
+                            <p:remoteCommand name="refreshSFTPList" update="@parent" oncomplete="updatePanelComplete('.sftp-panel')"/>
+                            <p:repeat value="#{projectCtl.sftpList}" var="sftp">
+                                <p:outputPanel styleClass="data-source selectable#{projectCtl.active(sftp)}">
+                                    <input name="selectableId" type="hidden" value="#{sftp.selectableId}"/>
+                                    <b>#{sftp.name}</b>
+                                    <p:remoteCommand name="update#{sftp.selectableId}" update="@parent" oncomplete="updateComplete('#{sftp.selectableId}')"/>
+                                    <p:graphicImage library="images" name="#{sftp.image}"/>
+                                    <span>#{sftp.rootPath}</span>
+                                </p:outputPanel>
+                                <p:spacer/>
+                            </p:repeat>
+                        </p:outputPanel>
+
+                    </p:tab>
+
+                    <p:tab title="Package" styleClass="package tab">
+                        <h2 style="color: var(--surface-c);">Package Section</h2>
+                    </p:tab>
+                </p:accordionPanel>
+
+            </h:form>
+        </div>
+
+        <script>console.log('-- last-line of flow-chart --');</script>
     </h:body>
 </f:view>
 </html>

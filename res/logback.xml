@@ -5,7 +5,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date |-%-5level at %file:%line-| %msg%n</pattern>
+            <pattern>%date | %-5level | %msg at %file:%line%n</pattern>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>
@@ -18,12 +18,12 @@
             <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%date |-%-5level at %file:%line-| %msg%n</pattern>
+            <pattern>%date | %-5level | %msg at %file:%line%n</pattern>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>
 
-    <root level="debug">
+    <root level="trace">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>

@@ -129,12 +129,14 @@ graph LR;
 classDef active fill:darkgreen,stroke:yellow,stroke-width:3px;
 classDef ACTIVE fill:red,stroke:white,stroke-width:7px;
 
-        subgraph Front End Server<br/>TFlow Modue
+        subgraph Front End Server : TFlow Modue
         front[End Points]
         pfront[Project Editor]
-        create(Project Data Manager<br/>Convert between Project View & Project Data)
-        pkfront[Package Viewer]:::active
-        export(Package Data Manager<br/>Convert between Package View & Package Data):::active
+        pkfront[Package Viewer]:::ACTIVE
+            subgraph Project Data Manager
+            create(Convert between Project View & Project Data)
+            export(Convert between Package View & Package Data):::active
+            end
         end
 
         subgraph Kafka Topics
@@ -149,7 +151,7 @@ classDef ACTIVE fill:red,stroke:white,stroke-width:7px;
         read(TRcmd Module<br/>Project Data Reader)
         pkcreator(Convert Project Data<br/>to Package Data & Binaries):::active
         pkreader(Create Zip from Package Data)
-        nas((Project Data<br/>Package Data)):::ACTIVE
+        nas((Project Data<br/>Package Data)):::active
         binary((Binary Files)):::active
         end
 

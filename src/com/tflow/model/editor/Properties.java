@@ -47,7 +47,7 @@ public enum Properties {
     STEP_DATA_SOURCE(
             "name:Name:String",
             "type:Data Source Type:DATASOURCETYPE:@propertyForm.scrollPanel",
-            "dataSourceId:Data Source:DATASOURCE::type"
+            "dataSourceId:Data Source:DATASOURCE::type:@propertyForm.scrollPanel"
     ),
     DATA_BASE(
             "name:Name:String",
@@ -59,20 +59,25 @@ public enum Properties {
             "password:Password:String:20::true",
             "retry:Connection Retry:Int:9:0",
             "--:Debug Only:--",
-            "startPlug:Start Plug:String"
+            "id:ID:ReadOnly"
     ),
     SFTP(
             "name:Name:String",
+            "--:Connection:--",
             "host:Host:String",
             "port:Port:String",
             "user:User:String:20",
             "password:Password:String:20::true",
             "retry:Connection Retry:Int:9:0",
-            "rootPath:Root Path:String"
+            "rootPath:Root Path:String",
+            "--:Debug Only:--",
+            "id:ID:ReadOnly"
     ),
     LOCAL_FILE(
             "name:Name:String",
-            "rootPath:Root Path:String"
+            "rootPath:Root Path:String",
+            "--:Debug Only:--",
+            "id:ID:ReadOnly"
     ),
     DATA_TABLE(
             "name:Table Name:String",

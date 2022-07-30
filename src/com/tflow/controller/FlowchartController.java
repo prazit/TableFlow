@@ -20,14 +20,8 @@ import java.util.Map;
 @Named("flowchartCtl")
 public class FlowchartController extends Controller {
 
-    @Inject
-    private Workspace workspace;
-
-    private JavaScriptBuilder jsBuilder;
-
     @PostConstruct
     public void onCreation() {
-        jsBuilder = new JavaScriptBuilder();
         createEventHandlers();
     }
 
@@ -60,47 +54,10 @@ public class FlowchartController extends Controller {
                         jsBuilder.append(line.getJsRemove());
                     }
                 });
-
-        /*Map<String, Selectable> selectableMap = step.getSelectableMap();
-        for (Selectable selectable : selectableMap.values()) {
-            if (!(selectable instanceof HasEvent)) continue;
-            HasEvent target = (HasEvent) selectable;
-
-            if (target instanceof ColumnFx) {
-                target.getEventManager()
-                        .removeHandlers(EventName.REMOVE)
-                        .addHandler(EventName.REMOVE, new EventHandler() {
-                            @Override
-                            public void handle(Event event) {
-                                removeColumnFx((ColumnFx) event.getTarget());
-                            }
-                        });
-
-            }
-        }*/
     }
 
-    public Step getStep() {
-        return workspace.getProject().getActiveStep();
-    }
 
     /*== Public Methods ==*/
-
-    /**
-     * Get active class for css.
-     *
-     * @return " active" or empty string
-     */
-    public String active(Selectable selectable) {
-        Step step = getStep();
-        Selectable activeObject = step.getActiveObject();
-        if (activeObject == null) return "";
-
-        String selectableId = selectable.getSelectableId();
-        String activeSelectableId = activeObject.getSelectableId();
-
-        return selectableId.compareTo(activeSelectableId) == 0 ? " active" : "";
-    }
 
     /**
      * Draw lines on the client when page loaded.

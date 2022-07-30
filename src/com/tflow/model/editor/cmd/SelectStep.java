@@ -62,6 +62,9 @@ public class SelectStep extends Command {
         collectSelectableTo(selectableMap, getSelectableList(step.getDataTower().getFloorList()));
         collectSelectableTo(selectableMap, getSelectableList(step.getTransformTower().getFloorList()));
         collectSelectableTo(selectableMap, getSelectableList(step.getOutputTower().getFloorList()));
+        collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getDatabaseMap().values()));
+        collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getSftpMap().values()));
+        collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getLocalMap().values()));
         log.warn("SelectStep: after generate selectableMap step={}", step);
 
         // need activeObject by selectableId.

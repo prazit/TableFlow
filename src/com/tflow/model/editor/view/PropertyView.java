@@ -1,6 +1,7 @@
 package com.tflow.model.editor.view;
 
 import com.tflow.model.editor.PropertyType;
+import com.tflow.model.editor.PropertyVar;
 
 import java.util.Arrays;
 
@@ -117,7 +118,8 @@ public class PropertyView {
                 ", update:'" + update + '\'' +
                 ", javaScript:'" + javaScript + '\'' +
                 ", params:" + Arrays.toString(params) +
-                ", value:" + oldValue +
+                ", oldValue:" + oldValue +
+                ", newValue:" + newValue +
                 '}';
     }
 }

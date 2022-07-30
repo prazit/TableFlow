@@ -2,6 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.system.Environment;
 import com.tflow.system.constant.Theme;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -21,6 +22,8 @@ public class Workspace implements Serializable {
 
     @PostConstruct
     public void onCreation() {
+        LoggerFactory.getLogger(Workspace.class).trace("Application started.");
+
         // TODO: load Environment from configuration.
         environment = Environment.DEVELOPMENT;
 

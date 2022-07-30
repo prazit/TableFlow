@@ -37,9 +37,6 @@ import java.util.*;
 @Named("editorCtl")
 public class EditorController extends Controller {
 
-    @Inject
-    private Workspace workspace;
-
     private String projectName;
     private MenuModel stepMenu;
     private Double zoom;
@@ -75,6 +72,7 @@ public class EditorController extends Controller {
         setEditorType(EditorType.STEP);
         initActionPriorityMap();
         initStepList();
+        selectProject();
     }
 
     public void preRenderComponent() {
@@ -85,7 +83,6 @@ public class EditorController extends Controller {
     public void reloadProject() {
         workspace.resetProject();
         onCreation();
-        javaScriptBuilder.post(JavaScript.refreshFlowChart).runOnClient();
     }
 
     private void initActionPriorityMap() {
@@ -801,6 +798,7 @@ public class EditorController extends Controller {
 
     public void selectProject() {
         setEditorType(EditorType.PROJECT);
+        selectObject(workspace.getProject().getSelectableId());
 
         javaScriptBuilder.pre(JavaScript.setFlowChart, editorType.getPage())
                 .post(JavaScript.refreshFlowChart)
@@ -855,8 +853,8 @@ public class EditorController extends Controller {
         stepListActiveTab = step.getStepListActiveTab();
 
         Selectable activeObject = step.getActiveObject();
-        if (activeObject == null) {
-            selectObject(null);
+        if (activeObject == null || activeObject instanceof DataSource /*|| activeObject instanceof PackageFile*/) {
+            selectObject(step.getSelectableId());
         } else {
             selectObject(activeObject.getSelectableId());
         }
@@ -976,7 +974,7 @@ public class EditorController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("Local[" + local.getName() + "] added.");
-        FacesUtil.runClientScript(JavaScript.refreshLocalList.getScript());
+        jsBuilder.post(JavaScript.refreshLocalList).runOnClient();
     }
 
     public void addDBConnection() {
@@ -1001,9 +999,8 @@ public class EditorController extends Controller {
 
         selectObject(database.getSelectableId());
 
-        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("Database[" + database.getName() + "] added.");
-        FacesUtil.runClientScript(JavaScript.refreshDatabaseList.getScript());
+        jsBuilder.post(JavaScript.refreshDatabaseList).runOnClient();
     }
 
     public void addSFTPConnection() {
@@ -1030,7 +1027,7 @@ public class EditorController extends Controller {
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         FacesUtil.addInfo("SFTP[" + sftp.getName() + "] added.");
-        FacesUtil.runClientScript(JavaScript.refreshSFTPList.getScript());
+        jsBuilder.post(JavaScript.refreshSFTPList).runOnClient();
     }
 
     /**
@@ -1215,7 +1212,7 @@ public class EditorController extends Controller {
 
         try {
             new ChangePropertyValue(paramMap).execute();
-        } catch (RequiredParamException ex) {
+        } catch (Exception ex) {
             log.error("Change Property Value Failed!", ex);
             FacesUtil.addError("Change property value failed with Internal Command Error!");
         }

@@ -6378,19 +6378,10 @@ body .ui-accordion .ui-accordion-header.ui-state-hover {
   color: #FFE082;
 }
 body .ui-accordion .ui-accordion-header.ui-state-active {
-  border-color: #FFE082;
   background: #191919;
-  color: #212529;
 }
 body .ui-accordion .ui-accordion-header.ui-state-active:hover {
-  border-color: #FFCA28;
-  background: #FFCA28;
   color: #FFE082;
-}
-body .ui-accordion .ui-accordion-header:focus {
-  outline: 0 none;
-  outline-offset: 0;
-  box-shadow: 0 0 0 0.1rem white;
 }
 body .ui-accordion .ui-accordion-header > .ui-icon {
   position: static;

@@ -4,6 +4,9 @@ import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSourceSelector;
+import com.tflow.model.editor.datasource.Database;
+import com.tflow.model.editor.datasource.Local;
+import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
@@ -154,6 +157,9 @@ public abstract class Command {
         else if (selectable instanceof DataTable) dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) selectable), project, ((DataTable) selectable).getId(), stepId, ((DataTable) selectable).getId());
         else if (selectable instanceof Step) dataManager.addData(ProjectFileType.STEP, mapper.map((Step) selectable), project, ((Step) selectable).getId(), stepId);
         else if (selectable instanceof Project) dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) selectable), project, ((Project) selectable).getId());
+        else if (selectable instanceof Database) dataManager.addData(ProjectFileType.DB, mapper.map((Database) selectable), project, ((Database) selectable).getId());
+        else if (selectable instanceof SFTP) dataManager.addData(ProjectFileType.SFTP, mapper.map((SFTP) selectable), project, ((SFTP) selectable).getId());
+        else if (selectable instanceof Local) dataManager.addData(ProjectFileType.LOCAL, mapper.map((Local) selectable), project, ((Local) selectable).getId());
         else return false;
         return true;
     }

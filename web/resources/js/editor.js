@@ -14,18 +14,24 @@ function refreshFlowChart() {
     refreshToolbars();
 }
 
-function refreshProperties_deprecated() {
-    contentReady(function () {
-        contentWindow.selectObject(contentWindow.$('.active'));
-    }, 'refreshProperties');
-}
-
 function refreshToolbars() {
     contentReady(function () {
         setToolPanel([
             {name: 'refresh', value: 'all'}
         ]);
     }, 'refershToolbars');
+}
+
+function refreshDatabaseList() {
+    contentWindow.refreshDatabaseList();
+}
+
+function refreshLocalList() {
+    contentWindow.refreshLocalList();
+}
+
+function refreshSFTPList() {
+    contentWindow.refreshSFTPList();
 }
 
 function toggleLeft() {

@@ -42,6 +42,7 @@ public class AddDataSourceSelector extends Command {
             roomIndex = dataSourceSelector.getRoomIndex();
             id = dataSourceSelector.getId();
         }
+        dataSourceSelector.setOwner(step);
 
         /*Undo action will put dataSourceSelector at old room*/
         floor.setRoom(roomIndex, dataSourceSelector);

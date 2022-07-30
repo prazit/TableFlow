@@ -24,16 +24,14 @@ public class Application {
 
     @Inject
     public Application() {
+        /*nothing*/
     }
 
     @PostConstruct
     public void onCreation() {
-        /*log.trace("onCreation.");*/
-
         // TODO: do this after Configuration File Module is completed, load configuration first then remove initialize below
         cssForceReload = true;
         forceReloadResources = "";
-
     }
 
     /*private void loadApplicationVersion() {

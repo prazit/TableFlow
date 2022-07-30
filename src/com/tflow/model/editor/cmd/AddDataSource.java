@@ -34,22 +34,13 @@ public class AddDataSource extends Command {
         List<DataFile> dataFileList = (List<DataFile>) paramMap.get(CommandParamKey.DATA_FILE_LIST);
         boolean isExecute = (dataFileList == null);
 
-        Floor floor;
-        int roomIndex;
         int id;
         if (isExecute) {
-            floor = tower.getAvailableFloor(0, false);
-            roomIndex = 0;
             id = ProjectUtil.newUniqueId(project);
             dataSource.setId(id);
         } else {
-            floor = dataSource.getFloor();
-            roomIndex = dataSource.getRoomIndex();
             id = dataSource.getId();
         }
-
-        /*Undo action will put dataSource at old room*/
-        floor.setRoom(roomIndex, dataSource);
 
         ProjectDataManager projectDataManager = project.getDataManager();
         ProjectMapper mapper = projectDataManager.mapper;
@@ -95,10 +86,7 @@ public class AddDataSource extends Command {
         // save DataSource list
         projectDataManager.addData(listFileType, idList, project);
 
-        // no line to save here
-
-        // save Tower data
-        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
+        // no line, no tower to save here
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
         projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());

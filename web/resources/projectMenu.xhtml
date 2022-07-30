@@ -14,11 +14,22 @@
 
         <p:divider layout="vertical"/>
 
+        <p:submenu label="View">
+            <p:menuitem value="Step List" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
+            <p:menuitem value="Property List" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+            <p:divider/>
+            <p:menuitem value="Table Buttons" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
+        </p:submenu>
+
+        <p:divider layout="vertical"/>
+
         <p:submenu label="Build">
             <p:menuitem value="Build Package" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
             <p:menuitem value="Download Full Package" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
             <p:menuitem value="Download Updated Package" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
         </p:submenu>
+
+        <p:divider layout="vertical"/>
 
         <p:submenu label="Testing">
             <p:submenu label="Properties">

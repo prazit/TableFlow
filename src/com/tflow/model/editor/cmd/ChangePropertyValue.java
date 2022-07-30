@@ -1,11 +1,8 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.kafka.ProjectDataManager;
-import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.datasource.DataSourceSelector;
+import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.view.PropertyView;
-import com.tflow.model.mapper.ProjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,16 +23,23 @@ public class ChangePropertyValue extends Command {
             throw new UnsupportedOperationException("Cannot set property(" + property + ") to selectable(" + selectable.getSelectableId() + ")", ex);
         }
 
+        boolean hasEvent = selectable instanceof HasEvent;
+        LoggerFactory.getLogger(ChangePropertyValue.class).debug("{} hasEvent = {} ", selectable.getClass().getName(), hasEvent);
+        if (hasEvent) {
+            EventManager eventManager = ((HasEvent) selectable).getEventManager();
+            eventManager.fireEvent(EventName.PROPERTY_CHANGED, property);
+        }
+
         // for Action.executeUndo
+        /*paramMap.put(CommandParamKey.PROPERTY, property);*/
         Object oldValue = property.getOldValue();
         property.setOldValue(property.getNewValue());
         property.setNewValue(oldValue);
-        /*paramMap.put(CommandParamKey.PROPERTY, property);*/
 
         // result map
 
         // Specific: ColumnFx.function is changed
-        if (selectable instanceof ColumnFx && property.getVar().compareTo("function") == 0) {
+        if (selectable instanceof ColumnFx && PropertyVar.function.equals(property.getVar())) {
             createEndPlugList((ColumnFx) selectable);
         }
 
@@ -69,9 +73,25 @@ public class ChangePropertyValue extends Command {
         Method[] methods = selectable.getClass().getMethods();
         for (Method method : methods) {
             if (method.getName().compareTo(methodName) == 0) {
-                Class<?>[] parameterTypes = method.getParameterTypes();
+                Class[] parameterTypes = method.getParameterTypes();
+                Class parameterClass = parameterTypes[0];
                 log.warn("ChangePropertyValue.setPropertyValue(oldValue:{}): using method {}({}:{})", property.getOldValue(), method.getName(), toCSVString(parameterTypes), value);
-                method.invoke(selectable, parameterTypes[0].cast(value));
+                if (value == null) {
+                    method.invoke(selectable, parameterClass.cast(null));
+                } else if (value instanceof Integer || value instanceof Long) {
+                    method.invoke(selectable, value);
+                } else if (parameterClass.isEnum() && value instanceof String) {
+                    if (((String) value).isEmpty()) {
+                        method.invoke(selectable, parameterClass.cast(null));
+                    } else {
+                        method.invoke(selectable, Enum.valueOf(parameterClass, (String) value));
+                    }
+                } else if (!parameterClass.isInstance(value)) {
+                    method.invoke(selectable, parameterClass.cast(value));
+                } else {
+                    method.invoke(selectable, value);
+                }
+
                 return;
             }
         }
