@@ -2,9 +2,11 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Map;
 
@@ -28,12 +30,13 @@ public class RemoveDirectLine extends Command {
 
         // save Line data
         Project project = step.getOwner();
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), step.getId());
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        dataManager.addData(ProjectFileType.LINE, (TWData) null, projectUser, line.getId(), step.getId());
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, line.getId(), step.getId());
+        dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, line.getId(), step.getId());
 
         // no tower, floor to save here
     }

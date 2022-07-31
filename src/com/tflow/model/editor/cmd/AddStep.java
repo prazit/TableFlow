@@ -29,7 +29,6 @@ public class AddStep extends Command {
         resultMap.put(ActionResultKey.STEP, step);
 
         // save Step data
-        ProjectDataManager projectDataManager = project.getDataManager();
-        projectDataManager.addStep(step, project);
+        project.getManager().saveStep(step, project);
     }
 }

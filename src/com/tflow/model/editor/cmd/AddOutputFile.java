@@ -2,11 +2,13 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Map;
@@ -41,26 +43,27 @@ public class AddOutputFile extends Command {
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.OUTPUT_FILE, outputFile);
 
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
         if (dataTable instanceof TransformTable) {
             // save OutputFile data
-            projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), step.getId(), 0, dataTable.getId());
+            dataManager.addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(outputFile), projectUser, outputFile.getId(), step.getId(), 0, dataTable.getId());
 
             // save OutputFile list
-            projectDataManager.addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, outputFile.getId(), step.getId(), 0, dataTable.getId());
+            dataManager.addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromOutputFileList(outputList), projectUser, outputFile.getId(), step.getId(), 0, dataTable.getId());
         } else {
             // save OutputFile data
-            projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), step.getId(), dataTable.getId());
+            dataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), projectUser, outputFile.getId(), step.getId(), dataTable.getId());
 
             // save OutputFile list
-            projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, outputFile.getId(), step.getId(), dataTable.getId());
+            dataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), projectUser, outputFile.getId(), step.getId(), dataTable.getId());
         }
 
         // no line, tower, floor to save here
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
-        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
     }
 
 }

@@ -2,11 +2,13 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Map;
@@ -33,12 +35,13 @@ public class RemoveTableFx extends Command {
         action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
 
         // save Transformation data
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.TRANSFORMATION, (TWData) null, step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        dataManager.addData(ProjectFileType.TRANSFORMATION, (TWData) null, projectUser, tableFx.getId(), step.getId(), 0, tableFx.getId());
 
         // save Transformation list
-        projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(tableFxList), step.getOwner(), tableFx.getId(), step.getId(), 0, tableFx.getId());
+        dataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(tableFxList), projectUser, tableFx.getId(), step.getId(), 0, tableFx.getId());
 
         // no line, tower, floor to save here
     }

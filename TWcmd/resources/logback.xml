@@ -1,76 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
 
-    <property name="root-path" value="C:/Users/prazi/Documents/GitHub/TFlow/"/>
-
-    <!--<turboFilter class="ch.qos.logback.classic.turbo.DuplicateMessageFilter">
-        <AllowedRepetitions>1</AllowedRepetitions>
-    </turboFilter>-->
+    <property name="root-path" value="/Users/prazi/Documents/GitHub/TFlow/out/logs/"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%date | %-5level | %msg%n</pattern>
-        </encoder>
-        <immediateFlush>true</immediateFlush>
-    </appender>
-
-    <appender name="TRACE_FILE" class="ch.qos.logback.core.FileAppender">
-        <File>${root-path}out/log/trace.log</File>
-        <append>false</append>
-        <encoder>
-            <pattern>%-5level |- %msg at [%file:%line]%n</pattern>
-        </encoder>
-        <immediateFlush>true</immediateFlush>
-    </appender>
-
-    <appender name="ERROR_FILE" class="ch.qos.logback.core.FileAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-        <File>${root-path}out/log/error.log</File>
-        <append>false</append>
-        <encoder>
-            <pattern>%-5level %date |- %msg%n</pattern>
-        </encoder>
-        <immediateFlush>true</immediateFlush>
-    </appender>
-
-    <appender name="WARN_FILE" class="ch.qos.logback.core.FileAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>WARN</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-        <File>${root-path}out/log/warning.log</File>
-        <append>false</append>
-        <encoder>
-            <pattern>%date %-5level %msg%n</pattern>
-        </encoder>
-        <immediateFlush>true</immediateFlush>
-    </appender>
-
-    <appender name="INFO_FILE" class="ch.qos.logback.core.FileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${root-path}out/log/info.log</File>
-        <append>false</append>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
         <encoder>
-            <pattern>%date %msg%n</pattern>
+            <pattern>%date | %-5level | %msg | [%class:%line]%n</pattern>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="TRACE_FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
-        <appender-ref ref="WARN_FILE"/>
-        <appender-ref ref="INFO_FILE"/>
+    <!--Daily rolling file appender-->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${root-path}twcmd.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${root-path}twcmd-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date | %-5level | %msg | [%class:%line]%n</pattern>
+        </encoder>
+        <immediateFlush>true</immediateFlush>
+    </appender>
+
+    <logger name="org.apache.kafka" level="info">
+        <appender-ref ref="FILE" />
+    </logger>
+
+    <root level="trace">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
     </root>
 
 </configuration>

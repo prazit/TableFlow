@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
@@ -10,6 +11,7 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Map;
@@ -55,26 +57,27 @@ public class RemoveDataTable extends Command {
         paramMap.put(CommandParamKey.DATA_FILE, dataTable.getDataFile());
 
         // save DataTable data
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
         int dataTableId = dataTable.getId();
-        projectDataManager.addData(ProjectFileType.DATA_TABLE, (TWData) null, project, dataTableId, step.getId(), dataTableId);
+        dataManager.addData(ProjectFileType.DATA_TABLE, (TWData) null, projectUser, dataTableId, step.getId(), dataTableId);
 
         // save DataTable list
-        projectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), project, dataTableId, step.getId());
+        dataManager.addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), projectUser, dataTableId, step.getId());
 
         // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, removedLine.getId(), step.getId());
+        dataManager.addData(ProjectFileType.LINE, (TWData) null, projectUser, removedLine.getId(), step.getId());
 
         // save object(DataFile) at endPlug.
-        projectDataManager.addData(ProjectFileType.DATA_FILE, (TWData) null, project, dataFile.getId(), step.getId());
+        dataManager.addData(ProjectFileType.DATA_FILE, (TWData) null, projectUser, dataFile.getId(), step.getId());
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, 1, step.getId());
+        dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, 1, step.getId());
 
         // save Tower data
         Tower tower = floor.getTower();
-        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
+        dataManager.addData(ProjectFileType.TOWER, mapper.map(tower), projectUser, tower.getId(), step.getId());
     }
 
 }

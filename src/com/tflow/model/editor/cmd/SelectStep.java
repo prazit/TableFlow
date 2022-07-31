@@ -3,11 +3,14 @@ package com.tflow.model.editor.cmd;
 import com.tflow.kafka.ProjectDataException;
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
+import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +38,11 @@ public class SelectStep extends Command {
             throw new UnsupportedOperationException("SelectStep with invalid index(" + stepIndex + "), Project(" + project.getSelectableId() + ") has " + size + " step(s)");
         }
 
-        ProjectDataManager dataManager = project.getDataManager();
         boolean loadStepData = step.getIndex() < 0;
         if (loadStepData) {
             log.warn("selectStep({}): load step data...", stepIndex);
             try {
-                step = dataManager.getStep(project, stepIndex);
+                step = project.getManager().loadStep(project, stepIndex);
                 log.info("selectStep: loaded step = {}", step);
             } catch (ProjectDataException ex) {
                 throw new UnsupportedOperationException("SelectStep found error reported from TRcmd service: ", ex);
@@ -101,11 +103,14 @@ public class SelectStep extends Command {
         action.getResultMap().put(ActionResultKey.STEP, step);
 
         // save Step data
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
         int stepId = step.getId();
-        dataManager.addData(ProjectFileType.STEP, dataManager.mapper.map(step), project, stepId, stepId);
+        dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
 
         // save Project data
-        dataManager.addData(ProjectFileType.PROJECT, dataManager.mapper.map(project), project, project.getId());
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
 
     }
 

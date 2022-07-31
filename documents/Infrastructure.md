@@ -149,7 +149,7 @@ classDef ACTIVE fill:red,stroke:white,stroke-width:7px;
         subgraph Backend Services
         write(TWcmd Module<br/>Project Data Writer)
         read(TRcmd Module<br/>Project Data Reader)
-        pkcreator(Convert Project Data<br/>to Package Data & Binaries):::active
+        pkcreator(Convert Project Data<br/>to Package Data & Binaries):::ACTIVE
         pkreader(Create Zip from Package Data)
         nas((Project Data<br/>Package Data)):::active
         binary((Binary Files)):::active

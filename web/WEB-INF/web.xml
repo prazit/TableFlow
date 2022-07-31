@@ -13,6 +13,18 @@
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
 
+
+    <!--<servlet>
+        <servlet-name>LogbackViewer</servlet-name>
+        <servlet-class>ch.qos.logback.classic.ViewStatusMessagesServlet</servlet-class>
+        <load-on-startup>0</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LogbackViewer</servlet-name>
+        <url-pattern>/logs</url-pattern>
+    </servlet-mapping>-->
+
+
     <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>${workspace.user.theme.name}</param-value>

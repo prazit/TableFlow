@@ -2,11 +2,13 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -82,38 +84,39 @@ public class AddColumnFx extends Command {
         resultMap.put(ActionResultKey.LINE_LIST, lineList);
         resultMap.put(ActionResultKey.COLUMN_FX, columnFx);
 
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
 
         // save TransformColumn data (TargetColumn) at the endPlug of line2
-        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(targetColumn), project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
+        dataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(targetColumn), projectUser, targetColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // save TransformColumnFx data
-        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+        dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), projectUser, columnFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no TransformColumnFx list to save here, it already saved in the AddTransformTable
 
         // save Object(SourceColumn) at the startPlug of line1
         if (sourceColumn instanceof TransformColumn) {
-            projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) sourceColumn), project, sourceColumn.getId(), step.getId(), 0, sourceColumn.getOwner().getId());
+            dataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) sourceColumn), projectUser, sourceColumn.getId(), step.getId(), 0, sourceColumn.getOwner().getId());
         } else {
-            projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(sourceColumn), project, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
+            dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(sourceColumn), projectUser, sourceColumn.getId(), step.getId(), sourceColumn.getOwner().getId());
         }
 
         // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, mapper.map(line1), project, line1.getId(), step.getId());
-        projectDataManager.addData(ProjectFileType.LINE, mapper.map(line2), project, line2.getId(), step.getId());
+        dataManager.addData(ProjectFileType.LINE, mapper.map(line1), projectUser, line1.getId(), step.getId());
+        dataManager.addData(ProjectFileType.LINE, mapper.map(line2), projectUser, line2.getId(), step.getId());
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, line1.getId(), step.getId());
+        dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, line1.getId(), step.getId());
 
         // no tower, floor to save here
 
         // save Step data: need to update Step record every Line added*/
-        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
+        dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, step.getId(), step.getId());
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
-        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
     }
 
     private void initPropertyMap(Map<String, Object> propertyMap, DataColumn sourceColumn) {

@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.datasource.Database;
@@ -10,6 +11,7 @@ import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,21 +147,23 @@ public abstract class Command {
     }
 
     protected boolean saveSelectableData(Selectable selectable, Step step) {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         Project project = step.getOwner();
+        ProjectUser projectUser = mapper.toProjectUser(project);
         ProjectDataManager dataManager = project.getDataManager();
+
         int stepId = step.getId();
-        ProjectMapper mapper = dataManager.mapper;
-        if (selectable instanceof DataColumn) dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) selectable), project, ((DataColumn) selectable).getId(), step.getId(), ((DataColumn) selectable).getOwner().getId());
-        else if (selectable instanceof ColumnFx) dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map((ColumnFx) selectable), project, ((ColumnFx) selectable).getId(), step.getId(), 0, ((ColumnFx) selectable).getOwner().getOwner().getId());
-        else if (selectable instanceof DataFile) dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) selectable), project, ((DataFile) selectable).getId(), stepId);
-        else if (selectable instanceof DataSourceSelector) dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map((DataSourceSelector) selectable), project, ((DataSourceSelector) selectable).getId(), stepId);
-        else if (selectable instanceof TransformTable) dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) selectable), project, ((TransformTable) selectable).getId(), stepId, 0, ((TransformTable) selectable).getId());
-        else if (selectable instanceof DataTable) dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) selectable), project, ((DataTable) selectable).getId(), stepId, ((DataTable) selectable).getId());
-        else if (selectable instanceof Step) dataManager.addData(ProjectFileType.STEP, mapper.map((Step) selectable), project, ((Step) selectable).getId(), stepId);
-        else if (selectable instanceof Project) dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) selectable), project, ((Project) selectable).getId());
-        else if (selectable instanceof Database) dataManager.addData(ProjectFileType.DB, mapper.map((Database) selectable), project, ((Database) selectable).getId());
-        else if (selectable instanceof SFTP) dataManager.addData(ProjectFileType.SFTP, mapper.map((SFTP) selectable), project, ((SFTP) selectable).getId());
-        else if (selectable instanceof Local) dataManager.addData(ProjectFileType.LOCAL, mapper.map((Local) selectable), project, ((Local) selectable).getId());
+        if (selectable instanceof DataColumn) dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) selectable), projectUser, ((DataColumn) selectable).getId(), step.getId(), ((DataColumn) selectable).getOwner().getId());
+        else if (selectable instanceof ColumnFx) dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map((ColumnFx) selectable), projectUser, ((ColumnFx) selectable).getId(), step.getId(), 0, ((ColumnFx) selectable).getOwner().getOwner().getId());
+        else if (selectable instanceof DataFile) dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) selectable), projectUser, ((DataFile) selectable).getId(), stepId);
+        else if (selectable instanceof DataSourceSelector) dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map((DataSourceSelector) selectable), projectUser, ((DataSourceSelector) selectable).getId(), stepId);
+        else if (selectable instanceof TransformTable) dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) selectable), projectUser, ((TransformTable) selectable).getId(), stepId, 0, ((TransformTable) selectable).getId());
+        else if (selectable instanceof DataTable) dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) selectable), projectUser, ((DataTable) selectable).getId(), stepId, ((DataTable) selectable).getId());
+        else if (selectable instanceof Step) dataManager.addData(ProjectFileType.STEP, mapper.map((Step) selectable), projectUser, ((Step) selectable).getId(), stepId);
+        else if (selectable instanceof Project) dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) selectable), projectUser, ((Project) selectable).getId());
+        else if (selectable instanceof Database) dataManager.addData(ProjectFileType.DB, mapper.map((Database) selectable), projectUser, ((Database) selectable).getId());
+        else if (selectable instanceof SFTP) dataManager.addData(ProjectFileType.SFTP, mapper.map((SFTP) selectable), projectUser, ((SFTP) selectable).getId());
+        else if (selectable instanceof Local) dataManager.addData(ProjectFileType.LOCAL, mapper.map((Local) selectable), projectUser, ((Local) selectable).getId());
         else return false;
         return true;
     }

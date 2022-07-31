@@ -2,9 +2,11 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,31 +49,32 @@ public class RemoveColumnFx extends Command {
 
         // save TransformColumnFx data
         Project project = step.getOwner();
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, (TWData) null, project, columnFx.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, (TWData) null, projectUser, columnFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no TransformColumnFx list to save here, it already saved in the AddTransformTable
 
         // save Line data
         for (Line line : removedLineList) {
-            projectDataManager.addData(ProjectFileType.LINE, (TWData) null, project, line.getId(), step.getId());
+            dataManager.addData(ProjectFileType.LINE, (TWData) null, projectUser, line.getId(), step.getId());
         }
 
         // save Object(TransformColumn) at startPlug.
-        projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) targetColumn), project, targetColumn.getId(), step.getId(), 0, transformTable.getId());
+        dataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) targetColumn), projectUser, targetColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // save Objects(DataColumn) at endPlug.
         for (DataColumn dataColumn : updatedColumnList) {
             if (dataColumn instanceof TransformColumn) {
-                projectDataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), step.getId(), 0, dataColumn.getOwner().getId());
+                dataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), projectUser, dataColumn.getId(), step.getId(), 0, dataColumn.getOwner().getId());
             } else {
-                projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), project, dataColumn.getId(), step.getId(), dataColumn.getOwner().getId());
+                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), projectUser, dataColumn.getId(), step.getId(), dataColumn.getOwner().getId());
             }
         }
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, 1, step.getId());
+        dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, 1, step.getId());
 
         // no tower, floor to save here
     }

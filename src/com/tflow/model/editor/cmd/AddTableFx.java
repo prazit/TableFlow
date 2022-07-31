@@ -2,11 +2,13 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Map;
@@ -41,17 +43,18 @@ public class AddTableFx extends Command {
         action.getResultMap().put(ActionResultKey.TABLE_FX, tableFx);
 
         // save Transformation data
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
-        projectDataManager.addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        dataManager.addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), projectUser, tableFx.getId(), step.getId(), 0, transformTable.getId());
 
         // save Transformation list
-        projectDataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(tableFxList), step.getOwner(), tableFx.getId(), step.getId(), 0, transformTable.getId());
+        dataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(tableFxList), projectUser, tableFx.getId(), step.getId(), 0, transformTable.getId());
 
         // no line, tower, floor to save here
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
-        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
     }
 
 }

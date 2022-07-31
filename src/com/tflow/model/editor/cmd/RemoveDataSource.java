@@ -3,6 +3,7 @@ package com.tflow.model.editor.cmd;
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataSourceData;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSource;
@@ -14,6 +15,7 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Map;
@@ -39,8 +41,9 @@ public class RemoveDataSource extends Command {
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_SOURCE, dataSource);
 
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
         DataSourceData dataSourceData;
         ProjectFileType fileType;
         ProjectFileType listFileType;
@@ -73,15 +76,15 @@ public class RemoveDataSource extends Command {
 
         if (idList != null) {
             // save DataSource data
-            projectDataManager.addData(fileType, dataSourceData, project, dataSource.getId());
+            dataManager.addData(fileType, dataSourceData, projectUser, dataSource.getId());
 
             // save DataSource list
-            projectDataManager.addData(listFileType, idList, project);
+            dataManager.addData(listFileType, idList, projectUser);
         }
 
         // save Tower data
         Tower tower = floor.getTower();
-        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), step.getId());
+        dataManager.addData(ProjectFileType.TOWER, mapper.map(tower), projectUser, tower.getId(), step.getId());
     }
 
 }

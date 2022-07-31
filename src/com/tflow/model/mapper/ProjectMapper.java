@@ -1,10 +1,9 @@
 package com.tflow.model.mapper;
 
 import com.google.gson.internal.LinkedTreeMap;
-import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.model.data.*;
-import com.tflow.model.editor.*;
 import com.tflow.model.editor.Package;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
@@ -135,6 +134,12 @@ public interface ProjectMapper {
     List<Step> toStepList(List<StepItemData> stepItemDataList);
 
     List<StepItemData> toStepItemDataList(List<Step> stepList);
+
+    @Mappings({
+            @Mapping(target = "userId", source = "owner.user.id"),
+            @Mapping(target = "clientId", source = "owner.client.id")
+    })
+    ProjectUser toProjectUser(Project project);
 
     Package map(PackageData packageData);
 

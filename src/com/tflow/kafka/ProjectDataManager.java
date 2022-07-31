@@ -1,17 +1,7 @@
 package com.tflow.kafka;
 
-import com.google.gson.internal.LinkedTreeMap;
-import com.tflow.model.data.*;
-import com.tflow.model.editor.*;
-import com.tflow.model.editor.datasource.DataSourceSelector;
-import com.tflow.model.editor.datasource.Database;
-import com.tflow.model.editor.datasource.Local;
-import com.tflow.model.editor.datasource.SFTP;
-import com.tflow.model.editor.room.EmptyRoom;
-import com.tflow.model.editor.room.Floor;
-import com.tflow.model.editor.room.Room;
-import com.tflow.model.editor.room.Tower;
-import com.tflow.model.mapper.*;
+import com.tflow.model.data.ProjectUser;
+import com.tflow.model.data.TWData;
 import com.tflow.system.Environment;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
@@ -25,13 +15,14 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.InvalidParameterException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /*TODO: save updated object between line in RemoveDataFile when the Action RemoveDataFile is used in the UI*/
@@ -55,15 +46,8 @@ public class ProjectDataManager {
     /*TODO: remove Collection below, it for test*/
     public List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
 
-    public ProjectMapper mapper;
-
     public ProjectDataManager(Environment environment) {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
-        createMappers();
-    }
-
-    private void createMappers() {
-        mapper = Mappers.getMapper(ProjectMapper.class);
     }
 
     private boolean createProducer() {
@@ -293,72 +277,61 @@ public class ProjectDataManager {
         }
     }
 
-    public void addData(ProjectFileType fileType, List<Integer> idList, Project project) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
+    public void addData(ProjectFileType fileType, List<Integer> idList, ProjectUser project) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId());
         addData(fileType, idList, additional);
     }
 
-    public void addData(ProjectFileType fileType, TWData object, Project project) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
+    public void addData(ProjectFileType fileType, TWData object, ProjectUser project) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId());
         addData(fileType, (Object) object, additional);
     }
 
-    public void addData(ProjectFileType fileType, List idList, Project project, String recordId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
+    public void addData(ProjectFileType fileType, List idList, ProjectUser project, String recordId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), recordId);
         addData(fileType, idList, additional);
     }
 
-    public void addData(ProjectFileType fileType, TWData object, Project project, String recordId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
+    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, String recordId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), recordId);
         addData(fileType, (Object) object, additional);
     }
 
-    public void addData(ProjectFileType fileType, TWData object, Project project, int recordId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
+    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId));
         addData(fileType, (Object) object, additional);
     }
 
-    public void addData(ProjectFileType fileType, List idList, Project project, int recordId, int stepId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public void addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         addData(fileType, idList, additional);
     }
 
-    public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         addData(fileType, (Object) object, additional);
     }
 
-    public void addData(ProjectFileType fileType, List idList, Project project, int recordId, int stepId, int dataTableId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public void addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int dataTableId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         addData(fileType, idList, additional);
     }
 
-    public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId, int dataTableId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int dataTableId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         addData(fileType, (Object) object, additional);
     }
 
-    public void addData(ProjectFileType fileType, List idList, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public void addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         addData(fileType, idList, additional);
     }
 
-    public void addData(ProjectFileType fileType, TWData object, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         addData(fileType, (Object) object, additional);
     }
@@ -385,504 +358,34 @@ public class ProjectDataManager {
         commit();
     }
 
-    public void addProjectAs(String newProjectId, Project project) {
-        String oldId = project.getId();
-        project.setId(newProjectId);
-        ProjectData projectData = mapper.map(project);
-
-        addData(ProjectFileType.PROJECT, projectData, project, newProjectId);
-
-        Map<Integer, Database> databaseMap = project.getDatabaseMap();
-        addData(ProjectFileType.DB_LIST, mapper.fromMap(databaseMap), project, "1");
-        for (Database database : databaseMap.values()) {
-            addData(ProjectFileType.DB, mapper.map(database), project, database.getId());
-        }
-
-        Map<Integer, SFTP> sftpMap = project.getSftpMap();
-        addData(ProjectFileType.SFTP_LIST, mapper.fromMap(sftpMap), project, "2");
-        for (SFTP sftp : sftpMap.values()) {
-            addData(ProjectFileType.SFTP, mapper.map(sftp), project, sftp.getId());
-        }
-
-        Map<Integer, Local> localMap = project.getLocalMap();
-        addData(ProjectFileType.LOCAL_LIST, mapper.fromMap(localMap), project, "3");
-        for (Local local : localMap.values()) {
-            addData(ProjectFileType.LOCAL, mapper.map(local), project, local.getId());
-        }
-
-        Map<String, Variable> variableMap = project.getVariableMap();
-        addData(ProjectFileType.VARIABLE_LIST, mapper.fromVarMap(variableMap), project, "3");
-        for (Variable variable : variableMap.values()) {
-            addData(ProjectFileType.VARIABLE, mapper.map(variable), project, variable.getName());
-        }
-
-        addData(ProjectFileType.STEP_LIST, mapper.fromStepList(project.getStepList()), project, "4");
-        for (Step step : project.getStepList()) {
-            addStep(step, project);
-        }
-
-        project.setId(oldId);
-    }
-
-    public void addStep(Step step, Project project) {
-        int stepId = step.getId();
-        addData(ProjectFileType.STEP, mapper.map(step), project, stepId, stepId);
-
-        /*add each tower in step*/
-        List<Tower> towerList = Arrays.asList(step.getDataTower(), step.getTransformTower(), step.getOutputTower());
-        for (Tower tower : towerList) {
-            addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
-        }
-
-        /*add data-source-selector-list*/
-        List<DataSourceSelector> dataSourceSelectorList = step.getDataSourceSelectorList();
-        addData(ProjectFileType.DATA_SOURCE_SELECTOR_LIST, mapper.fromDataSourceSelectorList(dataSourceSelectorList), project, 0, stepId);
-
-        /*add data-source-selector*/
-        for (DataSourceSelector dataSourceSelector : dataSourceSelectorList) {
-            addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map(dataSourceSelector), project, dataSourceSelector.getId(), stepId);
-        }
-
-        /*add data-file-list*/
-        List<DataFile> dataFileList = step.getFileList();
-        addData(ProjectFileType.DATA_FILE_LIST, mapper.fromDataFileList(dataFileList), project, 0, stepId);
-
-        /*add data-file*/
-        for (DataFile dataFile : dataFileList) {
-            addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, dataFile.getId(), stepId);
-        }
-
-        /*add data-table-list*/
-        List<DataTable> dataList = step.getDataList();
-        addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), project, 1, stepId);
-
-        /*add each data-table in data-table-list*/
-        for (DataTable dataTable : dataList) {
-            int dataTableId = dataTable.getId();
-
-            /*add data-table*/
-            addData(ProjectFileType.DATA_TABLE, mapper.map(dataTable), project, dataTableId, stepId, dataTableId);
-
-            /*add column-list*/
-            List<DataColumn> columnList = dataTable.getColumnList();
-            addData(ProjectFileType.DATA_COLUMN_LIST, mapper.fromDataColumnList(columnList), project, 2, stepId, dataTableId);
-
-            /*add each column in column-list*/
-            for (DataColumn dataColumn : columnList) {
-                addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), project, dataColumn.getId(), stepId, dataTableId);
-            }
-
-            /*add output-list*/
-            List<OutputFile> outputList = dataTable.getOutputList();
-            addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 2, stepId, dataTableId);
-
-            /*add each output in output-list*/
-            for (OutputFile output : outputList) {
-                addData(ProjectFileType.DATA_OUTPUT, mapper.map(output), project, output.getId(), stepId, dataTableId);
-            }
-        }
-
-        /*add transform-table-list*/
-        List<TransformTable> transformList = step.getTransformList();
-        addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), project, 4, stepId);
-
-        /*add each transform-table in transform-table-list*/
-        for (TransformTable transformTable : transformList) {
-            int transformTableId = transformTable.getId();
-
-            /*add Transform-table*/
-            addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), project, transformTableId, stepId, 0, transformTableId);
-
-            /*add transform-column-list*/
-            List<DataColumn> columnList = transformTable.getColumnList();
-            addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(columnList), project, 5, stepId, 0, transformTableId);
-
-            /*add each transform-column in transform-column-list*/
-            for (DataColumn dataColumn : columnList) {
-                addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map((TransformColumn) dataColumn), project, dataColumn.getId(), stepId, 0, transformTableId);
-            }
-
-            /*add each transform-columnfx in transform-table(columnFxTable)*/
-            for (ColumnFx columnFx : transformTable.getColumnFxTable().getColumnFxList()) {
-                addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), project, columnFx.getId(), stepId, 0, transformTableId);
-            }
-
-            /*add transform-output-list*/
-            List<OutputFile> outputList = transformTable.getOutputList();
-            addData(ProjectFileType.TRANSFORM_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 6, stepId, 0, transformTableId);
-
-            /*add each transform-output in transform-output-list*/
-            for (OutputFile output : outputList) {
-                addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(output), project, output.getId(), stepId, 0, transformTableId);
-            }
-
-            /*add tranformation-list*/
-            List<TableFx> fxList = transformTable.getFxList();
-            addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(fxList), project, 7, stepId, 0, transformTableId);
-
-            /*add each tranformation in tranformation-list*/
-            for (TableFx tableFx : fxList) {
-                addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), project, tableFx.getId(), stepId, 0, transformTableId);
-            }
-        }
-
-        /*add line-list at the end*/
-        List<Line> lineList = step.getLineList();
-        addData(ProjectFileType.LINE_LIST, mapper.fromLineList(lineList), project, 8, stepId);
-
-        /*add each line in line-list*/
-        for (Line line : lineList) {
-            addData(ProjectFileType.LINE, mapper.map(line), project, line.getId(), stepId);
-        }
-
-        // update Step List
-        addData(ProjectFileType.STEP_LIST, mapper.fromStepList(project.getStepList()), project, "");
-
-        // update Project data: need to update Project record every Action that call the newUniqueId*/
-        addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
-    }
-
-    /**
-     * TODO: need to support open new project from template (projectId < 0)
-     **/
-    @SuppressWarnings("unchecked")
-    public Project getProject(Workspace workspace) throws ClassCastException, ProjectDataException {
-        String projectId = workspace.getProject().getId();
-        long clientId = workspace.getClient().getId();
-        long userId = workspace.getUser().getId();
-
-        /*get project, to know the project is not edit by another */
-        Object data = getData(ProjectFileType.PROJECT, new KafkaRecordAttributes(clientId, userId, projectId, projectId));
-        Project project = mapper.map((ProjectData) throwExceptionOnError(data));
-        project.setOwner(workspace);
-        project.setDataManager(this);
-
-        /*get db-list*/
-        data = getData(ProjectFileType.DB_LIST, project, "1");
-        List<Integer> databaseIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-        Map<Integer, Database> databaseMap = new HashMap<>();
-        project.setDatabaseMap(databaseMap);
-
-        /*get each db in db-list*/
-        for (Integer id : databaseIdList) {
-            data = getData(ProjectFileType.DB, project, String.valueOf(id));
-            databaseMap.put(id, mapper.map((DatabaseData) throwExceptionOnError(data)));
-        }
-
-        /*get sftp-list*/
-        data = getData(ProjectFileType.SFTP_LIST, project, "2");
-        List<Integer> sftpIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-        Map<Integer, SFTP> sftpMap = new HashMap<>();
-        project.setSftpMap(sftpMap);
-
-        /*get each sftp in sftp-list*/
-        for (Integer id : sftpIdList) {
-            data = getData(ProjectFileType.SFTP, project, String.valueOf(id));
-            sftpMap.put(id, mapper.map((SFTPData) throwExceptionOnError(data)));
-        }
-
-        /*get local-list*/
-        data = getData(ProjectFileType.LOCAL_LIST, project, "3");
-        List<Integer> localIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-        Map<Integer, Local> localMap = new HashMap<>();
-        project.setLocalMap(localMap);
-
-        /*get each local in local-list*/
-        for (Integer id : localIdList) {
-            data = getData(ProjectFileType.LOCAL, project, String.valueOf(id));
-            localMap.put(id, mapper.map((LocalData) throwExceptionOnError(data)));
-        }
-
-        /*get variable-list*/
-        data = getData(ProjectFileType.VARIABLE_LIST, project, "4");
-        List<String> varIdList = (List<String>) throwExceptionOnError(data);
-        Map<String, Variable> varMap = new HashMap<>();
-        project.setVariableMap(varMap);
-
-        /*get each variable in variable-list*/
-        for (String id : varIdList) {
-            data = getData(ProjectFileType.VARIABLE, project, id);
-            varMap.put(id, mapper.map((VariableData) throwExceptionOnError(data)));
-        }
-
-        /*get step-list*/
-        data = getData(ProjectFileType.STEP_LIST, project, "5");
-        List<StepItemData> stepItemDataList = mapper.fromLinkedTreeMap((List<LinkedTreeMap>) throwExceptionOnError(data));
-        project.setStepList(mapper.toStepList(stepItemDataList));
-
-        workspace.setProject(project);
-        return project;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Step getStep(Project project, int stepIndex) throws Exception {
-        List<Step> stepList = project.getStepList();
-        Step stepModel = stepList.get(stepIndex);
-        int stepId = stepModel.getId();
-
-        /*get step*/
-        Object data = getData(ProjectFileType.STEP, project, stepId, stepId);
-        StepData stepData = (StepData) throwExceptionOnError(data);
-        Step step = mapper.map(stepData);
-        step.setOwner(project);
-
-        /*active object need selectableId*/
-        SelectableIdOnly selectableIdOnly = new SelectableIdOnly(stepData.getActiveObject());
-        step.setActiveObject(selectableIdOnly);
-
-        /*get each tower in step*/
-        List<Integer> towerIdList = Arrays.asList(step.getDataTower().getId(), step.getTransformTower().getId(), step.getOutputTower().getId());
-        List<Tower> towerList = new ArrayList<>();
-        for (Integer towerId : towerIdList) {
-            data = getData(ProjectFileType.TOWER, project, towerId, stepId);
-            Tower tower = mapper.map((TowerData) throwExceptionOnError(data));
-            tower.setOwner(step);
-            towerList.add(tower);
-
-            /*create each floor in tower*/
-            int roomsOnAFloor = tower.getRoomsOnAFloor();
-            List<Floor> floorList = tower.getFloorList();
-            for (int floorIndex = 0; floorIndex < floorList.size(); floorIndex++) {
-                Floor floor = floorList.get(floorIndex);
-                floor.setIndex(floorIndex);
-                floor.setTower(tower);
-
-                /*create each room in a floor*/
-                List<Room> roomList = floor.getRoomList();
-                roomList.clear();
-                for (int index = 0; index < roomsOnAFloor; index++) {
-                    roomList.add(new EmptyRoom(index, floor));
-                }
-            }
-        }
-        step.setDataTower(towerList.get(0));
-        step.setTransformTower(towerList.get(1));
-        step.setOutputTower(towerList.get(2));
-
-        /*get data-source-selector-list*/
-        data = getData(ProjectFileType.DATA_SOURCE_SELECTOR_LIST, project, 1, stepId);
-        List<Integer> dataSourceSelectorIdList = mapper.fromDoubleList(((List<Double>) throwExceptionOnError(data)));
-        List<DataSourceSelector> dataSourceSelectorList = new ArrayList<>();
-        step.setDataSourceSelectorList(dataSourceSelectorList);
-
-        /*get data-source-selector*/
-        for (Integer dataSourceSelectorId : dataSourceSelectorIdList) {
-            data = getData(ProjectFileType.DATA_SOURCE_SELECTOR, project, dataSourceSelectorId, stepId);
-            DataSourceSelector dataSourceSelector = mapper.map((DataSourceSelectorData) throwExceptionOnError(data));
-            dataSourceSelector.setOwner(step);
-            dataSourceSelectorList.add(dataSourceSelector);
-            step.getDataTower().setRoom(dataSourceSelector.getFloorIndex(), dataSourceSelector.getRoomIndex(), dataSourceSelector);
-            dataSourceSelector.createPlugListeners();
-        }
-
-        /*get data-file-list*/
-        data = getData(ProjectFileType.DATA_FILE_LIST, project, 1, stepId);
-        List<Integer> dataFileIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-        List<DataFile> dataFileList = new ArrayList<>();
-        step.setFileList(dataFileList);
-
-        /*get data-file*/
-        for (Integer dataFileId : dataFileIdList) {
-            data = getData(ProjectFileType.DATA_FILE, project, dataFileId, stepId);
-            DataFile dataFile = mapper.map((DataFileData) throwExceptionOnError(data));
-            dataFileList.add(dataFile);
-            step.getDataTower().setRoom(dataFile.getFloorIndex(), dataFile.getRoomIndex(), dataFile);
-        }
-
-        /*get data-table-list*/
-        data = getData(ProjectFileType.DATA_TABLE_LIST, project, 1, stepId);
-        List<Integer> dataTableIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-        List<DataTable> dataTableList = new ArrayList<>();
-        step.setDataList(dataTableList);
-
-        /*get each data-table in data-table-list*/
-        for (Integer dataTableId : dataTableIdList) {
-            data = getData(ProjectFileType.DATA_TABLE, project, dataTableId, stepId, dataTableId);
-            DataTable dataTable = mapper.map((DataTableData) throwExceptionOnError(data));
-            dataTable.setOwner(step);
-            dataTableList.add(dataTable);
-            step.getDataTower().setRoom(dataTable.getFloorIndex(), dataTable.getRoomIndex(), dataTable);
-            dataTable.createPlugListeners();
-
-            /*get data-file in data-table by id*/
-            DataFile dataFile = step.getFile(dataTable.getDataFile().getId());
-            dataTable.setDataFile(dataFile);
-            dataFile.setOwner(dataTable);
-
-            /*get column-list*/
-            data = getData(ProjectFileType.DATA_COLUMN_LIST, project, 1, stepId, dataTableId);
-            List<Integer> columnIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-            List<DataColumn> columnList = new ArrayList<>();
-            dataTable.setColumnList(columnList);
-
-            /*get each column in column-list*/
-            DataColumn dataColumn;
-            for (Integer columnId : columnIdList) {
-                data = getData(ProjectFileType.DATA_COLUMN, project, columnId, stepId, dataTableId);
-                dataColumn = mapper.map((DataColumnData) throwExceptionOnError(data));
-                dataColumn.setOwner(dataTable);
-                columnList.add(dataColumn);
-                dataColumn.createPlugListeners();
-            }
-
-            /*get output-list*/
-            data = getData(ProjectFileType.DATA_OUTPUT_LIST, project, 1, stepId, dataTableId);
-            List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-            List<OutputFile> outputList = new ArrayList<>();
-            dataTable.setOutputList(outputList);
-
-            /*get each output in output-list*/
-            OutputFile outputFile;
-            for (Integer outputId : outputIdList) {
-                data = getData(ProjectFileType.DATA_OUTPUT, project, outputId, stepId, dataTableId);
-                outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
-                outputFile.setOwner(dataTable);
-                outputList.add(outputFile);
-            }
-
-        }// end of for:DataTableIdList
-
-        /*get transform-table-list*/
-        data = getData(ProjectFileType.TRANSFORM_TABLE_LIST, project, 9, stepId);
-        List<Integer> transformTableIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-        List<TransformTable> transformTableList = new ArrayList<>();
-        step.setTransformList(transformTableList);
-
-        /*get each transform-table in transform-table-list*/
-        for (Integer transformTableId : transformTableIdList) {
-            data = getData(ProjectFileType.TRANSFORM_TABLE, project, transformTableId, stepId, 0, transformTableId);
-            TransformTable transformTable = mapper.map((TransformTableData) throwExceptionOnError(data));
-            transformTable.setOwner(step);
-            transformTableList.add(transformTable);
-            step.getTransformTower().setRoom(transformTable.getFloorIndex(), transformTable.getRoomIndex(), transformTable);
-            transformTable.createPlugListeners();
-
-            ColumnFxTable columnFxTable = transformTable.getColumnFxTable();
-            columnFxTable.setFloorIndex(transformTable.getFloorIndex());
-            columnFxTable.setRoomIndex(transformTable.getRoomIndex() - 1);
-            step.getTransformTower().setRoom(columnFxTable.getFloorIndex(), columnFxTable.getRoomIndex(), columnFxTable);
-
-            /*get transform-column-list*/
-            data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, project, 1, stepId, 0, transformTableId);
-            List<Integer> columnIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-            List<DataColumn> columnList = new ArrayList<>();
-            transformTable.setColumnList(columnList);
-
-            /*get each transform-column in transform-column-list*/
-            List<ColumnFx> columnFxList = columnFxTable.getColumnFxList();
-            TransformColumn transformColumn;
-            ColumnFx columnFx;
-            for (Integer columnId : columnIdList) {
-                data = getData(ProjectFileType.TRANSFORM_COLUMN, project, columnId, stepId, 0, transformTableId);
-                transformColumn = mapper.map((TransformColumnData) throwExceptionOnError(data));
-                transformColumn.setOwner(transformTable);
-                columnList.add(transformColumn);
-                transformColumn.createPlugListeners();
-
-                /*get each transform-columnfx in transform-table(columnFxTable)*/
-                ColumnFx fx = transformColumn.getFx();
-                if (fx != null) {
-                    data = getData(ProjectFileType.TRANSFORM_COLUMNFX, project, fx.getId(), stepId, 0, transformTableId);
-                    columnFx = mapper.map((ColumnFxData) throwExceptionOnError(data));
-                    columnFx.setOwner(transformColumn);
-                    transformColumn.setFx(columnFx);
-                    columnFxList.add(columnFx);
-                    for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
-                        columnFxPlug.setOwner(columnFx);
-                    }
-                    columnFx.createPlugListeners();
-                }
-            }
-
-            /*get transform-output-list*/
-            data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, project, 1, stepId, 0, transformTableId);
-            List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-            List<OutputFile> outputList = new ArrayList<>();
-            transformTable.setOutputList(outputList);
-
-            /*get each transform-output in transform-output-list*/
-            OutputFile outputFile;
-            for (Integer outputId : outputIdList) {
-                data = getData(ProjectFileType.TRANSFORM_OUTPUT, project, outputId, stepId, 0, transformTableId);
-                outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
-                outputFile.setOwner(transformTable);
-                outputList.add(outputFile);
-            }
-
-            /*get tranformation-list*/
-            data = getData(ProjectFileType.TRANSFORMATION_LIST, project, 1, stepId, 0, transformTableId);
-            List<Integer> fxIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-            List<TableFx> fxList = new ArrayList<>();
-            transformTable.setFxList(fxList);
-
-            /*get each tranformation in tranformation-list*/
-            /*need Transformmation Model, find "addData(ProjectFileType.TRANSFORMATION" then use Mapper*/
-            for (Integer fxId : fxIdList) {
-                data = getData(ProjectFileType.TRANSFORMATION, project, fxId, stepId, 0, transformTableId);
-                TableFx tableFx = mapper.map((TableFxData) throwExceptionOnError(data));
-                tableFx.setOwner(transformTable);
-                fxList.add(tableFx);
-            }
-
-        }
-
-        /*get line-list at the end*/
-        data = getData(ProjectFileType.LINE_LIST, project, stepId, stepId);
-        List<Integer> lineIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
-        List<Line> lineList = new ArrayList<>();
-        step.setLineList(lineList);
-
-        /*get each line in line-list*/
-        for (Integer lineId : lineIdList) {
-            data = getData(ProjectFileType.LINE, project, lineId, stepId);
-            Line line = mapper.map((LineData) throwExceptionOnError(data));
-            lineList.add(line);
-        }
-
-        return step;
-    }
-
-    private Object throwExceptionOnError(Object data) throws ProjectDataException {
-        if (data instanceof Long) {
-            throw new ProjectDataException(KafkaErrorCode.parse((Long) data).name());
-        }
-        return data;
-    }
-
-    public Object getData(ProjectFileType fileType, Project project) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId());
+    public Object getData(ProjectFileType fileType, ProjectUser project) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId());
         return getData(fileType, additional);
     }
 
-    public Object getData(ProjectFileType fileType, Project project, String recordId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), recordId);
+    public Object getData(ProjectFileType fileType, ProjectUser project, String recordId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), recordId);
         return getData(fileType, additional);
     }
 
-    public Object getData(ProjectFileType fileType, Project project, int recordId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId));
+    public Object getData(ProjectFileType fileType, ProjectUser project, int recordId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId));
         return getData(fileType, additional);
     }
 
-    public Object getData(ProjectFileType fileType, Project project, int recordId, int stepId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public Object getData(ProjectFileType fileType, ProjectUser project, int recordId, int stepId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         return getData(fileType, additional);
     }
 
-    public Object getData(ProjectFileType fileType, Project project, int recordId, int stepId, int dataTableId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public Object getData(ProjectFileType fileType, ProjectUser project, int recordId, int stepId, int dataTableId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         return getData(fileType, additional);
     }
 
-    public Object getData(ProjectFileType fileType, Project project, int recordId, int stepId, int ignoredId, int transformTableId) {
-        Workspace workspace = project.getOwner();
-        KafkaRecordAttributes additional = new KafkaRecordAttributes(workspace.getClient().getId(), workspace.getUser().getId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+    public Object getData(ProjectFileType fileType, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         return getData(fileType, additional);
     }

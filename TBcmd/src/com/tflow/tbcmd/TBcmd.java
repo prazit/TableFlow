@@ -1,8 +1,7 @@
-package com.tflow.trcmd;
+package com.tflow.tbcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.util.SerializeUtil;
-import com.tflow.wcmd.TWcmd;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -18,18 +17,20 @@ import java.util.Collections;
 import java.util.Properties;
 
 /**
- * TODO: need to remove Client-Data-File-Checker after complete the Heartbeat function
- * TODO: Project Page Command to create new project: when request projectId < 0 (TRcmd send message to TWcmd)
- **/
-public class TRcmd {
+ * TODO: 1. Roll from Consumer on Topic 'project-build'.
+ * TODO: 2. Read from TRcmd requires Producer on Topic 'project-read',
+ * TODO: 3. Capture from Consumer on Topic 'project-data'.
+ * TODO: 4. Write to TWcmd requires Producer on Topic 'project-write'.
+ */
+public class TBcmd {
 
-    private Logger log = LoggerFactory.getLogger(TRcmd.class);
+    private Logger log = LoggerFactory.getLogger(TBcmd.class);
 
     private boolean polling;
 
     private EnvironmentConfigs environmentConfigs;
 
-    public TRcmd() {
+    public TBcmd() {
         /*nothing*/
     }
 
@@ -39,11 +40,15 @@ public class TRcmd {
         KafkaConsumer<String, byte[]> consumer = createConsumer();
         KafkaProducer<String, Object> dataProducer = createProducer();
 
-        /*TODO: need to load readTopic from configuration*/
-        String readTopic = "project-read";
+        /*TODO: need to load topicBuild from configuration*/
+        String topicRead = "project-read";
+        String topicData = "project-data";
+        String topicWrite = "project-write";
+
+        String topicBuild = "project-build";
         String dataTopic = "project-data";
-        consumer.subscribe(Collections.singletonList(readTopic));
-        log.info("Subscribed to readTopic " + readTopic);
+        consumer.subscribe(Collections.singletonList(topicBuild));
+        log.info("Subscribed to topicBuild " + topicBuild);
 
         Deserializer deserializer = null;
         try {
@@ -76,12 +81,12 @@ public class TRcmd {
                 }
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                ReadProjectCommand readProjectCommand = new ReadProjectCommand(key, value, environmentConfigs, dataProducer, dataTopic);
+                //TODO: ReadProjectCommand readProjectCommand = new ReadProjectCommand(key, value, environmentConfigs, dataProducer, dataTopic);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
-                    readProjectCommand.execute();
+                    // TODO: readProjectCommand.execute();
                     log.info("readProjectCommand completed.");
                 } catch (InvalidParameterException inex) {
                     /*TODO: how to handle rejected command*/

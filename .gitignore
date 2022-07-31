@@ -1,6 +1,7 @@
 /.idea/
 /TWcmd/generated/
 /generated/
+/documents/*.html
 /lib/
 /out/
 /patch/

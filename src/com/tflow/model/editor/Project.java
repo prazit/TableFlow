@@ -1,13 +1,10 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectDataManager;
-import com.tflow.model.editor.action.AddProject;
-import com.tflow.model.editor.action.RequiredParamException;
-import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
-import com.tflow.util.FacesUtil;
+import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +32,8 @@ public class Project implements Selectable {
 
     private transient Workspace owner;
 
+    private transient ProjectMapper mapper;
+    private transient ProjectManager manager;
     private transient ProjectDataManager dataManager;
 
     /*for ProjectMapper*/
@@ -56,6 +55,7 @@ public class Project implements Selectable {
     private void init() {
         stepList = new ArrayList<>();
         propertyMap = new HashMap<>();
+        manager = new ProjectManager();
     }
 
     public String getId() {
@@ -136,6 +136,22 @@ public class Project implements Selectable {
 
     public void setOwner(Workspace workspace) {
         this.owner = workspace;
+    }
+
+    public ProjectMapper getMapper() {
+        return mapper;
+    }
+
+    public void setMapper(ProjectMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public ProjectManager getManager() {
+        return manager;
+    }
+
+    public void setManager(ProjectManager manager) {
+        this.manager = manager;
     }
 
     public ProjectDataManager getDataManager() {

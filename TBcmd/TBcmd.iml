@@ -10,9 +10,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="kafka_2.13-3.1.0" level="application" />
+    <orderEntry type="library" name="lombok" level="project" />
     <orderEntry type="library" name="logback" level="project" />
-    <orderEntry type="module" module-name="TWcmd" />
     <orderEntry type="library" name="json" level="project" />
     <orderEntry type="library" name="mapstruct" level="project" />
+    <orderEntry type="module" module-name="TWcmd" />
   </component>
 </module>

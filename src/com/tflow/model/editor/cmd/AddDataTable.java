@@ -2,12 +2,14 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.room.*;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,50 +62,51 @@ public class AddDataTable extends Command {
         action.getResultMap().put(ActionResultKey.DATA_TABLE, dataTable);
 
         // save DataTable data
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
         int dataTableId = dataTable.getId();
         int stepId = step.getId();
-        projectDataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(dataTable), project, dataTableId, stepId, dataTableId);
+        dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(dataTable), projectUser, dataTableId, stepId, dataTableId);
 
         // save DataTable list
-        projectDataManager.addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), project, dataTableId, stepId);
+        dataManager.addData(ProjectFileType.DATA_TABLE_LIST, mapper.fromDataTableList(dataList), projectUser, dataTableId, stepId);
 
         // save Object(DataFile) at the endPlug.
-        projectDataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), project, dataFile.getId(), stepId);
+        dataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), projectUser, dataFile.getId(), stepId);
 
         // Notice: this command extract columns from Data-File that need to save Column List, Column Data, Output List and Output Data too
         // save Column list
-        projectDataManager.addData(ProjectFileType.DATA_COLUMN_LIST, mapper.fromDataColumnList(dataTable.getColumnList()), project, 1, stepId, dataTableId);
+        dataManager.addData(ProjectFileType.DATA_COLUMN_LIST, mapper.fromDataColumnList(dataTable.getColumnList()), projectUser, 1, stepId, dataTableId);
 
         // save Column Data
         for (DataColumn dataColumn : dataTable.getColumnList()) {
-            projectDataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), project, dataColumn.getId(), stepId, dataTableId);
+            dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), projectUser, dataColumn.getId(), stepId, dataTableId);
         }
 
         // save Output list
         List<OutputFile> outputList = dataTable.getOutputList();
-        projectDataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), project, 1, stepId, dataTableId);
+        dataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), projectUser, 1, stepId, dataTableId);
 
         // save Output Data
         for (OutputFile outputFile : outputList) {
-            projectDataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), project, outputFile.getId(), stepId, dataTableId);
+            dataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), projectUser, outputFile.getId(), stepId, dataTableId);
         }
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), stepId);
+        dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, newLine.getId(), stepId);
 
         // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), stepId);
+        dataManager.addData(ProjectFileType.LINE, mapper.map(newLine), projectUser, newLine.getId(), stepId);
 
         // save Tower data
-        projectDataManager.addData(ProjectFileType.TOWER, mapper.map(tower), project, tower.getId(), stepId);
+        dataManager.addData(ProjectFileType.TOWER, mapper.map(tower), projectUser, tower.getId(), stepId);
 
         // save Step data: need to update Step record every Line added*/
-        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, stepId, stepId);
+        dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
-        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
     }
 
     /**

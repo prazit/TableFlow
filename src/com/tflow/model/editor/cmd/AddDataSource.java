@@ -3,6 +3,7 @@ package com.tflow.model.editor.cmd;
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataSourceData;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.DataFile;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Selectable;
@@ -15,6 +16,7 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Map;
@@ -42,8 +44,9 @@ public class AddDataSource extends Command {
             id = dataSource.getId();
         }
 
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
         ProjectFileType fileType;
         ProjectFileType listFileType;
         List<Integer> idList;
@@ -81,15 +84,15 @@ public class AddDataSource extends Command {
         /*Action Result*/
 
         // save DataSource data
-        projectDataManager.addData(fileType, dataSourceData, project, dataSource.getId());
+        dataManager.addData(fileType, dataSourceData, projectUser, dataSource.getId());
 
         // save DataSource list
-        projectDataManager.addData(listFileType, idList, project);
+        dataManager.addData(listFileType, idList, projectUser);
 
         // no line, no tower to save here
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
-        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
 
     }
 

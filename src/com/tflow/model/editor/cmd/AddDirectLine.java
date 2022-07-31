@@ -2,11 +2,13 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +38,9 @@ public class AddDirectLine extends Command {
         /*notify status*/
         step.getEventManager().fireEvent(EventName.LINE_ADDED, newLine);
 
-        ProjectDataManager projectDataManager = project.getDataManager();
-        ProjectMapper mapper = projectDataManager.mapper;
+        ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
 
         // save Object at startPlug.
         Map<String, Selectable> selectableMap = step.getSelectableMap();
@@ -52,18 +55,18 @@ public class AddDirectLine extends Command {
         }
 
         // save Line data
-        projectDataManager.addData(ProjectFileType.LINE, mapper.map(newLine), project, newLine.getId(), step.getId());
+        dataManager.addData(ProjectFileType.LINE, mapper.map(newLine), projectUser, newLine.getId(), step.getId());
 
         // save Line list
-        projectDataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), project, newLine.getId(), step.getId());
+        dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, newLine.getId(), step.getId());
 
         // no tower, floor to save here
 
         // save Step data: need to update Step record every Line added*/
-        projectDataManager.addData(ProjectFileType.STEP, mapper.map(step), project, step.getId(), step.getId());
+        dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, step.getId(), step.getId());
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
-        projectDataManager.addData(ProjectFileType.PROJECT, mapper.map(project), project, project.getId());
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
     }
 
 }

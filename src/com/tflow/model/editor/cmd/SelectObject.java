@@ -2,9 +2,12 @@ package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.Step;
+import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Map;
 
@@ -26,7 +29,9 @@ public class SelectObject extends Command {
         // save Step Data for ActiveObject
         Project project = step.getOwner();
         ProjectDataManager dataManager = project.getDataManager();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
         int stepId = step.getId();
-        dataManager.addData(ProjectFileType.STEP, dataManager.mapper.map(step), project, stepId, stepId);
+        dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
     }
 }

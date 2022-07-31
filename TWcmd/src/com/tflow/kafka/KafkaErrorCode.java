@@ -24,6 +24,8 @@ public enum KafkaErrorCode {
     REQUIRES_STEP_ID(-23),
     REQUIRES_DATATABLE_ID(-24),
     REQUIRES_TRANSFORMTABLE_ID(-25),
+
+    UNKNOWN_ERROR_CODE(0)
     ;
 
     private long code;
@@ -32,11 +34,18 @@ public enum KafkaErrorCode {
         for (KafkaErrorCode errorCode : values()) {
             if (errorCode.getCode() == code) return errorCode;
         }
-        return null;
+
+        KafkaErrorCode unknownErrorCode = UNKNOWN_ERROR_CODE;
+        unknownErrorCode.setCode(code);
+        return unknownErrorCode;
     }
 
     public long getCode() {
         return code;
+    }
+
+    public void setCode(long code) {
+        this.code = code;
     }
 
     KafkaErrorCode(long code) {

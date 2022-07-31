@@ -16,7 +16,6 @@ import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
-import org.apache.kafka.common.utils.Java;
 import org.mapstruct.factory.Mappers;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
@@ -27,7 +26,6 @@ import org.primefaces.model.menu.MenuModel;
 import javax.annotation.PostConstruct;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -535,7 +533,7 @@ public class EditorController extends Controller {
         log.info("testSaveProject: started");
 
         Project project = workspace.getProject();
-        project.getDataManager().addProjectAs("P1", project);
+        project.getManager().saveProjectAs("P1", project);
 
         log.info("testSaveProject: completed");
     }
@@ -547,7 +545,7 @@ public class EditorController extends Controller {
         try {
             /*TODO: need to test open new project from template (projectId < 0)*/
             workspaceProject.setId("P1");
-            project = workspaceProject.getDataManager().getProject(workspace);
+            project = workspaceProject.getManager().loadProject(workspace, workspaceProject.getDataManager());
         } catch (ProjectDataException ex) {
             log.error("testOpenProject: error from server({})", ex.getMessage());
         } catch (ClassCastException ex) {
@@ -764,7 +762,7 @@ public class EditorController extends Controller {
 
     public void testToJson() {
         Project project = workspace.getProject();
-        ProjectMapper mapper = project.getDataManager().mapper;
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         RecordMapper recordMapper = Mappers.getMapper(RecordMapper.class);
 
         KafkaRecordAttributes kafkaRecordAttributes = new KafkaRecordAttributes();
@@ -887,11 +885,9 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
-
     private void createNewProject() {
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.WORKSPACE, workspace);
-        paramMap.put(CommandParamKey.DATA_MANAGER, new ProjectDataManager(workspace.getEnvironment()));
 
         try {
             new AddProject(paramMap).execute();
