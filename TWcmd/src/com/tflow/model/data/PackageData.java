@@ -9,7 +9,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 public class PackageData extends TWData {
 
-    private int projectId;
+    private String projectId;
     private int packageId;
 
     private String name;

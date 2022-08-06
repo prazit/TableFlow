@@ -1,6 +1,8 @@
 package com.tflow.tbcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
+import com.tflow.model.data.ProjectDataManager;
+import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -28,6 +30,7 @@ public class TBcmd {
 
     private boolean polling;
 
+    private Environment environment;
     private EnvironmentConfigs environmentConfigs;
 
     public TBcmd() {
@@ -37,16 +40,11 @@ public class TBcmd {
     @SuppressWarnings("unchecked")
     public void start() {
 
+        ProjectDataManager projectDataManager = new ProjectDataManager(environment);
         KafkaConsumer<String, byte[]> consumer = createConsumer();
-        KafkaProducer<String, Object> dataProducer = createProducer();
 
         /*TODO: need to load topicBuild from configuration*/
-        String topicRead = "project-read";
-        String topicData = "project-data";
-        String topicWrite = "project-write";
-
         String topicBuild = "project-build";
-        String dataTopic = "project-data";
         consumer.subscribe(Collections.singletonList(topicBuild));
         log.info("Subscribed to topicBuild " + topicBuild);
 
@@ -81,20 +79,20 @@ public class TBcmd {
                 }
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                //TODO: ReadProjectCommand readProjectCommand = new ReadProjectCommand(key, value, environmentConfigs, dataProducer, dataTopic);
+                BuildPackageCommand buildPackageCommand = new BuildPackageCommand(key, value, environmentConfigs, projectDataManager);
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
-                    // TODO: readProjectCommand.execute();
-                    log.info("readProjectCommand completed.");
+                    buildPackageCommand.execute();
+                    log.info("buildPackageCommand completed.");
                 } catch (InvalidParameterException inex) {
                     /*TODO: how to handle rejected command*/
                     log.error("Invalid parameter: {}", inex.getMessage());
-                    log.info("readProjectCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.info("buildPackageCommand(offset: {}, key: {}) rejected.", offset, key);
                 } catch (Exception ex) {
                     log.error("Hard error: ", ex);
-                    log.info("readProjectCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.info("buildPackageCommand(offset: {}, key: {}) rejected.", offset, key);
                 }
             }
         }
@@ -104,10 +102,11 @@ public class TBcmd {
 
     private KafkaConsumer<String, byte[]> createConsumer() {
         /*TODO: need to load consumer configuration*/
-        environmentConfigs = EnvironmentConfigs.DEVELOPMENT;
+        environment = Environment.DEVELOPMENT;
+        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-        props.put("group.id", "trcmd");
+        props.put("group.id", "tbcmd");
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms", "30000");
@@ -115,21 +114,6 @@ public class TBcmd {
         props.put("key.deserializer.encoding", "UTF-8");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         return new KafkaConsumer<>(props);
-    }
-
-    private KafkaProducer<String, Object> createProducer() {
-        /*TODO: need to load producer configuration*/
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-        props.put("acks", "all");
-        props.put("retries", 0);
-        props.put("batch.size", 16384);
-        props.put("linger.ms", 1);
-        props.put("buffer.memory", 33554432);
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("key.serializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.serializer", environmentConfigs.getKafkaSerializer());
-        return new KafkaProducer<>(props);
     }
 
     public void stop() {

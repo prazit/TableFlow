@@ -192,9 +192,7 @@ readdeserializer--: <small><br/>KafkaRecord<br/>KafkaRecordAttributes<br/></smal
 
 ### 
 
-### for Group List Write Command, Group List Read Command
-
-### for Project List Write Command, Project List Read Command
+### for All Write Command, All Read Command
 
 ## 
 
@@ -202,11 +200,21 @@ readdeserializer--: <small><br/>KafkaRecord<br/>KafkaRecordAttributes<br/></smal
 
 | data-key                        | shorten and use as record key | required field                                      |
 | ------------------------------- | ----------------------------- | --------------------------------------------------- |
+| versioned-list                  | VERSIONED_LIST                | (none)                                              |
+| versinoed                       | VERSIONED                     | (none)                                              |
+| group-list                      | GROUP_LIST                    | (none)                                              |
+| group                           | GROUP                         | (none)                                              |
 | project                         | PROJECT                       | + project-id                                        |
+| uploaded-list                   | UPLOADED_LIST                 | + project-id                                        |
+| generated-list                  | GENERATED_LIST                | + project-id                                        |
+| package-list                    | PACKAGE_LIST                  | + project-id                                        |
 | db-list                         | DB_LIST                       | + project-id                                        |
 | sftp-list                       | SFTP_LIST                     | + project-id                                        |
 | local-list                      | LOCAL_LIST                    | + project-id                                        |
 | step-list                       | STEP_LIST                     | + project-id                                        |
+| uploaded                        | UPLOADED                      | + project-id                                        |
+| generated                       | GENERATED                     | + project-id                                        |
+| package                         | PACKAGE                       | + project-id                                        |
 | db                              | DB                            | + project-id                                        |
 | sftp                            | SFTP                          | + project-id                                        |
 | local                           | LOCAL                         | + project-id                                        |

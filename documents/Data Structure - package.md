@@ -4,33 +4,51 @@
 
 ---
 
+## File Types
+
+> TFlow = flowchart editor page, library page
+> TWcmd = data writer
+> TRcmd = data reader
+> TBcmd = package builder
+> TDcmd = package downloader & deployer
+
+| type      | desc                        | Write                                      | Read           | identifier                              |
+| --------- | --------------------------- | ------------------------------------------ | -------------- | --------------------------------------- |
+| uploaded  | uploaded files from editor  | TFlow >> TWcmd : ProjectFileType.UPLOADED  | TDcmd >> TRcmd | projectID<br/>~~stepID~~<br/>fileID     |
+| generated | saved using dconvers        | TBcmd >> TWcmd : ProjectFileType.GENERATED | TDcmd >> TRcmd | projectID<br/>~~stepID~~<br/>fileID     |
+| versioned | uploaded files from library | TFlow >> TWcmd : ProjectFileType.VERSIONED | TDcmd >> TRcmd | ~~projectID~~<br/>~~stepID~~<br/>fileID |
+
 ## Package Type and Binary Files
 
-| Package Type                        | file path                                                   | files                                      | file type                                                           | download as |
-|:-----------------------------------:| ----------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------- | ----------- |
-| 1. Batch                            | sql/                                                        | sql data files                             | sql                                                                 | zip         |
-|                                     | md/                                                         | md data files                              | md                                                                  |             |
-|                                     | txt/                                                        | txt data files                             | txt                                                                 |             |
-|                                     | config/                                                     | dconvers config files                      | property                                                            |             |
-|                                     | lib/                                                        | dconvers lib files                         | jar                                                                 |             |
-|                                     | batch/                                                      | batch/shell files                          | bat, sh                                                             |             |
-| 2. Kafka Service<br/>3. Web service | lib/                                                        | compiled java class in a jar file per step | temp: java, class, META-INF/MANIFEST.MF, logback.xml<br/>built: jar | zip         |
-|                                     | sql/                                                        | sql data files                             | all supported data files                                            |             |
-|                                     | md/                                                         | md data files                              |                                                                     |             |
-|                                     | txt/                                                        | txt data files                             |                                                                     |             |
-|                                     | config/                                                     | dconvers config files                      | property                                                            |             |
-|                                     | lib/                                                        | dconvers lib files                         | jar                                                                 |             |
-|                                     | batch/                                                      | batch/shell files                          | bat, sh                                                             |             |
-| 4. Web UI Input<br/>5. Web Service  | WEB-INF/classes/                                            | compiled java class files<br/>             | temp: java<br/>built: class                                         | war         |
-|                                     | resources/js/<br/>resources/images/<br/>resources/css/<br/> | web ui resource files                      | js<br/>png<br/>css                                                  |             |
-|                                     | cutom-ui-path/                                              | web ui xhtml files                         | xhtml                                                               |             |
-|                                     | WEB-INF/                                                    | web ui config files                        | web.xml, logback.xml                                                |             |
-|                                     | WEB-INF/lib/                                                | web ui lib files                           | jar                                                                 |             |
-|                                     | WEB-INF/sql/                                                | sql data files                             | sql                                                                 |             |
-|                                     | WEB-INF/md/                                                 | md data files                              | md                                                                  |             |
-|                                     | WEB-INF/txt/                                                | txt data files                             | txt                                                                 |             |
-|                                     | WEB-INF/config/                                             | dconvers config files                      | property                                                            |             |
-|                                     | WEB-INF/lib/                                                | dconvers lib files                         | jar                                                                 |             |
+| Package Type                        | file path                                                   | files                                      | file extension                                                      | file type                                  | download as |
+|:-----------------------------------:| ----------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------ | ----------- |
+| 1. Batch                            | sql/                                                        | sql data files                             | sql                                                                 | uploaded                                   | zip         |
+|                                     | md/                                                         | md data files                              | md                                                                  | uploaded                                   |             |
+|                                     | txt/                                                        | txt data files                             | txt                                                                 | uploaded                                   |             |
+|                                     | config/                                                     | dconvers config files                      | property                                                            | generated                                  |             |
+|                                     | lib/                                                        | dconvers lib files                         | jar                                                                 | versioned : library-file-id                |             |
+|                                     | batch/                                                      | batch/shell files                          | bat, sh                                                             | generated triggers                         |             |
+|                                     | batch/                                                      | batch/shell files                          | bat, sh                                                             | generated<br/>schedule adder               |             |
+|                                     | (none)                                                      | scheduler                                  | (none)                                                              | starter                                    |             |
+| 2. Kafka Service<br/>3. Web service | lib/                                                        | compiled java class in a jar file per step | temp: java, class, META-INF/MANIFEST.MF, logback.xml<br/>built: jar | generated<br/>compiled<br/>zipped triggers | zip         |
+|                                     | sql/                                                        | sql data files                             | sql                                                                 | uploaded                                   |             |
+|                                     | md/                                                         | md data files                              | md                                                                  | uploaded                                   |             |
+|                                     | txt/                                                        | txt data files                             | txt                                                                 | uploaded                                   |             |
+|                                     | config/                                                     | dconvers config files                      | property                                                            | generated                                  |             |
+|                                     | lib/                                                        | dconvers lib files                         | jar                                                                 | versioned                                  |             |
+|                                     | batch/                                                      | batch/shell files                          | bat, sh                                                             | generated starter                          |             |
+| 4. Web UI Input<br/>5. Web Service  | WEB-INF/classes/                                            | compiled java class files<br/>             | temp: java<br/>built: class                                         |                                            | war<br/>zip |
+|                                     | resources/js/<br/>resources/images/<br/>resources/css/<br/> | web ui resource files                      | js<br/>png<br/>css                                                  |                                            |             |
+|                                     | cutom-ui-path/                                              | web ui xhtml files                         | xhtml                                                               | triggers                                   |             |
+|                                     | WEB-INF/                                                    | web ui config files                        | web.xml, logback.xml                                                |                                            |             |
+|                                     | WEB-INF/lib/                                                | web ui lib files                           | jar                                                                 |                                            |             |
+|                                     | WEB-INF/sql/                                                | sql data files                             | sql                                                                 |                                            |             |
+|                                     | WEB-INF/md/                                                 | md data files                              | md                                                                  |                                            |             |
+|                                     | WEB-INF/txt/                                                | txt data files                             | txt                                                                 |                                            |             |
+|                                     | WEB-INF/config/                                             | dconvers config files                      | property                                                            |                                            |             |
+|                                     | WEB-INF/lib/                                                | dconvers lib files                         | jar                                                                 |                                            |             |
+|                                     | batch/                                                      | batch/shell files                          | bat, sh                                                             | genreated<br/>web deployer                 |             |
+|                                     | (none)                                                      | web server                                 | (none)                                                              | starter                                    |             |
 
 ## Package List
 
@@ -56,13 +74,14 @@
 
 > List<PackageFile>
 
-| field   | desc                          | type        |
-| ------- | ----------------------------- | ----------- |
-| updated | differenced from last package | boolean     |
-| path    | file path                     | String      |
-| name    | file name                     | String      |
-| type    | file type                     | Enum String |
-| time    | built date time               | Date (util) |
+| field                     | desc                          | type        |
+| ------------------------- | ----------------------------- | ----------- |
+| updated                   | differenced from last package | boolean     |
+| (cancellled)<br/>~~path~~ | ~~file path~~                 | ~~String~~  |
+| name                      | file name                     | String      |
+| type                      | file type                     | Enum String |
+| (something)               | file identifier               |             |
+| time                      | built date time               | Date (util) |
 
 ----
 

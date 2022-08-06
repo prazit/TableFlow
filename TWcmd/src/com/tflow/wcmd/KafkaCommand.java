@@ -68,6 +68,10 @@ public abstract class KafkaCommand {
                 path = additional.getProjectId() + "/" + additional.getStepId() + "/" + additional.getTransformTableId() + "/";
                 break;
 
+            case 0:
+                path = projectFileType.name().split("[_]")[0] + "/";
+                break;
+            
             default: //case 1:
                 path = additional.getProjectId() + "/";
         }

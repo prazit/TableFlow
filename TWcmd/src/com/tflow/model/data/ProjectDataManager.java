@@ -1,7 +1,6 @@
-package com.tflow.kafka;
+package com.tflow.model.data;
 
-import com.tflow.model.data.ProjectUser;
-import com.tflow.model.data.TWData;
+import com.tflow.kafka.*;
 import com.tflow.system.Environment;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
@@ -277,7 +276,7 @@ public class ProjectDataManager {
         }
     }
 
-    public void addData(ProjectFileType fileType, List<Integer> idList, ProjectUser project) {
+    public void addData(ProjectFileType fileType, List idList, ProjectUser project) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId());
         addData(fileType, idList, additional);
     }

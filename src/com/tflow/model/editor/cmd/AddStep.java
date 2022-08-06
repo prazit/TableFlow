@@ -1,6 +1,5 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.kafka.ProjectDataManager;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Step;
 import com.tflow.model.editor.action.Action;

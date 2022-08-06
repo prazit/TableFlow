@@ -1,6 +1,6 @@
 package com.tflow.model.editor;
 
-import com.tflow.kafka.ProjectDataManager;
+import com.tflow.model.data.ProjectDataManager;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;

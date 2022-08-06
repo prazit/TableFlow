@@ -169,6 +169,13 @@ public class UpdateProjectCommand extends KafkaCommand {
             case 4: // projectId, stepId, transformTableId
                 additional.setDataTableId(null);
                 break;
+
+            case 0:
+                additional.setProjectId(null);
+                additional.setStepId(null);
+                additional.setDataTableId(null);
+                additional.setTransformTableId(null);
+                break;
         }
         if (fileType.getPrefix().endsWith("list")) {
             additional.setRecordId(null);

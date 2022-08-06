@@ -1,4 +1,7 @@
-package com.tflow.kafka;
+package com.tflow.model.data;
+
+import com.tflow.kafka.KafkaRecordAttributes;
+import com.tflow.kafka.ProjectFileType;
 
 public class ProjectDataWriteBuffer {
 

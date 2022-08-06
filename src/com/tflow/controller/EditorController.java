@@ -1,6 +1,9 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.*;
+import com.tflow.model.data.ProjectDataException;
+import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.ProjectDataWriteBuffer;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.action.*;
@@ -137,7 +140,6 @@ public class EditorController extends Controller {
         return priority;
     }
 
-    /*TODO: issue: after select step with index = -1, loaded step always contains index = 0*/
     private void refreshStepList(List<Step> stepList) {
         projectName = workspace.getProject().getName();
         stepMenu = new DefaultMenuModel();

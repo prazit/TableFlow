@@ -5,14 +5,27 @@ package com.tflow.kafka;
  */
 public enum ProjectFileType {
 
+    TEST_TYPE_0("type-0-", 0),
     TEST_TYPE_1("type-1-", 1),
     TEST_TYPE_2("type-2-", 2),
     TEST_TYPE_3("type-3-", 3),
     TEST_TYPE_4("type-4-", 4),
 
+    VERSIONED_LIST("versioned-list", 0),
+    VERSIONED("", 0),
+
+    GROUP_LIST("group-list", 0),
+    GROUP("", 0),
+
+    GENERATED_LIST("generated-list", 1),
+    GENERATED("", 1),
+
+    UPLOADED_LIST("uploaded-list", 1),
+    UPLOADED("", 1),
+
     PACKAGE_LIST("package-list", 1),
     PACKAGE("", 1),
-    PACKAGE_FILE_LIST("package-file-", 1),
+    PACKAGE_FILE("", 1),
 
     PROJECT("", 1),
     DB_LIST("db-list", 1),

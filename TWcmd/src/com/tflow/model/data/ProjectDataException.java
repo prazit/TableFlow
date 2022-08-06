@@ -1,4 +1,4 @@
-package com.tflow.kafka;
+package com.tflow.model.data;
 
 public class ProjectDataException extends Exception {
 

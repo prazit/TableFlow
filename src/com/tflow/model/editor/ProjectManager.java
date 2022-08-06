@@ -32,6 +32,8 @@ public class ProjectManager {
         ProjectUser projectUser = mapper.toProjectUser(project);
 
         dataManager.addData(ProjectFileType.PROJECT, projectData, projectUser, newProjectId);
+        dataManager.addData(ProjectFileType.PACKAGE_LIST, new ArrayList(), projectUser);
+        dataManager.addData(ProjectFileType.UPLOADED_LIST, new ArrayList(), projectUser);
 
         Map<Integer, Database> databaseMap = project.getDatabaseMap();
         dataManager.addData(ProjectFileType.DB_LIST, mapper.fromMap(databaseMap), projectUser, "1");
