@@ -73,16 +73,18 @@
 
 ### PackageFileData
 
-| field     | desc                                         | type                                                 |
-| --------- | -------------------------------------------- | ---------------------------------------------------- |
-| id        | file id                                      | int                                                  |
-| name      | file name                                    | String                                               |
-| type      | file type                                    | uploaded, versioned, generated                       |
-| ext       | file ext                                     | Enum String (short form used to access to mime type) |
-| buildDate | same value on package                        | Date (util)                                          |
-| updated   | compare result/differenced from last package | boolean                                              |
+| field     | desc                                                   | type                                                 |
+| --------- | ------------------------------------------------------ | ---------------------------------------------------- |
+| id        | package file id                                        | int                                                  |
+| name      | file name                                              | String                                               |
+| type      | file type                                              | uploaded, versioned, generated                       |
+| fileId    | uploaded file id, versioned file id, generated file id | depends on file type                                 |
+| ext       | file ext                                               | Enum String (short form used to access to mime type) |
+| buildDate | same value on package                                  | Date (util)                                          |
+| buildPath | file path used in archive/download process             | String                                               |
+| updated   | compare result/differenced from last package           | boolean                                              |
 
-FileData
+### BinaryFileData
 
 | for VERSIONED and UPLOADED
 

@@ -12,6 +12,7 @@ public class ProjectData extends TWData implements Serializable {
 
     private String id;
     private String name;
+    private ProjectType type;
     private int activeStepIndex;
 
     private int lastElementId;

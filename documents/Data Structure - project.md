@@ -57,8 +57,6 @@
 | lastProjectId | last id for new project | int                 |
 | groupList     | list of project-group   | List<GroupItemData> |
 
-## Group Item Data
-
 ### Group
 
 | name        | desc                       | type                  |

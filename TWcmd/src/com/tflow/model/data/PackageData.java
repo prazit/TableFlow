@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -17,5 +18,8 @@ public class PackageData extends TWData {
     private Date builtDate;
 
     private int complete;
+
+    private List<PackageFileData> fileList;
+    private int lastFileId;
 
 }

@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.ProjectType;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class Project implements Selectable {
     private String id;
     private String name;
-    private Batch batch;
+    private ProjectType type;
     private int activeStepIndex;
 
     private List<Step> stepList;
@@ -74,12 +75,12 @@ public class Project implements Selectable {
         this.name = name;
     }
 
-    public Batch getBatch() {
-        return batch;
+    public ProjectType getType() {
+        return type;
     }
 
-    public void setBatch(Batch batch) {
-        this.batch = batch;
+    public void setType(ProjectType type) {
+        this.type = type;
     }
 
     public int getActiveStepIndex() {
@@ -183,7 +184,6 @@ public class Project implements Selectable {
         return "{" +
                 "id:'" + id + '\'' +
                 ", name:'" + name + '\'' +
-                ", batch:" + batch +
                 ", activeStepIndex:" + activeStepIndex +
                 ", stepList:" + stepList +
                 ", databaseMap:" + databaseMap +

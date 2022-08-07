@@ -1,5 +1,6 @@
 package com.tflow.wcmd;
 
+import com.clevel.dconvers.ngin.Crypto;
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaRecord;
 import com.tflow.kafka.KafkaRecordAttributes;
@@ -82,19 +83,15 @@ public class UpdateProjectCommand extends IOCommand {
         Object data = recordData.getData();
         if (data instanceof DatabaseData) {
             DatabaseData databaseData = (DatabaseData) data;
-            databaseData.setUser(encrypt(databaseData.getUser()));
-            databaseData.setPassword(encrypt(databaseData.getPassword()));
-
+            databaseData.setUser(Crypto.encrypt(databaseData.getUser()));
+            databaseData.setPassword(Crypto.encrypt(databaseData.getPassword()));
+            databaseData.setUserEncrypted(true);
+            databaseData.setPasswordEncrypted(true);
         } else if (data instanceof SFTPData) {
             SFTPData sftpData = (SFTPData) data;
-            sftpData.setUser(encrypt(sftpData.getUser()));
-            sftpData.setPassword(encrypt(sftpData.getPassword()));
+            sftpData.setUser(Crypto.encrypt(sftpData.getUser()));
+            sftpData.setPassword(Crypto.encrypt(sftpData.getPassword()));
         }
-    }
-
-    private String encrypt(String data) {
-        /*TODO: need 2 Ways encryption from Data Conversion Project*/
-        return data;
     }
 
     private File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {

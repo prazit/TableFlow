@@ -10,7 +10,7 @@ public enum ProjectFileType {
     REQUIRE_TYPE_2("step", 2),
     REQUIRE_TYPE_3("data-table", 3),
     REQUIRE_TYPE_4("transform-table", 4),
-    REQUIRE_TYPE_5("uploaded,package,generated", 9),*/
+    REQUIRE_TYPE_9("uploaded,package,generated", 9),*/
 
     VERSIONED_LIST("versioned-list", 0),
     VERSIONED("", 0),
