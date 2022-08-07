@@ -32,6 +32,8 @@ public enum Properties {
 
     PROJECT(
             "name:Name:String:refreshStepList();",
+            "--:Debug Only:--",
+            "id:ID:ReadOnly",
             "activeStepIndex:Active Step Index:ReadOnly",
             "lastUniqueId:Last Unique ID:ReadOnly",
             "lastElementId:Last Element ID:ReadOnly"

@@ -24,7 +24,7 @@ import java.util.Date;
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
  * Kafka-Value: serialized data with additional information or Message Record Value Structure spec in \TFlow\documents\Data Structure - Kafka.md
  */
-public class UpdateProjectCommand extends KafkaCommand {
+public class UpdateProjectCommand extends IOCommand {
 
     private Logger log = LoggerFactory.getLogger(UpdateProjectCommand.class);
 
@@ -47,7 +47,7 @@ public class UpdateProjectCommand extends KafkaCommand {
         Date now = DateTimeUtil.now();
         long dateDiffMs = now.getTime() - additional.getModifiedDate().getTime();
         long maxDiff = 50000; //TODO: load maxDiff from configuration.
-        if( dateDiffMs < maxDiff ) additional.setModifiedDate(now);
+        if (dateDiffMs < maxDiff) additional.setModifiedDate(now);
 
         File file = getFile(projectFileType, additional);
         if (file.exists()) {
@@ -123,12 +123,12 @@ public class UpdateProjectCommand extends KafkaCommand {
         }
 
         // projectId is required on all types.
-        if (additional.getProjectId() == null) {
+        if (requireType > 0 && additional.getProjectId() == null) {
             throw new InvalidParameterException("Additional.ProjectId is required for operation('" + fileType.name() + "')");
         }
 
         // stepId is required on all types except type(1).
-        if (requireType > 1 && additional.getStepId() == null) {
+        if (requireType > 1 && requireType < 9 && additional.getStepId() == null) {
             throw new InvalidParameterException("Additional.StepId is required for operation('" + fileType.name() + "')");
         }
 
@@ -152,6 +152,7 @@ public class UpdateProjectCommand extends KafkaCommand {
         ProjectFileType fileType = additional.getFileType();
         switch (fileType.getRequireType()) {
             case 1: // projectId
+            case 9: // uploaded, package, generated
                 additional.setStepId(null);
                 additional.setDataTableId(null);
                 additional.setTransformTableId(null);

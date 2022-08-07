@@ -1,12 +1,16 @@
 package com.tflow.trcmd;
 
 import com.tflow.kafka.*;
+import com.tflow.model.data.GroupData;
+import com.tflow.model.data.GroupListData;
+import com.tflow.model.data.ProjectData;
 import com.tflow.model.data.record.ClientRecordData;
 import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
+import com.tflow.model.mapper.DataMapper;
 import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.SerializeUtil;
-import com.tflow.wcmd.KafkaCommand;
+import com.tflow.wcmd.IOCommand;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.mapstruct.factory.Mappers;
@@ -18,12 +22,13 @@ import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 /**
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
  * Kafka-Value: serialized data with additional information or Message Record Value Structure spec in \TFlow\documents\Data Structure - Kafka.md
  */
-public class ReadProjectCommand extends KafkaCommand {
+public class ReadProjectCommand extends IOCommand {
 
     private Logger log = LoggerFactory.getLogger(ReadProjectCommand.class);
 
@@ -64,6 +69,17 @@ public class ReadProjectCommand extends KafkaCommand {
         /*support open new project from template (projectId starts with "T")*/
         if (ProjectFileType.PROJECT.equals(projectFileType) && isTemplate(additional.getProjectId())) {
             String projectId = copyTemplateToNewProject(additional);
+            if (projectId == null) {
+                /*return EmptyProject with new ProjectID*/
+                log.warn("Project template not found: {}", additional.getProjectId());
+
+                /*send Header message and then Data message*/
+                RecordData recordValue = createNewEmptyProject(additional);
+                sendObject(key, additional.getModifiedClientId(), 0);
+                sendObject(key, recordValue);
+                return;
+            }
+
             additional.setProjectId(projectId);
         }
 
@@ -100,6 +116,50 @@ public class ReadProjectCommand extends KafkaCommand {
         sendObject(key, recordValue);
     }
 
+    private RecordData createNewEmptyProject(RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
+        GroupListData groupList;
+        File file = getFile(ProjectFileType.GROUP_LIST, additional);
+        if (!file.exists()) {
+            /*first time access to GROUP_LIST*/
+            groupList = new GroupListData();
+            groupList.setGroupList(new ArrayList<>());
+        } else {
+            groupList = (GroupListData) readFrom(file);
+        }
+
+        DataMapper mapper = Mappers.getMapper(DataMapper.class);
+        GroupData groupData;
+        File groupFile = getFile(ProjectFileType.GROUP, additional);
+        if (!groupFile.exists()) {
+            groupData = new GroupData();
+            groupData.setId(Integer.parseInt(additional.getRecordId()));
+            groupData.setName("Ungrouped");
+            groupData.setProjectList(new ArrayList<>());
+            groupList.getGroupList().add(mapper.map(groupData));
+        }else{
+            groupData = (GroupData) readFrom(groupFile);
+        }
+
+        int newProjectId = groupList.getLastProjectId() + 1;
+        String newProjectIdString = "P" + newProjectId;
+        ProjectData emptyProject = new ProjectData();
+        emptyProject.setId(newProjectIdString);
+        emptyProject.setName("Untitled");
+        log.info("new project id = {}", newProjectIdString);
+
+        groupList.setLastProjectId(newProjectId);
+        writeTo(file, groupList);
+
+        groupData.getProjectList().add(mapper.map(emptyProject));
+        writeTo(groupFile, groupData);
+
+        /*create empty project object in a recordData*/
+        RecordData recordData = new RecordData();
+        recordData.setData(emptyProject);
+        recordData.setAdditional(additional);
+        return recordData;
+    }
+
     private void writeNewClientTo(File clientFile, RecordAttributesData additional) throws IOException, InstantiationException {
         ClientRecordData newClientRecordData = mapper.toClientRecordData(additional);
         newClientRecordData.setExpiredDate(getMilli(environmentConfigs.getClientFileTimeoutMs()));
@@ -126,14 +186,14 @@ public class ReadProjectCommand extends KafkaCommand {
     }
 
     private String copyTemplateToNewProject(RecordAttributesData additional) {
-
+        log.info("New project from template({})", additional.getProjectId());
         /*TODO: read Project List, create new ProjectID (ProjectList will updated by TWcmd)*/
 
         /*TODO: read Template Project (file by file)*/
 
         /*TODO: send message to TWcmd to write new project*/
 
-        return "P2";
+        return null;
     }
 
     private boolean isTemplate(String projectId) {
@@ -176,12 +236,12 @@ public class ReadProjectCommand extends KafkaCommand {
         }
 
         // projectId is required on all types.
-        if (additional.getProjectId() == null) {
+        if (requireType > 0 && additional.getProjectId() == null) {
             throw new InvalidParameterException(KafkaErrorCode.REQUIRES_PROJECT_ID.name());
         }
 
         // stepId is required on all types except type(1).
-        if (requireType > 1 && additional.getStepId() == null) {
+        if (requireType > 1 && requireType < 9 && additional.getStepId() == null) {
             throw new InvalidParameterException(KafkaErrorCode.REQUIRES_STEP_ID.name());
         }
 

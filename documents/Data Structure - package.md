@@ -52,7 +52,7 @@
 
 ## Package List
 
-> List<PackageLabel> of Package-ID
+> List<PackageItemData> of Package-ID
 
 | field     | desc                | type   |
 | --------- | ------------------- | ------ |
@@ -61,27 +61,36 @@
 
 #### Package Data
 
-| field     | desc                      | type        |
-| --------- | ------------------------- | ----------- |
-| packageId | formatted date time       | String      |
-| projectId | owner projectID           | int         |
-| name      | user custom label         | String      |
-| buildDate | bulid date and time       | Date (util) |
-| builtDate | built date and time       | Date (util) |
-| complete  | 0 - 100 percent completed | int         |
+| field     | desc                      | type                  |
+| --------- | ------------------------- | --------------------- |
+| packageId | formatted date time       | String                |
+| projectId | owner projectID           | int                   |
+| name      | user custom label         | String                |
+| buildDate | bulid date and time       | Date (util)           |
+| builtDate | built date and time       | Date (util)           |
+| complete  | 0 - 100 percent completed | int                   |
+| fileList  | list of file              | List<PackageFileData> |
 
-#### Package Data.FileList
+### PackageFileData
 
-> List<PackageFile>
+| field     | desc                                         | type                                                 |
+| --------- | -------------------------------------------- | ---------------------------------------------------- |
+| id        | file id                                      | int                                                  |
+| name      | file name                                    | String                                               |
+| type      | file type                                    | uploaded, versioned, generated                       |
+| ext       | file ext                                     | Enum String (short form used to access to mime type) |
+| buildDate | same value on package                        | Date (util)                                          |
+| updated   | compare result/differenced from last package | boolean                                              |
 
-| field                     | desc                          | type        |
-| ------------------------- | ----------------------------- | ----------- |
-| updated                   | differenced from last package | boolean     |
-| (cancellled)<br/>~~path~~ | ~~file path~~                 | ~~String~~  |
-| name                      | file name                     | String      |
-| type                      | file type                     | Enum String |
-| (something)               | file identifier               |             |
-| time                      | built date time               | Date (util) |
+FileData
+
+| for VERSIONED and UPLOADED
+
+| name | desc      | type   |
+| ---- | --------- | ------ |
+| id   | file id   | int    |
+| name | file name | String |
+| ext  | file ext  |        |
 
 ----
 

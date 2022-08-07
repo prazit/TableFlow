@@ -16,6 +16,7 @@ public class Workspace implements Serializable {
 
     private Environment environment;
 
+    /* TODO: need Project Group Id when create new project */
     private Project project;
     private User user;
     private Client client;

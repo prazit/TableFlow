@@ -5,11 +5,12 @@ package com.tflow.kafka;
  */
 public enum ProjectFileType {
 
-    TEST_TYPE_0("type-0-", 0),
-    TEST_TYPE_1("type-1-", 1),
-    TEST_TYPE_2("type-2-", 2),
-    TEST_TYPE_3("type-3-", 3),
-    TEST_TYPE_4("type-4-", 4),
+    /*REQUIRE_TYPE_0("root", 0),
+    REQUIRE_TYPE_1("project", 1),
+    REQUIRE_TYPE_2("step", 2),
+    REQUIRE_TYPE_3("data-table", 3),
+    REQUIRE_TYPE_4("transform-table", 4),
+    REQUIRE_TYPE_5("uploaded,package,generated", 9),*/
 
     VERSIONED_LIST("versioned-list", 0),
     VERSIONED("", 0),
@@ -17,47 +18,49 @@ public enum ProjectFileType {
     GROUP_LIST("group-list", 0),
     GROUP("", 0),
 
-    GENERATED_LIST("generated-list", 1),
-    GENERATED("", 1),
-
-    UPLOADED_LIST("uploaded-list", 1),
-    UPLOADED("", 1),
-
-    PACKAGE_LIST("package-list", 1),
-    PACKAGE("", 1),
-    PACKAGE_FILE("", 1),
-
     PROJECT("", 1),
-    DB_LIST("db-list", 1),
-    SFTP_LIST("sftp-list", 1),
-    LOCAL_LIST("local-list", 1),
-    DS_LIST("", 1),
-    VARIABLE_LIST("var-list", 1),
+
+    UPLOADED_LIST("uploaded-list", 9),
+    UPLOADED("", 9),
+
+    PACKAGE_LIST("package-list", 9),
+    PACKAGE("", 9),
+
+    GENERATED_LIST("generated-list", 9),
+    GENERATED("", 9),
+
     STEP_LIST("step-list", 1),
+    STEP("", 2),
+
+    DB_LIST("db-list", 1),
     DB("", 1),
+
+    SFTP_LIST("sftp-list", 1),
     SFTP("", 1),
+
+    LOCAL_LIST("local-list", 1),
     LOCAL("", 1),
+
+    DS_LIST("", 1),
     DS("", 1),
+
+    VARIABLE_LIST("var-list", 1),
     VARIABLE("", 1),
 
-    STEP("", 2),
-    DATA_SOURCE_SELECTOR("", 2),
     DATA_SOURCE_SELECTOR_LIST("data-source-list", 2),
-    DATA_TABLE_LIST("data-table-list", 2),
-    TRANSFORM_TABLE_LIST("transform-table-list", 2),
+    DATA_SOURCE_SELECTOR("", 2),
+
     DATA_FILE_LIST("data-file-list", 2),
-    TOWER("", 2),
-    FLOOR("", 2),
-    LINE_LIST("line-list", 2),
-    LINE("", 2),
     DATA_FILE("", 2),
 
+    DATA_TABLE_LIST("data-table-list", 2),
     DATA_TABLE("", 3),
     DATA_COLUMN_LIST("column-list", 3),
     DATA_OUTPUT_LIST("output-list", 3),
     DATA_COLUMN("", 3),
     DATA_OUTPUT("", 3),
 
+    TRANSFORM_TABLE_LIST("transform-table-list", 2),
     TRANSFORM_TABLE("", 4),
     TRANSFORM_COLUMN_LIST("transform-column-list", 4),
     TRANSFORMATION_LIST("transformation-list", 4),
@@ -66,6 +69,12 @@ public enum ProjectFileType {
     TRANSFORM_COLUMNFX("", 4),
     TRANSFORMATION("", 4),
     TRANSFORM_OUTPUT("", 4),
+
+    TOWER("", 2),
+    FLOOR("", 2),
+
+    LINE_LIST("line-list", 2),
+    LINE("", 2),
     ;
 
     private String prefix;

@@ -545,7 +545,7 @@ public class EditorController extends Controller {
         Project workspaceProject = workspace.getProject();
         String oldProjectId = workspaceProject.getId();
         try {
-            /*TODO: need to test open new project from template (projectId < 0)*/
+            /*TODO: need to test open new project from template (projectId.startsWith('P'))*/
             workspaceProject.setId("P1");
             project = workspaceProject.getManager().loadProject(workspace, workspaceProject.getDataManager());
         } catch (ProjectDataException ex) {

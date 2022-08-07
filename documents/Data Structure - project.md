@@ -50,6 +50,23 @@
 |                |                   |                    | transformation-id      | Transformation:<br />+ transformation detail                                                              | 25  | 13              | 13  |
 |                |                   |                    | output-file-id         | Output File:<br />+ output detail                                                                         | 26  | 14              | 14  |
 
+## Group List
+
+| name          | desc                    | type                |
+| ------------- | ----------------------- | ------------------- |
+| lastProjectId | last id for new project | int                 |
+| groupList     | list of project-group   | List<GroupItemData> |
+
+## Group Item Data
+
+### Group
+
+| name        | desc                       | type                  |
+| ----------- | -------------------------- | --------------------- |
+| id          | group id                   | int                   |
+| name        | group name                 | String                |
+| projectList | list of project in a group | List<ProjectItemData> |
+
 ----
 
 -- end of document --

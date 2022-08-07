@@ -340,21 +340,25 @@ public class ProjectDataManager {
     }
 
     private void addData(ProjectFileType fileType, Object object, KafkaRecordAttributes additional) throws InvalidParameterException {
+        validate(fileType, additional);
+
+        additional.setModifiedDate(DateTimeUtil.now());
+        projectDataWriteBufferList.add(new ProjectDataWriteBuffer(fileType, object, additional));
+
+        commit();
+    }
+
+    private void validate(ProjectFileType fileType, KafkaRecordAttributes additional) {
         if (additional.getUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for ProjectDataManager.addData(" + fileType + ")");
         if (additional.getClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for ProjectDataManager.addData(" + fileType + ")");
 
         // Notice: all of below copied from class com.flow.wcmd.UpdateProjectCommand.validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue)
         int requireType = fileType.getRequireType();
         if (!fileType.getPrefix().endsWith("list") && additional.getRecordId() == null) throw new InvalidParameterException("Required Field: RecordId for ProjectDataManager.addData(" + fileType + ")");
-        if (additional.getProjectId() == null) throw new InvalidParameterException("Required Field: ProjectId for ProjectDataManager.addData(" + fileType + ")");
-        if (requireType > 1 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId for ProjectDataManager.addData(" + fileType + ")");
+        if (requireType > 0 && additional.getProjectId() == null) throw new InvalidParameterException("Required Field: ProjectId for ProjectDataManager.addData(" + fileType + ")");
+        if (requireType > 1 && requireType < 9 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId for ProjectDataManager.addData(" + fileType + ")");
         if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId for ProjectDataManager.addData(" + fileType + ")");
         if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId for ProjectDataManager.addData(" + fileType + ")");
-
-        additional.setModifiedDate(DateTimeUtil.now());
-        projectDataWriteBufferList.add(new ProjectDataWriteBuffer(fileType, object, additional));
-
-        commit();
     }
 
     public Object getData(ProjectFileType fileType, ProjectUser project) {
@@ -391,6 +395,7 @@ public class ProjectDataManager {
 
     public Object getData(ProjectFileType fileType, KafkaRecordAttributes additional) {
         log.warn("getData(fileType:{}, additional:{}", fileType, additional);
+        validate(fileType, additional);
 
         long code = requestData(fileType, additional);
         if (code < 0) {

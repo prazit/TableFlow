@@ -42,7 +42,7 @@ public class BuildPackageCommand extends KafkaCommand {
         KafkaRecordAttributes attributes = (KafkaRecordAttributes) value;
         ProjectUser projectUser = mapper.map(attributes);
 
-        Object data = projectDataManager.getData(ProjectFileType.PROJECT, projectUser);
+        Object data = projectDataManager.getData(ProjectFileType.PROJECT, projectUser, projectUser.getId());
         ProjectData projectData = (ProjectData) throwExceptionOnError(data);
 
         data = projectDataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);

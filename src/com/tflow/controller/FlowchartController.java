@@ -305,7 +305,6 @@ public class FlowchartController extends Controller {
         return addDirectLine(dataSourceId, dataFileId, false);
     }
 
-    /*TODO: Test > Get Project and then AddColumnFx*/
     private Action addColumnFx(DataColumn sourceColumn, TransformColumn transformColumn) {
         log.warn("addLookup(sourceColumn:{}, targetColumn:{})", sourceColumn.getSelectableId(), transformColumn.getSelectableId());
         Step step = getStep();

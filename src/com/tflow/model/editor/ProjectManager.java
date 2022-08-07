@@ -3,6 +3,7 @@ package com.tflow.model.editor;
 import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.kafka.*;
 import com.tflow.model.data.*;
+import com.tflow.model.editor.cmd.AddProject;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -13,6 +14,7 @@ import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
 import org.mapstruct.factory.Mappers;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -20,6 +22,20 @@ public class ProjectManager {
 
     public ProjectManager() {
         /*nothing*/
+    }
+
+    public String getNewProjectId(Workspace workspace, ProjectDataManager dataManager) throws ProjectDataException {
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setUserId((int) workspace.getUser().getId());
+        projectUser.setClientId((int) workspace.getClient().getId());
+        projectUser.setId("TEMPLATE-NOT-FOUND");
+
+        String projectGroupId = "0" /*TODO: workspace.getProjectGroup().getId()*/;
+
+        ProjectData projectData = (ProjectData) throwExceptionOnError(dataManager.getData(ProjectFileType.PROJECT, projectUser, projectGroupId));
+        LoggerFactory.getLogger(AddProject.class).debug("projectData = {}", projectData);
+
+        return projectData.getId();
     }
 
     public void saveProjectAs(String newProjectId, Project project) {
@@ -195,19 +211,15 @@ public class ProjectManager {
     @SuppressWarnings("unchecked")
     public Project loadProject(Workspace workspace, ProjectDataManager dataManager) throws ClassCastException, ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(workspace.getProject());
 
-        String projectId = workspace.getProject().getId();
-        long clientId = workspace.getClient().getId();
-        long userId = workspace.getUser().getId();
-        
         /*get project, to know the project is not edit by another */
-        Object data = dataManager.getData(ProjectFileType.PROJECT, new KafkaRecordAttributes(clientId, userId, projectId, projectId));
+        Object data = dataManager.getData(ProjectFileType.PROJECT, projectUser, projectUser.getId());
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwner(workspace);
         project.setDataManager(dataManager);
 
         /*get db-list*/
-        ProjectUser projectUser = mapper.toProjectUser(project);
         data = dataManager.getData(ProjectFileType.DB_LIST, projectUser, "1");
         List<Integer> databaseIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
         Map<Integer, Database> databaseMap = new HashMap<>();

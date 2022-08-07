@@ -1,5 +1,6 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.ProjectDataManager;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.ProjectManager;
@@ -11,16 +12,23 @@ public class AddProject extends Command {
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
         Workspace workspace = (Workspace) paramMap.get(CommandParamKey.WORKSPACE);
+        ProjectManager projectManager = new ProjectManager();
+        ProjectDataManager dataManager = new ProjectDataManager(workspace.getEnvironment());
 
-        /*TODO: need to get new project id from Project List*/
-        Project project = new Project("NewProject", "Untitled");
+        Project project = new Project("", "Untitled");
         project.setOwner(workspace);
+        project.setDataManager(dataManager);
+        project.setManager(projectManager);
         workspace.setProject(project);
 
-        ProjectManager projectManager = new ProjectManager();
-        project.setDataManager(new ProjectDataManager(workspace.getEnvironment()));
+        String id = null;
+        try {
+            id = projectManager.getNewProjectId(workspace, dataManager);
+        } catch (ProjectDataException ex) {
+            throw new UnsupportedOperationException("getNewProjectId failed:", ex);
+        }
 
         // save Project
-        projectManager.saveProjectAs(project.getId(), project);
+        projectManager.saveProjectAs(id, project);
     }
 }
