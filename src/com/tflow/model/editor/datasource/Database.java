@@ -1,5 +1,6 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;
@@ -156,6 +157,6 @@ public class Database extends DataSource implements Selectable {
 
     @Override
     public String getSelectableId() {
-        return "db" + id;
+        return IDPrefix.DB.getPrefix() + id;
     }
 }

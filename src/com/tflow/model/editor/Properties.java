@@ -107,37 +107,41 @@ public enum Properties {
     ),
 
     INPUT_TXT(
-            "type:Type:FileType:in:refreshProperties();",
+            "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String"
     ),
     INPUT_CSV(
-            "type:Type:FileType:in:refreshProperties();",
+            "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String"
     ),
     INPUT_SQL(
-            "type:Type:FileType:in:refreshProperties();",
+            "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
     ),
     INPUT_MARKDOWN(
-            "type:Type:FileType:in:refreshProperties();",
+            "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String" /*TODO: do this after file structure is completed, change String of name to Upload. //"name:Filename:Upload:md,txt",*/
     ),
     INPUT_ENVIRONMENT(
-            "type:Type:FileType:in:refreshProperties();",
+            "type:Type:DataFileType:in:refreshProperties();",
             "name:System Environment:System"
     ),
     INPUT_DIRECTORY(
-            "type:Type:FileType:in:refreshProperties();",
+            "type:Type:DataFileType:in:refreshProperties();",
             "path:Path:String",
             ".:propertyMap:sub:Include sub-directory:Boolean",
             ".:propertyMap:fileOnly:Show file only:Boolean"
     ),
 
     OUTPUT_TXT(
-            "type:Output Type:FileType:out:refreshProperties();",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            /*TODO: Question: how to disable field 'name' for Data Sources with Fixed file name
+             *      Answer: same answer of the question how to retrieve dependency field list */
+            /*LOCAL(ALL-FILE-TYPES,CUSTOM-NAME), SFTP(ALL-FILE-TYPES,CUSTOM-NAME)*/
+            /*RESPONSE(JSON,XML,FIXED-NAME), DATABASE(SQL,FIXED-NAME), KAFKAPRODUCER(JSON,XML,JAVASERIAL,FIXED-NAME)*/
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType:@type",
+            "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -154,8 +158,8 @@ public enum Properties {
             ".:propertyMap:format:Format:TxtFormat"
     ),
     OUTPUT_CSV(
-            "type:Output Type:FileType:out:refreshProperties();",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -172,8 +176,8 @@ public enum Properties {
             ".:propertyMap:dateTimeFormat:DateTime Format:String"
     ),
     OUTPUT_MARKDOWN(
-            "type:Output Type:FileType:out:refreshProperties();",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             "--:Extra Options:--",
@@ -190,8 +194,8 @@ public enum Properties {
             ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean"
     ),
     OUTPUT_SQL(
-            "type:Output Type:FileType:out:refreshProperties();",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -209,8 +213,8 @@ public enum Properties {
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBINSERT(
-            "type:Output Type:FileType:out:refreshProperties();",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "type:Output Type:DataFileType:out:refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String",
@@ -219,8 +223,8 @@ public enum Properties {
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBUPDATE(
-            "type:Output Type:FileType:out:refreshProperties();",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "type:Output Type:DataFileType:out:refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String",

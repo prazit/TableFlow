@@ -14,10 +14,13 @@ public class SFTPData extends DataSourceData {
     private String rootPath;
 
     private String host;
-    private String port;
+    private int port;
     private String user;
     private String password;
     private int retry;
+
+    private boolean userEncrypted;
+    private boolean passwordEncrypted;
 
     /*tmp=/ftp/<id>/<root-path>/*/
     private String tmp;

@@ -91,6 +91,8 @@ public class UpdateProjectCommand extends IOCommand {
             SFTPData sftpData = (SFTPData) data;
             sftpData.setUser(Crypto.encrypt(sftpData.getUser()));
             sftpData.setPassword(Crypto.encrypt(sftpData.getPassword()));
+            sftpData.setUserEncrypted(true);
+            sftpData.setPasswordEncrypted(true);
         }
     }
 

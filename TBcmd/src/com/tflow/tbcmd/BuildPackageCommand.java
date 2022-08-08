@@ -13,6 +13,7 @@ import com.tflow.model.mapper.PackageMapper;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.wcmd.KafkaCommand;
 import javafx.util.Pair;
+import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class BuildPackageCommand extends KafkaCommand {
 
@@ -97,6 +95,7 @@ public class BuildPackageCommand extends KafkaCommand {
 
     @SuppressWarnings("unchecked")
     private void addVersionedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException {
+        /*TODO: future feature: need to filter by ProjectType on next ProjectType*/
         Object data = dataManager.getData(ProjectFileType.VERSIONED_LIST, projectUser);
         List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
         for (BinaryFileItemData binaryFileItemData : binaryFileItemDataList) {
@@ -117,6 +116,7 @@ public class BuildPackageCommand extends KafkaCommand {
             packageFileData.setId(newPackageFileId(packageData));
             packageFileData.setType(FileType.UPLOADED);
             packageFileData.setBuildDate(packageData.getBuildDate());
+            packageFileData.setBuildPath(FileNameExtension.forName(binaryFileItemData.getName()).getBuildPath());
             fileList.add(packageFileData);
         }
     }
@@ -157,7 +157,7 @@ public class BuildPackageCommand extends KafkaCommand {
         });
 
         DataConversionConfigFile dataConversionConfigFile = dconvers.dataConversionConfigFile;
-        initDataConversionConfigFile(dataConversionConfigFile, projectUser);
+        initDataConversionConfigFile(dataConversionConfigFile, projectUser, fileList);
 
         try {
             log.info("dataConversionConfigFile.saveProperties...");
@@ -172,7 +172,6 @@ public class BuildPackageCommand extends KafkaCommand {
             BinaryFileData converterFileData;
             for (ConverterConfigFile converterConfigFile : dataConversionConfigFile.getConverterConfigMap().values()) {
                 name = extractFileName(converterConfigFile.getName());
-                createEmptyFile(converterConfigFile.getName());
 
                 byteArrayOutputStream = new ByteArrayOutputStream();
                 converterConfigFile.saveProperties(byteArrayOutputStream);
@@ -210,7 +209,7 @@ public class BuildPackageCommand extends KafkaCommand {
         }
     }
 
-    private void initDataConversionConfigFile(DataConversionConfigFile dataConversionConfigFile, ProjectUser projectUser) throws IOException {
+    private void initDataConversionConfigFile(DataConversionConfigFile dataConversionConfigFile, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
         // all commented will use default values by DConvers
 
         /*dataConversionConfigFile.setPluginsCalcList();
@@ -231,10 +230,10 @@ public class BuildPackageCommand extends KafkaCommand {
         dataConversionConfigFile.setTargetFileNumber(201);
 
         dataConversionConfigFile.setDataSourceConfigMap(createDataSourceConfigMap(projectUser));
-        dataConversionConfigFile.setSftpConfigMap(getSftpConfigMap(projectUser));
-        dataConversionConfigFile.setSmtpConfigMap(getSmtpConfigMap());
+        dataConversionConfigFile.setSftpConfigMap(createSftpConfigMap(projectUser));
+        dataConversionConfigFile.setSmtpConfigMap(createSmtpConfigMap());
 
-        dataConversionConfigFile.setConverterConfigMap(getConverterConfigMap());
+        dataConversionConfigFile.setConverterConfigMap(getConverterConfigMap(projectUser, fileList));
     }
 
     @SuppressWarnings("unchecked")
@@ -257,7 +256,7 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     private DataSourceConfig getDataSourceConfig(DatabaseData databaseData) {
-        DataSourceConfig dataSourceConfig = new DataSourceConfig(dconvers, databaseData.getName());
+        DataSourceConfig dataSourceConfig = new DataSourceConfig(dconvers, IDPrefix.DB.getPrefix() + databaseData.getId());
 
         dataSourceConfig.setUrl(/*"jdbc:oracle:thin:@172.20.8.67:1521:FCUAT2"*/ databaseData.getUrl());
         dataSourceConfig.setDriver(/*"oracle.jdbc.driver.OracleDriver"*/databaseData.getDriver());
@@ -286,85 +285,224 @@ public class BuildPackageCommand extends KafkaCommand {
         return dataSourceConfig;
     }
 
-    private HashMap<String, HostConfig> getSftpConfigMap(ProjectUser projectUser) {
+    private String wordsAsId(String name) {
+        return StringUtil.capitalize(name.replaceAll("\\p{Punct}|\\s", ""));
+    }
+
+    @SuppressWarnings("unchecked")
+    private HashMap<String, HostConfig> createSftpConfigMap(ProjectUser projectUser) throws IOException {
         HashMap<String, HostConfig> sftpConfigMap = new HashMap<>();
 
-        /*TODO: loop all sftp*/
+        Object data = dataManager.getData(ProjectFileType.SFTP_LIST, projectUser);
+        List<Integer> sftpIdList = (List<Integer>) throwExceptionOnError(data);
 
+        SFTPData sftpData;
+        HostConfig hostConfig;
+        for (Integer sftpId : sftpIdList) {
+            data = dataManager.getData(ProjectFileType.SFTP, projectUser, sftpId);
+            sftpData = (SFTPData) throwExceptionOnError(data);
+            hostConfig = getHostConfig(sftpData);
+            sftpConfigMap.put(hostConfig.getName().toUpperCase(), hostConfig);
+        }
 
         return sftpConfigMap;
     }
 
-    private HashMap<String, HostConfig> getSmtpConfigMap() {
+    private HostConfig getHostConfig(SFTPData sftpData) {
+        HostConfig hostConfig = new HostConfig(dconvers, IDPrefix.SFTP.getPrefix() + sftpData.getId(), Property.SFTP);
+
+        hostConfig.setHost(sftpData.getHost());
+        hostConfig.setPort(sftpData.getPort());
+        hostConfig.setUser(sftpData.isUserEncrypted() ? Crypto.decrypt(sftpData.getUser()) : sftpData.getUser());
+        hostConfig.setPassword(sftpData.isPasswordEncrypted() ? Crypto.decrypt(sftpData.getPassword()) : sftpData.getPassword());
+        hostConfig.setRetry(sftpData.getRetry());
+        hostConfig.setTmp(sftpData.getTmp());
+
+        return hostConfig;
+    }
+
+    private HashMap<String, HostConfig> createSmtpConfigMap() {
         /*TODO: Future Feature: generate smtpConfigMap*/
         return new HashMap<>();
     }
 
-    private HashMap<String, ConverterConfigFile> getConverterConfigMap() {
+    @SuppressWarnings("unchecked")
+    private HashMap<String, ConverterConfigFile> getConverterConfigMap(ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
         HashMap<String, ConverterConfigFile> converterMap = new HashMap<>();
 
-        /*TODO: loop all step*/
-        ConverterConfigFile converterConfigFile = getConverterConfigFile("firstconverter");
-        converterMap.put(converterConfigFile.getName().toUpperCase(), converterConfigFile);
+        Object data = dataManager.getData(ProjectFileType.STEP_LIST, projectUser);
+        List<StepItemData> stepIdList = (List<StepItemData>) throwExceptionOnError(data);
+
+        StepData stepData;
+        ConverterConfigFile converterConfigFile;
+        for (StepItemData stepItemData : stepIdList) {
+            data = dataManager.getData(ProjectFileType.STEP, projectUser, stepItemData.getId(), stepItemData.getId());
+            stepData = (StepData) throwExceptionOnError(data);
+            converterConfigFile = getConverterConfigFile(stepData, projectUser, fileList);
+            converterMap.put(converterConfigFile.getName().toUpperCase(), converterConfigFile);
+        }
 
         return converterMap;
     }
 
-    private ConverterConfigFile getConverterConfigFile(String name) {
-        String fileName = generatedPath + name + Defaults.CONFIG_FILE_EXT.getStringValue();
+    private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
+        String fileName = generatedPath + IDPrefix.STEP.getPrefix() + stepData.getId() + Defaults.CONFIG_FILE_EXT.getStringValue();
         createEmptyFile(fileName);
 
         ConverterConfigFile converterConfigFile = new ConverterConfigFile(dconvers, fileName);
+        converterConfigFile.setIndex(stepData.getIndex());
 
-        int stepIndex = 0 /*TODO: step.getIndex()*/;
-        converterConfigFile.setIndex(stepIndex);
+        Object data = dataManager.getData(ProjectFileType.DATA_TABLE_LIST, projectUser, 0, stepData.getId());
+        List<Integer> dataTableIdList = (List<Integer>) throwExceptionOnError(data);
 
+        /*all data-tables*/
         HashMap<String, SourceConfig> sourceConfigMap = converterConfigFile.getSourceConfigMap();
+        for (Integer dataTableId : dataTableIdList) {
+            data = dataManager.getData(ProjectFileType.DATA_TABLE, projectUser, dataTableId, stepData.getId(), dataTableId);
+            DataTableData dataTableData = (DataTableData) throwExceptionOnError(data);
+            SourceConfig sourceConfig = getSourceConfig(dataTableData, converterConfigFile, projectUser, stepData.getId(), fileList);
+            sourceConfigMap.put(sourceConfig.getName().toUpperCase(), sourceConfig);
+        }
 
-        /*TODO: loop all datatable*/
-        SourceConfig sourceConfig = getSourceConfig("firstdatatable", converterConfigFile);
-        sourceConfigMap.put(sourceConfig.getName().toUpperCase(), sourceConfig);
+        /*TODO: getData transform data*/
+        TransformTableData transformTableData = null;
 
 
         HashMap<String, TargetConfig> targetConfigMap = converterConfigFile.getTargetConfigMap();
 
         /*TODO: loop all transtable*/
-        TargetConfig targetConfig = getTargetConfig("firsttransformtable", converterConfigFile);
+        TargetConfig targetConfig = getTargetConfig(transformTableData, converterConfigFile, projectUser, stepData.getId());
         targetConfigMap.put(targetConfig.getName().toUpperCase(), targetConfig);
 
         return converterConfigFile;
     }
 
-    private SourceConfig getSourceConfig(String name, ConverterConfigFile converterConfigFile) {
-        SourceConfig sourceConfig = new SourceConfig(dconvers, name, converterConfigFile);
+    @SuppressWarnings("unchecked")
+    private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList) throws IOException {
+        SourceConfig sourceConfig = new SourceConfig(dconvers, IDPrefix.DATA_TABLE.getPrefix() + dataTableData.getId(), converterConfigFile);
 
-        int dataTableIndex = 0 /*TODO: dataTable.getIndex()*/;
-        sourceConfig.setIndex(dataTableIndex);
-        sourceConfig.setDataSource("tradefinance");
-        sourceConfig.setId("column_1");
-        sourceConfig.setQuery("select 1 as column_1, 2 as column_2 from dual");
-        sourceConfig.setTarget(true);
+        sourceConfig.setIndex(dataTableData.getIndex());
+        sourceConfig.setId(dataTableData.getIdColName());
+        sourceConfig.setTarget(dataTableData.getStartPlug().getLineList().size() > 0);
+
+        Object data = dataManager.getData(ProjectFileType.DATA_FILE, projectUser, dataTableData.getDataFile(), stepId);
+        DataFileData dataFileData = (DataFileData) throwExceptionOnError(data);
+        Integer lineToDataSourceId = dataFileData.getEndPlug().getLineList().get(0);
+
+        /* dataSource stand at startPlug of a line between dataSource and dataFile */
+        data = dataManager.getData(ProjectFileType.LINE, projectUser, lineToDataSourceId, stepId);
+        LineData lineData = (LineData) throwExceptionOnError(data);
+        sourceConfig.setDataSource(lineData.getStartSelectableId());
+
+        /*need sql-file from the fileList, Notice: uploaded files need to added before */
+        PackageFileData sqlPackageFileData = null;
+        for (PackageFileData fileData : fileList) {
+            if (FileType.UPLOADED == fileData.getType() && fileData.getFileId() == dataFileData.getUploadedId()) {
+                sqlPackageFileData = fileData;
+                break;
+            }
+        }
+        if (sqlPackageFileData == null) {
+            throw new IOException("Uploaded file not found: id=" + dataFileData.getUploadedId() + " '" + dataFileData.getName() + "'");
+        }
+
+        /* query=$[TXT:IFRS9/sql/shared/TFSHEADER.sql] */
+        sourceConfig.setQuery("$[TXT:" + sqlPackageFileData.getBuildPath() + sqlPackageFileData.getName() + "]");
+
+        /*all outputs of datatable*/
+        data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 0, stepId, dataTableData.getId());
+        List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
 
         OutputConfig outputConfig = sourceConfig.getOutputConfig();
-
-        /*TODO: loop all output of datatable*/
-        setOutputConfig(outputConfig);
+        OutputFileData outputFileData;
+        for (Integer outputId : outputIdList) {
+            data = dataManager.getData(ProjectFileType.DATA_OUTPUT, projectUser, outputId, stepId, dataTableData.getId());
+            outputFileData = (OutputFileData) throwExceptionOnError(data);
+            setOutputConfig(outputConfig, outputFileData);
+        }
 
         return sourceConfig;
     }
 
-    private void setOutputConfig(OutputConfig outputConfig) {
-        /*TODO: set output con figs*/
+    private BinaryFileItemData getBinaryFileItemData(int uploadedId, List<BinaryFileItemData> binaryFileItemDataList) {
+        for (BinaryFileItemData binaryFileItemData : binaryFileItemDataList) {
+            if (binaryFileItemData.getId() == uploadedId) return binaryFileItemData;
+        }
+        return null;
+    }
+
+    private void setOutputConfig(OutputConfig outputConfig, OutputFileData outputFileData) {
+        DataFileType outputFileType = DataFileType.parse(outputFileData.getType());
+        if (outputFileType == null) return;
+
+        switch (outputFileType) {
+            case OUT_SQL:
+                setOutputSQL(outputConfig, outputFileData);
+                break;
+            case OUT_MD:
+                setOutputMD(outputConfig, outputFileData);
+                break;
+            case OUT_CSV:
+                setOutputCSV(outputConfig, outputFileData);
+                break;
+            case OUT_TXT:
+                setOutputTXT(outputConfig, outputFileData);
+                break;
+        }
+    }
+
+    private void setOutputSQL(OutputConfig outputConfig, OutputFileData outputFileData) {
+        Map<String, Object> propertyMap = outputFileData.getPropertyMap();
+        /*TODO: set output for SQL*/
+    }
+
+    private void setOutputMD(OutputConfig outputConfig, OutputFileData outputFileData) {
+        Map<String, Object> propertyMap = outputFileData.getPropertyMap();
+        outputConfig.setMarkdown(true);
+        outputConfig.setMarkdownOutput(normalizeOutputFilePath(outputFileData.getPath()) + normalizeOutputFileName(outputFileData.getName()));
+        outputConfig.setMarkdownOutputAppend((Boolean) propertyMap.get("append"));
+        outputConfig.setMarkdownOutputCharset((String) propertyMap.get("charset"));
+        outputConfig.setMarkdownOutputEOL((String) propertyMap.get("eol"));
+        outputConfig.setMarkdownOutputEOF((String) propertyMap.get("eof"));
+        outputConfig.setMarkdownComment((Boolean) propertyMap.get("showComment"));
+        outputConfig.setMarkdownCommentDataSource((Boolean) propertyMap.get("showDataSource"));
+        outputConfig.setMarkdownCommentQuery((Boolean) propertyMap.get("showQuery"));
+        outputConfig.setMarkdownTitle((Boolean) propertyMap.get("showTableTitle"));
+        outputConfig.setMarkdownRowNumber((Boolean) propertyMap.get("showRowNumber"));
+        outputConfig.setMarkdownMermaid((Boolean) propertyMap.get("showFlowChart"));
+        outputConfig.setMarkdownMermaidFull((Boolean) propertyMap.get("showLongFlowChart"));
+    }
+
+    private String normalizeOutputFileName(String name) {
+        if (name == null) return "output";
+        return name.replaceAll("\\p{Punct}", "");
+    }
+
+    private String normalizeOutputFilePath(String path) {
+        if (path == null) return "";
+        path = path.replaceAll("//|///|////", "/");
+        if (path.startsWith("/")) path = path.substring(1);
+        if (!path.endsWith("/")) path += "/";
+        return path;
+    }
+
+    private void setOutputCSV(OutputConfig outputConfig, OutputFileData outputFileData) {
+        Map<String, Object> propertyMap = outputFileData.getPropertyMap();
+        /*TODO: set output for CSV*/
+    }
+
+    private void setOutputTXT(OutputConfig outputConfig, OutputFileData outputFileData) {
+        Map<String, Object> propertyMap = outputFileData.getPropertyMap();
+        /*TODO: set output for TXT*/
     }
 
     @SuppressWarnings("unchecked")
-    private TargetConfig getTargetConfig(String name, ConverterConfigFile converterConfigFile) {
-        TargetConfig targetConfig = new TargetConfig(dconvers, name, converterConfigFile);
+    private TargetConfig getTargetConfig(TransformTableData transformTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId) throws IOException {
+        TargetConfig targetConfig = new TargetConfig(dconvers, IDPrefix.TRANSFORM_TABLE.getPrefix() + transformTableData.getId(), converterConfigFile);
 
-        int tableIndex = 0 /*TODO: transtable.getIndex()*/;
         targetConfig.setSource("firstdatatable");
         targetConfig.getSourceList().add(targetConfig.getSource());
-        targetConfig.setIndex(tableIndex);
+        targetConfig.setIndex(transformTableData.getIndex());
         targetConfig.setId("column_A");
 
         List<Pair<String, String>> columnList = targetConfig.getColumnList();
@@ -383,8 +521,18 @@ public class BuildPackageCommand extends KafkaCommand {
         )));
 
         /*TODO: loop all output of transtable*/
+
+        /*all outputs of datatable*/
+        Object data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 0, stepId, transformTableData.getId());
+        List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
+
         OutputConfig outputConfig = targetConfig.getOutputConfig();
-        setOutputConfig(outputConfig);
+        OutputFileData outputFileData;
+        for (Integer outputId : outputIdList) {
+            data = dataManager.getData(ProjectFileType.DATA_OUTPUT, projectUser, outputId, stepId, transformTableData.getId());
+            outputFileData = (OutputFileData) throwExceptionOnError(data);
+            setOutputConfig(outputConfig, outputFileData);
+        }
 
         /*-- may be in the future features
         outputConfig = targetConfig.getMappingOutputConfig();

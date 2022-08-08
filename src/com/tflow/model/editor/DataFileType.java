@@ -4,17 +4,20 @@ import com.tflow.model.editor.datasource.DataSourceType;
 
 public enum DataFileType {
 
-    IN_SQL("SQL", "sql.png", DataSourceType.DATABASE, Properties.INPUT_SQL, "input.sql"),
-    IN_MD("Markdown", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "input.md"),
+    /*TODO: when future feature 'DataSourceType.KAFKAPRODUCER' is added also need to remove dataSourceType from this enum*/
+    IN_SQL("SQL File", "sql.png", /*DataSourceType.DATABASE*/ null, Properties.INPUT_SQL, "input.sql"),
+    IN_MD("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "input.md"),
     IN_ENV("System Environment", "system.png", DataSourceType.SYSTEM, Properties.INPUT_ENVIRONMENT, "no-input-file"),
     IN_DIR("Directory List", "dir.png", DataSourceType.LOCAL, Properties.INPUT_DIRECTORY, "/"),
 
-    OUT_DBINSERT("Insert", "sql.png", DataSourceType.DATABASE, Properties.OUTPUT_DBINSERT, "no-output-file"),
-    OUT_DBUPDATE("Update", "sql.png", DataSourceType.DATABASE, Properties.OUTPUT_DBUPDATE, "no-output-file"),
-    OUT_SQL("SQL", "sql.png", DataSourceType.LOCAL, Properties.OUTPUT_SQL, "output.sql"),
-    OUT_MD("Markdown", "markdown.png", DataSourceType.LOCAL, Properties.OUTPUT_MARKDOWN, "output.md"),
-    OUT_CSV("CSV", "csv.png", DataSourceType.LOCAL, Properties.OUTPUT_CSV, "output.csv"),
-    OUT_TXT("TXT", "txt.png", DataSourceType.LOCAL, Properties.OUTPUT_TXT, "output.txt"),
+    /*-- TODO: Future Feature: output to Database
+    OUT_DBINSERT("Insert to Database", "sql.png", DataSourceType.DATABASE, Properties.OUTPUT_DBINSERT, "no-output-file"),
+    OUT_DBUPDATE("Update to Database", "sql.png", DataSourceType.DATABASE, Properties.OUTPUT_DBUPDATE, "no-output-file"),*/
+
+    OUT_SQL("SQL File", "sql.png", DataSourceType.LOCAL, Properties.OUTPUT_SQL, "output.sql"),
+    OUT_MD("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.OUTPUT_MARKDOWN, "output.md"),
+    OUT_CSV("CSV File", "csv.png", DataSourceType.LOCAL, Properties.OUTPUT_CSV, "output.csv"),
+    OUT_TXT("Fixed Length File", "txt.png", DataSourceType.LOCAL, Properties.OUTPUT_TXT, "output.txt"),
     ;
 
     private String name;

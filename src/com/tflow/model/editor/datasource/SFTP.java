@@ -1,5 +1,6 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;
@@ -16,10 +17,13 @@ public class SFTP extends DataSource implements Selectable {
     private String rootPath;
 
     private String host;
-    private String port;
+    private int port;
     private String user;
     private String password;
     private int retry;
+
+    private boolean userEncrypted;
+    private boolean passwordEncrypted;
 
     /*tmp=/ftp/<id>/<root-path>/*/
     private String tmp;
@@ -66,11 +70,11 @@ public class SFTP extends DataSource implements Selectable {
         this.host = host;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
@@ -96,6 +100,22 @@ public class SFTP extends DataSource implements Selectable {
 
     public void setRetry(int retry) {
         this.retry = retry;
+    }
+
+    public boolean isUserEncrypted() {
+        return userEncrypted;
+    }
+
+    public void setUserEncrypted(boolean userEncrypted) {
+        this.userEncrypted = userEncrypted;
+    }
+
+    public boolean isPasswordEncrypted() {
+        return passwordEncrypted;
+    }
+
+    public void setPasswordEncrypted(boolean passwordEncrypted) {
+        this.passwordEncrypted = passwordEncrypted;
     }
 
     public String getTmp() {
@@ -128,6 +148,6 @@ public class SFTP extends DataSource implements Selectable {
 
     @Override
     public String getSelectableId() {
-        return "ftp" + id;
+        return IDPrefix.SFTP.getPrefix() + id;
     }
 }

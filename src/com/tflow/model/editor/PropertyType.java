@@ -20,7 +20,7 @@ public enum PropertyType {
     DBMS(Dbms.ORACLE, true),
     DATASOURCE(-1, true),
     DATASOURCETYPE(DataSourceType.LOCAL, true),
-    FILETYPE(DataFileType.IN_MD, true),
+    DATAFILETYPE(DataFileType.IN_MD, true),
     COLUMNFUNCTION(ColumnFunction.LOOKUP, true),
     TABLEFUNCTION(TableFunction.SORT, true),
     SYSTEM(SystemEnvironment.JVM_ENVIRONMENT, true),

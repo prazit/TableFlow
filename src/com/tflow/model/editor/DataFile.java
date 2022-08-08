@@ -16,6 +16,8 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     private String name;
     private String path;
 
+    private int uploadedId;
+
     private Map<String, Object> propertyMap;
 
     private LinePlug endPlug;
@@ -111,6 +113,14 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         this.path = path;
     }
 
+    public int getUploadedId() {
+        return uploadedId;
+    }
+
+    public void setUploadedId(int uploadedId) {
+        this.uploadedId = uploadedId;
+    }
+
     @Override
     public LinePlug getEndPlug() {
         return endPlug;
@@ -161,6 +171,7 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
                 ", type:" + type +
                 ", name:'" + name + '\'' +
                 ", path:'" + path + '\'' +
+                ", uploadedId:" + uploadedId +
                 ", endPlug:" + endPlug +
                 ", startPlug:" + startPlug +
                 '}';

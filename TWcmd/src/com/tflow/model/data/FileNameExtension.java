@@ -4,27 +4,33 @@ import org.slf4j.LoggerFactory;
 
 public enum FileNameExtension {
 
-    SQL,
-    MD,
-    TXT,
+    SQL("sql/"),
+    MD("md/"),
+    TXT("txt/"),
 
-    XML,
-    PROPERTY,
+    XML("xml/"),
+    PROPERTY("conf/"),
 
-    BAT,
-    SH,
+    BAT("bat/"),
+    SH("bat/"),
 
-    PNG,
-    CSS,
-    JS,
+    PNG("resources/images/"),
+    CSS("resources/css/"),
+    JS("resources/js/"),
 
-    JAVA,
-    CLASS,
+    JAVA("src/"),
+    CLASS("web/META-INF/classes/"),
 
-    JAR,
-    WAR,
-    ZIP,
+    JAR("lib/"),
+    WAR("archive/"),
+    ZIP("archive/"),
     ;
+
+    String buildPath;
+
+    FileNameExtension(String buildPath) {
+        this.buildPath = buildPath;
+    }
 
     public static FileNameExtension forName(String name) {
         if (name == null) return null;
@@ -36,5 +42,9 @@ public enum FileNameExtension {
             LoggerFactory.getLogger(FileNameExtension.class).warn("no FileNameExtension match for '{}'", name);
             return null;
         }
+    }
+
+    public String getBuildPath() {
+        return buildPath;
     }
 }

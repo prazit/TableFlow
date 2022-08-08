@@ -16,6 +16,8 @@ public class DataFileData extends RoomData implements Serializable {
     private String name;
     private String path;
 
+    private int uploadedId;
+
     private Map<String, Object> propertyMap;
 
     private LinePlugData endPlug;

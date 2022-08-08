@@ -353,7 +353,7 @@ public class EditorController extends Controller {
                 }
                 break;
 
-            case FILETYPE:
+            case DATAFILETYPE:
                 if (params[0].toUpperCase().equals("IN")) {
                     for (DataFileType value : DataFileType.values()) {
                         if (value.isInput()) selectItemList.add(new SelectItem(value, value.getName()));

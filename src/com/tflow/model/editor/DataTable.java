@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 import org.slf4j.Logger;
@@ -269,7 +270,7 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
 
     @Override
     public String getSelectableId() {
-        return "dt" + id;
+        return IDPrefix.DATA_TABLE.getPrefix() + id;
     }
 
     @Override
