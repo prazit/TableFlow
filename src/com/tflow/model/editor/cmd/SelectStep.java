@@ -115,7 +115,7 @@ public class SelectStep extends Command {
     }
 
     /**
-     * IMPORTANT: when selectable-object-type is added, need to add script to collect them when Select step as Active-Step.
+     * Notice: IMPORTANT: when selectable-object-type is added, need to add script to collect them when Select step as Active-Step.
      */
     private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
         for (Selectable selectable : selectableList) {

@@ -114,8 +114,7 @@ public enum Properties {
 
     INPUT_SYSTEM_ENVIRONMENT(
             "type:Type:DataFileType:in:refreshProperties();",
-            "name:System Environment:System",
-            "--: no properties for system file :--"
+            "name:System Environment:System"
     ),
 
     INPUT_TXT(

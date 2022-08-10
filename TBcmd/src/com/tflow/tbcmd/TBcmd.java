@@ -18,12 +18,6 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-/**
- * TODO: 1. Roll from Consumer on Topic 'project-build'.
- * TODO: 2. Read from TRcmd requires Producer on Topic 'project-read',
- * TODO: 3. Capture from Consumer on Topic 'project-data'.
- * TODO: 4. Write to TWcmd requires Producer on Topic 'project-write'.
- */
 public class TBcmd {
 
     private Logger log = LoggerFactory.getLogger(TBcmd.class);
@@ -34,7 +28,8 @@ public class TBcmd {
     private EnvironmentConfigs environmentConfigs;
 
     public TBcmd() {
-        /*nothing*/
+        environment = Environment.DEVELOPMENT;
+        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
     }
 
     @SuppressWarnings("unchecked")
@@ -78,16 +73,15 @@ public class TBcmd {
                     continue;
                 }
 
-                /*TODO: add command to UpdateProjectCommandQueue*/
+                /*TODO: future feature: add command to UpdateProjectCommandQueue*/
                 BuildPackageCommand buildPackageCommand = new BuildPackageCommand(key, value, environmentConfigs, projectDataManager);
 
-                /*test only*/
-                /*TODO: move this execute block into UpdateProjectCommandQueue*/
+                /*TODO: future feature: move this execute block into UpdateProjectCommandQueue*/
                 try {
                     buildPackageCommand.execute();
                     log.info("buildPackageCommand completed.");
                 } catch (InvalidParameterException inex) {
-                    /*TODO: how to handle rejected command*/
+                    /*Notice: how to handle rejected command, can rebuild when percentComplete < 100*/
                     log.error("Invalid parameter: {}", inex.getMessage());
                     log.info("buildPackageCommand(offset: {}, key: {}) rejected.", offset, key);
                 } catch (Exception ex) {

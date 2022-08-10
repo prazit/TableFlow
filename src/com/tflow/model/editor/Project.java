@@ -56,7 +56,6 @@ public class Project implements Selectable {
     private void init() {
         stepList = new ArrayList<>();
         propertyMap = new HashMap<>();
-        manager = new ProjectManager();
     }
 
     public String getId() {

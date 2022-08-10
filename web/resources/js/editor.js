@@ -124,7 +124,7 @@ function zoomEnd(submit) {
     if (active.length === 0) {
         contentWindow.scrollTo(scrollX, scrollY);
     } else {
-        /*TODO: need to calculate new scrollXY by zoomFactor and then remove scrollToActive below,
+        /*TODO: Future Feature: need to calculate new scrollXY by zoomFactor and then remove scrollToActive below,
            keep scrollXY before zoom(previous-zoom) and the calculate after zoom(new-zoom) */
         scrollToObj(active);
     }
@@ -207,7 +207,7 @@ function scrollToObj(active) {
     var outerHeight = active.outerHeight();
     var outerWidth = active.outerWidth();
 
-    /*TODO: no need to scroll when the object already stand in the current screen*/
+    /*TODO: Future Feature: no need to scroll when the object already stand in the current screen*/
     contentWindow.scrollTo(0, 0);
     var pos = active.offset();
     pos.top *= zoomed;
@@ -359,7 +359,7 @@ var tflow = {
     sections, contentWindow;
 
 /**
- * TODO: need to update Client-Data-File for heartbeat of the working-project.
+ * TODO: Future Feature: need to update Client-Data-File for heartbeat of the working-project.
  **/
 $(function () {
     leftPanel = $('.left-panel');

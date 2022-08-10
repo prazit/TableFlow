@@ -108,7 +108,7 @@ public abstract class IOCommand extends KafkaCommand {
     }
 
     /**
-     * Notice: IMPORTANT: this function perform replace only.
+     * Notice: this function perform replace only.
      */
     protected void writeTo(File file, Object object) throws IOException, InstantiationException, SerializationException {
         info("writeTo(file:{})", file);

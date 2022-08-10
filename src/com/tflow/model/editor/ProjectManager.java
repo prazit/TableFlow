@@ -13,15 +13,47 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.system.Environment;
+import com.tflow.util.DateTimeUtil;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.mapstruct.factory.Mappers;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class ProjectManager {
 
-    public ProjectManager() {
-        /*nothing*/
+    private Logger log = LoggerFactory.getLogger(ProjectManager.class);
+
+    private EnvironmentConfigs environmentConfigs;
+    private String buildPackageTopic;
+
+    public ProjectManager(Environment environment) {
+        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+    }
+
+    private Producer<String, Object> createProducer() {
+        /*TODO: need to load producer configuration*/
+        buildPackageTopic = "project-build";
+        java.util.Properties props = new Properties();
+        props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
+        props.put("acks", "all");
+        props.put("retries", 0);
+        props.put("batch.size", 16384);
+        props.put("linger.ms", 1);
+        props.put("buffer.memory", 33554432);
+        props.put("request.timeout.ms", 30000);
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("key.serializer.encoding", "UTF-8");
+        props.put("value.serializer", environmentConfigs.getKafkaSerializer());
+        return new KafkaProducer<>(props);
     }
 
     public String getNewProjectId(Workspace workspace, ProjectDataManager dataManager) throws ProjectDataException {
@@ -218,6 +250,7 @@ public class ProjectManager {
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwner(workspace);
         project.setDataManager(dataManager);
+        project.setManager(new ProjectManager(workspace.getEnvironment()));
 
         /*get db-list*/
         data = dataManager.getData(ProjectFileType.DB_LIST, projectUser, "1");
@@ -515,5 +548,32 @@ public class ProjectManager {
         return data;
     }
 
+    /**
+     * After call buildPackage you need to get PackageData for complete-status.
+     */
+    public void buildPackage(Project project) {
+        Producer<String, Object> producer = createProducer();
 
+        /*create build Message for TBcmd*/
+        Workspace workspace = project.getOwner();
+        KafkaRecordAttributes kafkaRecordAttributes = new KafkaRecordAttributes();
+        kafkaRecordAttributes.setProjectId(project.getId());
+        kafkaRecordAttributes.setUserId(workspace.getUser().getId());
+        kafkaRecordAttributes.setClientId(workspace.getClient().getId());
+        kafkaRecordAttributes.setModifiedDate(DateTimeUtil.now());
+
+        /*send message*/
+        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("build", kafkaRecordAttributes));
+        log.debug("Future: isDone={}, isCancelled={}", future.isDone(), future.isCancelled());
+        try {
+            RecordMetadata recordMetadata = future.get();
+            log.debug("RecordMetadata: {}", recordMetadata);
+        } catch (InterruptedException ex) {
+            log.warn("InterruptedException: ", ex);
+        } catch (ExecutionException ex) {
+            log.warn("ExecutionException: ", ex);
+        }
+
+        producer.close();
+    }
 }

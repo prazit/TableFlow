@@ -11,6 +11,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /*TODO: save updated object between line in RemoveDataFile when the Action RemoveDataFile is used in the UI*/
 public class ProjectDataManager {
@@ -237,8 +240,13 @@ public class ProjectDataManager {
     private void commit(long milliseconds) {
         commitWaiting = true;
 
-        /*TODO: Wait milliseconds, please use Scheduler.*/
-        /*TODO: after wait, need to set commitWaiting = false; and then commit*/
+        /*TODO: Wait milliseconds, please use Scheduler or new Thread and Wait.*/
+        /*TODO: after wait, need to set commitWaiting = false; and then commit
+        {
+            commitWaiting = false;
+            commit();
+        }
+        */
     }
 
     /**
@@ -268,7 +276,17 @@ public class ProjectDataManager {
             kafkaRecord = new KafkaRecord(writeCommand.getDataObject(), additional);
             log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) started.", fileType.name(), recordId);
 
-            producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
+            Future<RecordMetadata> future = producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
+            log.debug("Future: isDone={}, isCancelled={}", future.isDone(), future.isCancelled());
+            try {
+                RecordMetadata recordMetadata = future.get();
+                log.debug("RecordMetadata: {}", recordMetadata);
+            } catch (InterruptedException ex) {
+                log.warn("InterruptedException: ", ex);
+            } catch (ExecutionException ex) {
+                log.warn("ExecutionException: ", ex);
+            }
+
             projectDataWriteBufferList.remove(writeCommand);
             testBuffer.add(writeCommand);
 

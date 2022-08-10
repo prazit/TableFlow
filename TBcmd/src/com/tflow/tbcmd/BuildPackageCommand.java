@@ -61,8 +61,7 @@ public class BuildPackageCommand extends KafkaCommand {
         List<PackageItemData> packageIdList = (List<PackageItemData>) throwExceptionOnError(data);
         int packageId = packageIdList.size();
 
-        /*Notice: IMPORTANT: packageData contains percent complete for ui, update them 4-5 times max*/
-        List<PackageFileData> fileList = new ArrayList<>();
+        /*Notice: packageData contains percent complete for ui, update them 4-5 times max*/
         PackageData packageData = new PackageData();
         packageData.setPackageId(packageId);
         packageData.setProjectId(attributes.getProjectId());
@@ -71,9 +70,9 @@ public class BuildPackageCommand extends KafkaCommand {
 
         packageIdList.add(mapper.map(packageData));
         dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
-
         updatePercentComplete(packageData, projectUser, 0, estimateBuiltDate());
 
+        List<PackageFileData> fileList = new ArrayList<>();
         addUploadedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 20, estimateBuiltDate());
 
@@ -84,14 +83,13 @@ public class BuildPackageCommand extends KafkaCommand {
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
         addConfigVersionFile(fileList, packageData, projectUser);
-
-        // save file list
         packageData.setFileList(fileList);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
     }
 
     private void addConfigVersionFile(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) {
-        /*TODO: add Configuration Version File to package-file-list*/
+        /*TODO: future feature: add Configuration Version File to package-file-list*/
+
     }
 
     private void updatePercentComplete(PackageData packageData, ProjectUser projectUser, int percent, Date builtDate) {
@@ -404,6 +402,7 @@ public class BuildPackageCommand extends KafkaCommand {
         data = dataManager.getData(ProjectFileType.DATA_SOURCE_SELECTOR, projectUser, Integer.parseInt(dataSourceSelectorId), stepId);
         DataSourceSelectorData dataSourceSelectorData = (DataSourceSelectorData) throwExceptionOnError(data);
         DataSourceType dataSourceType = DataSourceType.parse(dataSourceSelectorData.getType());
+        if (dataSourceType == null) throw new IOException("Invalid DataSourceType: " + dataSourceSelectorData.getType());
 
         /*
          * find DataSource and Query.
@@ -419,7 +418,7 @@ public class BuildPackageCommand extends KafkaCommand {
                 sourceConfig.setDataSource(types[1]);
 
                 // query=$[FTP:sftpserver/SFTP-Staging-Path/ALITLNDP_STEP2.md]
-                PackageFileData sftpPackageFileData = findPackageFileData(dataFileData, fileList);
+                PackageFileData sftpPackageFileData = findUploadedFileData(dataFileData, fileList);
                 sourceConfig.setQuery("$[FTP:" + IDPrefix.SFTP.getPrefix() + dataSourceSelectorData.getDataSourceId() + "/" + sftpPackageFileData.getBuildPath() + sftpPackageFileData.getName() + "]");
                 break;
 
@@ -431,7 +430,7 @@ public class BuildPackageCommand extends KafkaCommand {
 
                 // query=/SFTP-Staging-Path/ALITLNDP_STEP2.md
                 /* query=IFRS9/sql/shared/TFSHEADER.md */
-                PackageFileData localPackageFileData = findPackageFileData(dataFileData, fileList);
+                PackageFileData localPackageFileData = findUploadedFileData(dataFileData, fileList);
                 sourceConfig.setQuery(localPackageFileData.getBuildPath() + localPackageFileData.getName());
                 break;
 
@@ -448,7 +447,7 @@ public class BuildPackageCommand extends KafkaCommand {
 
                 // query from content of DataFile.name
                 /* query=$[TXT:IFRS9/sql/shared/TFSHEADER.sql] */
-                PackageFileData sqlPackageFileData = findPackageFileData(dataFileData, fileList);
+                PackageFileData sqlPackageFileData = findUploadedFileData(dataFileData, fileList);
                 sourceConfig.setQuery("$[TXT:" + sqlPackageFileData.getBuildPath() + sqlPackageFileData.getName() + "]");
                 break;
         }
@@ -470,8 +469,8 @@ public class BuildPackageCommand extends KafkaCommand {
         return sourceConfig;
     }
 
-    private PackageFileData findPackageFileData(DataFileData dataFileData, List<PackageFileData> fileList) throws IOException {
-        /*need uploaded-file from the fileList, Notice: uploaded files need to added before*/
+    private PackageFileData findUploadedFileData(DataFileData dataFileData, List<PackageFileData> fileList) throws IOException {
+        /*Notice: uploaded files need to added before*/
         PackageFileData sqlPackageFileData = null;
         for (PackageFileData fileData : fileList) {
             if (FileType.UPLOADED == fileData.getType() && fileData.getFileId() == dataFileData.getUploadedId()) {
@@ -514,7 +513,7 @@ public class BuildPackageCommand extends KafkaCommand {
 
     private void setOutputSQL(OutputConfig outputConfig, OutputFileData outputFileData) {
         Map<String, Object> propertyMap = outputFileData.getPropertyMap();
-        /*TODO: set output for SQL*/
+        /*TODO: future feature: set output for SQL*/
     }
 
     private void setOutputMD(OutputConfig outputConfig, OutputFileData outputFileData) {
@@ -549,12 +548,12 @@ public class BuildPackageCommand extends KafkaCommand {
 
     private void setOutputCSV(OutputConfig outputConfig, OutputFileData outputFileData) {
         Map<String, Object> propertyMap = outputFileData.getPropertyMap();
-        /*TODO: set output for CSV*/
+        /*TODO: future feature: set output for CSV*/
     }
 
     private void setOutputTXT(OutputConfig outputConfig, OutputFileData outputFileData) {
         Map<String, Object> propertyMap = outputFileData.getPropertyMap();
-        /*TODO: set output for TXT*/
+        /*TODO: future feature: set output for TXT*/
     }
 
     @SuppressWarnings("unchecked")
@@ -607,13 +606,7 @@ public class BuildPackageCommand extends KafkaCommand {
                 }
 
                 /*create ordered-arguments*/
-                StringBuilder arguments = new StringBuilder();
-                String[] keys = transformColumnData.getPropertyOrder().split("[,]");
-                Map<String, Object> propertyMap = transformColumnData.getPropertyMap();
-                for (String key : keys) {
-                    arguments.append(",").append(propertyMap.get(key).toString());
-                }
-                dynamicValueBuilder.append(arguments.substring(1));
+                dynamicValueBuilder.append(toArguments(transformColumnData.getPropertyMap(), transformColumnData.getPropertyOrder()));
 
                 if (isCalc) {
                     dynamicValueBuilder.append(")");
@@ -635,12 +628,12 @@ public class BuildPackageCommand extends KafkaCommand {
         }
 
         /*all outputs of transformtable*/
-        data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 0, stepId, transformTableData.getId());
+        data = dataManager.getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, projectUser, 0, stepId, transformTableData.getId());
         List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
         OutputConfig outputConfig = targetConfig.getOutputConfig();
         OutputFileData outputFileData;
         for (Integer outputId : outputIdList) {
-            data = dataManager.getData(ProjectFileType.DATA_OUTPUT, projectUser, outputId, stepId, transformTableData.getId());
+            data = dataManager.getData(ProjectFileType.TRANSFORM_OUTPUT, projectUser, outputId, stepId, transformTableData.getId());
             outputFileData = (OutputFileData) throwExceptionOnError(data);
             setOutputConfig(outputConfig, outputFileData);
         }
@@ -677,23 +670,18 @@ public class BuildPackageCommand extends KafkaCommand {
 
         /*create ordered-arguments*/
         HashMap<String, String> argumentMap = new HashMap<>();
-        StringBuilder arguments = new StringBuilder();
-        String[] keys = tableFxData.getPropertyOrder().split("[,]");
-        Map<String, Object> propertyMap = tableFxData.getPropertyMap();
-        for (String key : keys) {
-            arguments.append(",").append(propertyMap.get(key).toString());
-        }
-        argumentMap.put("arguments", arguments.substring(1));
+        argumentMap.put("arguments", toArguments(tableFxData.getPropertyMap(), tableFxData.getPropertyOrder()));
 
         transformConfig.getTransformList().add(new Pair<>(transformTypes, argumentMap));
     }
 
-    private HashMap<String, String> getParameterMap(String... argument) {
-        HashMap<String, String> parameterMap = new HashMap<>();
-        int size = argument.length;
-        for (int index = 0; index < size; index += 2) {
-            parameterMap.put(argument[index], argument[index + 1]);
+    private String toArguments(Map<String, Object> propertyMap, String propertyOrder) {
+        StringBuilder arguments = new StringBuilder();
+        String[] keys = propertyOrder.split("[,]");
+        for (String key : keys) {
+            arguments.append(",").append(propertyMap.get(key).toString());
         }
-        return parameterMap;
+        return arguments.substring(1);
     }
+
 }

@@ -12,7 +12,7 @@ public class AddProject extends Command {
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
         Workspace workspace = (Workspace) paramMap.get(CommandParamKey.WORKSPACE);
-        ProjectManager projectManager = new ProjectManager();
+        ProjectManager projectManager = new ProjectManager(workspace.getEnvironment());
         ProjectDataManager dataManager = new ProjectDataManager(workspace.getEnvironment());
 
         Project project = new Project("", "Untitled");
