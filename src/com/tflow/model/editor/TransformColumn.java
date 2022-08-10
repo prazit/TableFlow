@@ -1,10 +1,23 @@
 package com.tflow.model.editor;
 
+import java.util.Map;
+
 public class TransformColumn extends DataColumn implements HasEndPlug {
 
     private String dataColName;
+    private String dynamicExpression;
+
+    /*Notice: function, propertyMap used as fx replacement*/
+    private boolean useDynamic;
+    private boolean useFunction;
+    private ColumnFunction function;
+    private Map<String, Object> propertyMap;
+    private String propertyOrder;
+
+    @Deprecated
     private ColumnFx fx;
 
+    @Deprecated
     private LinePlug endPlug;
 
     /*for projectMapper*/
@@ -13,12 +26,14 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug, DataTable owner) {
         super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug, owner);
         dataColName = "" + name;
+        function = ColumnFunction.TRANSFER;
         createEndPlug(endPlug);
     }
 
     public TransformColumn(int index, DataType type, String name, String endPlug, String startPlug, DataTable owner) {
         super(index, type, name, startPlug, owner);
         dataColName = "" + name;
+        function = ColumnFunction.TRANSFER;
         createEndPlug(endPlug);
     }
 
@@ -61,12 +76,61 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
         this.dataColName = dataColName;
     }
 
+    public String getDynamicExpression() {
+        return dynamicExpression;
+    }
+
+    public void setDynamicExpression(String dynamicExpression) {
+        this.dynamicExpression = dynamicExpression;
+    }
+
     public ColumnFx getFx() {
         return fx;
     }
 
     public void setFx(ColumnFx fx) {
         this.fx = fx;
+    }
+
+    public boolean isUseDynamic() {
+        return useDynamic;
+    }
+
+    public void setUseDynamic(boolean useDynamic) {
+        this.useDynamic = useDynamic;
+    }
+
+    public String getPropertyOrder() {
+        return propertyOrder;
+    }
+
+    public void setPropertyOrder(String propertyOrder) {
+        this.propertyOrder = propertyOrder;
+    }
+
+    public boolean isUseFunction() {
+        return useFunction;
+    }
+
+    public void setUseFunction(boolean useFunction) {
+        this.useFunction = useFunction;
+    }
+
+    public ColumnFunction getFunction() {
+        return function;
+    }
+
+    public void setFunction(ColumnFunction function) {
+        this.function = function;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return propertyMap;
+    }
+
+    public void setPropertyMap(Map<String, Object> propertyMap) {
+        this.propertyMap = propertyMap;
     }
 
     @Override
@@ -81,22 +145,24 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
 
     @Override
     public Properties getProperties() {
-        return Properties.TRANSFORM_COLUMN;
+        return function.getProperties();
     }
 
     @Override
     public String toString() {
         return "{" +
-                " id:" + id +
+                "id:" + id +
                 ", index:" + index +
-                ", dataColName:'" + dataColName + '\'' +
-                ", name:'" + name + '\'' +
                 ", type:" + type +
-                ", fx:" + fx +
-                ", endPlug:" + endPlug +
-                ", startPlug:" + startPlug +
+                ", name:'" + name + '\'' +
+                ", dataColName:'" + dataColName + '\'' +
+                ", dynamicExpression:'" + dynamicExpression + '\'' +
+                ", useDynamic:" + useDynamic +
+                ", useFunction:" + useFunction +
+                ", function:" + function +
+                ", propertyMap:" + propertyMap +
+                ", propertyOrder:'" + propertyOrder + '\'' +
                 ", selectableId:'" + getSelectableId() + '\'' +
-                ", owner:" + owner.getSelectableId() +
                 '}';
     }
 }

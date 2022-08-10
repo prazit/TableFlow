@@ -21,10 +21,9 @@ import java.util.Map;
  * </p>
  */
 public enum Properties {
-    /*TODO: property description is needed*/
+    /*TODO: property description is defined in the PropertyDesc enum, assigned by description-key = propertyVar*/
     /*TODO: selectable object need lock/unlock status to enable/disable some properties with lock marked*/
 
-    /*TODO: client side: lets call the properties listener after value-changed*/
     TEST_REDEPLOY(
             "version.1.0.0",
             "version.1.0.1"
@@ -96,14 +95,27 @@ public enum Properties {
             "name:Table Name:String",
             "idColName:Key Column:Column:id"
     ),
-    TRANSFORM_COLUMN(
-            "type:Data Type:ReadOnly",
-            "name:Column Name:String",
-            "--: debug :--",
-            "fx:ColumnFx:ReadOnly"
+    TRANSFORM_COLUMN( /*direct transfer without function*/
+            "type:Type:ReadOnly",
+            "name:Name:String",
+            "value:Value:Column:sourceTable::[]useFunction",
+            "[: Dynamic Value Expression ::@value",
+            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
+            "[useFunction: Specific Function ::@dynamicValue",
+            "function:Function:ColumnFunction",
+            "--: Lookup Function Arguments :--",
+            "]: Specific Function :",
+            "]: Dynamic Value Expression :",
+            "useFunction:useFunction:ReadOnly"
     ),
     FX_PARAM(
             "name:Parameter Name:String"
+    ),
+
+    INPUT_SYSTEM_ENVIRONMENT(
+            "type:Type:DataFileType:in:refreshProperties();",
+            "name:System Environment:System",
+            "--: no properties for system file :--"
     ),
 
     INPUT_TXT(
@@ -123,10 +135,6 @@ public enum Properties {
     INPUT_MARKDOWN(
             "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String" /*TODO: do this after file structure is completed, change String of name to Upload. //"name:Filename:Upload:md,txt",*/
-    ),
-    INPUT_ENVIRONMENT(
-            "type:Type:DataFileType:in:refreshProperties();",
-            "name:System Environment:System"
     ),
     INPUT_DIRECTORY(
             "type:Type:DataFileType:in:refreshProperties();",
@@ -231,46 +239,180 @@ public enum Properties {
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
-    )
+    ),
 
-    /*TODO: need complete list for Parameters or Function Prototypes*/,
-    CFX_LOOKUP(
+    CFX_LOOKUP_FIRST_EDITOR(
             "name:Title:String",
             "function:Function:ColumnFunction",
-            "--:Source:--",
+            "--: Source :--",
             ".:propertyMap:sourceTable:Source Table:SourceTable",
-            "--:Conditions:--",
+            "--: Conditions :--",
             /*TODO: PropertyType for 'Condition' is needed*/
             /*"Condition:Condition(ColumnName==ColumnName(TargetTableLookup))",*/
             /*"Conditions:ConditionList(ColumnName==ColumnName(TargetTableLookup))",*/
-            "--:Value:--",
+            "--: Value :--: This is mockup view for sample flow",
             ".:propertyMap:sourceColumn:Key:Column:sourceTable",
             ".:propertyMap:sourceColumn:MatchKey:Column:sourceTable",
             ".:propertyMap:sourceColumn:Value:Column:sourceTable",
             ".:propertyMap:nullValue:Replace Null:String"
     ),
+
+    /*TODO: need complete list for Parameters or All Function Prototypes below*/
+
+    /*Notice: columnFx properties below used when expand the column accordion, but when collapse the column accordion will use COLUMN_FUNCTION instead*/
+    CFX_LOOKUP(
+            "type:Type:ReadOnly",
+            "name:Name:String",
+            ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
+            "[useFunction: Value Function ::@columnId",
+            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
+            "--: Function :--",
+            "function:Function:ColumnFunction",
+            "--: Lookup Function Arguments :--",
+            ".:propertyMap:sourceColumn:Source Table Compare Column:Column:sourceTable",
+            ".:propertyMap:lookupTableId:Lookup Table:Table",
+            ".:propertyMap:sourceColumn:Lookup Compare Column:Column:propertyMap.lookupTableId",
+            ".:propertyMap:sourceColumn:Lookup Value Column:Column:propertyMap.lookupTableId",
+            ".:propertyMap:nullValue:Replace Null Value:String",
+            "]: Value Function :",
+            "useFunction:useFunction:ReadOnly"
+    ),
+
     CFX_GET(
-            "name:File Name:String"
-            /*"Table:Table",
-            "Row:Row",
-            "Column:ColumnName(Table)"*/
+            "type:Type:ReadOnly",
+            "name:Name:String",
+            ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
+            "[useFunction: Value Function ::@columnId",
+            "function:Function:ColumnFunction",
+            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
+            "--: Get Function Arguments :--",
+            ".:propertyMap:tableId:Table:Table",
+            ".:propertyMap:rowIndex:Row Index:Integer",
+            ".:propertyMap:columnIndex:Value Column:Column:propertyMap.tableId",
+            "]: Value Function :",
+            "useFunction:useFunction:ReadOnly"
     ),
+
     CFX_CONCAT(
-            "name:File Name:String"
-
+            "type:Type:ReadOnly",
+            "name:Name:String",
+            ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
+            "[useFunction: Value Function ::@columnId",
+            "function:Function:ColumnFunction",
+            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
+            "--: Concat Function Arguments :--",
+            "]: Value Function :",
+            "useFunction:useFunction:ReadOnly"
     ),
+
     CFX_ROWCOUNT(
-            "name:File Name:String"
-
+            "type:Type:ReadOnly",
+            "name:Name:String",
+            ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
+            "[useFunction: Value Function ::@columnId",
+            "function:Function:ColumnFunction",
+            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
+            "--: Row Count Function Arguments :--",
+            "]: Value Function :",
+            "useFunction:useFunction:ReadOnly"
     ),
+
+    DYN_ARG(
+            ""
+    ),
+
+
+    DYN_STR(
+            ""
+    ),
+
+    DYN_INT(
+            ""
+    ),
+
+    DYN_DEC(
+            ""
+    ),
+
+    DYN_DTE(
+            ""
+    ),
+
+    DYN_DTT(
+            ""
+    ),
+
+
+    DYN_SYS(
+            ""
+    ),
+
+    DYN_SRC(
+            ""
+    ),
+
+    DYN_TAR(
+            ""
+    ),
+
+    DYN_MAP(
+            ""
+    ),
+
+
+    DYN_TXT(
+            ""
+    ),
+
+    DYN_HTP(
+            ""
+    ),
+
+    DYN_FTP(
+            ""
+    ),
+
+
+    DYN_LUP(
+            ""
+    ),
+
+    DYN_NON(
+            ""
+    ),
+
+    DYN_INV(
+            ""
+    ),
+
+
+    DYN_VAR(
+            ""
+    ),
+
 
     TFX_FILTER(
-            "name:File Name:String"
-
+            "name:Name:String",
+            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
+            "[useFunction: Specific Function ::@dynamicValue",
+            "function:Function:ColumnFunction",
+            "--: Filter Arguments :--",
+            ".:parameterMap:Conditions:Function:ColumnFunction",
+            "]: Specific Function :",
+            "useFunction:useFunction:ReadOnly"
     ),
-    TFX_SORT(
-            "name:File Name:String"
 
+    TFX_SORT(
+            "name:Name:String",
+            "value:Value:Column:sourceTable::[]useFunction",
+            "[: Dynamic Value Expression ::@value",
+            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
+            "[useFunction: Specific Function ::@dynamicValue",
+            "function:Function:ColumnFunction",
+            "--: Lookup Function Arguments :--",
+            "]: Specific Function :",
+            "]: Dynamic Value Expression :",
+            "useFunction:useFunction:ReadOnly"
     );
 
     private List<String> prototypeList;
@@ -371,6 +513,9 @@ public enum Properties {
             } else if (params[i].endsWith(";")) {
                 paramCount = i;
                 propView.setJavaScript(params[i]);
+            } else if (params[i].contains("[]")) {
+                paramCount = i;
+                propView.setEnableVar(params[i]);
             }
         }
 
@@ -384,14 +529,18 @@ public enum Properties {
         return propView;
     }
 
-    public void initPropertyMap(Map<String, Object> propertyMap) {
+    public String initPropertyMap(Map<String, Object> propertyMap) {
+        StringBuilder propertyOrder = new StringBuilder();
         for (String property : getPrototypeList()) {
             String[] params = property.split("[:]");
             if (params[0].equals(".")) {
-                if (!propertyMap.containsKey(params[1]))
+                if (!propertyMap.containsKey(params[1])) {
                     propertyMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
+                    propertyOrder.append(",").append(params[1]);
+                }
             }
         }
+        return propertyOrder.substring(1);
     }
 
 }

@@ -2,6 +2,7 @@ package com.tflow.tbcmd;
 
 import com.clevel.dconvers.DConvers;
 import com.clevel.dconvers.conf.*;
+import com.clevel.dconvers.dynvalue.DynamicValueType;
 import com.clevel.dconvers.ngin.Crypto;
 import com.clevel.dconvers.transform.TransformTypes;
 import com.tflow.kafka.EnvironmentConfigs;
@@ -82,9 +83,15 @@ public class BuildPackageCommand extends KafkaCommand {
         addVersionedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
+        addConfigVersionFile(fileList, packageData, projectUser);
+
         // save file list
         packageData.setFileList(fileList);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
+    }
+
+    private void addConfigVersionFile(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) {
+        /*TODO: add Configuration Version File to package-file-list*/
     }
 
     private void updatePercentComplete(PackageData packageData, ProjectUser projectUser, int percent, Date builtDate) {
@@ -352,10 +359,9 @@ public class BuildPackageCommand extends KafkaCommand {
         ConverterConfigFile converterConfigFile = new ConverterConfigFile(dconvers, fileName);
         converterConfigFile.setIndex(stepData.getIndex());
 
+        /*all data-tables*/
         Object data = dataManager.getData(ProjectFileType.DATA_TABLE_LIST, projectUser, 0, stepData.getId());
         List<Integer> dataTableIdList = (List<Integer>) throwExceptionOnError(data);
-
-        /*all data-tables*/
         HashMap<String, SourceConfig> sourceConfigMap = converterConfigFile.getSourceConfigMap();
         for (Integer dataTableId : dataTableIdList) {
             data = dataManager.getData(ProjectFileType.DATA_TABLE, projectUser, dataTableId, stepData.getId(), dataTableId);
@@ -364,15 +370,16 @@ public class BuildPackageCommand extends KafkaCommand {
             sourceConfigMap.put(sourceConfig.getName().toUpperCase(), sourceConfig);
         }
 
-        /*TODO: getData transform data*/
-        TransformTableData transformTableData = null;
-
-
+        /*all transform-tables*/
+        data = dataManager.getData(ProjectFileType.TRANSFORM_TABLE_LIST, projectUser, 0, stepData.getId());
+        List<Integer> transformTableIdList = (List<Integer>) throwExceptionOnError(data);
         HashMap<String, TargetConfig> targetConfigMap = converterConfigFile.getTargetConfigMap();
-
-        /*TODO: loop all transtable*/
-        TargetConfig targetConfig = getTargetConfig(transformTableData, converterConfigFile, projectUser, stepData.getId());
-        targetConfigMap.put(targetConfig.getName().toUpperCase(), targetConfig);
+        for (Integer transformTableId : transformTableIdList) {
+            data = dataManager.getData(ProjectFileType.TRANSFORM_TABLE, projectUser, transformTableId, stepData.getId(), 0, transformTableId);
+            TransformTableData transformTableData = (TransformTableData) throwExceptionOnError(data);
+            TargetConfig targetConfig = getTargetConfig(transformTableData, converterConfigFile, projectUser, stepData.getId());
+            targetConfigMap.put(targetConfig.getName().toUpperCase(), targetConfig);
+        }
 
         return converterConfigFile;
     }
@@ -389,25 +396,64 @@ public class BuildPackageCommand extends KafkaCommand {
         DataFileData dataFileData = (DataFileData) throwExceptionOnError(data);
         Integer lineToDataSourceId = dataFileData.getEndPlug().getLineList().get(0);
 
-        /* dataSource stand at startPlug of a line between dataSource and dataFile */
+        /* dataSourceSelector stand at startPlug of a line between dataSource and dataFile */
         data = dataManager.getData(ProjectFileType.LINE, projectUser, lineToDataSourceId, stepId);
         LineData lineData = (LineData) throwExceptionOnError(data);
-        sourceConfig.setDataSource(lineData.getStartSelectableId());
+        String dataSourceSelectorId = lineData.getStartSelectableId().substring(IDPrefix.DATA_SOURCE_SELECTOR.getPrefix().length());
 
-        /*need sql-file from the fileList, Notice: uploaded files need to added before */
-        PackageFileData sqlPackageFileData = null;
-        for (PackageFileData fileData : fileList) {
-            if (FileType.UPLOADED == fileData.getType() && fileData.getFileId() == dataFileData.getUploadedId()) {
-                sqlPackageFileData = fileData;
+        data = dataManager.getData(ProjectFileType.DATA_SOURCE_SELECTOR, projectUser, Integer.parseInt(dataSourceSelectorId), stepId);
+        DataSourceSelectorData dataSourceSelectorData = (DataSourceSelectorData) throwExceptionOnError(data);
+        DataSourceType dataSourceType = DataSourceType.parse(dataSourceSelectorData.getType());
+
+        /*
+         * find DataSource and Query.
+         * case 1: DataSourceType == Local,Ftp,Http (FileType != SQL) (FileType == CSV, TXT, MD, XSL, JSON, XML, Propeties)
+         * case 2: DataSourceType == Database (FileType == SQL)
+         * TODO: case 3: Future Feature: DataSourceType == KafkaConsumer (FileType == JSON, XML, JavaSerial)
+         * TODO: case 4: Future Feature: DataSourceType == WebServiceRequest[server-less] (FileType == Http)
+         */
+        switch (dataSourceType) {
+            case SFTP:
+                // datasource from DataFile.type
+                String[] types = dataFileData.getType().split("[_]");
+                sourceConfig.setDataSource(types[1]);
+
+                // query=$[FTP:sftpserver/SFTP-Staging-Path/ALITLNDP_STEP2.md]
+                PackageFileData sftpPackageFileData = findPackageFileData(dataFileData, fileList);
+                sourceConfig.setQuery("$[FTP:" + IDPrefix.SFTP.getPrefix() + dataSourceSelectorData.getDataSourceId() + "/" + sftpPackageFileData.getBuildPath() + sftpPackageFileData.getName() + "]");
                 break;
-            }
-        }
-        if (sqlPackageFileData == null) {
-            throw new IOException("Uploaded file not found: id=" + dataFileData.getUploadedId() + " '" + dataFileData.getName() + "'");
+
+            case LOCAL:
+                // datasource=Markdown // datasource=CSV // datasource=FixedLength // datasource=Lines
+                // datasource from DataFile.type
+                String[] fileTypes = dataFileData.getType().split("[_]");
+                sourceConfig.setDataSource(fileTypes[1]);
+
+                // query=/SFTP-Staging-Path/ALITLNDP_STEP2.md
+                /* query=IFRS9/sql/shared/TFSHEADER.md */
+                PackageFileData localPackageFileData = findPackageFileData(dataFileData, fileList);
+                sourceConfig.setQuery(localPackageFileData.getBuildPath() + localPackageFileData.getName());
+                break;
+
+            case SYSTEM:
+                // datasource=SYSTEM
+                // query=environment // query=os_variable // query=variable // query=memory
+                sourceConfig.setDataSource(dataSourceType.name());
+                sourceConfig.setQuery(dataFileData.getType());
+                break;
+
+            case DATABASE:
+                // datasource from DataBaseId
+                sourceConfig.setDataSource(IDPrefix.DB.getPrefix() + dataSourceSelectorData.getDataSourceId());
+
+                // query from content of DataFile.name
+                /* query=$[TXT:IFRS9/sql/shared/TFSHEADER.sql] */
+                PackageFileData sqlPackageFileData = findPackageFileData(dataFileData, fileList);
+                sourceConfig.setQuery("$[TXT:" + sqlPackageFileData.getBuildPath() + sqlPackageFileData.getName() + "]");
+                break;
         }
 
-        /* query=$[TXT:IFRS9/sql/shared/TFSHEADER.sql] */
-        sourceConfig.setQuery("$[TXT:" + sqlPackageFileData.getBuildPath() + sqlPackageFileData.getName() + "]");
+        /*Notice: IMPORTANT: DataTable ColumnList will load by Query automatically, once concern before this point if DataSource is not LOCAL need to confirm structure from Uploaded File is corrected*/
 
         /*all outputs of datatable*/
         data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 0, stepId, dataTableData.getId());
@@ -422,6 +468,21 @@ public class BuildPackageCommand extends KafkaCommand {
         }
 
         return sourceConfig;
+    }
+
+    private PackageFileData findPackageFileData(DataFileData dataFileData, List<PackageFileData> fileList) throws IOException {
+        /*need uploaded-file from the fileList, Notice: uploaded files need to added before*/
+        PackageFileData sqlPackageFileData = null;
+        for (PackageFileData fileData : fileList) {
+            if (FileType.UPLOADED == fileData.getType() && fileData.getFileId() == dataFileData.getUploadedId()) {
+                sqlPackageFileData = fileData;
+                break;
+            }
+        }
+        if (sqlPackageFileData == null) {
+            throw new IOException("Uploaded file not found: id=" + dataFileData.getUploadedId() + " '" + dataFileData.getName() + "'");
+        }
+        return sqlPackageFileData;
     }
 
     private BinaryFileItemData getBinaryFileItemData(int uploadedId, List<BinaryFileItemData> binaryFileItemDataList) {
@@ -500,32 +561,82 @@ public class BuildPackageCommand extends KafkaCommand {
     private TargetConfig getTargetConfig(TransformTableData transformTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId) throws IOException {
         TargetConfig targetConfig = new TargetConfig(dconvers, IDPrefix.TRANSFORM_TABLE.getPrefix() + transformTableData.getId(), converterConfigFile);
 
-        targetConfig.setSource("firstdatatable");
+        /*TODO: future feature: merge 2 or more sourceTables to a targetTable*/
+        targetConfig.setSource(transformTableData.getSourceSelectableId());
         targetConfig.getSourceList().add(targetConfig.getSource());
+
         targetConfig.setIndex(transformTableData.getIndex());
-        targetConfig.setId("column_A");
+        targetConfig.setId(transformTableData.getIdColName());
 
+        /*all transform-columns*/
+        Object data = dataManager.getData(ProjectFileType.TRANSFORM_COLUMN_LIST, projectUser, 0, stepId, 0, transformTableData.getId());
+        List<Integer> columnIdList = (List<Integer>) throwExceptionOnError(data);
         List<Pair<String, String>> columnList = targetConfig.getColumnList();
-        columnList.add(new Pair<>("column_A", "column_1"));
-        columnList.add(new Pair<>("column_B", "column_2"));
+        TransformColumnData transformColumnData;
+        for (Integer columnId : columnIdList) {
+            data = dataManager.getData(ProjectFileType.TRANSFORM_COLUMN, projectUser, columnId, stepId, 0, transformTableData.getId());
+            transformColumnData = (TransformColumnData) throwExceptionOnError(data);
 
-        List<Pair<TransformTypes, HashMap<String, String>>> transformList = targetConfig.getTransformConfig().getTransformList();
+            /* ColumnFx has 3 cases for arguments:
+             * 1. direct transfer >> need to get columnName by columnId from sourceTable
+             *      ( useDynamicValue == false )
+             * 2. dynamic value expression >> ready to use value
+             *      ( useDynamicValue == true && useFunction == false )
+             * 3. use DynamicValueType == CAL function >> get specific-function arguments
+             * 3. use DynamicValueType != CAL function >> get specific-function arguments
+             *      ( useFunction == true )
+             * */
+            if (!transformColumnData.isUseDynamic()) {
+                /*case 1.*/
+                columnList.add(new Pair<>(transformColumnData.getName(), transformColumnData.getDataColName()));
+            } else if (!transformColumnData.isUseFunction()) {
+                /*case 2.*/
+                columnList.add(new Pair<>(transformColumnData.getName(), transformColumnData.getDataColName()));
+            } else {
+                /*case 3.*/
+                StringBuilder dynamicValueBuilder = new StringBuilder();
 
-        transformList.add(new Pair(TransformTypes.ROWCOUNT, getParameterMap("arguments", "SRC:firstdatatable")));
-        transformList.add(new Pair(TransformTypes.ROWFILTER, getParameterMap("arguments", "exclude,function_name=null")));
-        transformList.add(new Pair(TransformTypes.CONCAT, getParameterMap("arguments", "replace:branch_id_function_name,branch_id,underscore,function_name")));
-        transformList.add(new Pair(TransformTypes.FIXEDLENGTH, getParameterMap(
-                "arguments", "FORMATTED:4,STR:1,STR:8,STR:6",
-                "format.date", "ddMMyyyy",
-                "format.datetime", "ddMMyyyyHHmmss"
-        )));
+                String function = transformColumnData.getFunction();
+                boolean isCalc = DynamicValueType.parse(function) == null;
+                dynamicValueBuilder.append(isCalc ? "CALC" : function);
+                dynamicValueBuilder.append(":");
 
-        /*TODO: loop all output of transtable*/
+                if (isCalc) {
+                    dynamicValueBuilder.append(function);
+                    dynamicValueBuilder.append("(");
+                }
 
-        /*all outputs of datatable*/
-        Object data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 0, stepId, transformTableData.getId());
+                /*create ordered-arguments*/
+                StringBuilder arguments = new StringBuilder();
+                String[] keys = transformColumnData.getPropertyOrder().split("[,]");
+                Map<String, Object> propertyMap = transformColumnData.getPropertyMap();
+                for (String key : keys) {
+                    arguments.append(",").append(propertyMap.get(key).toString());
+                }
+                dynamicValueBuilder.append(arguments.substring(1));
+
+                if (isCalc) {
+                    dynamicValueBuilder.append(")");
+                }
+
+                columnList.add(new Pair<>(transformColumnData.getName(), dynamicValueBuilder.toString()));
+            }
+        }
+
+        /*all transformations*/
+        data = dataManager.getData(ProjectFileType.TRANSFORMATION_LIST, projectUser, transformTableData.getId(), stepId, 0, transformTableData.getId());
+        List<Integer> tableFxDataIdList = (List<Integer>) throwExceptionOnError(data);
+        TransformConfig transformConfig = targetConfig.getTransformConfig();
+        TableFxData tableFxData;
+        for (Integer tableFxDataId : tableFxDataIdList) {
+            data = dataManager.getData(ProjectFileType.TRANSFORMATION, projectUser, tableFxDataId, stepId, 0, transformTableData.getId());
+            tableFxData = (TableFxData) throwExceptionOnError(data);
+            addTransformations(tableFxData, transformConfig);
+        }
+
+        /*all outputs of transformtable*/
+        data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 0, stepId, transformTableData.getId());
         List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
-
         OutputConfig outputConfig = targetConfig.getOutputConfig();
         OutputFileData outputFileData;
         for (Integer outputId : outputIdList) {
@@ -536,13 +647,45 @@ public class BuildPackageCommand extends KafkaCommand {
 
         /*-- may be in the future features
         outputConfig = targetConfig.getMappingOutputConfig();
-        enableOutputs(outputConfig);*/
+        */
 
         /*-- may be in the future features
         outputConfig = targetConfig.getTransferOutputConfig();
-        enableOutputs(outputConfig);*/
+        */
 
         return targetConfig;
+    }
+
+    private void addTransformations(TableFxData tableFxData, TransformConfig transformConfig) throws IOException {
+        /* Have 2 cases for arguments:
+         * 1. dynamic value expression >> ready to use value
+         *      ( useFunction == false )
+         * 2. use function >> get specific-function arguments
+         *      ( useFunction == true )
+         * */
+        if (!tableFxData.isUseFunction()) {
+            /*case 1: dynamic value expression*/
+            transformConfig.addTransforms((String) tableFxData.getPropertyMap().get("dynamicValue"));
+            return;
+        }
+
+        /*case 2: specific function arguments*/
+        TransformTypes transformTypes = TransformTypes.parse(tableFxData.getFunction());
+        if (transformTypes == null) {
+            throw new IOException("Not support transformation '" + tableFxData.getFunction() + "' on table '" + tableFxData.getName() + "'");
+        }
+
+        /*create ordered-arguments*/
+        HashMap<String, String> argumentMap = new HashMap<>();
+        StringBuilder arguments = new StringBuilder();
+        String[] keys = tableFxData.getPropertyOrder().split("[,]");
+        Map<String, Object> propertyMap = tableFxData.getPropertyMap();
+        for (String key : keys) {
+            arguments.append(",").append(propertyMap.get(key).toString());
+        }
+        argumentMap.put("arguments", arguments.substring(1));
+
+        transformConfig.getTransformList().add(new Pair<>(transformTypes, argumentMap));
     }
 
     private HashMap<String, String> getParameterMap(String... argument) {

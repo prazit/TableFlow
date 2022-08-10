@@ -2,13 +2,18 @@ package com.tflow.model.editor;
 
 import com.tflow.model.editor.datasource.DataSourceType;
 
+/**
+ * Notice: IMPORTANT: must compatible to dataSourceName that used in DConvers.start().dataSourceMap.put(dataSourceName)
+ */
 public enum DataFileType {
 
     /*TODO: when future feature 'DataSourceType.KAFKAPRODUCER' is added also need to remove dataSourceType from this enum*/
+    IN_MARKDOWN("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "input.md"),
     IN_SQL("SQL File", "sql.png", /*DataSourceType.DATABASE*/ null, Properties.INPUT_SQL, "input.sql"),
-    IN_MD("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "input.md"),
-    IN_ENV("System Environment", "system.png", DataSourceType.SYSTEM, Properties.INPUT_ENVIRONMENT, "no-input-file"),
     IN_DIR("Directory List", "dir.png", DataSourceType.LOCAL, Properties.INPUT_DIRECTORY, "/"),
+
+    IN_ENVIRONMENT("System Environment", "system.png", DataSourceType.SYSTEM, Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment"),
+    IN_VARIABLE("Variable List", "system.png", DataSourceType.SYSTEM, Properties.INPUT_SYSTEM_ENVIRONMENT, "Variables"),
 
     /*-- TODO: Future Feature: output to Database
     OUT_DBINSERT("Insert to Database", "sql.png", DataSourceType.DATABASE, Properties.OUTPUT_DBINSERT, "no-output-file"),
@@ -23,6 +28,8 @@ public enum DataFileType {
     private String name;
     private String image;
     private Properties properties;
+
+    @Deprecated
     private DataSourceType dataSourceType;
 
     private String defaultFileName;

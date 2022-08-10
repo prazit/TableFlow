@@ -19,10 +19,10 @@ public enum IDPrefix {
     DATA_TABLE("dt"),
     DATA_COLUMN(""),
     DATA_OUTPUT(""),
-    TRANSFORM_TABLE(""),
+    TRANSFORM_TABLE("tt"),
     TRANSFORM_COLUMN(""),
     TRANSFORM_COLUMNFX(""),
-    TRANSFORMATION(""),
+    TRANSFORMATION("tfx"),
     TRANSFORM_OUTPUT(""),
     ;
 

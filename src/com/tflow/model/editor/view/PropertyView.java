@@ -22,6 +22,7 @@ public class PropertyView {
 
     private Object oldValue;
     private Object newValue;
+    private String enableVar;
 
     public PropertyView() {
         update = "@this";
@@ -108,6 +109,14 @@ public class PropertyView {
         this.newValue = newValue;
     }
 
+    public String getEnableVar() {
+        return enableVar;
+    }
+
+    public void setEnableVar(String enableVar) {
+        this.enableVar = enableVar;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -117,6 +126,7 @@ public class PropertyView {
                 ", varParent:'" + varParent + '\'' +
                 ", update:'" + update + '\'' +
                 ", javaScript:'" + javaScript + '\'' +
+                ", enableVar:'" + enableVar + '\'' +
                 ", params:" + Arrays.toString(params) +
                 ", oldValue:" + oldValue +
                 ", newValue:" + newValue +

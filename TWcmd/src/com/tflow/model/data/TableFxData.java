@@ -13,6 +13,9 @@ public class TableFxData extends TWData implements Serializable {
 
     private int id;
     private String name;
+
+    private boolean useFunction;
     private String function;
-    private Map<String, Object> paramMap;
+    private Map<String, Object> propertyMap;
+    private String propertyOrder;
 }

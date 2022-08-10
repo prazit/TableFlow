@@ -1,5 +1,7 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.data.IDPrefix;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,8 +9,11 @@ public class TableFx implements Selectable {
 
     private int id;
     private String name;
+
+    private boolean useFunction;
     private TableFunction function;
-    private Map<String, Object> paramMap;
+    private Map<String, Object> propertyMap;
+    private String propertyOrder;
 
     private TransformTable owner;
 
@@ -19,9 +24,10 @@ public class TableFx implements Selectable {
 
     public TableFx(TableFunction function, String name, TransformTable owner) {
         this.name = name;
-        this.function = function;
-        paramMap = new HashMap<>();
         this.owner = owner;
+        propertyMap = new HashMap<>();
+        this.function = function;
+        propertyOrder = function.getProperties().initPropertyMap(propertyMap);
     }
 
     /*for projectMapper*/
@@ -45,20 +51,29 @@ public class TableFx implements Selectable {
         this.name = name;
     }
 
+    public boolean isUseFunction() {
+        return useFunction;
+    }
+
+    public void setUseFunction(boolean useFunction) {
+        this.useFunction = useFunction;
+    }
+
     public TableFunction getFunction() {
         return function;
     }
 
     public void setFunction(TableFunction function) {
         this.function = function;
+        propertyOrder = function.getProperties().initPropertyMap(propertyMap);
     }
 
-    public Map<String, Object> getParamMap() {
-        return paramMap;
+    public String getPropertyOrder() {
+        return propertyOrder;
     }
 
-    public void setParamMap(Map<String, Object> paramMap) {
-        this.paramMap = paramMap;
+    public void setPropertyOrder(String propertyOrder) {
+        this.propertyOrder = propertyOrder;
     }
 
     public TransformTable getOwner() {
@@ -79,9 +94,13 @@ public class TableFx implements Selectable {
         /*nothing*/
     }
 
+    public void setPropertyMap(Map<String, Object> propertyMap) {
+        this.propertyMap = propertyMap;
+    }
+
     @Override
     public Map<String, Object> getPropertyMap() {
-        return new HashMap<>();
+        return propertyMap;
     }
 
     @Override
@@ -91,6 +110,6 @@ public class TableFx implements Selectable {
 
     @Override
     public String getSelectableId() {
-        return "tfx" + id;
+        return IDPrefix.TRANSFORMATION.getPrefix() + id;
     }
 }

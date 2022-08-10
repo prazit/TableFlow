@@ -2,6 +2,9 @@ package com.tflow.model.editor.datasource;
 
 import com.tflow.model.editor.DataFileType;
 
+/**
+ * Notice: IMPORTANT: all enum constants must exists in the com.tflow.model.data.DataSourceType to avoid error in Build process.
+ */
 public enum DataSourceType {
 
     /*-- TODO: future feature: more DataSourceType

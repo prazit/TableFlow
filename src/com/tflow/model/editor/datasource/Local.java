@@ -1,5 +1,6 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;
@@ -74,6 +75,6 @@ public class Local extends DataSource implements Selectable {
 
     @Override
     public String getSelectableId() {
-        return "local" + id;
+        return IDPrefix.LOCAL.getPrefix() + id;
     }
 }
