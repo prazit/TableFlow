@@ -1,6 +1,7 @@
 package com.tflow.trcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
+import com.tflow.kafka.KafkaTopics;
 import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.TWcmd;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -40,8 +41,8 @@ public class TRcmd {
         KafkaProducer<String, Object> dataProducer = createProducer();
 
         /*TODO: need to load readTopic from configuration*/
-        String readTopic = "project-read";
-        String dataTopic = "project-data";
+        String readTopic = KafkaTopics.PROJECT_READ.getTopic();
+        String dataTopic = KafkaTopics.PROJECT_DATA.getTopic();
         consumer.subscribe(Collections.singletonList(readTopic));
         log.info("Subscribed to readTopic " + readTopic);
 

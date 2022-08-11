@@ -1,6 +1,7 @@
 package com.tflow.wcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
+import com.tflow.kafka.KafkaTopics;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -44,7 +45,7 @@ public class TWcmd {
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
 
-        String topic = "project-write";
+        String topic = KafkaTopics.PROJECT_WRITE.getTopic();
         consumer.subscribe(Collections.singletonList(topic));
         log.info("Subscribed to topic " + topic);
 

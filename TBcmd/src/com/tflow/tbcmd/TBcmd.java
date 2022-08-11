@@ -1,6 +1,7 @@
 package com.tflow.tbcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
+import com.tflow.kafka.KafkaTopics;
 import com.tflow.model.data.ProjectDataManager;
 import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
@@ -39,7 +40,7 @@ public class TBcmd {
         KafkaConsumer<String, byte[]> consumer = createConsumer();
 
         /*TODO: need to load topicBuild from configuration*/
-        String topicBuild = "project-build";
+        String topicBuild = KafkaTopics.PROJECT_BUILD.getTopic();
         consumer.subscribe(Collections.singletonList(topicBuild));
         log.info("Subscribed to topicBuild " + topicBuild);
 

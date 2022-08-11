@@ -24,7 +24,7 @@
         <p:divider layout="vertical"/>
 
         <p:submenu label="Build">
-            <p:menuitem value="Build Package" icon="pi pi-fw pi-list" onclick="toggleLeft()"/>
+            <p:menuitem value="Build Package" icon="pi pi-fw pi-list" actionListener="#{projectCtl.buildPackage}"/>
             <p:menuitem value="Download Full Package" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
             <p:menuitem value="Download Updated Package" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
         </p:submenu>

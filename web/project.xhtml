@@ -37,7 +37,10 @@
                 </p:outputPanel>
 
                 <p:accordionPanel style="padding: var(--padding);margin: var(--margin);">
-                    <p:tab title="Data Source">
+                    <p:importEnum type="com.tflow.controller.ProjectSection" var="ProjectSection"/>
+                    <p:ajax event="tabChange" listener="#{projectCtl.openSection}" update="packageTab"/>
+
+                    <p:tab title="#{ProjectSection.DATA_SOURCE.getTitle()}">
 
                         <p:divider align="left">
                             <div class="inline-flex align-items-center">
@@ -104,15 +107,42 @@
 
                     </p:tab>
 
-                    <p:tab title="Uploaded File" styleClass="uploaded tab">
+                    <p:tab title="#{ProjectSection.UPLOADED.getTitle()}" styleClass="uploaded tab">
+
                         <h2 style="color: var(--surface-c);">Uploaded Section</h2>
                     </p:tab>
 
-                    <p:tab title="Package" styleClass="package tab">
-                        <h2 style="color: var(--surface-c);">Package Section</h2>
-                        <!-- TODO: package list in dropdown, when changed: update package-view, active-object = package-view, properties = changable-property of package-data -->
-                        <!-- TODO: package header readonly view, remember: header is selectable -->
-                        <!-- TODO: package file-list view, remember: item is selectable -->
+                    <p:tab title="#{ProjectSection.PACKAGE.getTitle()}" styleClass="package tab">
+                        <p:outputPanel id="packageTab">
+                            <p:outputPanel rendered="#{projectCtl.packageList.size() > 0}">
+                                <p:selectOneListbox value="#{projectCtl.selectedPackageId}">
+                                    <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
+                                    <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
+                                    <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent"/>
+                                </p:selectOneListbox>
+                                <p:spacer/>
+                                <p:commandButton value="Build new package" actionListener="#{projectCtl.buildPackage}"/>
+                            </p:outputPanel>
+
+                            <p:separator rendered="#{projectCtl.packageList.size() > 0}"/>
+
+                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() == 0}"><h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Need to build one package, click menu Build &gt; Package.</h2></p:outputPanel>
+                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() > 0}"><h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Select Package from the List above.</h2></p:outputPanel>
+
+                            <p:outputPanel rendered="#{not projectCtl.pleaseSelectPackage}" id="activePackage">
+                                <p:outputPanel styleClass="ui-g">
+                                    <!-- TODO: package header readonly view, remember: header is selectable -->
+                                    <h2 style="color: var(--surface-c);" class="selectable"><i class="fa fa-info"/>Package Header</h2>
+                                </p:outputPanel>
+
+                                <p:separator/>
+
+                                <p:outputPanel styleClass="ui-g">
+                                    <!-- TODO: package file-list view, remember: item is selectable -->
+                                    <h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Package File List</h2>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </p:outputPanel>
                     </p:tab>
                 </p:accordionPanel>
 

@@ -143,9 +143,9 @@ public class ProjectDataManager {
             10:37:52,212 INFO  [org.apache.kafka.common.utils.AppInfoParser] (default task-10) Kafka version: 3.1.0
         **/
         /*TODO: need to load producer configuration*/
-        writeTopic = "project-write";
-        readTopic = "project-read";
-        dataTopic = "project-data";
+        writeTopic = KafkaTopics.PROJECT_WRITE.getTopic();
+        readTopic = KafkaTopics.PROJECT_READ.getTopic();
+        dataTopic = KafkaTopics.PROJECT_DATA.getTopic();
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("acks", "all");
@@ -274,7 +274,7 @@ public class ProjectDataManager {
             recordId = additional.getRecordId();
             key = fileType.name();
             kafkaRecord = new KafkaRecord(writeCommand.getDataObject(), additional);
-            log.info("ProjectWriteCommand( fileType:{}, recordId:{} ) started.", fileType.name(), recordId);
+            log.info("ProjectWriteCommand( fileType:{}, recordId:{} )", fileType.name(), recordId);
 
             Future<RecordMetadata> future = producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
             log.debug("Future: isDone={}, isCancelled={}", future.isDone(), future.isCancelled());
@@ -290,7 +290,7 @@ public class ProjectDataManager {
             projectDataWriteBufferList.remove(writeCommand);
             testBuffer.add(writeCommand);
 
-            log.info("ProjectWriteCommand completed.");
+            log.trace("ProjectWriteCommand completed.");
         }
     }
 
@@ -456,8 +456,11 @@ public class ProjectDataManager {
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
 
-        producer.send(new ProducerRecord<>(readTopic, fileType.name(), additional));
-        return 1L;
+        Future<RecordMetadata> future = producer.send(new ProducerRecord<>(readTopic, fileType.name(), additional));
+        if (isSuccess(future)) {
+            return 1L;
+        }
+        return -1L;
     }
 
     private Object captureData(ProjectFileType fileType, KafkaRecordAttributes additional) {
@@ -541,4 +544,29 @@ public class ProjectDataManager {
         log.warn("captureData completed, data = {}", data == null ? "null" : "not null");
         return data;
     }
+
+    private boolean isSuccess(Future<RecordMetadata> future) {
+        while (!future.isDone()) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                /*nothing*/
+            }
+        }
+
+        log.debug("Future: isDone={}, isCancelled={}", future.isDone(), future.isCancelled());
+        boolean result = true;
+        try {
+            RecordMetadata recordMetadata = future.get();
+            log.debug("RecordMetadata: {}", recordMetadata);
+        } catch (InterruptedException ex) {
+            log.warn("InterruptedException: ", ex);
+            result = false;
+        } catch (ExecutionException ex) {
+            log.warn("ExecutionException: ", ex);
+            result = false;
+        }
+        return result;
+    }
+
 }

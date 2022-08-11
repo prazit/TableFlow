@@ -63,8 +63,7 @@ public class BuildPackageCommand extends KafkaCommand {
 
         /*Notice: packageData contains percent complete for ui, update them 4-5 times max*/
         PackageData packageData = new PackageData();
-        packageData.setPackageId(packageId);
-        packageData.setProjectId(attributes.getProjectId());
+        packageData.setId(packageId);
         packageData.setBuildDate(DateTimeUtil.now());
         packageData.setName("building...");
 

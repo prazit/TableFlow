@@ -4,8 +4,7 @@ import java.util.Date;
 
 public class Package {
 
-    private int projectId;
-    private int packageId;
+    private int id;
 
     private String name;
     private Date buildDate;
@@ -17,20 +16,12 @@ public class Package {
         /*nothing*/
     }
 
-    public int getProjectId() {
-        return projectId;
+    public int getId() {
+        return id;
     }
 
-    public void setProjectId(int projectId) {
-        this.projectId = projectId;
-    }
-
-    public int getPackageId() {
-        return packageId;
-    }
-
-    public void setPackageId(int packageId) {
-        this.packageId = packageId;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -68,8 +59,7 @@ public class Package {
     @Override
     public String toString() {
         return "{" +
-                "projectId:" + projectId +
-                ", packageId:" + packageId +
+                ", id:" + id +
                 ", name:'" + name + '\'' +
                 ", buildDate:" + buildDate +
                 ", builtDate:" + builtDate +

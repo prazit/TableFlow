@@ -143,9 +143,9 @@ public interface ProjectMapper {
 
     Package map(PackageData packageData);
 
-    /*List<PackageFile> map(List<PackageFileData> packageFileData);*/
+    List<PackageItem> toPackageList(List<PackageItemData> packageItemDataList);
 
-    /*List<PackageItem> toPackageList(List<PackageItemData> packageItemData);*/
+    /*List<PackageFile> map(List<PackageFileData> packageFileData);*/
 
     /*---- ALL ABOUT ID ----*/
 
@@ -268,5 +268,4 @@ public interface ProjectMapper {
     List<Integer> fromDoubleList(List<Double> doubleList);
 
     List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
-
 }

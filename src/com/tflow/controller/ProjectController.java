@@ -1,10 +1,14 @@
 package com.tflow.controller;
 
+import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.Package;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.util.FacesUtil;
+import org.primefaces.event.TabChangeEvent;
 
 import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
@@ -22,9 +26,84 @@ public class ProjectController extends Controller {
     private List<Local> localList;
     private List<SFTP> sftpList;
 
+    /*TODO: Uploaded File List here*/
+
+    private List<PackageItem> packageList;
+    private int selectedPackageId;
+    private Package activePackage;
+    private boolean pleaseSelectPackage;
+
     @PostConstruct
     public void onCreation() {
         project = workspace.getProject();
+    }
+
+    public void openSection(TabChangeEvent event) {
+        String title = event.getTab().getTitle();
+        log.debug("openSection: selectedTitle={}, event={}", title, event);
+        if (title.compareTo(ProjectSection.PACKAGE.getTitle()) == 0) {
+            openPackage();
+        }
+    }
+
+    public void openPackage() {
+        log.trace("openPackage");
+        reloadPackageList();
+        selectPackage(packageList.size() - 1);
+    }
+
+    public void selectPackage(int packageId) {
+        selectedPackageId = packageId;
+        selectedPackageChanged();
+    }
+
+    public void reloadPackageList() {
+        try {
+            packageList = project.getManager().loadPackageList(project);
+        } catch (ProjectDataException ex) {
+            String msg = "Load package list failed: ";
+            log.error(msg, ex);
+            FacesUtil.addError(msg + ex.getMessage());
+        }
+    }
+
+    public void selectedPackageChanged() {
+        log.debug("selectedPackageChanged: selectedPackageId={}", selectedPackageId);
+        if (selectedPackageId < 0) {
+            /*something to user 'lets select package from the list' */
+            pleaseSelectPackage = true;
+            return;
+        }
+        pleaseSelectPackage = false;
+
+        reloadPackage();
+
+        /* TODO: need to call EditorController.setActive by javascript same as flowchart page.
+            active-object = package-view,
+            properties = changable-property of package-data */
+    }
+
+    public void reloadPackage() {
+        log.trace("reloadPackage.");
+        try {
+            activePackage = project.getManager().loadPackage(selectedPackageId, project);
+            if (activePackage.getComplete() != 100) {
+                /*TODO: put javascript to call reloadPackage() on next 5 seconds until percent complete == 100 or has error occurred*/
+            }
+        } catch (ProjectDataException ex) {
+            String msg = "Reload package " + selectedPackageId + " failed: ";
+            log.error(msg, ex);
+            FacesUtil.addError(msg + ex.getMessage());
+        }
+    }
+
+    public void buildPackage() {
+        log.trace("buildPackage.");
+        if (project.getManager().buildPackage(project)) {
+            reloadPackageList();
+            selectPackage(packageList.size() - 1);
+        }
+        log.trace("buildPackage completed.");
     }
 
     public Project getProject() {
@@ -59,6 +138,36 @@ public class ProjectController extends Controller {
         return localList;
     }
 
-    /*==== PUBLIC METHOD ====*/
+    public List<PackageItem> getPackageList() {
+        return packageList;
+    }
+
+    public void setPackageList(List<PackageItem> packageList) {
+        this.packageList = packageList;
+    }
+
+    public int getSelectedPackageId() {
+        return selectedPackageId;
+    }
+
+    public void setSelectedPackageId(int selectedPackageId) {
+        this.selectedPackageId = selectedPackageId;
+    }
+
+    public Package getActivePackage() {
+        return activePackage;
+    }
+
+    public void setActivePackage(Package activePackage) {
+        this.activePackage = activePackage;
+    }
+
+    public boolean isPleaseSelectPackage() {
+        return pleaseSelectPackage;
+    }
+
+    public void setPleaseSelectPackage(boolean pleaseSelectPackage) {
+        this.pleaseSelectPackage = pleaseSelectPackage;
+    }
 
 }

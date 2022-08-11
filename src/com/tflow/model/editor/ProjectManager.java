@@ -41,7 +41,7 @@ public class ProjectManager {
 
     private Producer<String, Object> createProducer() {
         /*TODO: need to load producer configuration*/
-        buildPackageTopic = "project-build";
+        buildPackageTopic = KafkaTopics.PROJECT_BUILD.getTopic();
         java.util.Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("acks", "all");
@@ -541,17 +541,32 @@ public class ProjectManager {
         return step;
     }
 
-    private Object throwExceptionOnError(Object data) throws ProjectDataException {
-        if (data instanceof Long) {
-            throw new ProjectDataException(KafkaErrorCode.parse((Long) data).name());
-        }
-        return data;
+    public List<PackageItem> loadPackageList(Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectDataManager dataManager = project.getDataManager();
+
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);
+        List<PackageItemData> packageItemDataList = (List) throwExceptionOnError(data);
+
+        return mapper.toPackageList(packageItemDataList);
+    }
+
+    public Package loadPackage(int packageId, Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectDataManager dataManager = project.getDataManager();
+
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.PACKAGE, projectUser, packageId);
+        PackageData packageData = (PackageData) throwExceptionOnError(data);
+
+        return mapper.map(packageData);
     }
 
     /**
      * After call buildPackage you need to get PackageData for complete-status.
      */
-    public void buildPackage(Project project) {
+    public boolean buildPackage(Project project) {
         Producer<String, Object> producer = createProducer();
 
         /*create build Message for TBcmd*/
@@ -563,17 +578,44 @@ public class ProjectManager {
         kafkaRecordAttributes.setModifiedDate(DateTimeUtil.now());
 
         /*send message*/
+        log.trace("Send build-package message to topic: {}", buildPackageTopic);
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>("build", kafkaRecordAttributes));
+
+        /*TODO: TBcmd not receive this message, why?*/
+
+        boolean result = isSuccess(future);
+        producer.close();
+        return result;
+    }
+
+    private boolean isSuccess(Future<RecordMetadata> future) {
+        while (!future.isDone()) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                /*nothing*/
+            }
+        }
+
         log.debug("Future: isDone={}, isCancelled={}", future.isDone(), future.isCancelled());
+        boolean result = true;
         try {
             RecordMetadata recordMetadata = future.get();
             log.debug("RecordMetadata: {}", recordMetadata);
         } catch (InterruptedException ex) {
             log.warn("InterruptedException: ", ex);
+            result = false;
         } catch (ExecutionException ex) {
             log.warn("ExecutionException: ", ex);
+            result = false;
         }
+        return result;
+    }
 
-        producer.close();
+    private Object throwExceptionOnError(Object data) throws ProjectDataException {
+        if (data instanceof Long) {
+            throw new ProjectDataException(KafkaErrorCode.parse((Long) data).name());
+        }
+        return data;
     }
 }

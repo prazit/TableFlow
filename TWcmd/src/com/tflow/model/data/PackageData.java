@@ -10,8 +10,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class PackageData extends TWData {
 
-    private String projectId;
-    private int packageId;
+    private int id;
 
     private String name;
     private Date buildDate;
