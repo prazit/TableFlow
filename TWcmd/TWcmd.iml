@@ -14,6 +14,6 @@
     <orderEntry type="library" scope="PROVIDED" name="lombok" level="project" />
     <orderEntry type="library" name="mapstruct" level="project" />
     <orderEntry type="library" name="json" level="project" />
-    <orderEntry type="library" name="dconvers" level="project" />
+    <orderEntry type="library" name="dconvers-crypto" level="application" />
   </component>
 </module>

@@ -8,6 +8,7 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class PackageFileData extends TWData {
+    private static final transient long serialVersionUID = 2021121709996660062L;
 
     int id;
     String name;

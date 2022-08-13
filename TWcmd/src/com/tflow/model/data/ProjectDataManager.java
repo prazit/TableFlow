@@ -39,17 +39,23 @@ public class ProjectDataManager {
     private String readTopic;
     private String dataTopic;
     private long commitAgainMilliseconds;
+    private int kafkaTimeout;
     private boolean commitWaiting;
     private Producer<String, Object> producer;
     private Consumer<String, byte[]> consumer;
 
     private Deserializer deserializer;
 
+    private Thread commitThread;
+
     /*TODO: remove Collection below, it for test*/
     public List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
 
     public ProjectDataManager(Environment environment) {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+        /*TODO: need config for commitAgainMilliseconds*/
+        commitAgainMilliseconds = 10000;
+        kafkaTimeout = 10000;
     }
 
     private boolean createProducer() {
@@ -153,7 +159,9 @@ public class ProjectDataManager {
         props.put("batch.size", 16384);
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
-        props.put("request.timeout.ms", 30000);
+        props.put("request.timeout.ms", kafkaTimeout);
+        props.put("transaction.timeout.ms", kafkaTimeout);
+        props.put("default.api.timeout.ms", kafkaTimeout);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.serializer.encoding", "UTF-8");
         props.put("value.serializer", environmentConfigs.getKafkaSerializer());
@@ -172,6 +180,9 @@ public class ProjectDataManager {
         props.put("session.timeout.ms", "30000");
         props.put("max.poll.interval.ms", "30000");
         props.put("max.poll.records", "2");
+        props.put("request.timeout.ms", kafkaTimeout);
+        props.put("transaction.timeout.ms", kafkaTimeout);
+        props.put("default.api.timeout.ms", kafkaTimeout);
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("key.deserializer.encoding", "UTF-8");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
@@ -191,16 +202,18 @@ public class ProjectDataManager {
     }
 
     private void subscribeTo(String topic, Consumer consumer) {
+        log.trace("subscribeTo(topic:{}).", topic);
         List<PartitionInfo> topicPartitionList = consumer.partitionsFor(topic);
         ArrayList<TopicPartition> arrTopic = new ArrayList<>();
 
         for (PartitionInfo partitionInfo : topicPartitionList) {
             arrTopic.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
         }
+        log.trace("ready to assign/subscribe.");
 
         //need to use assign instead of subscribe: consumer.subscribe(Collections.singletonList(topic));
         consumer.assign(arrTopic);
-        log.info("consumer created and subscribed to topic({})", dataTopic);
+        log.info("topic '{}' is assigned/subscribed", dataTopic);
 
         consumer.poll(Duration.ofMillis(0));
         consumer.seekToEnd(arrTopic);
@@ -208,6 +221,7 @@ public class ProjectDataManager {
         for (TopicPartition topicPartition : arrTopic) {
             log.info("partition:{}, position:{}", topicPartition, consumer.position(topicPartition) - 1);
         }
+        log.trace("offset moved to last message.");
     }
 
     private boolean ready(Producer<String, Object> producer) {
@@ -239,23 +253,49 @@ public class ProjectDataManager {
      */
     private void commit(long milliseconds) {
         commitWaiting = true;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    /*Wait milliseconds, please use Scheduler or new Thread and Wait.*/
+                    log.trace("commit again in {} milliseconds by thread {}", milliseconds, Thread.currentThread().getName());
+                    Thread.sleep(milliseconds);
+                } catch (InterruptedException ex) {
+                    log.warn("InterruptedException occurred during commit(ms:" + milliseconds + ")", ex);
+                }
 
-        /*TODO: Wait milliseconds, please use Scheduler or new Thread and Wait.*/
-        /*TODO: after wait, need to set commitWaiting = false; and then commit
-        {
-            commitWaiting = false;
-            commit();
-        }
-        */
+                /*after wait, need to set commitWaiting = false; and then commit*/
+                commitWaiting = false;
+                log.trace("call commit by thread {}", Thread.currentThread().getName());
+                commit();
+            }
+        }, "Waiting-Thread");
+        thread.start();
     }
 
     /**
-     * TODO: need to run ProjectWriteCommand in another thread, this process guarantee success no need to wait for it.
      * TODO: need to update Client-Data-file before execute first command
      */
     private void commit() {
-        if (commitWaiting) return;
+        if (commitWaiting || commitThread != null) return;
 
+        commitThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.trace("commitInThread: {}", Thread.currentThread().getName());
+                commitInThread();
+                resetCommitThread();
+            }
+        }, "Commit-Thread");
+        commitThread.start();
+    }
+
+    private void resetCommitThread() {
+        commitThread.interrupt();
+        commitThread = null;
+    }
+
+    private void commitInThread() {
         ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList);
         KafkaRecordAttributes additional;
         ProjectFileType fileType;
@@ -265,6 +305,7 @@ public class ProjectDataManager {
         String value;
         for (ProjectDataWriteBuffer writeCommand : commitList) {
             if (!ready(producer)) {
+
                 commit(commitAgainMilliseconds);
                 return;
             }
@@ -277,14 +318,8 @@ public class ProjectDataManager {
             log.info("ProjectWriteCommand( fileType:{}, recordId:{} )", fileType.name(), recordId);
 
             Future<RecordMetadata> future = producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
-            log.debug("Future: isDone={}, isCancelled={}", future.isDone(), future.isCancelled());
-            try {
-                RecordMetadata recordMetadata = future.get();
-                log.debug("RecordMetadata: {}", recordMetadata);
-            } catch (InterruptedException ex) {
-                log.warn("InterruptedException: ", ex);
-            } catch (ExecutionException ex) {
-                log.warn("ExecutionException: ", ex);
+            if (!isSuccess(future)) {
+                return;
             }
 
             projectDataWriteBufferList.remove(writeCommand);
@@ -412,7 +447,7 @@ public class ProjectDataManager {
     }
 
     public Object getData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.warn("getData(fileType:{}, additional:{}", fileType, additional);
+        log.trace("getData(fileType:{}, additional:{}", fileType, additional);
         validate(fileType, additional);
 
         long code = requestData(fileType, additional);
@@ -444,7 +479,7 @@ public class ProjectDataManager {
     }
 
     private long requestData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.info("requestData( fileType:{}, recordId:{} )", fileType.name(), additional.getRecordId());
+        log.trace("requestData( fileType:{}, recordId:{} )", fileType.name(), additional.getRecordId());
 
         if (!ready(producer)) {
             log.warn("requestData: producer not ready to send message");
@@ -464,7 +499,7 @@ public class ProjectDataManager {
     }
 
     private Object captureData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.warn("captureData(fileType:{}, additional:{})", fileType, additional);
+        log.trace("captureData(fileType:{}, additional:{})", fileType, additional);
 
         /*TODO: timeout and maxTry need to load from configuration*/
         Object data = null;
@@ -539,9 +574,9 @@ public class ProjectDataManager {
 
                 gotHeader = true;
             }
-        }
+        } //end of While
 
-        log.warn("captureData completed, data = {}", data == null ? "null" : "not null");
+        log.debug("captureData completed, data = {}", data == null ? "null" : "not null");
         return data;
     }
 
@@ -554,18 +589,22 @@ public class ProjectDataManager {
             }
         }
 
-        log.debug("Future: isDone={}, isCancelled={}", future.isDone(), future.isCancelled());
-        boolean result = true;
-        try {
+        boolean result;
+        if (future.isCancelled()) {
+            log.error("Record Cancelled by Kafka");
+            result = false;
+        } else try {
             RecordMetadata recordMetadata = future.get();
-            log.debug("RecordMetadata: {}", recordMetadata);
+            result = true;
         } catch (InterruptedException ex) {
-            log.warn("InterruptedException: ", ex);
+            log.error("InterruptedException: ", ex);
             result = false;
         } catch (ExecutionException ex) {
-            log.warn("ExecutionException: ", ex);
+            log.error("ExecutionException: ", ex);
             result = false;
         }
+
+        log.debug("isSuccess return {}", result);
         return result;
     }
 

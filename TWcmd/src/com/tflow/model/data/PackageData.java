@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class PackageData extends TWData {
+    private static final transient long serialVersionUID = 2021121709996660061L;
 
     private int id;
 

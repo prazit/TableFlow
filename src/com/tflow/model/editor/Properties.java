@@ -539,7 +539,7 @@ public enum Properties {
                 }
             }
         }
-        return propertyOrder.substring(1);
+        return propertyOrder.length() > 0 ? propertyOrder.substring(1) : "";
     }
 
 }

@@ -66,6 +66,7 @@ public class EditorController extends Controller {
 
         Project project = workspace.getProject();
         if (project == null) {
+            /*TODO: future task: redirect to Open Project Page, need Open Project Page to created before*/
             createNewProject();
         }
 
@@ -893,7 +894,7 @@ public class EditorController extends Controller {
 
         try {
             new AddProject(paramMap).execute();
-        } catch (RequiredParamException ex) {
+        } catch (Exception ex) {
             log.error("Create New Project Failed!", ex);
             FacesUtil.addError("Create New Project with Internal Command Error!");
         }

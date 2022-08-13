@@ -61,6 +61,8 @@ public class ProjectController extends Controller {
         try {
             packageList = project.getManager().loadPackageList(project);
         } catch (ProjectDataException ex) {
+            packageList = new ArrayList<>();
+
             String msg = "Load package list failed: ";
             log.error(msg, ex);
             FacesUtil.addError(msg + ex.getMessage());
@@ -70,7 +72,7 @@ public class ProjectController extends Controller {
     public void selectedPackageChanged() {
         log.debug("selectedPackageChanged: selectedPackageId={}", selectedPackageId);
         if (selectedPackageId < 0) {
-            /*something to user 'lets select package from the list' */
+            /*show something to user 'lets select package from the list' */
             pleaseSelectPackage = true;
             return;
         }

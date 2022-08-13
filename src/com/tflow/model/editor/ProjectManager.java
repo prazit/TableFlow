@@ -579,9 +579,7 @@ public class ProjectManager {
 
         /*send message*/
         log.trace("Send build-package message to topic: {}", buildPackageTopic);
-        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("build", kafkaRecordAttributes));
-
-        /*TODO: TBcmd not receive this message, why?*/
+        Future<RecordMetadata> future = producer.send(new ProducerRecord<>(buildPackageTopic, "build", kafkaRecordAttributes));
 
         boolean result = isSuccess(future);
         producer.close();

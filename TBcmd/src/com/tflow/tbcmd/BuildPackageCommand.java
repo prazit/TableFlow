@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -53,15 +54,17 @@ public class BuildPackageCommand extends KafkaCommand {
         KafkaRecordAttributes attributes = (KafkaRecordAttributes) value;
         ProjectUser projectUser = mapper.map(attributes);
 
-        /*Object data = dataManager.getData(ProjectFileType.PROJECT, projectUser, projectUser.getId());
-        ProjectData projectData = (ProjectData) throwExceptionOnError(data);*/
-
         Object data = dataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);
         //noinspection unchecked (suppress warning about unchecked)
-        List<PackageItemData> packageIdList = (List<PackageItemData>) throwExceptionOnError(data);
-        int packageId = packageIdList.size();
+        List<PackageItemData> packageIdList;
+        try {
+            packageIdList = (List<PackageItemData>) throwExceptionOnError(data);
+        } catch (IOException ex) {
+            throw new IOException("TRcmd service may be stopped or not started, ", ex);
+        }
 
         /*Notice: packageData contains percent complete for ui, update them 4-5 times max*/
+        int packageId = packageIdList.size() + 1;
         PackageData packageData = new PackageData();
         packageData.setId(packageId);
         packageData.setBuildDate(DateTimeUtil.now());
@@ -73,17 +76,22 @@ public class BuildPackageCommand extends KafkaCommand {
 
         List<PackageFileData> fileList = new ArrayList<>();
         addUploadedFiles(fileList, packageData, projectUser);
-        updatePercentComplete(packageData, projectUser, 20, estimateBuiltDate());
+        updatePercentComplete(packageData, projectUser, 25, estimateBuiltDate());
 
         addGeneratedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 50, estimateBuiltDate());
 
+        saveGeneratedFiles(fileList, projectUser);
         addVersionedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
         addConfigVersionFile(fileList, packageData, projectUser);
         packageData.setFileList(fileList);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
+    }
+
+    private void saveGeneratedFiles(List<PackageFileData> fileList, ProjectUser projectUser) {
+        /*TODO: read file from binary-folder(temp) and add to projectDataManager*/
     }
 
     private void addConfigVersionFile(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) {
@@ -94,7 +102,7 @@ public class BuildPackageCommand extends KafkaCommand {
     private void updatePercentComplete(PackageData packageData, ProjectUser projectUser, int percent, Date builtDate) {
         packageData.setComplete(percent);
         packageData.setBuiltDate(builtDate);
-        dataManager.addData(ProjectFileType.PACKAGE, packageData, projectUser);
+        dataManager.addData(ProjectFileType.PACKAGE, packageData, projectUser, packageData.getId());
     }
 
     @SuppressWarnings("unchecked")
@@ -144,7 +152,7 @@ public class BuildPackageCommand extends KafkaCommand {
 
     private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException {
         int packageFileId = newPackageFileId(packageData);
-        generatedPath = environmentConfigs.getProjectRootPath() + projectUser.getId() + "/" + ProjectFileType.GENERATED.name().toLowerCase() + "/";
+        generatedPath = environmentConfigs.getBinaryRootPath() + projectUser.getId() + "/";
         String name = packageFileId + Defaults.CONFIG_FILE_EXT.getStringValue();
         createEmptyFile(generatedPath + name);
 
@@ -205,7 +213,12 @@ public class BuildPackageCommand extends KafkaCommand {
 
     private void createEmptyFile(String fileName) {
         try {
-            FileWriter fileWriter = new FileWriter(fileName);
+            File file = new File(fileName);
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+
+            FileWriter fileWriter = new FileWriter(file);
             fileWriter.write("\n");
             fileWriter.close();
         } catch (IOException ex) {

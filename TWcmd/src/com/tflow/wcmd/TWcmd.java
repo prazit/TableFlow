@@ -87,11 +87,13 @@ public class TWcmd {
                 /*TODO: add command to UpdateProjectCommandQueue*/
                 UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(key, value, environmentConfigs);
 
-                /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
                     updateProjectCommand.execute();
                     log.info("updateProjectCommand completed.");
+
+                    /*TODO: IMPORTANT: after success need to commit consumer-group-offset to know its already done to avoid duplicated commands*/
+
                 } catch (InvalidParameterException inex) {
                     /*TODO: how to handle rejected command*/
                     log.error("Invalid parameter: {}", inex.getMessage());
@@ -100,6 +102,7 @@ public class TWcmd {
                     log.error("Hard error: ", ex);
                     log.info("updateProjectCommand(offset: {}, key: {}) rejected.", offset, key);
                 }
+
             }
         }
 
