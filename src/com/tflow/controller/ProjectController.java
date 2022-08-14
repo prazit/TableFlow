@@ -28,13 +28,14 @@ public class ProjectController extends Controller {
 
     /*TODO: Uploaded File List here*/
 
-    private List<PackageItem> packageList;
+    private List<Item> packageList;
     private int selectedPackageId;
     private Package activePackage;
     private boolean pleaseSelectPackage;
 
     @PostConstruct
     public void onCreation() {
+        log.trace("ProjectController.onCreation.");
         project = workspace.getProject();
     }
 
@@ -101,7 +102,7 @@ public class ProjectController extends Controller {
 
     public void buildPackage() {
         log.trace("buildPackage.");
-        if (project.getManager().buildPackage(project)) {
+        if (project.getManager().buildPackage(workspace.getProject())) {
             reloadPackageList();
             selectPackage(packageList.size() - 1);
         }
@@ -140,11 +141,11 @@ public class ProjectController extends Controller {
         return localList;
     }
 
-    public List<PackageItem> getPackageList() {
+    public List<Item> getPackageList() {
         return packageList;
     }
 
-    public void setPackageList(List<PackageItem> packageList) {
+    public void setPackageList(List<Item> packageList) {
         this.packageList = packageList;
     }
 

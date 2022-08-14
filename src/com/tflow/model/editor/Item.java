@@ -1,16 +1,16 @@
 package com.tflow.model.editor;
 
-public class PackageItem {
+public class Item {
 
-    private int packageId;
+    private int id;
     private String name;
 
-    public int getPackageId() {
-        return packageId;
+    public int getId() {
+        return id;
     }
 
-    public void setPackageId(int packageId) {
-        this.packageId = packageId;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -24,7 +24,7 @@ public class PackageItem {
     @Override
     public String toString() {
         return "{" +
-                "packageId:" + packageId +
+                "id:" + id +
                 ", name:'" + name + '\'' +
                 '}';
     }

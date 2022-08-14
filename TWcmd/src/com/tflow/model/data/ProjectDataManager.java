@@ -315,7 +315,7 @@ public class ProjectDataManager {
             recordId = additional.getRecordId();
             key = fileType.name();
             kafkaRecord = new KafkaRecord(writeCommand.getDataObject(), additional);
-            log.info("ProjectWriteCommand( fileType:{}, recordId:{} )", fileType.name(), recordId);
+            log.info("ProjectDataWrite( fileType:{}, recordId:{} )", fileType.name(), recordId);
 
             Future<RecordMetadata> future = producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
             if (!isSuccess(future)) {
@@ -325,7 +325,7 @@ public class ProjectDataManager {
             projectDataWriteBufferList.remove(writeCommand);
             testBuffer.add(writeCommand);
 
-            log.trace("ProjectWriteCommand completed.");
+            log.trace("ProjectDataWrite completed.");
         }
     }
 

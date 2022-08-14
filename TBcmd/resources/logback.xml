@@ -4,13 +4,8 @@
     <property name="root-path" value="/Users/prazi/Documents/GitHub/TFlow/out/logs/"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>TRACE</level>
-            <onMatch>DENY</onMatch>
-            <onMismatch>ACCEPT</onMismatch>
-        </filter>
         <encoder>
-            <pattern>%date | %-5level | %msg | [%class:%line]%n</pattern>
+            <pattern>%date | %-5level | %msg | %class:%line%n</pattern>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>
@@ -34,7 +29,6 @@
 
     <root level="trace">
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
     </root>
 
 </configuration>

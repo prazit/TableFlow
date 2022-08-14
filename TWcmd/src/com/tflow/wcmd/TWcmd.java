@@ -97,10 +97,10 @@ public class TWcmd {
                 } catch (InvalidParameterException inex) {
                     /*TODO: how to handle rejected command*/
                     log.error("Invalid parameter: {}", inex.getMessage());
-                    log.info("updateProjectCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.warn("updateProjectCommand(offset: {}, key: {}) rejected.", offset, key);
                 } catch (Exception ex) {
                     log.error("Hard error: ", ex);
-                    log.info("updateProjectCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.warn("updateProjectCommand(offset: {}, key: {}) rejected.", offset, key);
                 }
 
             }

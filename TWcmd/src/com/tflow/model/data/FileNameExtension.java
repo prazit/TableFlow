@@ -9,6 +9,7 @@ public enum FileNameExtension {
     TXT("txt/"),
 
     XML("xml/"),
+    CONF("conf/"),
     PROPERTY("conf/"),
 
     BAT("bat/"),
@@ -37,7 +38,7 @@ public enum FileNameExtension {
 
         String[] names = name.split("[.]");
         try {
-            return valueOf(names[names.length - 1]);
+            return valueOf(names[names.length - 1].toUpperCase());
         } catch (Exception ex) {
             LoggerFactory.getLogger(FileNameExtension.class).warn("no FileNameExtension match for '{}'", name);
             return null;

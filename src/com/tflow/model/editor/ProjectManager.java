@@ -82,6 +82,7 @@ public class ProjectManager {
         dataManager.addData(ProjectFileType.PROJECT, projectData, projectUser, newProjectId);
         dataManager.addData(ProjectFileType.PACKAGE_LIST, new ArrayList(), projectUser);
         dataManager.addData(ProjectFileType.UPLOADED_LIST, new ArrayList(), projectUser);
+        dataManager.addData(ProjectFileType.GENERATED_LIST, new ArrayList(), projectUser);
 
         Map<Integer, Database> databaseMap = project.getDatabaseMap();
         dataManager.addData(ProjectFileType.DB_LIST, mapper.fromMap(databaseMap), projectUser, "1");
@@ -302,8 +303,8 @@ public class ProjectManager {
 
         /*get step-list*/
         data = dataManager.getData(ProjectFileType.STEP_LIST, projectUser, "5");
-        List<StepItemData> stepItemDataList = mapper.fromLinkedTreeMap((List<LinkedTreeMap>) throwExceptionOnError(data));
-        project.setStepList(mapper.toStepList(stepItemDataList));
+        List<ItemData> itemDataList = mapper.fromLinkedTreeMap((List<LinkedTreeMap>) throwExceptionOnError(data));
+        project.setStepList(mapper.toStepList(itemDataList));
 
         workspace.setProject(project);
         return project;
@@ -541,15 +542,15 @@ public class ProjectManager {
         return step;
     }
 
-    public List<PackageItem> loadPackageList(Project project) throws ProjectDataException {
+    public List<Item> loadPackageList(Project project) throws ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectDataManager dataManager = project.getDataManager();
 
         ProjectUser projectUser = mapper.toProjectUser(project);
         Object data = dataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);
-        List<PackageItemData> packageItemDataList = (List) throwExceptionOnError(data);
+        List<ItemData> packageItemDataList = mapper.fromLinkedTreeMap((List) throwExceptionOnError(data));
 
-        return mapper.toPackageList(packageItemDataList);
+        return mapper.toItemList(packageItemDataList);
     }
 
     public Package loadPackage(int packageId, Project project) throws ProjectDataException {

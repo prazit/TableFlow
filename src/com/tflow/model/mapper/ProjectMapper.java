@@ -90,7 +90,7 @@ public interface ProjectMapper {
     Project map(ProjectData projectData);
 
     @Mapping(target = "index", expression = "java(-1)" /* Notice: index >= 0 = Working Data, index < 0 = Label Data */)
-    Step map(StepItemData stepItemData);
+    Step map(ItemData itemData);
 
     Step map(StepData stepData);
 
@@ -131,9 +131,9 @@ public interface ProjectMapper {
 
     LinePlug map(LinePlugData linePlugData);
 
-    List<Step> toStepList(List<StepItemData> stepItemDataList);
+    List<Step> toStepList(List<ItemData> itemDataList);
 
-    List<StepItemData> toStepItemDataList(List<Step> stepList);
+    List<ItemData> toItemDataList(List<Step> stepList);
 
     @Mappings({
             @Mapping(target = "userId", source = "owner.user.id"),
@@ -143,7 +143,7 @@ public interface ProjectMapper {
 
     Package map(PackageData packageData);
 
-    List<PackageItem> toPackageList(List<PackageItemData> packageItemDataList);
+    List<Item> toItemList(List<ItemData> itemDataList);
 
     /*List<PackageFile> map(List<PackageFileData> packageFileData);*/
 
@@ -236,17 +236,17 @@ public interface ProjectMapper {
         return new ArrayList<>(variableMap.keySet());
     }
 
-    List<StepItemData> fromStepList(List<Step> stepList);
+    List<ItemData> fromStepList(List<Step> stepList);
 
-    default List<StepItemData> fromLinkedTreeMap(List<LinkedTreeMap> linkedTreeMapList) {
-        List<StepItemData> stepItemDataList = new ArrayList<>();
+    default List<ItemData> fromLinkedTreeMap(List<LinkedTreeMap> linkedTreeMapList) {
+        List<ItemData> itemDataList = new ArrayList<>();
         for (LinkedTreeMap linkedTreeMap : linkedTreeMapList) {
-            StepItemData stepItemData = new StepItemData();
-            stepItemData.setId(((Double) linkedTreeMap.get("id")).intValue());
-            stepItemData.setName((String) linkedTreeMap.get("name"));
-            stepItemDataList.add(stepItemData);
+            ItemData itemData = new ItemData();
+            itemData.setId(((Double) linkedTreeMap.get("id")).intValue());
+            itemData.setName((String) linkedTreeMap.get("name"));
+            itemDataList.add(itemData);
         }
-        return stepItemDataList;
+        return itemDataList;
     }
 
     List<Integer> fromDataTableList(List<DataTable> dataList);

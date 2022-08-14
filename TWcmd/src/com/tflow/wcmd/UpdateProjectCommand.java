@@ -83,14 +83,16 @@ public class UpdateProjectCommand extends IOCommand {
         Object data = recordData.getData();
         if (data instanceof DatabaseData) {
             DatabaseData databaseData = (DatabaseData) data;
-            databaseData.setUser(Crypto.encrypt(databaseData.getUser()));
-            databaseData.setPassword(Crypto.encrypt(databaseData.getPassword()));
+            String user = databaseData.getUser();
+            String password = databaseData.getPassword();
+            databaseData.setUser(user == null ? "" : Crypto.encrypt(user));
+            databaseData.setPassword(password == null ? "" : Crypto.encrypt(password));
             databaseData.setUserEncrypted(true);
             databaseData.setPasswordEncrypted(true);
         } else if (data instanceof SFTPData) {
             SFTPData sftpData = (SFTPData) data;
-            sftpData.setUser(Crypto.encrypt(sftpData.getUser()));
-            sftpData.setPassword(Crypto.encrypt(sftpData.getPassword()));
+            sftpData.setUser(sftpData.getUser() == null ? "" : Crypto.encrypt(sftpData.getUser()));
+            sftpData.setPassword(sftpData.getUser() == null ? "" : Crypto.encrypt(sftpData.getPassword()));
             sftpData.setUserEncrypted(true);
             sftpData.setPasswordEncrypted(true);
         }
