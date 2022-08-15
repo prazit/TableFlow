@@ -6,6 +6,9 @@ import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.mapstruct.factory.Mappers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JSONDeserializer implements Deserializer<Object> {
 
     public Object deserialize(String topic, byte[] data) {
@@ -35,11 +38,27 @@ public class JSONDeserializer implements Deserializer<Object> {
         try {
             JSONKafkaRecord jsonRecordData = (JSONKafkaRecord) object;
             Object dataObject = SerializeUtil.fromTJsonString(jsonRecordData.getData());
-            /*LoggerFactory.getLogger(JSONDeserializer.class).warn("JSONDeserialize: deserialized-object={}", dataObject.getClass().getName());*/
+
+            /*need to change List<Double> to List<Integer>*/
+            if (dataObject instanceof List) {
+                List list = (List) dataObject;
+                if (list.size() > 0 && list.get(0) instanceof Double) {
+                    dataObject = toIntegerList(list);
+                }
+            }
+
             return new KafkaRecord(dataObject, jsonRecordData.getAdditional());
         } catch (Error | Exception ex) {
             throw new SerializationException(ex.getMessage(), ex);
         }
+    }
+
+    private Object toIntegerList(List<Double> list) {
+        List<Integer> integerList = new ArrayList<>();
+        for (Double aDouble : list) {
+            integerList.add(aDouble.intValue());
+        }
+        return integerList;
     }
 
 }

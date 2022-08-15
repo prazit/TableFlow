@@ -315,7 +315,7 @@ public class ProjectDataManager {
             recordId = additional.getRecordId();
             key = fileType.name();
             kafkaRecord = new KafkaRecord(writeCommand.getDataObject(), additional);
-            log.info("ProjectDataWrite( fileType:{}, recordId:{} )", fileType.name(), recordId);
+            log.info("Outgoing message: write( fileType:{}, recordId:{} )", fileType.name(), recordId);
 
             Future<RecordMetadata> future = producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
             if (!isSuccess(future)) {
@@ -325,7 +325,7 @@ public class ProjectDataManager {
             projectDataWriteBufferList.remove(writeCommand);
             testBuffer.add(writeCommand);
 
-            log.trace("ProjectDataWrite completed.");
+            log.trace("Outgoing message completed: write ");
         }
     }
 
@@ -447,7 +447,6 @@ public class ProjectDataManager {
     }
 
     public Object getData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.trace("getData(fileType:{}, additional:{}", fileType, additional);
         validate(fileType, additional);
 
         long code = requestData(fileType, additional);
@@ -479,7 +478,7 @@ public class ProjectDataManager {
     }
 
     private long requestData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.trace("requestData( fileType:{}, recordId:{} )", fileType.name(), additional.getRecordId());
+        log.trace("Outgoing message: read(fileType:{}, additional:{}", fileType, additional);
 
         if (!ready(producer)) {
             log.warn("requestData: producer not ready to send message");
@@ -604,7 +603,6 @@ public class ProjectDataManager {
             result = false;
         }
 
-        log.debug("isSuccess return {}", result);
         return result;
     }
 

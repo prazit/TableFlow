@@ -36,8 +36,8 @@ public class ReadProjectCommand extends IOCommand {
     private KafkaProducer<String, Object> dataProducer;
     private RecordMapper mapper;
 
-    public ReadProjectCommand(String key, Object value, EnvironmentConfigs environmentConfigs, KafkaProducer<String, Object> dataProducer, String topic) {
-        super(key, value, environmentConfigs);
+    public ReadProjectCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, KafkaProducer<String, Object> dataProducer, String topic) {
+        super(offset, key, value, environmentConfigs);
         this.dataProducer = dataProducer;
         this.topic = topic;
     }

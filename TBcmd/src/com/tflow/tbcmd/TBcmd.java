@@ -60,11 +60,9 @@ public class TBcmd {
             records = consumer.poll(duration);
 
             for (ConsumerRecord<String, byte[]> record : records) {
-
-                Object value;
+                long offset = record.offset();
                 String key = record.key();
-                String offset = String.valueOf(record.offset());
-                log.info("Incoming message offset: {}, key: {}.", offset, key);
+                Object value;
 
                 try {
                     value = deserializer.deserialize("", record.value());
@@ -75,19 +73,24 @@ public class TBcmd {
                 }
 
                 /*TODO: future feature: add command to UpdateProjectCommandQueue*/
-                BuildPackageCommand buildPackageCommand = new BuildPackageCommand(key, value, environmentConfigs, projectDataManager);
+                BuildPackageCommand buildPackageCommand = new BuildPackageCommand(offset, key, value, environmentConfigs, projectDataManager);
+                log.info("Incoming message: {}", buildPackageCommand.toString());
 
                 /*TODO: future feature: move this execute block into UpdateProjectCommandQueue*/
                 try {
                     buildPackageCommand.execute();
-                    log.info("buildPackageCommand completed.");
+                    log.info("Incoming message completed: {}", buildPackageCommand.toString());
                 } catch (InvalidParameterException inex) {
                     /*Notice: how to handle rejected command, can rebuild when percentComplete < 100*/
                     log.error("Invalid parameter: {}", inex.getMessage());
-                    log.info("buildPackageCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.warn("Message rejected: {}", buildPackageCommand.toString());
+                } catch (UnsupportedOperationException ex) {
+                    /*Notice: how to handle rejected command, can rebuild when percentComplete < 100*/
+                    log.error("UnsupportedOperationException: {}", ex.getMessage());
+                    log.warn("Message rejected: {}", buildPackageCommand.toString());
                 } catch (Exception ex) {
-                    log.error("Hard error: ", ex);
-                    log.info("buildPackageCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.error("Unexpected error occur: ", ex);
+                    log.warn("Message rejected: {}", buildPackageCommand.toString());
                 }
             }
         }

@@ -3,7 +3,6 @@ package com.tflow.tbcmd;
 import com.clevel.dconvers.DConvers;
 import com.clevel.dconvers.conf.*;
 import com.clevel.dconvers.dynvalue.DynamicValueType;
-import com.clevel.dconvers.ngin.Crypto;
 import com.clevel.dconvers.transform.TransformTypes;
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaErrorCode;
@@ -25,11 +24,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class BuildPackageCommand extends KafkaCommand {
 
     private Logger log = LoggerFactory.getLogger(BuildPackageCommand.class);
+
+    private KafkaRecordAttributes attributes;
 
     private ProjectDataManager dataManager;
     private PackageMapper mapper;
@@ -37,8 +39,8 @@ public class BuildPackageCommand extends KafkaCommand {
     private String generatedPath;
     private DConvers dconvers;
 
-    public BuildPackageCommand(String key, Object value, EnvironmentConfigs environmentConfigs, ProjectDataManager dataManager) {
-        super(key, value, environmentConfigs);
+    public BuildPackageCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, ProjectDataManager dataManager) {
+        super(offset, key, value, environmentConfigs);
         this.dataManager = dataManager;
     }
 
@@ -53,7 +55,7 @@ public class BuildPackageCommand extends KafkaCommand {
 
         /*Notice: key is command, now have only 1 'build' command*/
         /*Notice: first version assume ProjectType always be BATCH*/
-        KafkaRecordAttributes attributes = (KafkaRecordAttributes) value;
+        attributes = (KafkaRecordAttributes) value;
         ProjectUser projectUser = mapper.map(attributes);
 
         Object data = dataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);
@@ -72,7 +74,8 @@ public class BuildPackageCommand extends KafkaCommand {
         packageData.setBuildDate(DateTimeUtil.now());
         packageData.setName("building...");
 
-        packageIdList.add(mapper.map(packageData));
+        ItemData packageItemData = mapper.map(packageData);
+        packageIdList.add(packageItemData);
         dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
         updatePercentComplete(packageData, projectUser, 0, estimateBuiltDate());
 
@@ -83,22 +86,20 @@ public class BuildPackageCommand extends KafkaCommand {
         addGeneratedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 50, estimateBuiltDate());
 
-        saveGeneratedFiles(fileList, projectUser);
         addVersionedFiles(fileList, packageData, projectUser);
+        addConfigVersionFile(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
-        addConfigVersionFile(fileList, packageData, projectUser);
-        packageData.setName(getPackageName(packageData));
+        String packageName = getPackageName(packageData);
+        packageItemData.setName(packageName);
+        dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
+        packageData.setName(packageName);
         packageData.setFileList(fileList);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
     }
 
     private String getPackageName(PackageData packageData) {
         return "Package-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-hhmmss");
-    }
-
-    private void saveGeneratedFiles(List<PackageFileData> fileList, ProjectUser projectUser) {
-        /*TODO: read file from binary-folder(temp) and add to projectDataManager*/
     }
 
     private void addConfigVersionFile(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) {
@@ -115,14 +116,18 @@ public class BuildPackageCommand extends KafkaCommand {
     @SuppressWarnings("unchecked")
     private void addVersionedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException {
         /*TODO: future feature: need to filter by ProjectType on next ProjectType*/
+        String filter = ProjectType.BATCH.getCode();
         Object data = dataManager.getData(ProjectFileType.VERSIONED_LIST, projectUser);
-        List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
-        for (BinaryFileItemData binaryFileItemData : binaryFileItemDataList) {
-            PackageFileData packageFileData = mapper.map(binaryFileItemData);
-            packageFileData.setId(newPackageFileId(packageData));
-            packageFileData.setType(FileType.VERSIONED);
-            packageFileData.setBuildDate(packageData.getBuildDate());
-            fileList.add(packageFileData);
+        List<StringItemData> binaryFileItemDataList = mapper.toStringItemData((List) throwExceptionOnError(data));
+        for (StringItemData binaryFileItemData : binaryFileItemDataList) {
+            String projectTypeCodes = Versioned.valueOf(binaryFileItemData.getId()).getProjectTypeCodes();
+            if (projectTypeCodes.contains(filter)) {
+                PackageFileData packageFileData = mapper.map(binaryFileItemData);
+                packageFileData.setId(newPackageFileId(packageData));
+                packageFileData.setType(FileType.VERSIONED);
+                packageFileData.setBuildDate(packageData.getBuildDate());
+                fileList.add(packageFileData);
+            }
         }
     }
 
@@ -157,7 +162,7 @@ public class BuildPackageCommand extends KafkaCommand {
         return data;
     }
 
-    private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException {
+    private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, UnsupportedOperationException {
         int generatedFileId = 0;
         int packageFileId = newPackageFileId(packageData);
         generatedPath = environmentConfigs.getBinaryRootPath() + projectUser.getId() + "/";
@@ -178,9 +183,11 @@ public class BuildPackageCommand extends KafkaCommand {
             log.info("dataConversionConfigFile.saveProperties...");
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             dataConversionConfigFile.saveProperties(byteArrayOutputStream);
+            byte[] contentBytes = byteArrayOutputStream.toByteArray();
+            log.debug("Conversion:saveProperties successful, \n{}", new String(contentBytes, StandardCharsets.ISO_8859_1));
 
             Object data = dataManager.getData(ProjectFileType.GENERATED_LIST, projectUser);
-            List<BinaryFileData> generatedFileList = (List) throwExceptionOnError(data);
+            List<BinaryFileData> generatedFileList = mapper.toBinaryFileDataList((List) throwExceptionOnError(data));
 
             /*create Generated Conversion File*/
             BinaryFileData conversionFileData = new BinaryFileData();
@@ -188,12 +195,13 @@ public class BuildPackageCommand extends KafkaCommand {
             conversionFileData.setId(generatedFileId);
             conversionFileData.setName(name);
             conversionFileData.setExt(FileNameExtension.forName(name));
-            conversionFileData.setContent(byteArrayOutputStream.toByteArray());
+            conversionFileData.setContent(contentBytes);
             dataManager.addData(ProjectFileType.GENERATED, conversionFileData, projectUser, conversionFileData.getId());
 
             PackageFileData packageFileData = mapper.map(conversionFileData);
             packageFileData.setId(newPackageFileId(packageData));
             packageFileData.setType(FileType.GENERATED);
+            packageFileData.setBuildPath("");
             fileList.add(packageFileData);
 
             BinaryFileData converterFileData;
@@ -202,6 +210,8 @@ public class BuildPackageCommand extends KafkaCommand {
 
                 byteArrayOutputStream = new ByteArrayOutputStream();
                 converterConfigFile.saveProperties(byteArrayOutputStream);
+                contentBytes = byteArrayOutputStream.toByteArray();
+                log.debug("Converter:saveProperties successful, {}\n{}", name, new String(byteArrayOutputStream.toByteArray(), StandardCharsets.ISO_8859_1));
 
                 /*create Generated Converter File*/
                 converterFileData = new BinaryFileData();
@@ -209,7 +219,7 @@ public class BuildPackageCommand extends KafkaCommand {
                 converterFileData.setId(generatedFileId);
                 converterFileData.setName(name);
                 converterFileData.setExt(FileNameExtension.forName(name));
-                converterFileData.setContent(byteArrayOutputStream.toByteArray());
+                converterFileData.setContent(contentBytes);
                 dataManager.addData(ProjectFileType.GENERATED, converterFileData, projectUser, converterFileData.getId());
 
                 packageFileData = mapper.map(converterFileData);
@@ -217,7 +227,9 @@ public class BuildPackageCommand extends KafkaCommand {
                 packageFileData.setType(FileType.GENERATED);
                 fileList.add(packageFileData);
             }
-            dataManager.addData(ProjectFileType.GENERATED_LIST, generatedFileList, projectUser);
+
+            /*TODO: addGeneratedBatch */
+            dataManager.addData(ProjectFileType.GENERATED_LIST, mapper.fromBinaryFileList(generatedFileList), projectUser);
 
             log.info("generate dconvers-config-files success.\n");
         } catch (Exception ex) {
@@ -243,7 +255,7 @@ public class BuildPackageCommand extends KafkaCommand {
         }
     }
 
-    private void initDataConversionConfigFile(DataConversionConfigFile dataConversionConfigFile, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
+    private void initDataConversionConfigFile(DataConversionConfigFile dataConversionConfigFile, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException {
         // all commented will use default values by DConvers
 
         /*dataConversionConfigFile.setPluginsCalcList();
@@ -263,7 +275,7 @@ public class BuildPackageCommand extends KafkaCommand {
         dataConversionConfigFile.setMappingFileNumber(101);
         dataConversionConfigFile.setTargetFileNumber(201);
 
-        dataConversionConfigFile.setDataSourceConfigMap(createDataSourceConfigMap(projectUser));
+        dataConversionConfigFile.setDataSourceConfigMap(createDataSourceConfigMap(projectUser, fileList));
         dataConversionConfigFile.setSftpConfigMap(createSftpConfigMap(projectUser));
         dataConversionConfigFile.setSmtpConfigMap(createSmtpConfigMap());
 
@@ -271,22 +283,50 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private HashMap<String, DataSourceConfig> createDataSourceConfigMap(ProjectUser projectUser) throws IOException {
+    private HashMap<String, DataSourceConfig> createDataSourceConfigMap(ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException {
         HashMap<String, DataSourceConfig> dataSourceConfigHashMap = new HashMap<>();
 
         Object data = dataManager.getData(ProjectFileType.DB_LIST, projectUser);
-        List<Integer> dbIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> dbIdList = (List) throwExceptionOnError(data);
 
         DatabaseData databaseData;
         DataSourceConfig dataSourceConfig;
         for (Integer databaseId : dbIdList) {
             data = dataManager.getData(ProjectFileType.DB, projectUser, databaseId);
             databaseData = (DatabaseData) throwExceptionOnError(data);
-            dataSourceConfig = getDataSourceConfig(databaseData);
+            dataSourceConfig = getDataSourceConfig(throwExceptionOnValidateFail(databaseData, projectUser, fileList));
             dataSourceConfigHashMap.put(dataSourceConfig.getName().toUpperCase(), dataSourceConfig);
         }
 
         return dataSourceConfigHashMap;
+    }
+
+    private DatabaseData throwExceptionOnValidateFail(DatabaseData databaseData, ProjectUser projectUser, List<PackageFileData> fileList) throws UnsupportedOperationException, IOException {
+        String objectName = "Database(" + databaseData.getName() + ")";
+        if (databaseData.getUrl() == null) throw newRequiredException("URL", objectName);
+        if (databaseData.getDbms() == null) throw newRequiredException("DBMS", objectName);
+        databaseData.setDriver(getDriver(databaseData.getDbms(), projectUser, fileList));
+        if (databaseData.getUser() == null) throw newRequiredException("User", objectName);
+        if (databaseData.getPassword() == null) throw newRequiredException("Password", objectName);
+        if (databaseData.getRetry() < 0) databaseData.setRetry(0);
+        return databaseData;
+    }
+
+    private UnsupportedOperationException newRequiredException(String fieldName, String objectName) {
+        return new UnsupportedOperationException(fieldName + " is required on " + objectName);
+    }
+
+    private String getDriver(String dbmsName, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
+        Dbms dbms = Dbms.valueOf(dbmsName);
+        Versioned driverFile = dbms.getDriverFile();
+
+        /*add driver jar file to fileList*/
+        Object data = dataManager.getData(ProjectFileType.VERSIONED, projectUser, driverFile.toString());
+        BinaryFileData binaryFileData = (BinaryFileData) throwExceptionOnError(data);
+        PackageFileData packageFileData = mapper.map(binaryFileData);
+        fileList.add(packageFileData);
+
+        return dbms.getDriverName();
     }
 
     private DataSourceConfig getDataSourceConfig(DatabaseData databaseData) {
@@ -295,8 +335,8 @@ public class BuildPackageCommand extends KafkaCommand {
         dataSourceConfig.setUrl(/*"jdbc:oracle:thin:@172.20.8.67:1521:FCUAT2"*/ databaseData.getUrl());
         dataSourceConfig.setDriver(/*"oracle.jdbc.driver.OracleDriver"*/databaseData.getDriver());
         dataSourceConfig.setSchema(/*"account"*/ "");
-        dataSourceConfig.setUser(databaseData.isUserEncrypted() ? Crypto.decrypt(databaseData.getUser()) : databaseData.getUser());
-        dataSourceConfig.setPassword(databaseData.isPasswordEncrypted() ? Crypto.decrypt(databaseData.getPassword()) : databaseData.getPassword());
+        dataSourceConfig.setUser(databaseData.getUser());
+        dataSourceConfig.setPassword(databaseData.getPassword());
         dataSourceConfig.setRetry(databaseData.getRetry());
 
         /*-- for EmailDataSource
@@ -328,18 +368,30 @@ public class BuildPackageCommand extends KafkaCommand {
         HashMap<String, HostConfig> sftpConfigMap = new HashMap<>();
 
         Object data = dataManager.getData(ProjectFileType.SFTP_LIST, projectUser);
-        List<Integer> sftpIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> sftpIdList = (List) throwExceptionOnError(data);
 
         SFTPData sftpData;
         HostConfig hostConfig;
         for (Integer sftpId : sftpIdList) {
             data = dataManager.getData(ProjectFileType.SFTP, projectUser, sftpId);
             sftpData = (SFTPData) throwExceptionOnError(data);
-            hostConfig = getHostConfig(sftpData);
+            hostConfig = getHostConfig(throwExceptionOnValidateFail(sftpData));
             sftpConfigMap.put(hostConfig.getName().toUpperCase(), hostConfig);
         }
 
         return sftpConfigMap;
+    }
+
+    private SFTPData throwExceptionOnValidateFail(SFTPData sftpData) {
+        String objectName = "SFTP(" + sftpData.getName() + ")";
+        if (sftpData.getHost() == null) throw newRequiredException("Host", objectName);
+        if (sftpData.getPort() <= 0) throw newRequiredException("Port", objectName);
+        if (sftpData.getTmp() == null) throw newRequiredException("Tmp", objectName);
+        if (sftpData.getRootPath() == null) throw newRequiredException("RootPath", objectName);
+        if (sftpData.getUser() == null) throw newRequiredException("User", objectName);
+        if (sftpData.getPassword() == null) throw newRequiredException("Password", objectName);
+        if (sftpData.getRetry() < 0) sftpData.setRetry(0);
+        return sftpData;
     }
 
     private HostConfig getHostConfig(SFTPData sftpData) {
@@ -347,8 +399,8 @@ public class BuildPackageCommand extends KafkaCommand {
 
         hostConfig.setHost(sftpData.getHost());
         hostConfig.setPort(sftpData.getPort());
-        hostConfig.setUser(sftpData.isUserEncrypted() ? Crypto.decrypt(sftpData.getUser()) : sftpData.getUser());
-        hostConfig.setPassword(sftpData.isPasswordEncrypted() ? Crypto.decrypt(sftpData.getPassword()) : sftpData.getPassword());
+        hostConfig.setUser(sftpData.getUser());
+        hostConfig.setPassword(sftpData.getPassword());
         hostConfig.setRetry(sftpData.getRetry());
         hostConfig.setTmp(sftpData.getTmp());
 
@@ -380,10 +432,13 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
-        String fileName = generatedPath + IDPrefix.STEP.getPrefix() + stepData.getId() + Defaults.CONFIG_FILE_EXT.getStringValue();
-        createEmptyFile(fileName);
+        String fileExt = Defaults.CONFIG_FILE_EXT.getStringValue();
+        String fileName = IDPrefix.STEP.getPrefix() + stepData.getId() + fileExt;
+        String loadName = generatedPath + fileName;
+        String saveName = FileNameExtension.forName(fileExt.replaceAll("[.]", "")).getBuildPath() + fileName;
+        createEmptyFile(loadName);
 
-        ConverterConfigFile converterConfigFile = new ConverterConfigFile(dconvers, fileName);
+        ConverterConfigFile converterConfigFile = new ConverterConfigFile(dconvers, loadName, saveName);
         converterConfigFile.setIndex(stepData.getIndex());
 
         /*all data-tables*/
@@ -713,4 +768,12 @@ public class BuildPackageCommand extends KafkaCommand {
         return arguments.substring(1);
     }
 
+    @Override
+    public String toString() {
+        return "BuildPackageCommand{" +
+                "offset:" + offset +
+                ", key:'" + key + '\'' +
+                (attributes == null ? "" : ", attributes:" + attributes) +
+                '}';
+    }
 }

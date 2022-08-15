@@ -55,7 +55,6 @@ public enum Properties {
             "--:Connection:--",
             "dbms:DBMS:DBMS",
             "url:Connection String:String",
-            "driver:Driver:String",
             "user:User:String:20",
             "password:Password:String:20::true",
             "retry:Connection Retry:Int:9:0",
@@ -71,6 +70,7 @@ public enum Properties {
             "password:Password:String:20::true",
             "retry:Connection Retry:Int:9:0",
             "rootPath:Root Path:String",
+            "tmp:Downloaded Path:String",
             "--:Debug Only:--",
             "id:ID:ReadOnly"
     ),

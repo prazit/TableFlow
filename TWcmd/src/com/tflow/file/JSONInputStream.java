@@ -9,6 +9,8 @@ import org.apache.kafka.common.errors.SerializationException;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JSONInputStream extends DataInputStream implements SerializeReader {
 
@@ -38,6 +40,14 @@ public class JSONInputStream extends DataInputStream implements SerializeReader 
             String dataJson = gson.toJson(jsonRecordData.getData());
             Object dataObject = gson.fromJson(dataJson, dataClass);
 
+            /*need to change List<Double> to List<Integer>*/
+            if (dataObject instanceof List) {
+                List list = (List) dataObject;
+                if (list.size() > 0 && list.get(0) instanceof Double) {
+                    dataObject = toIntegerList(list);
+                }
+            }
+
             RecordData recordData = new RecordData();
             recordData.setData(dataObject);
             recordData.setAdditional(jsonRecordData.getAdditional());
@@ -47,5 +57,13 @@ public class JSONInputStream extends DataInputStream implements SerializeReader 
             throw new SerializationException(ex.getMessage(), ex);
         }
 
+    }
+
+    private Object toIntegerList(List<Double> list) {
+        List<Integer> integerList = new ArrayList<>();
+        for (Double aDouble : list) {
+            integerList.add(aDouble.intValue());
+        }
+        return integerList;
     }
 }

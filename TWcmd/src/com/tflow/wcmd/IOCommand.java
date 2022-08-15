@@ -14,8 +14,8 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class IOCommand extends KafkaCommand {
 
-    public IOCommand(String key, Object value, EnvironmentConfigs environmentConfigs) {
-        super(key, value, environmentConfigs);
+    public IOCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs) {
+        super(offset, key, value, environmentConfigs);
     }
 
 

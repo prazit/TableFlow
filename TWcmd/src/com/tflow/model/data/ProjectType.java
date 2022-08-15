@@ -2,14 +2,24 @@ package com.tflow.model.data;
 
 public enum ProjectType {
 
-    BATCH,
+    BATCH("B"),
 
     /*serverless*/
-    KAFKA,
-    SERVLET,
+    KAFKA("K"),
+    SERVLET("S"),
 
     /*require web server*/
-    WEBUI,
-    WEBSERVICE,
+    WEBUI("U"),
+    WEBSERVICE("W"),
+    ;
 
+    String code;
+
+    ProjectType(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
 }

@@ -255,7 +255,7 @@ public class ProjectManager {
 
         /*get db-list*/
         data = dataManager.getData(ProjectFileType.DB_LIST, projectUser, "1");
-        List<Integer> databaseIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> databaseIdList = (List) throwExceptionOnError(data);
         Map<Integer, Database> databaseMap = new HashMap<>();
         project.setDatabaseMap(databaseMap);
 
@@ -267,7 +267,7 @@ public class ProjectManager {
 
         /*get sftp-list*/
         data = dataManager.getData(ProjectFileType.SFTP_LIST, projectUser, "2");
-        List<Integer> sftpIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> sftpIdList = (List) throwExceptionOnError(data);
         Map<Integer, SFTP> sftpMap = new HashMap<>();
         project.setSftpMap(sftpMap);
 
@@ -279,7 +279,7 @@ public class ProjectManager {
 
         /*get local-list*/
         data = dataManager.getData(ProjectFileType.LOCAL_LIST, projectUser, "3");
-        List<Integer> localIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> localIdList = (List) throwExceptionOnError(data);
         Map<Integer, Local> localMap = new HashMap<>();
         project.setLocalMap(localMap);
 
@@ -361,7 +361,7 @@ public class ProjectManager {
 
         /*get data-source-selector-list*/
         data = dataManager.getData(ProjectFileType.DATA_SOURCE_SELECTOR_LIST, projectUser, 1, stepId);
-        List<Integer> dataSourceSelectorIdList = mapper.fromDoubleList(((List<Double>) throwExceptionOnError(data)));
+        List<Integer> dataSourceSelectorIdList = (List) throwExceptionOnError(data);
         List<DataSourceSelector> dataSourceSelectorList = new ArrayList<>();
         step.setDataSourceSelectorList(dataSourceSelectorList);
 
@@ -377,7 +377,7 @@ public class ProjectManager {
 
         /*get data-file-list*/
         data = dataManager.getData(ProjectFileType.DATA_FILE_LIST, projectUser, 1, stepId);
-        List<Integer> dataFileIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> dataFileIdList = (List) throwExceptionOnError(data);
         List<DataFile> dataFileList = new ArrayList<>();
         step.setFileList(dataFileList);
 
@@ -391,7 +391,7 @@ public class ProjectManager {
 
         /*get data-table-list*/
         data = dataManager.getData(ProjectFileType.DATA_TABLE_LIST, projectUser, 1, stepId);
-        List<Integer> dataTableIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> dataTableIdList = (List) throwExceptionOnError(data);
         List<DataTable> dataTableList = new ArrayList<>();
         step.setDataList(dataTableList);
 
@@ -411,7 +411,7 @@ public class ProjectManager {
 
             /*get column-list*/
             data = dataManager.getData(ProjectFileType.DATA_COLUMN_LIST, projectUser, 1, stepId, dataTableId);
-            List<Integer> columnIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+            List<Integer> columnIdList = (List) throwExceptionOnError(data);
             List<DataColumn> columnList = new ArrayList<>();
             dataTable.setColumnList(columnList);
 
@@ -427,7 +427,7 @@ public class ProjectManager {
 
             /*get output-list*/
             data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 1, stepId, dataTableId);
-            List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+            List<Integer> outputIdList = (List) throwExceptionOnError(data);
             List<OutputFile> outputList = new ArrayList<>();
             dataTable.setOutputList(outputList);
 
@@ -444,7 +444,7 @@ public class ProjectManager {
 
         /*get transform-table-list*/
         data = dataManager.getData(ProjectFileType.TRANSFORM_TABLE_LIST, projectUser, 9, stepId);
-        List<Integer> transformTableIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> transformTableIdList = (List) throwExceptionOnError(data);
         List<TransformTable> transformTableList = new ArrayList<>();
         step.setTransformList(transformTableList);
 
@@ -464,7 +464,7 @@ public class ProjectManager {
 
             /*get transform-column-list*/
             data = dataManager.getData(ProjectFileType.TRANSFORM_COLUMN_LIST, projectUser, 1, stepId, 0, transformTableId);
-            List<Integer> columnIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+            List<Integer> columnIdList = (List) throwExceptionOnError(data);
             List<DataColumn> columnList = new ArrayList<>();
             transformTable.setColumnList(columnList);
 
@@ -496,7 +496,7 @@ public class ProjectManager {
 
             /*get transform-output-list*/
             data = dataManager.getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, projectUser, 1, stepId, 0, transformTableId);
-            List<Integer> outputIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+            List<Integer> outputIdList = (List) throwExceptionOnError(data);
             List<OutputFile> outputList = new ArrayList<>();
             transformTable.setOutputList(outputList);
 
@@ -511,7 +511,7 @@ public class ProjectManager {
 
             /*get tranformation-list*/
             data = dataManager.getData(ProjectFileType.TRANSFORMATION_LIST, projectUser, 1, stepId, 0, transformTableId);
-            List<Integer> fxIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+            List<Integer> fxIdList = (List) throwExceptionOnError(data);
             List<TableFx> fxList = new ArrayList<>();
             transformTable.setFxList(fxList);
 
@@ -528,7 +528,7 @@ public class ProjectManager {
 
         /*get line-list at the end*/
         data = dataManager.getData(ProjectFileType.LINE_LIST, projectUser, stepId, stepId);
-        List<Integer> lineIdList = mapper.fromDoubleList((List<Double>) throwExceptionOnError(data));
+        List<Integer> lineIdList = (List) throwExceptionOnError(data);
         List<Line> lineList = new ArrayList<>();
         step.setLineList(lineList);
 

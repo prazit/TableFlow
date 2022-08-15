@@ -29,8 +29,8 @@ public class UpdateProjectCommand extends IOCommand {
 
     private Logger log = LoggerFactory.getLogger(UpdateProjectCommand.class);
 
-    public UpdateProjectCommand(String key, Object value, EnvironmentConfigs environmentConfigs) {
-        super(key, value, environmentConfigs);
+    public UpdateProjectCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs) {
+        super(offset, key, value, environmentConfigs);
     }
 
     @Override
@@ -85,21 +85,25 @@ public class UpdateProjectCommand extends IOCommand {
             DatabaseData databaseData = (DatabaseData) data;
             String user = databaseData.getUser();
             String password = databaseData.getPassword();
-            databaseData.setUser(user == null ? "" : Crypto.encrypt(user));
-            databaseData.setPassword(password == null ? "" : Crypto.encrypt(password));
+            databaseData.setUser(encrypt(user));
+            databaseData.setPassword(encrypt(password));
             databaseData.setUserEncrypted(true);
             databaseData.setPasswordEncrypted(true);
         } else if (data instanceof SFTPData) {
             SFTPData sftpData = (SFTPData) data;
-            sftpData.setUser(sftpData.getUser() == null ? "" : Crypto.encrypt(sftpData.getUser()));
-            sftpData.setPassword(sftpData.getUser() == null ? "" : Crypto.encrypt(sftpData.getPassword()));
+            sftpData.setUser(encrypt(sftpData.getUser()));
+            sftpData.setPassword(encrypt(sftpData.getPassword()));
             sftpData.setUserEncrypted(true);
             sftpData.setPasswordEncrypted(true);
         }
     }
 
+    private String encrypt(String source) {
+        return source == null || source.isEmpty() ? "" : Crypto.encrypt(source);
+    }
+
     private File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {
-        return getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath(), DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS") + environmentConfigs.getDataFileExt());
+        return getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath() + getFileName(projectFileType.getPrefix(), additional.getRecordId()) + "/", DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS") + environmentConfigs.getDataFileExt());
     }
 
     /**

@@ -62,11 +62,9 @@ public class TRcmd {
             records = consumer.poll(duration);
 
             for (ConsumerRecord<String, byte[]> record : records) {
-
-                Object value;
+                long offset = record.offset();
                 String key = record.key();
-                String offset = String.valueOf(record.offset());
-                log.info("Incoming message offset: {}, key: {}.", offset, key);
+                Object value;
 
                 try {
                     value = deserializer.deserialize("", record.value());
@@ -77,20 +75,21 @@ public class TRcmd {
                 }
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                ReadProjectCommand readProjectCommand = new ReadProjectCommand(key, value, environmentConfigs, dataProducer, dataTopic);
+                ReadProjectCommand readProjectCommand = new ReadProjectCommand(offset, key, value, environmentConfigs, dataProducer, dataTopic);
+                log.info("Incoming message: {}", readProjectCommand.toString());
 
                 /*test only*/
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
                     readProjectCommand.execute();
-                    log.info("readProjectCommand completed.");
+                    log.info("Incoming message completed: {}", readProjectCommand.toString());
                 } catch (InvalidParameterException inex) {
                     /*TODO: how to handle rejected command*/
                     log.error("Invalid parameter: {}", inex.getMessage());
-                    log.info("readProjectCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.warn("Message rejected: {}", readProjectCommand.toString());
                 } catch (Exception ex) {
                     log.error("Hard error: ", ex);
-                    log.info("readProjectCommand(offset: {}, key: {}) rejected.", offset, key);
+                    log.warn("Message rejected: {}", readProjectCommand.toString());
                 }
             }
         }
