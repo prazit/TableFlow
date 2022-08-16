@@ -4,7 +4,6 @@ import com.tflow.kafka.*;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.ProjectDataManager;
-import com.tflow.model.data.ProjectDataWriteBuffer;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.action.*;
@@ -488,49 +487,6 @@ public class EditorController extends Controller {
     public void darkTheme() {
         workspace.getUser().setTheme(Theme.DARK);
         FacesUtil.redirect("/editor.xhtml");
-    }
-
-    public void testGetData() {
-        ProjectDataManager dataManager = workspace.getProject().getDataManager();
-        ArrayList<ProjectDataWriteBuffer> testList = new ArrayList<>(dataManager.testBuffer);
-        for (ProjectDataWriteBuffer projectDataWriteBuffer : testList) {
-            ProjectFileType projectFileType = projectDataWriteBuffer.getFileType();
-            KafkaRecordAttributes additional = projectDataWriteBuffer.getAdditional();
-
-            log.warn("testKafkaSendMessage begin: getData(projectFileType:{}, additional:{})", projectFileType, additional);
-            Object data = dataManager.getData(projectFileType, additional);
-            if (data == null) {
-                log.error("testKafkaSendMessage end: getData.returned data = null");
-                continue;
-            }
-
-            long errorCode;
-            if (data instanceof Long) {
-                errorCode = (Long) data;
-                KafkaErrorCode kafkaErrorCode = KafkaErrorCode.parse(errorCode);
-                log.error("testKafkaSendMessage end: getData.returned error({})", kafkaErrorCode);
-                continue;
-            }
-
-            try {
-                KafkaRecord kafkaRecord = (KafkaRecord) data;
-                Object serialized = kafkaRecord.getData();
-                Object object;
-                if (serialized instanceof String) {
-                    log.warn("serialized is String");
-                    object = SerializeUtil.deserialize((String) kafkaRecord.getData());
-                } else {
-                    log.warn("serialized is byte[]");
-                    object = SerializeUtil.deserialize((byte[]) kafkaRecord.getData());
-                }
-                log.warn("testKafkaSendMessage: getData.returned object({}) = {}", object.getClass().getName(), object);
-                log.warn("testKafkaSendMessage end: getData(projectFileType:{}).returned additional = {}", projectFileType, kafkaRecord.getAdditional());
-            } catch (Exception ex) {
-                log.error("testKafkaSendMessage end: cast to DataTable failed: ", ex);
-            }
-
-            dataManager.testBuffer.remove(projectDataWriteBuffer);
-        }
     }
 
     public void testSaveProjectTemplate() {

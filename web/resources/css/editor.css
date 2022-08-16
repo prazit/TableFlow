@@ -119,6 +119,12 @@ iframe {
     border-left: var(--surface-c) dashed 4px;
 }
 
+.data-source.flex {
+    display: flex;
+    align-self: center;
+    flex-direction: column;
+}
+
 .data-source,
 .data-file,
 .step-output {
@@ -172,6 +178,17 @@ body .ui-panel.function .ui-panel-content {
     background-color: var(--surface-e);
 }
 
+.horizon-scroll-panel {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.database-panel,
+.local-panel,
+.sftp-panel {
+    display: flex;
+}
+
 .database-panel .selectable,
 .local-panel .selectable,
 .sftp-panel .selectable {
@@ -192,6 +209,7 @@ body .ui-panel.function.active .ui-panel-titlebar,
 }
 
 .step.selectable:hover,
+.data-source.button:hover,
 .data-source.selectable:hover,
 .data-file.selectable:hover,
 .step-output.selectable:hover,

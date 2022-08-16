@@ -36,7 +36,7 @@
                     <h1 style="color: var(--surface-c);">Project: #{projectCtl.project.name}</h1>
                 </p:outputPanel>
 
-                <p:accordionPanel style="padding: var(--padding);margin: var(--margin);">
+                <p:accordionPanel id="tabview" style="padding: var(--padding);margin: var(--margin);">
                     <p:importEnum type="com.tflow.controller.ProjectSection" var="ProjectSection"/>
                     <p:ajax event="tabChange" listener="#{projectCtl.openSection}" update="packageTab"/>
 
@@ -49,18 +49,26 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel styleClass="database-panel">
-                            <p:remoteCommand name="refreshDatabaseList" update="@parent" oncomplete="updatePanelComplete('.database-panel')"/>
-                            <p:repeat value="#{projectCtl.databaseList}" var="database">
-                                <p:outputPanel styleClass="data-source selectable#{projectCtl.active(database)}">
-                                    <input name="selectableId" type="hidden" value="#{database.selectableId}"/>
-                                    <b>#{database.name}</b>
-                                    <p:remoteCommand name="update#{database.selectableId}" update="@parent" oncomplete="updateComplete('#{database.selectableId}')"/>
-                                    <p:graphicImage library="images" name="#{database.image}"/>
-                                    <span>#{database.dbms}</span>
+                        <p:outputPanel id="databasetab" styleClass="horizon-scroll-panel">
+                            <p:outputPanel styleClass="database-panel">
+                                <p:remoteCommand name="refreshDatabaseList" update="editorForm:tabview:databasetab" oncomplete="updatePanelComplete('.database-panel')"/>
+                                <p:repeat value="#{projectCtl.databaseList}" var="database">
+                                    <p:outputPanel styleClass="data-source flex selectable#{projectCtl.active(database)}">
+                                        <input name="selectableId" type="hidden" value="#{database.selectableId}"/>
+                                        <b>#{database.name}</b><br/>
+                                        <p:remoteCommand name="update#{database.selectableId}" update="@parent" oncomplete="updateComplete('#{database.selectableId}')"/>
+                                        <p:graphicImage library="images" name="#{database.image}"/><br/>
+                                        <span>#{database.dbms}</span>
+                                    </p:outputPanel>
+                                    <p:spacer/>
+                                </p:repeat>
+                                <p:outputPanel styleClass="data-source flex button" value="addDatabase">
+                                    <input name="command" type="hidden" value="addDatabase"/>
+                                    <p:remoteCommand name="addDatabase" update="editorForm:tabview:databasetab" actionListener="#{editorCtl.addDBConnection}" oncomplete="updatePanelComplete('.database-panel')"/>
+                                    <span class="ui-icon pi pi-plus" style="font-size: 3em;"/>
+                                    <span>Add Database</span>
                                 </p:outputPanel>
-                                <p:spacer/>
-                            </p:repeat>
+                            </p:outputPanel>
                         </p:outputPanel>
 
                         <p:divider align="left">
@@ -70,18 +78,26 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel styleClass="local-panel">
-                            <p:remoteCommand name="refreshLocalList" update="@parent" oncomplete="updatePanelComplete('.local-panel')"/>
-                            <p:repeat value="#{projectCtl.localList}" var="local">
-                                <p:outputPanel styleClass="data-source selectable#{projectCtl.active(local)}">
-                                    <input name="selectableId" type="hidden" value="#{local.selectableId}"/>
-                                    <b>#{local.name}</b>
-                                    <p:remoteCommand name="update#{local.selectableId}" update="@parent" oncomplete="updateComplete('#{local.selectableId}')"/>
-                                    <p:graphicImage library="images" name="#{local.image}"/>
-                                    <span>#{local.rootPath}</span>
+                        <p:outputPanel id="localtab" styleClass="horizon-scroll-panel">
+                            <p:outputPanel styleClass="local-panel">
+                                <p:remoteCommand name="refreshLocalList" update="@parent" oncomplete="updatePanelComplete('.local-panel')"/>
+                                <p:repeat value="#{projectCtl.localList}" var="local">
+                                    <p:outputPanel styleClass="data-source selectable#{projectCtl.active(local)}">
+                                        <input name="selectableId" type="hidden" value="#{local.selectableId}"/>
+                                        <b>#{local.name}</b>
+                                        <p:remoteCommand name="update#{local.selectableId}" update="@parent" oncomplete="updateComplete('#{local.selectableId}')"/>
+                                        <p:graphicImage library="images" name="#{local.image}"/>
+                                        <span>#{local.rootPath}</span>
+                                    </p:outputPanel>
+                                    <p:spacer/>
+                                </p:repeat>
+                                <p:outputPanel styleClass="data-source flex button" value="addLocal">
+                                    <input name="command" type="hidden" value="addLocal"/>
+                                    <p:remoteCommand name="addLocal" update="editorForm:tabview:localtab" actionListener="#{editorCtl.addLocal}" oncomplete="updatePanelComplete('.local-panel')"/>
+                                    <span class="ui-icon pi pi-plus" style="font-size: 3em;"/>
+                                    <span>Add Local Path</span>
                                 </p:outputPanel>
-                                <p:spacer/>
-                            </p:repeat>
+                            </p:outputPanel>
                         </p:outputPanel>
 
                         <p:divider align="left">
@@ -91,18 +107,26 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel styleClass="sftp-panel">
-                            <p:remoteCommand name="refreshSFTPList" update="@parent" oncomplete="updatePanelComplete('.sftp-panel')"/>
-                            <p:repeat value="#{projectCtl.sftpList}" var="sftp">
-                                <p:outputPanel styleClass="data-source selectable#{projectCtl.active(sftp)}">
-                                    <input name="selectableId" type="hidden" value="#{sftp.selectableId}"/>
-                                    <b>#{sftp.name}</b>
-                                    <p:remoteCommand name="update#{sftp.selectableId}" update="@parent" oncomplete="updateComplete('#{sftp.selectableId}')"/>
-                                    <p:graphicImage library="images" name="#{sftp.image}"/>
-                                    <span>#{sftp.rootPath}</span>
+                        <p:outputPanel id="sftptab" styleClass="horizon-scroll-panel">
+                            <p:outputPanel styleClass="sftp-panel">
+                                <p:remoteCommand name="refreshSFTPList" update="@parent" oncomplete="updatePanelComplete('.sftp-panel')"/>
+                                <p:repeat value="#{projectCtl.sftpList}" var="sftp">
+                                    <p:outputPanel styleClass="data-source selectable#{projectCtl.active(sftp)}">
+                                        <input name="selectableId" type="hidden" value="#{sftp.selectableId}"/>
+                                        <b>#{sftp.name}</b>
+                                        <p:remoteCommand name="update#{sftp.selectableId}" update="@parent" oncomplete="updateComplete('#{sftp.selectableId}')"/>
+                                        <p:graphicImage library="images" name="#{sftp.image}"/>
+                                        <span>#{sftp.rootPath}</span>
+                                    </p:outputPanel>
+                                    <p:spacer/>
+                                </p:repeat>
+                                <p:outputPanel styleClass="data-source flex button" value="addSFTP">
+                                    <input name="command" type="hidden" value="addSFTP"/>
+                                    <p:remoteCommand name="addSFTP" update="editorForm:tabview:sftptab" actionListener="#{editorCtl.addSFTPConnection}" oncomplete="updatePanelComplete('.sftp-panel')"/>
+                                    <span class="ui-icon pi pi-plus" style="font-size: 3em;"/>
+                                    <span>Add SFTP Path</span>
                                 </p:outputPanel>
-                                <p:spacer/>
-                            </p:repeat>
+                            </p:outputPanel>
                         </p:outputPanel>
 
                     </p:tab>

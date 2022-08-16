@@ -20,10 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.security.InvalidParameterException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -32,7 +29,7 @@ public class ProjectDataManager {
 
     private Logger log = LoggerFactory.getLogger(ProjectDataManager.class);
 
-    private List<ProjectDataWriteBuffer> projectDataWriteBufferList = new ArrayList<>();
+    private Map<String, ProjectDataWriteBuffer> projectDataWriteBufferList;
 
     EnvironmentConfigs environmentConfigs;
     private String writeTopic;
@@ -48,11 +45,9 @@ public class ProjectDataManager {
 
     private Thread commitThread;
 
-    /*TODO: remove Collection below, it for test*/
-    public List<ProjectDataWriteBuffer> testBuffer = new ArrayList<>();
-
     public ProjectDataManager(Environment environment) {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+        projectDataWriteBufferList = new HashMap<>();
         /*TODO: need config for commitAgainMilliseconds*/
         commitAgainMilliseconds = 10000;
         kafkaTimeout = 10000;
@@ -296,13 +291,14 @@ public class ProjectDataManager {
     }
 
     private void commitInThread() {
-        ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList);
+        ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList.values());
         KafkaRecordAttributes additional;
         ProjectFileType fileType;
         String recordId;
         KafkaRecord kafkaRecord;
         String key;
         String value;
+        commitList.sort((t1, t2) -> Integer.compare(t1.getIndex(), t2.getIndex()));
         for (ProjectDataWriteBuffer writeCommand : commitList) {
             if (!ready(producer)) {
 
@@ -323,9 +319,6 @@ public class ProjectDataManager {
             }
 
             projectDataWriteBufferList.remove(writeCommand);
-            testBuffer.add(writeCommand);
-
-            log.trace("Outgoing message completed: write ");
         }
     }
 
@@ -396,7 +389,8 @@ public class ProjectDataManager {
         validate(fileType, additional);
 
         additional.setModifiedDate(DateTimeUtil.now());
-        projectDataWriteBufferList.add(new ProjectDataWriteBuffer(fileType, object, additional));
+        ProjectDataWriteBuffer projectDataWriteBuffer = new ProjectDataWriteBuffer(projectDataWriteBufferList.size(), fileType, object, additional);
+        projectDataWriteBufferList.put(projectDataWriteBuffer.toString(), projectDataWriteBuffer);
 
         commit();
     }

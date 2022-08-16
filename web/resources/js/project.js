@@ -1,12 +1,21 @@
-'use strict'
+'use strict';
 
 function updatePanelComplete(panel) {
-    console.log('updatePanelComplete("' + panel + '")');
     selectableHandle($(panel + ' .selectable'));
+    buttonHandle($(panel + ' .button'));
 }
 
 function updateComplete(selectableId) {
     selectableHandle(selectableId);
+}
+
+function buttonHandle($button) {
+    $button.each(function (i, e) {
+        var $e = $(e);
+        $e.on('click', function (ev) {
+            window[$e.find('input[name=command]').attr('value')]();
+        });
+    });
 }
 
 $(function () {
@@ -14,5 +23,7 @@ $(function () {
 
     tflow.ready = true;
 
-    selectableHandle($('.selectable'));
+    updatePanelComplete('.database-panel');
+    updatePanelComplete('.sftp-panel');
+    updatePanelComplete('.local-panel');
 });

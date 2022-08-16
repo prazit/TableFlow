@@ -35,7 +35,7 @@ public class ProjectController extends Controller {
 
     @PostConstruct
     public void onCreation() {
-        log.trace("ProjectController.onCreation.");
+        log.warn("ProjectController.onCreation.", new Exception("onCreation"));
         project = workspace.getProject();
     }
 

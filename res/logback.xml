@@ -10,7 +10,7 @@
             <onMismatch>ACCEPT</onMismatch>
         </filter>
         <encoder>
-            <pattern>%date | %-5level | %msg | [%class:%line]%n</pattern>
+            <pattern>%date | %-5level | %msg | %class:%line%n</pattern>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>
@@ -23,7 +23,7 @@
             <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%date | %-5level | %msg | %class:%line%n</pattern>
+            <pattern>%date | %-5level | %-42class | %msg | line:%line%n</pattern>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>

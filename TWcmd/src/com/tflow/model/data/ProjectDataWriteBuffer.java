@@ -5,14 +5,23 @@ import com.tflow.kafka.ProjectFileType;
 
 public class ProjectDataWriteBuffer {
 
+    private int index;
     private ProjectFileType fileType;
     private Object dataObject;
     private KafkaRecordAttributes additional;
 
-    public ProjectDataWriteBuffer(ProjectFileType fileType, Object dataObject, KafkaRecordAttributes additional) {
+    /**
+     * @param index need to sort by this index before commit
+     */
+    public ProjectDataWriteBuffer(int index, ProjectFileType fileType, Object dataObject, KafkaRecordAttributes additional) {
+        this.index = index;
         this.fileType = fileType;
         this.dataObject = dataObject;
         this.additional = additional;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     public ProjectFileType getFileType() {
@@ -37,5 +46,16 @@ public class ProjectDataWriteBuffer {
 
     public void setAdditional(KafkaRecordAttributes additional) {
         this.additional = additional;
+    }
+
+    /**
+     * IMPORTANT: this toString used as unique key to allow to write last object only on the same key.
+     */
+    @Override
+    public String toString() {
+        return "{" +
+                ", fileType=" + fileType +
+                ", recordId=" + additional.getRecordId() +
+                '}';
     }
 }
