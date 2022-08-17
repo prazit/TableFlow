@@ -48,7 +48,7 @@ public class ProjectController extends Controller {
     }
 
     public void openPackage() {
-        log.trace("openPackage");
+        log.trace("openPackageSection.");
         reloadPackageList();
         selectPackage(packageList.size() - 1);
     }

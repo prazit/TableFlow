@@ -84,12 +84,12 @@ public class TWcmd {
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
                 UpdateProjectCommand updateProjectCommand = new UpdateProjectCommand(offset, key, value, environmentConfigs);
-                log.info("Incoming message: {}", updateProjectCommand.toString());
+                log.info("Incoming message: {}", updateProjectCommand);
 
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
                     updateProjectCommand.execute();
-                    log.info("Incoming message completed: {}", updateProjectCommand.toString());
+                    log.info("Incoming message completed: {}", updateProjectCommand);
 
                     /*TODO: IMPORTANT: after success need to commit consumer-group-offset to know its already done to avoid duplicated commands*/
 

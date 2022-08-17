@@ -1,15 +1,18 @@
 <f:view xmlns="http://www.w3.org/1999/xhtml"
         xmlns:f="http://java.sun.com/jsf/core"
-        xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui">
+
+    <p:remoteCommand name="addDatabase" actionListener="#{editorCtl.addDBConnection}" update="stepForm,propertyForm"/>
+    <p:remoteCommand name="addSFTP" actionListener="#{editorCtl.addSFTPConnection}" update="stepForm,propertyForm"/>
+    <p:remoteCommand name="addLocal" actionListener="#{editorCtl.addLocal}" update="stepForm,propertyForm"/>
 
     <p:menubar>
         <p:submenu label="Add">
             <p:menuitem value="Add Step" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.requestAddStep}" update="stepForm,propertyForm"/>
             <p:divider/>
-            <p:menuitem value="Add DataBase Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addDBConnection}" update="stepForm,propertyForm"/>
-            <p:menuitem value="Add SFTP Connection" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addSFTPConnection}" update="stepForm,propertyForm"/>
-            <p:menuitem value="Add Local Directory" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.addLocal}" update="stepForm,propertyForm"/>
+            <p:menuitem value="Add DataBase Connection" icon="pi pi-fw pi-plus" onstart="addDatabase()"/>
+            <p:menuitem value="Add SFTP Connection" icon="pi pi-fw pi-plus" onstart="addSFTP()"/>
+            <p:menuitem value="Add Local Directory" icon="pi pi-fw pi-plus" onstart="addLocal()"/>
         </p:submenu>
 
         <p:divider layout="vertical"/>

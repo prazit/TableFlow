@@ -294,10 +294,8 @@ public class ProjectDataManager {
         ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList.values());
         KafkaRecordAttributes additional;
         ProjectFileType fileType;
-        String recordId;
         KafkaRecord kafkaRecord;
         String key;
-        String value;
         commitList.sort((t1, t2) -> Integer.compare(t1.getIndex(), t2.getIndex()));
         for (ProjectDataWriteBuffer writeCommand : commitList) {
             if (!ready(producer)) {
@@ -308,77 +306,87 @@ public class ProjectDataManager {
 
             additional = writeCommand.getAdditional();
             fileType = writeCommand.getFileType();
-            recordId = additional.getRecordId();
             key = fileType.name();
             kafkaRecord = new KafkaRecord(writeCommand.getDataObject(), additional);
-            log.info("Outgoing message: write( fileType:{}, recordId:{} )", fileType.name(), recordId);
+            log.info("Outgoing message: write({})", writeCommand);
 
             Future<RecordMetadata> future = producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
             if (!isSuccess(future)) {
                 return;
             }
 
-            projectDataWriteBufferList.remove(writeCommand);
+            projectDataWriteBufferList.remove(writeCommand.toString());
         }
     }
 
-    public void addData(ProjectFileType fileType, List idList, ProjectUser project) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId());
         addData(fileType, idList, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, TWData object, ProjectUser project) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId());
         addData(fileType, (Object) object, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, List idList, ProjectUser project, String recordId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project, String recordId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), recordId);
         addData(fileType, idList, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, String recordId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, String recordId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), recordId);
         addData(fileType, (Object) object, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId));
         addData(fileType, (Object) object, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         addData(fileType, idList, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         addData(fileType, (Object) object, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int dataTableId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int dataTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         addData(fileType, idList, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int dataTableId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int dataTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
         addData(fileType, (Object) object, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         addData(fileType, idList, additional);
+        return additional;
     }
 
-    public void addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
+    public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
         addData(fileType, (Object) object, additional);
+        return additional;
     }
 
     private void addData(ProjectFileType fileType, TWData object, KafkaRecordAttributes additional) throws InvalidParameterException {
@@ -388,7 +396,6 @@ public class ProjectDataManager {
     private void addData(ProjectFileType fileType, Object object, KafkaRecordAttributes additional) throws InvalidParameterException {
         validate(fileType, additional);
 
-        additional.setModifiedDate(DateTimeUtil.now());
         ProjectDataWriteBuffer projectDataWriteBuffer = new ProjectDataWriteBuffer(projectDataWriteBufferList.size(), fileType, object, additional);
         projectDataWriteBufferList.put(projectDataWriteBuffer.toString(), projectDataWriteBuffer);
 
@@ -406,6 +413,8 @@ public class ProjectDataManager {
         if (requireType > 1 && requireType < 9 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId for ProjectDataManager.addData(" + fileType + ")");
         if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId for ProjectDataManager.addData(" + fileType + ")");
         if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId for ProjectDataManager.addData(" + fileType + ")");
+
+        additional.setModifiedDate(DateTimeUtil.now());
     }
 
     public Object getData(ProjectFileType fileType, ProjectUser project) {

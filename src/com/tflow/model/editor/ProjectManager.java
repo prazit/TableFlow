@@ -577,9 +577,9 @@ public class ProjectManager {
         kafkaRecordAttributes.setUserId(workspace.getUser().getId());
         kafkaRecordAttributes.setClientId(workspace.getClient().getId());
         kafkaRecordAttributes.setModifiedDate(DateTimeUtil.now());
+        log.trace("Outgoing message: build(attributes:{})", kafkaRecordAttributes);
 
         /*send message*/
-        log.trace("Send build-package message to topic: {}", buildPackageTopic);
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>(buildPackageTopic, "build", kafkaRecordAttributes));
 
         boolean result = isSuccess(future);

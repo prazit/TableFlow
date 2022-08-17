@@ -19,7 +19,11 @@ public class SerializeUtil {
 
     private static void initGson() {
         if (gson == null)
-            gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+            gson = new GsonBuilder()
+                    .setDateFormat("dd/MM/yyyy HH:mm:ss.SSSZ")
+                    .excludeFieldsWithModifiers(Modifier.TRANSIENT)
+                    .setPrettyPrinting()
+                    .create();
     }
 
     public static Gson getGson() {

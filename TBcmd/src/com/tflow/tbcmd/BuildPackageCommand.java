@@ -76,7 +76,9 @@ public class BuildPackageCommand extends KafkaCommand {
 
         ItemData packageItemData = mapper.map(packageData);
         packageIdList.add(packageItemData);
-        dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
+        KafkaRecordAttributes attributes = dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
+        log.debug("Save PACKAGE_LIST: {}", attributes);
+
         updatePercentComplete(packageData, projectUser, 0, estimateBuiltDate());
 
         List<PackageFileData> fileList = new ArrayList<>();
@@ -93,6 +95,8 @@ public class BuildPackageCommand extends KafkaCommand {
         String packageName = getPackageName(packageData);
         packageItemData.setName(packageName);
         dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
+        log.debug("Save PACKAGE_LIST: {}", attributes);
+
         packageData.setName(packageName);
         packageData.setFileList(fileList);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());

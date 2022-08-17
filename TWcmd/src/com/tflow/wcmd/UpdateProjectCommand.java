@@ -3,7 +3,6 @@ package com.tflow.wcmd;
 import com.clevel.dconvers.ngin.Crypto;
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaRecord;
-import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DatabaseData;
 import com.tflow.model.data.SFTPData;
@@ -40,15 +39,12 @@ public class UpdateProjectCommand extends IOCommand {
 
     @Override
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException, SerializationException {
+        Date now = DateTimeUtil.now();
+
         RecordMapper mapper = Mappers.getMapper(RecordMapper.class);
         RecordData recordData = mapper.map((KafkaRecord) this.value);
-        ProjectFileType projectFileType = validate(key, recordData);
+        ProjectFileType projectFileType = validate(key, recordData, now);
         RecordAttributesData additional = recordData.getAdditional();
-
-        Date now = DateTimeUtil.now();
-        long dateDiffMs = now.getTime() - additional.getModifiedDate().getTime();
-        long maxDiff = 50000; //TODO: load maxDiff from configuration.
-        if (dateDiffMs < maxDiff) additional.setModifiedDate(now);
 
         File file = getFile(projectFileType, additional);
         if (file.exists()) {
@@ -109,7 +105,7 @@ public class UpdateProjectCommand extends IOCommand {
     /**
      * validate Additional Data and KafkaKey
      **/
-    private ProjectFileType validate(String kafkaRecordKey, RecordData recordData) throws UnsupportedOperationException, InvalidParameterException {
+    private ProjectFileType validate(String kafkaRecordKey, RecordData recordData, Date operateDate) throws UnsupportedOperationException, InvalidParameterException {
 
         ProjectFileType fileType;
         try {
@@ -149,6 +145,10 @@ public class UpdateProjectCommand extends IOCommand {
 
         additional.setFileType(fileType);
         normalizeAttributes(additional);
+
+        if (additional.getModifiedDate() == null) {
+            additional.setModifiedDate(operateDate);
+        }
 
         return fileType;
     }

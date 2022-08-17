@@ -7,9 +7,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRules;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Objects;
 
 public class DateTimeUtil {
     private static final Logger log = LoggerFactory.getLogger(DateTimeUtil.class);
@@ -37,31 +39,31 @@ public class DateTimeUtil {
     }
 
     public static Date getDatePlusHoursAndMinutes(Date date, long hours, long minutes) {
-        Instant instant = LocalDate.ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusHours(hours).plusMinutes(minutes).atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant = ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusHours(hours).plusMinutes(minutes).atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);
     }
 
     public static Date getDatePlusDays(Date date, int days) {
-        Instant instant = LocalDate.ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusDays(days).atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant = ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusDays(days).atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);
     }
 
     public static Date getDatePlusMonths(Date date, int months) {
-        Instant instant = LocalDate.ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusMonths(months).atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant = ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusMonths(months).atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);
     }
 
     public static Date getDatePlusYears(Date date, int years) {
-        Instant instant = LocalDate.ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusYears(years).atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant = ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().plusYears(years).atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);
     }
 
     public static int getYear(Date date) {
-        return LocalDate.ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).getYear();
+        return ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).getYear();
     }
 
     public static Date setTime(Date date, int hour, int minute, int second) {
-        Instant instant = LocalDate.ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atTime(hour, minute, second).atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant = ofInstant(date.toInstant(), ZoneId.of(DEFAULT_ZONE)).atTime(hour, minute, second).atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);
     }
 
@@ -114,9 +116,22 @@ public class DateTimeUtil {
     }
 
     public static boolean isSameDate(Date date1, Date date2) {
-        Instant instant1 = LocalDate.ofInstant(date1.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
-        Instant instant2 = LocalDate.ofInstant(date2.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant1 = ofInstant(date1.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant2 = ofInstant(date2.toInstant(), ZoneId.of(DEFAULT_ZONE)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
         return instant1.compareTo(instant2) == 0;
+    }
+
+    /**
+     * Copied from JDK 11.0
+     */
+    public static LocalDate ofInstant(Instant instant, ZoneId zone) {
+        Objects.requireNonNull(instant, "instant");
+        Objects.requireNonNull(zone, "zone");
+        ZoneRules rules = zone.getRules();
+        ZoneOffset offset = rules.getOffset(instant);
+        long localSecond = instant.getEpochSecond() + (long)offset.getTotalSeconds();
+        long localEpochDay = Math.floorDiv(localSecond, 86400);
+        return LocalDate.ofEpochDay(localEpochDay);
     }
 
     public static Duration diffTime(Date time1, Date time2) {
@@ -132,7 +147,7 @@ public class DateTimeUtil {
         }
 
         long hour = duration.toHours();
-        long minute = duration.toMinutesPart();
+        long minute = /*duration.toMinutesPart() from JDK 11.0*/ duration.toMinutes() % 60L;
 
         return String.format("%02d:%02d", hour, minute);
     }

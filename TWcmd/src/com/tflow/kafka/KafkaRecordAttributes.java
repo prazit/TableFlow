@@ -110,14 +110,14 @@ public class KafkaRecordAttributes implements Serializable {
     @Override
     public String toString() {
         return "{" +
-                "projectId:'" + projectId + '\'' +
+                "transactionId:" + (modifiedDate == null ? "null" : modifiedDate.getTime()) +
+                ", projectId:'" + projectId + '\'' +
                 ", stepId:'" + stepId + '\'' +
                 ", dataTableId:'" + dataTableId + '\'' +
                 ", transformTableId:'" + transformTableId + '\'' +
                 ", recordId:'" + recordId + '\'' +
                 ", clientId:" + clientId +
                 ", userId:" + userId +
-                ", modifiedDate:" + userId +
                 '}';
     }
 }
