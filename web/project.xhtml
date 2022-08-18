@@ -28,7 +28,6 @@
         <div class="flow-chart">
             <h:form id="editorForm">
                 <p:growl id="growl" showDetail="true" escape="false"/>
-                <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
 
                 <p:remoteCommand name="drawLines" action="#{flowchartCtl.drawLines}"/>
 
@@ -36,7 +35,8 @@
                     <h1 style="color: var(--surface-c);">Project: #{projectCtl.project.name}</h1>
                 </p:outputPanel>
 
-                <p:accordionPanel id="tabview" style="padding: var(--padding);margin: var(--margin);">
+                <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);">
+                    <!-- p:accordionPanel id="tabview" style="padding: var(- -padding);margin: var(- -margin);" -->
                     <p:importEnum type="com.tflow.controller.ProjectSection" var="ProjectSection"/>
                     <p:ajax event="tabChange" listener="#{projectCtl.openSection}" update="packageTab"/>
 
@@ -138,37 +138,77 @@
 
                     <p:tab title="#{ProjectSection.PACKAGE.getTitle()}" styleClass="package tab">
                         <p:outputPanel id="packageTab">
-                            <p:outputPanel rendered="#{projectCtl.packageList.size() > 0}">
-                                <p:selectOneListbox value="#{projectCtl.selectedPackageId}">
+                            <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent" oncomplete="console.log('updatePackageTab complated.')"/>
+                            <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent" oncomplete="console.log('buildPackage complated.')"/>
+
+                            <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0}" styleClass="ui-g">
+                                <p:selectOneMenu value="#{projectCtl.selectedPackageId}" styleClass="ui-sm-6">
                                     <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
                                     <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
                                     <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent"/>
-                                </p:selectOneListbox>
-                                <p:spacer/>
-                                <p:commandButton value="Build new package" actionListener="#{projectCtl.buildPackage}"/>
+                                </p:selectOneMenu>
+
+                                <div class="ui-sm-6">
+                                    <p:commandButton value="Build new package" actionListener="#{projectCtl.buildPackage}"/>
+                                </div>
                             </p:outputPanel>
 
                             <p:separator rendered="#{projectCtl.packageList.size() > 0}"/>
 
-                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() == 0}"><h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Need to build one package, click menu Build &gt; Package.</h2></p:outputPanel>
-                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() > 0}"><h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Select Package from the List above.</h2></p:outputPanel>
+                            <!-- please select message -->
+                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() == 0}"><h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/> Need to build one package, click menu Build &gt; Package.</h2></p:outputPanel>
+                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() > 0}"><h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/> Select Package from the List above.</h2></p:outputPanel>
 
-                            <p:outputPanel rendered="#{not projectCtl.pleaseSelectPackage}" id="activePackage">
-                                <p:outputPanel styleClass="ui-g">
-                                    <!-- TODO: package header readonly view, remember: header is selectable -->
+                            <!-- building message -->
+                            <p:outputPanel id="building" rendered="#{not projectCtl.pleaseSelectPackage and projectCtl.activePackage.complete lt 100}">
+                                <h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Building Package at #{projectCtl.activePackage.buildDate} ... #{projectCtl.activePackage.complete}%</h2>
+                                <script>$(function () {
+                                    console.log('setTimeout');
+                                    var timeoutId = setTimeout(function () {
+                                        console.log('call updatePackageTab');
+                                        updatePackageTab();
+                                        clearTimeout(timeoutId);
+                                    }, 3000);
+                                });
+                                </script>
+                            </p:outputPanel>
+
+                            <!-- active package -->
+                            <p:outputPanel id="activePackage" rendered="#{not projectCtl.pleaseSelectPackage and projectCtl.activePackage.complete==100}">
+                                <p:outputPanel styleClass="selectable">
+                                    <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
+                                    <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
+
                                     <h2 style="color: var(--surface-c);" class="selectable"><i class="fa fa-info"/>Package Header</h2>
+                                    <p:fieldset styleClass="ui-g">
+                                        <p:outputLabel value="Name : " styleClass="ui-sm-3"/>
+                                        <p:inputText value="#{projectCtl.activePackage.name}" styleClass="ui-sm-9"/>
+                                    </p:fieldset>
+                                    <p:fieldset styleClass="ui-g">
+                                        <p:outputLabel value="Build : " styleClass="ui-sm-3"/>
+                                        <p:datePicker value="#{projectCtl.activePackage.buildDate}" readonly="true"/>
+                                    </p:fieldset>
+                                    <p:fieldset styleClass="ui-g">
+                                        <p:outputLabel value="Built : " styleClass="ui-sm-3"/>
+                                        <p:datePicker value="#{projectCtl.activePackage.builtDate}" readonly="true"/>
+                                    </p:fieldset>
                                 </p:outputPanel>
 
                                 <p:separator/>
 
                                 <p:outputPanel styleClass="ui-g">
-                                    <!-- TODO: package file-list view, remember: item is selectable -->
                                     <h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Package File List</h2>
+                                    <p:dataList value="#{projectCtl.activePackage.fileList}" var="packageFile">
+                                        <p:row styleClass="selectable">
+                                            <p:column headerText="Name">#{packageFile.name}</p:column>
+                                        </p:row>
+                                    </p:dataList>
                                 </p:outputPanel>
                             </p:outputPanel>
                         </p:outputPanel>
                     </p:tab>
-                </p:accordionPanel>
+                    <!--/p:accordionPanel-->
+                </p:tabView>
 
             </h:form>
         </div>

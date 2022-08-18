@@ -819,8 +819,12 @@ public class EditorController extends Controller {
 
         refreshActionList(project);
 
-        javaScriptBuilder.pre(JavaScript.setFlowChart, editorType.getPage()).post(JavaScript.refreshFlowChart);
-        if (refresh) javaScriptBuilder.runOnClient();
+        if (refresh) {
+            javaScriptBuilder
+                    .pre(JavaScript.setFlowChart, editorType.getPage())
+                    .post(JavaScript.refreshFlowChart)
+                    .runOnClient();
+        }
     }
 
     public void submitZoom() {

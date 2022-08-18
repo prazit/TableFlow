@@ -48,15 +48,16 @@ public class ProjectDataWriteBuffer {
         this.additional = additional;
     }
 
-    /**
-     * IMPORTANT: this toString used as unique key to allow to write last object only on the same key.
-     */
+    public String uniqueKey() {
+        return fileType + additional.getRecordId();
+    }
+
     @Override
     public String toString() {
-        return "{" +
-                "transactionId:" + additional.getModifiedDate().getTime() +
-                ", fileType:" + fileType +
+        return "transactionId:{" +
+                "fileType:" + fileType +
                 ", recordId:" + additional.getRecordId() +
+                ", time:" + additional.getModifiedDate().getTime() +
                 '}';
     }
 }

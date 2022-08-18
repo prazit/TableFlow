@@ -3,8 +3,8 @@ package com.tflow.model.data;
 public class ProjectUser {
 
     private String id;
-    private int userId;
-    private int clientId;
+    private long userId;
+    private long clientId;
 
     public String getId() {
         return id;
@@ -14,19 +14,19 @@ public class ProjectUser {
         this.id = id;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 
-    public int getClientId() {
+    public long getClientId() {
         return clientId;
     }
 
-    public void setClientId(int clientId) {
+    public void setClientId(long clientId) {
         this.clientId = clientId;
     }
 

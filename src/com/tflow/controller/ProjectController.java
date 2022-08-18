@@ -35,26 +35,30 @@ public class ProjectController extends Controller {
 
     @PostConstruct
     public void onCreation() {
-        log.warn("ProjectController.onCreation.", new Exception("onCreation"));
+        log.trace("onCreation.");
         project = workspace.getProject();
     }
 
     public void openSection(TabChangeEvent event) {
         String title = event.getTab().getTitle();
-        log.debug("openSection: selectedTitle={}, event={}", title, event);
+        //log.debug("openSection: selectedTitle={}, event={}", title, event);
         if (title.compareTo(ProjectSection.PACKAGE.getTitle()) == 0) {
             openPackage();
         }
     }
 
     public void openPackage() {
-        log.trace("openPackageSection.");
+        log.trace("openPackage.");
         reloadPackageList();
         selectPackage(packageList.size() - 1);
     }
 
-    public void selectPackage(int packageId) {
-        selectedPackageId = packageId;
+    public void selectPackage(int packageListIndex) {
+        if (packageListIndex < 0) {
+            selectedPackageId = -1;
+        } else {
+            selectedPackageId = packageList.get(packageListIndex).getId();
+        }
         selectedPackageChanged();
     }
 
@@ -86,13 +90,10 @@ public class ProjectController extends Controller {
             properties = changable-property of package-data */
     }
 
-    public void reloadPackage() {
+    private void reloadPackage() {
         log.trace("reloadPackage.");
         try {
             activePackage = project.getManager().loadPackage(selectedPackageId, project);
-            if (activePackage.getComplete() != 100) {
-                /*TODO: put javascript to call reloadPackage() on next 5 seconds until percent complete == 100 or has error occurred*/
-            }
         } catch (ProjectDataException ex) {
             String msg = "Reload package " + selectedPackageId + " failed: ";
             log.error(msg, ex);
@@ -102,11 +103,38 @@ public class ProjectController extends Controller {
 
     public void buildPackage() {
         log.trace("buildPackage.");
-        if (project.getManager().buildPackage(workspace.getProject())) {
-            reloadPackageList();
-            selectPackage(packageList.size() - 1);
+        Package buildPackage = project.getManager().buildPackage(workspace.getProject());
+        if (buildPackage == null) {
+            String msg = "Unexpected Error Occurred, try to build-package few minutes later";
+            FacesUtil.addError(msg);
+            log.error(msg);
+            return;
         }
-        log.trace("buildPackage completed.");
+
+        activePackage = buildPackage;
+        pleaseSelectPackage = false;
+        jsBuilder.post(JavaScript.updateEm, "PackageTab").runOnClient();
+    }
+
+    /**
+     * IMPORTANT: call this function at least 2 seconds after buildPackage.
+     */
+    public void refreshBuildingPackage() {
+        if (activePackage.getId() < 0) {
+            /*case: mockup package for building process*/
+            int countBefore = packageList.size();
+            log.debug("refreshBuildingPackage: countBefore = {}", countBefore);
+
+            reloadPackageList();
+            int countAfter = packageList.size();
+            log.debug("refreshBuildingPackage: countAfter = {}", countAfter);
+            if (countBefore < countAfter) {
+                selectPackage(countBefore);
+            }
+
+        } else {
+            openPackage();
+        }
     }
 
     public Project getProject() {

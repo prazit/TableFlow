@@ -143,12 +143,13 @@ public interface ProjectMapper {
 
     Package map(PackageData packageData);
 
+    PackageFile map(PackageFileData packageFileData);
+
     List<Item> toItemList(List<ItemData> itemDataList);
 
     /*List<PackageFile> map(List<PackageFileData> packageFileData);*/
 
     /*---- ALL ABOUT ID ----*/
-
 
     default Integer id(Step step) {
         return step.getId();

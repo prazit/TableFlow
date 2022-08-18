@@ -1,8 +1,13 @@
 package com.tflow.model.editor;
 
-import java.util.Date;
+import com.tflow.model.data.IDPrefix;
 
-public class Package {
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Package implements Selectable {
 
     private int id;
 
@@ -11,6 +16,9 @@ public class Package {
     private Date builtDate;
 
     private int complete;
+
+    private List<PackageFile> fileList;
+    private int lastFileId;
 
     public Package() {
         /*nothing*/
@@ -56,6 +64,22 @@ public class Package {
         this.complete = complete;
     }
 
+    public List<PackageFile> getFileList() {
+        return fileList;
+    }
+
+    public void setFileList(List<PackageFile> fileList) {
+        this.fileList = fileList;
+    }
+
+    public int getLastFileId() {
+        return lastFileId;
+    }
+
+    public void setLastFileId(int lastFileId) {
+        this.lastFileId = lastFileId;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -64,6 +88,33 @@ public class Package {
                 ", buildDate:" + buildDate +
                 ", builtDate:" + builtDate +
                 ", complete:" + complete +
+                ", lastFileId:" + lastFileId +
+                ", fileList:" + (fileList == null ? 0 : fileList.size()) +
                 '}';
+    }
+
+    @Override
+    public Properties getProperties() {
+        return Properties.PACKAGE;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return IDPrefix.PACKAGE.getPrefix() + id;
+    }
+
+    @Override
+    public LinePlug getStartPlug() {
+        return null;
+    }
+
+    @Override
+    public void setStartPlug(LinePlug startPlug) {
+        /*nothing*/
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return new HashMap<>();
     }
 }

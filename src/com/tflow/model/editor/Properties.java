@@ -28,7 +28,14 @@ public enum Properties {
             "version.1.0.0",
             "version.1.0.1"
     ),
-
+    PACKAGE(
+            "name:Name:String",
+            "--:Debug Only:--",
+            "id:ID:ReadOnly",
+            "buildDate:Build:ReadOnly",
+            "builtDate:Built:ReadOnly",
+            "complete:Percent Complete:ReadOnly"
+    ),
     PROJECT(
             "name:Name:String:refreshStepList();",
             "--:Debug Only:--",

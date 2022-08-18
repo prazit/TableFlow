@@ -16,6 +16,19 @@
     </appender>
 
     <!--Daily rolling file appender-->
+    <appender name="KAFKA" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${root-path}tflow-kafka.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${root-path}tflow-kafka-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date | %-5level | %-42class | %msg | line:%line%n</pattern>
+        </encoder>
+        <immediateFlush>true</immediateFlush>
+    </appender>
+
+    <!--Daily rolling file appender-->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${root-path}tflow.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -29,7 +42,7 @@
     </appender>
 
     <logger name="org.apache.kafka" level="info">
-        <appender-ref ref="FILE" />
+        <appender-ref ref="KAFKA" />
     </logger>
 
     <root level="trace">

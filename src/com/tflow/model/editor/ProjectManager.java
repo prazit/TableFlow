@@ -565,9 +565,11 @@ public class ProjectManager {
     }
 
     /**
-     * After call buildPackage you need to get PackageData for complete-status.
+     * After call buildPackage at least 2 seconds you need to get PackageData for complete-status.
+     * @return mockup data with real-build-date to show for building...
      */
-    public boolean buildPackage(Project project) {
+    public Package buildPackage(Project project) {
+        Date buildDate = DateTimeUtil.now();
         Producer<String, Object> producer = createProducer();
 
         /*create build Message for TBcmd*/
@@ -576,15 +578,21 @@ public class ProjectManager {
         kafkaRecordAttributes.setProjectId(project.getId());
         kafkaRecordAttributes.setUserId(workspace.getUser().getId());
         kafkaRecordAttributes.setClientId(workspace.getClient().getId());
-        kafkaRecordAttributes.setModifiedDate(DateTimeUtil.now());
+        kafkaRecordAttributes.setModifiedDate(buildDate);
         log.trace("Outgoing message: build(attributes:{})", kafkaRecordAttributes);
 
         /*send message*/
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>(buildPackageTopic, "build", kafkaRecordAttributes));
 
-        boolean result = isSuccess(future);
+        boolean success = isSuccess(future);
         producer.close();
-        return result;
+        if(!success) return null;
+
+        Package activePackage = new Package();
+        activePackage.setId(-1);
+        activePackage.setName("building...");
+        activePackage.setBuildDate(buildDate);
+        return activePackage;
     }
 
     private boolean isSuccess(Future<RecordMetadata> future) {

@@ -36,7 +36,7 @@ public class TBcmd {
     @SuppressWarnings("unchecked")
     public void start() {
 
-        ProjectDataManager projectDataManager = new ProjectDataManager(environment);
+        ProjectDataManager projectDataManager = new ProjectDataManager(environment,"TBcmd");
         KafkaConsumer<String, byte[]> consumer = createConsumer();
 
         /*TODO: need to load topicBuild from configuration*/

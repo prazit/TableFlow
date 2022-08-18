@@ -39,14 +39,18 @@ public class ProjectDataManager {
     private int kafkaTimeout;
     private boolean commitWaiting;
     private Producer<String, Object> producer;
+
+    private String consumerGroupId;
     private Consumer<String, byte[]> consumer;
+    private ArrayList<TopicPartition> topicPartitionArrayList;
 
     private Deserializer deserializer;
 
     private Thread commitThread;
 
-    public ProjectDataManager(Environment environment) {
+    public ProjectDataManager(Environment environment, String consumerGroupId) {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+        this.consumerGroupId = consumerGroupId;
         projectDataWriteBufferList = new HashMap<>();
         /*TODO: need config for commitAgainMilliseconds*/
         commitAgainMilliseconds = 10000;
@@ -182,7 +186,7 @@ public class ProjectDataManager {
         props.put("key.deserializer.encoding", "UTF-8");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
-        props.put("group.id", "tflow" + clientId);
+        props.put("group.id", consumerGroupId + clientId);
 
         subscribeTo(dataTopic, consumer = new KafkaConsumer<>(props));
 
@@ -199,21 +203,21 @@ public class ProjectDataManager {
     private void subscribeTo(String topic, Consumer consumer) {
         log.trace("subscribeTo(topic:{}).", topic);
         List<PartitionInfo> topicPartitionList = consumer.partitionsFor(topic);
-        ArrayList<TopicPartition> arrTopic = new ArrayList<>();
+        topicPartitionArrayList = new ArrayList<>();
 
         for (PartitionInfo partitionInfo : topicPartitionList) {
-            arrTopic.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
+            topicPartitionArrayList.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
         }
         log.trace("ready to assign/subscribe.");
 
         //need to use assign instead of subscribe: consumer.subscribe(Collections.singletonList(topic));
-        consumer.assign(arrTopic);
+        consumer.assign(topicPartitionArrayList);
         log.info("topic '{}' is assigned/subscribed", dataTopic);
 
         consumer.poll(Duration.ofMillis(0));
-        consumer.seekToEnd(arrTopic);
+        consumer.seekToEnd(topicPartitionArrayList);
 
-        for (TopicPartition topicPartition : arrTopic) {
+        for (TopicPartition topicPartition : topicPartitionArrayList) {
             log.info("partition:{}, position:{}", topicPartition, consumer.position(topicPartition) - 1);
         }
         log.trace("offset moved to last message.");
@@ -236,6 +240,9 @@ public class ProjectDataManager {
         if (consumer == null && !createConsumer(clientId)) {
             return false;
         }
+
+        /* Notice: exceed maximum poll when seekToEnd before poll.
+        if (consumer != null) consumer.seekToEnd(topicPartitionArrayList);*/
 
         /*TODO: check status of Consumer(kafka server)*/
         // need log.warn("something about server status");
@@ -315,7 +322,7 @@ public class ProjectDataManager {
                 return;
             }
 
-            projectDataWriteBufferList.remove(writeCommand.toString());
+            projectDataWriteBufferList.remove(writeCommand.uniqueKey());
         }
     }
 
@@ -397,7 +404,7 @@ public class ProjectDataManager {
         validate(fileType, additional);
 
         ProjectDataWriteBuffer projectDataWriteBuffer = new ProjectDataWriteBuffer(projectDataWriteBufferList.size(), fileType, object, additional);
-        projectDataWriteBufferList.put(projectDataWriteBuffer.toString(), projectDataWriteBuffer);
+        projectDataWriteBufferList.put(projectDataWriteBuffer.uniqueKey(), projectDataWriteBuffer);
 
         commit();
     }
@@ -452,11 +459,13 @@ public class ProjectDataManager {
     public Object getData(ProjectFileType fileType, KafkaRecordAttributes additional) {
         validate(fileType, additional);
 
+        /*TODO: requestData need to create TransactionID (uniqueKeys: time, userId, clientId, projectId | olderUnique: clientId)*/
         long code = requestData(fileType, additional);
         if (code < 0) {
             return code;
         }
 
+        /*TODO: captureData need to find TransactionID created by requestData*/
         Object data = captureData(fileType, additional);
         if (data == null) {
             log.error("getData.return null record");
@@ -481,7 +490,6 @@ public class ProjectDataManager {
     }
 
     private long requestData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.trace("Outgoing message: read(fileType:{}, additional:{}", fileType, additional);
 
         if (!ready(producer)) {
             log.warn("requestData: producer not ready to send message");
@@ -493,6 +501,7 @@ public class ProjectDataManager {
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
 
+        log.trace("Outgoing message: read(fileType:{}, additional:{}", fileType, additional);
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>(readTopic, fileType.name(), additional));
         if (isSuccess(future)) {
             return 1L;
@@ -506,7 +515,7 @@ public class ProjectDataManager {
         /*TODO: timeout and maxTry need to load from configuration*/
         Object data = null;
         long timeout = 2000;
-        long maxTry = 3;
+        long maxTry = 30;
         long retry = maxTry;
         Duration duration = Duration.ofMillis(timeout);
         ConsumerRecords<String, byte[]> records;

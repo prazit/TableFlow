@@ -33,9 +33,9 @@
     <!--TODO: Future Feature: create page for org.apache.kafka.common.errors.TimeoutException-->
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/ViewExpiredException.xhtml</location>
+        <location>/blank.html</location>
     </error-page>
 
 
-    <!--<context-root>/tFlow</context-root>-->
+    <!--<context-root>/TFlow</context-root>-->
 </web-app>

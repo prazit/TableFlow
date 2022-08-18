@@ -6,7 +6,7 @@ public enum IDPrefix {
     GROUP(""),
     PROJECT(""),
     UPLOADED(""),
-    PACKAGE(""),
+    PACKAGE("pk"),
     GENERATED(""),
     STEP("step"),
     DB("db"),

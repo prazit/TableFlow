@@ -1,21 +1,45 @@
 package com.tflow.kafka;
 
-/*TODO: read all configs from specified file*/
+/*TODO: for TWcmd module, lets use switch(like dconvers) to select Environment Mode and can specify rootPath for multiple instant test.*/
 public enum EnvironmentConfigs {
 
-    PRODUCTION("com.tflow.kafka.JavaSerializer", "com.tflow.kafka.JavaDeserializer", "java.io.JavaInputStream", "java.io.JavaOutputStream", "/Apps/TFlow/project/", "/Apps/TFlow/hist/", "/Apps/TFlow/bin/", 3600, ""),
-    DEVELOPMENT("com.tflow.kafka.JSONSerializer", "com.tflow.kafka.JSONDeserializer", "com.tflow.file.JSONInputStream", "com.tflow.file.JSONOutputStream", "/Apps/TFlow/project/", "/Apps/TFlow/hist/", "/Apps/TFlow/bin/", 3600, ".json");
+    PRODUCTION(
+            "com.tflow.kafka.JavaSerializer",
+            "com.tflow.kafka.JavaDeserializer",
+            "java.io.JavaInputStream",
+            "java.io.JavaOutputStream",
+            "/Apps/TFlow/project/",
+            "/Apps/TFlow/hist/",
+            "/Apps/TFlow/bin/",
+            36000,
+            ""
+    ),
 
+    DEVELOPMENT(
+            "com.tflow.kafka.JSONSerializer",
+            "com.tflow.kafka.JSONDeserializer",
+            "com.tflow.file.JSONInputStream",
+            "com.tflow.file.JSONOutputStream",
+            "/Apps/TFlow/project/",
+            "/Apps/TFlow/hist/",
+            "/Apps/TFlow/bin/",
+            360000,
+            ".json"
+    );
+
+    /* specific values can't replace by CLI Switches */
     private String kafkaSerializer;
     private String kafkaDeserializer;
 
     private String inputStream;
     private String outputStream;
 
+    private String dataFileExt;
+
+    /* default values can replace by CLI Switches */
     private String projectRootPath;
     private String historyRootPath;
     private String binaryRootPath;
-    private String dataFileExt;
 
     private long clientFileTimeoutMs;
 
