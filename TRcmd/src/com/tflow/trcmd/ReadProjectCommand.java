@@ -3,13 +3,13 @@ package com.tflow.trcmd;
 import com.tflow.kafka.*;
 import com.tflow.model.data.GroupData;
 import com.tflow.model.data.GroupListData;
+import com.tflow.model.data.HeaderData;
 import com.tflow.model.data.ProjectData;
 import com.tflow.model.data.record.ClientRecordData;
 import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
 import com.tflow.model.mapper.DataMapper;
 import com.tflow.model.mapper.RecordMapper;
-import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.IOCommand;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -17,7 +17,8 @@ import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -35,6 +36,7 @@ public class ReadProjectCommand extends IOCommand {
     private String topic;
     private KafkaProducer<String, Object> dataProducer;
     private RecordMapper mapper;
+    private HeaderData headerData;
 
     public ReadProjectCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, KafkaProducer<String, Object> dataProducer, String topic) {
         super(offset, key, value, environmentConfigs);
@@ -51,18 +53,21 @@ public class ReadProjectCommand extends IOCommand {
     public void execute() throws UnsupportedOperationException, InvalidParameterException, IOException, ClassNotFoundException, InstantiationException {
         mapper = Mappers.getMapper(RecordMapper.class);
         RecordAttributesData additional = mapper.map((KafkaRecordAttributes) value);
+        headerData = getHeaderData(additional);
 
         ProjectFileType projectFileType;
         try {
             projectFileType = validate(key, additional);
         } catch (InvalidParameterException ex) {
             KafkaErrorCode kafkaErrorCode = KafkaErrorCode.valueOf(ex.getMessage());
-            sendObject(key, additional.getModifiedClientId(), kafkaErrorCode.getCode());
             log.warn("Invalid parameter: {}", kafkaErrorCode);
+            headerData.setResponseCode(kafkaErrorCode.getCode());
+            sendObject(key, headerData);
             return;
         } catch (UnsupportedOperationException ex) {
-            sendObject(key, additional.getModifiedClientId(), KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
             log.warn(ex.getMessage());
+            headerData.setResponseCode(KafkaErrorCode.UNSUPPORTED_FILE_TYPE.getCode());
+            sendObject(key, headerData);
             return;
         }
 
@@ -75,7 +80,7 @@ public class ReadProjectCommand extends IOCommand {
 
                 /*send Header message and then Data message*/
                 RecordData recordValue = createNewEmptyProject(additional);
-                sendObject(key, additional.getModifiedClientId(), 0);
+                sendObject(key, headerData);
                 sendObject(key, recordValue);
                 return;
             }
@@ -85,7 +90,8 @@ public class ReadProjectCommand extends IOCommand {
 
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
-            sendObject(key, additional.getModifiedClientId(), KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+            headerData.setResponseCode(KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+            sendObject(key, headerData);
             log.warn("File not found: {}", file.getAbsolutePath());
             return;
         }
@@ -98,7 +104,8 @@ public class ReadProjectCommand extends IOCommand {
                 writeNewClientTo(clientFile, additional);
 
             } else if (!isMyClient(clientRecordData, additional)) {
-                sendObject(key, additional.getModifiedClientId(), KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
+                headerData.setResponseCode(KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
+                sendObject(key, headerData);
                 log.warn("Project editing by another: {}", clientRecordData);
                 return;
             }
@@ -112,8 +119,17 @@ public class ReadProjectCommand extends IOCommand {
         RecordData recordValue = (RecordData) readFrom(file);
 
         /*send Header message and then Data message*/
-        sendObject(key, additional.getModifiedClientId(), 0);
+        sendObject(key, headerData);
         sendObject(key, recordValue);
+    }
+
+    private HeaderData getHeaderData(RecordAttributesData additional) {
+        HeaderData headerData = new HeaderData();
+        headerData.setProjectId(additional.getProjectId());
+        headerData.setUserId(additional.getModifiedUserId());
+        headerData.setClientId(additional.getModifiedClientId());
+        headerData.setTime(additional.getModifiedDate().getTime());
+        return headerData;
     }
 
     private RecordData createNewEmptyProject(RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
@@ -136,7 +152,7 @@ public class ReadProjectCommand extends IOCommand {
             groupData.setName("Ungrouped");
             groupData.setProjectList(new ArrayList<>());
             groupList.getGroupList().add(mapper.map(groupData));
-        }else{
+        } else {
             groupData = (GroupData) readFrom(groupFile);
         }
 
@@ -200,10 +216,6 @@ public class ReadProjectCommand extends IOCommand {
         return projectId.startsWith("T");
     }
 
-    private void sendObject(String key, long clientId, long statusCode) {
-        dataProducer.send(new ProducerRecord<>(topic, key, SerializeUtil.serializeHeader(clientId, statusCode)));
-    }
-
     private void sendObject(String key, Object object) {
         Object record;
         if (object instanceof RecordData) {
@@ -258,5 +270,8 @@ public class ReadProjectCommand extends IOCommand {
         return fileType;
     }
 
-
+    @Override
+    public String toString() {
+        return headerData == null ? super.toString() : headerData.toString();
+    }
 }

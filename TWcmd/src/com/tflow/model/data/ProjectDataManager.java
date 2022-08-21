@@ -410,16 +410,16 @@ public class ProjectDataManager {
     }
 
     private void validate(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        if (additional.getUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for ProjectDataManager.addData(" + fileType + ")");
-        if (additional.getClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for ProjectDataManager.addData(" + fileType + ")");
+        if (additional.getUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for " + fileType);
+        if (additional.getClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for " + fileType);
 
         // Notice: all of below copied from class com.flow.wcmd.UpdateProjectCommand.validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue)
         int requireType = fileType.getRequireType();
-        if (!fileType.getPrefix().endsWith("list") && additional.getRecordId() == null) throw new InvalidParameterException("Required Field: RecordId for ProjectDataManager.addData(" + fileType + ")");
-        if (requireType > 0 && additional.getProjectId() == null) throw new InvalidParameterException("Required Field: ProjectId for ProjectDataManager.addData(" + fileType + ")");
-        if (requireType > 1 && requireType < 9 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId for ProjectDataManager.addData(" + fileType + ")");
-        if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId for ProjectDataManager.addData(" + fileType + ")");
-        if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId for ProjectDataManager.addData(" + fileType + ")");
+        if (!fileType.getPrefix().endsWith("list") && additional.getRecordId() == null) throw new InvalidParameterException("Required Field: RecordId for " + fileType);
+        if (requireType > 0 && additional.getProjectId() == null) throw new InvalidParameterException("Required Field: ProjectId for " + fileType);
+        if (requireType > 1 && requireType < 9 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId for " + fileType);
+        if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId for " + fileType);
+        if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId for " + fileType);
 
         additional.setModifiedDate(DateTimeUtil.now());
     }
@@ -459,14 +459,13 @@ public class ProjectDataManager {
     public Object getData(ProjectFileType fileType, KafkaRecordAttributes additional) {
         validate(fileType, additional);
 
-        /*TODO: requestData need to create TransactionID (uniqueKeys: time, userId, clientId, projectId | olderUnique: clientId)*/
         long code = requestData(fileType, additional);
         if (code < 0) {
             return code;
         }
 
-        /*TODO: captureData need to find TransactionID created by requestData*/
-        Object data = captureData(fileType, additional);
+        /*headerData used instead of TransactionID (uniqueKeys: time, userId, clientId, projectId)*/
+        Object data = captureData(fileType, getHeaderData(additional));
         if (data == null) {
             log.error("getData.return null record");
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
@@ -489,6 +488,15 @@ public class ProjectDataManager {
         return object;
     }
 
+    private HeaderData getHeaderData(KafkaRecordAttributes additional) {
+        HeaderData headerData = new HeaderData();
+        headerData.setProjectId(additional.getProjectId());
+        headerData.setUserId(additional.getUserId());
+        headerData.setClientId(additional.getClientId());
+        headerData.setTime(additional.getModifiedDate().getTime());
+        return headerData;
+    }
+
     private long requestData(ProjectFileType fileType, KafkaRecordAttributes additional) {
 
         if (!ready(producer)) {
@@ -509,19 +517,18 @@ public class ProjectDataManager {
         return -1L;
     }
 
-    private Object captureData(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        log.trace("captureData(fileType:{}, additional:{})", fileType, additional);
+    private Object captureData(ProjectFileType fileType, HeaderData headerData) {
+        log.trace("captureData(fileType:{}, header:{})", fileType, headerData);
 
         /*TODO: timeout and maxTry need to load from configuration*/
-        Object data = null;
+        Object capturedData = null;
         long timeout = 2000;
-        long maxTry = 30;
+        long maxTry = 9;
         long retry = maxTry;
         Duration duration = Duration.ofMillis(timeout);
         ConsumerRecords<String, byte[]> records;
         boolean polling = true;
         boolean gotHeader = false;
-        long clientId = additional.getClientId();
         while (polling) {
 
             records = consumer.poll(duration);
@@ -541,14 +548,22 @@ public class ProjectDataManager {
                 byte[] value = record.value();
                 String key = record.key();
                 String offset = String.valueOf(record.offset());
-                log.info("captureData: offset = {}, key = {}, value = {}", offset, key, Arrays.copyOf(value, 16));
+                Object captured;
+                try {
+                    captured = deserializer.deserialize("", value);
+                } catch (Exception ex) {
+                    log.error("Error when deserializing byte[] to object: ", ex);
+                    polling = false;
+                    break;
+                }
+                log.info("captureData: offset = {}, key = {}, captured-data = {}:{}", offset, key, captured.getClass().getSimpleName(), captured);
 
                 // find data message
                 if (gotHeader) {
                     try {
-                        data = deserializer.deserialize("", value);
-                    } catch (Exception ex) {
-                        log.error("Error when deserializing byte[] to object: ", ex);
+                        capturedData = (KafkaRecord) captured;
+                    } catch (ClassCastException ex) {
+                        log.error("Error when cast captured-data to KafkaRecord: ", ex);
                         polling = false;
                         break;
                     }
@@ -557,38 +572,39 @@ public class ProjectDataManager {
                 }
 
                 // find header message
-
-                if (!fileType.isMe(key)) {
-                    // ignore other messages
-                    log.warn("need header(clientId:{}, key:{}), ignore message( key:{} )", clientId, fileType, key);
+                HeaderData capturedHeader;
+                try {
+                    capturedHeader = (HeaderData) captured;
+                } catch (ClassCastException ex) {
+                    log.error("Error when cast captured-data to HeaderData: ", ex);
                     continue;
                 }
 
-                if (value.length != 16) {
+                if (!isMyHeader(headerData, capturedHeader)) {
                     // ignore other messages
-                    log.warn("need header(clientId:{}), ignore message by length={}", clientId, value.length);
+                    log.warn("ignore another header({})", capturedHeader);
                     continue;
                 }
 
-                long code = SerializeUtil.deserializeHeader(value);
-                if (code < 0) {
-                    // exit when error found
-                    log.warn("need header(clientId:{}), stop capture by error-code({})", clientId, code);
-                    data = code;
+                if(capturedHeader.getResponseCode() < 0) {
+                    capturedData = capturedHeader.getResponseCode();
                     polling = false;
                     break;
-                } else if (code != clientId) {
-                    // ignore other messages
-                    log.warn("need header(clientId:{}), ignore message by header(clientId:{})", clientId, code);
-                    continue;
                 }
 
                 gotHeader = true;
             }
         } //end of While
 
-        log.debug("captureData completed, data = {}", data == null ? "null" : "not null");
-        return data;
+        log.debug("captureData completed, data = {}", capturedData);
+        return capturedData;
+    }
+
+    private boolean isMyHeader(HeaderData headerData, HeaderData capturedHeader) {
+        return headerData.getTime() == capturedHeader.getTime() &&
+                headerData.getProjectId().compareTo(capturedHeader.getProjectId()) == 0 &&
+                headerData.getClientId() == capturedHeader.getClientId() &&
+                headerData.getUserId() == capturedHeader.getUserId();
     }
 
     private boolean isSuccess(Future<RecordMetadata> future) {
