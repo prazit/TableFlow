@@ -9,9 +9,13 @@ import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.*;
+import com.tflow.model.data.record.RecordAttributesData;
+import com.tflow.model.data.record.RecordData;
 import com.tflow.model.mapper.PackageMapper;
+import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
+import com.tflow.wcmd.IOCommand;
 import com.tflow.wcmd.KafkaCommand;
 import javafx.util.Pair;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -27,11 +31,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class BuildPackageCommand extends KafkaCommand {
+/**
+ * Write-Data need to use TWcmd to support backup-site/rerun in any case of data-loss.
+ * Read-Data don't need to use TRcmd.
+ */
+public class BuildPackageCommand extends IOCommand {
 
     private Logger log = LoggerFactory.getLogger(BuildPackageCommand.class);
 
     private KafkaRecordAttributes attributes;
+    private RecordAttributesData recordAttributes;
 
     private ProjectDataManager dataManager;
     private PackageMapper mapper;
@@ -49,16 +58,18 @@ public class BuildPackageCommand extends KafkaCommand {
         log.info(message, objects);
     }
 
+    /**
+     * Notice: key is command, now have only 1 'build' command
+     * Notice: first version assume ProjectType always be BATCH
+     */
     @Override
     public void execute() throws UnsupportedOperationException, IOException, ClassNotFoundException, InstantiationException {
         mapper = Mappers.getMapper(PackageMapper.class);
-
-        /*Notice: key is command, now have only 1 'build' command*/
-        /*Notice: first version assume ProjectType always be BATCH*/
         attributes = (KafkaRecordAttributes) value;
+        recordAttributes = Mappers.getMapper(RecordMapper.class).map(attributes);
         ProjectUser projectUser = mapper.map(attributes);
 
-        Object data = dataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);
+        Object data = getData(ProjectFileType.PACKAGE_LIST);
         //noinspection unchecked (suppress warning about unchecked)
         List<ItemData> packageIdList;
         try {
@@ -102,6 +113,59 @@ public class BuildPackageCommand extends KafkaCommand {
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
     }
 
+    private Object getData(ProjectFileType projectFileType, RecordAttributesData recordAttributesData) throws InstantiationException, IOException, ClassNotFoundException {
+        File file = getFile(projectFileType, recordAttributesData);
+        if (!file.exists()) {
+            return KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode();
+        }
+
+        try {
+            RecordData recordData = (RecordData) readFrom(file);
+            return recordData.getData();
+        } catch (ClassCastException ex) {
+            return KafkaErrorCode.INVALID_DATA_FILE.getCode();
+        }
+    }
+
+    private Object getData(ProjectFileType projectFileType) throws InstantiationException, IOException, ClassNotFoundException {
+        return getData(projectFileType, recordAttributes);
+    }
+
+    private Object getData(ProjectFileType projectFileType, String recordId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(recordId);
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    private Object getData(ProjectFileType projectFileType, int recordId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    private Object getData(ProjectFileType projectFileType, int recordId, int stepId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        recordAttributesData.setStepId(String.valueOf(stepId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    private Object getData(ProjectFileType projectFileType, int recordId, int stepId, int dataTableId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        recordAttributesData.setStepId(String.valueOf(stepId));
+        recordAttributesData.setDataTableId(String.valueOf(dataTableId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    private Object getData(ProjectFileType projectFileType, int recordId, int stepId, int ignoredId, int transformTableId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        recordAttributesData.setStepId(String.valueOf(stepId));
+        recordAttributesData.setTransformTableId(String.valueOf(transformTableId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
     private String getPackageName(PackageData packageData) {
         return "Package-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-hhmmss");
     }
@@ -118,10 +182,10 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private void addVersionedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException {
+    private void addVersionedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, ClassNotFoundException, InstantiationException {
         /*TODO: future feature: need to filter by ProjectType on next ProjectType*/
         String filter = ProjectType.BATCH.getCode();
-        Object data = dataManager.getData(ProjectFileType.VERSIONED_LIST, projectUser);
+        Object data = getData(ProjectFileType.VERSIONED_LIST);
         List<StringItemData> binaryFileItemDataList = mapper.toStringItemData((List) throwExceptionOnError(data));
         for (StringItemData binaryFileItemData : binaryFileItemDataList) {
             String projectTypeCodes = Versioned.valueOf(binaryFileItemData.getId()).getProjectTypeCodes();
@@ -136,8 +200,8 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private void addUploadedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException {
-        Object data = dataManager.getData(ProjectFileType.UPLOADED_LIST, projectUser);
+    private void addUploadedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, ClassNotFoundException, InstantiationException {
+        Object data = getData(ProjectFileType.UPLOADED_LIST);
         List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
         for (BinaryFileItemData binaryFileItemData : binaryFileItemDataList) {
             PackageFileData packageFileData = mapper.map(binaryFileItemData);
@@ -166,7 +230,7 @@ public class BuildPackageCommand extends KafkaCommand {
         return data;
     }
 
-    private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, UnsupportedOperationException {
+    private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
         int generatedFileId = 0;
         int packageFileId = newPackageFileId(packageData);
         generatedPath = environmentConfigs.getBinaryRootPath() + projectUser.getId() + "/";
@@ -190,7 +254,7 @@ public class BuildPackageCommand extends KafkaCommand {
             byte[] contentBytes = byteArrayOutputStream.toByteArray();
             log.debug("Conversion:saveProperties successful, \n{}", new String(contentBytes, StandardCharsets.ISO_8859_1));
 
-            Object data = dataManager.getData(ProjectFileType.GENERATED_LIST, projectUser);
+            Object data = getData(ProjectFileType.GENERATED_LIST);
             List<BinaryFileData> generatedFileList = mapper.toBinaryFileDataList((List) throwExceptionOnError(data));
 
             /*create Generated Conversion File*/
@@ -259,7 +323,7 @@ public class BuildPackageCommand extends KafkaCommand {
         }
     }
 
-    private void initDataConversionConfigFile(DataConversionConfigFile dataConversionConfigFile, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException {
+    private void initDataConversionConfigFile(DataConversionConfigFile dataConversionConfigFile, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException {
         // all commented will use default values by DConvers
 
         /*dataConversionConfigFile.setPluginsCalcList();
@@ -287,16 +351,16 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private HashMap<String, DataSourceConfig> createDataSourceConfigMap(ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException {
+    private HashMap<String, DataSourceConfig> createDataSourceConfigMap(ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException {
         HashMap<String, DataSourceConfig> dataSourceConfigHashMap = new HashMap<>();
 
-        Object data = dataManager.getData(ProjectFileType.DB_LIST, projectUser);
+        Object data = getData(ProjectFileType.DB_LIST);
         List<Integer> dbIdList = (List) throwExceptionOnError(data);
 
         DatabaseData databaseData;
         DataSourceConfig dataSourceConfig;
         for (Integer databaseId : dbIdList) {
-            data = dataManager.getData(ProjectFileType.DB, projectUser, databaseId);
+            data = getData(ProjectFileType.DB, databaseId);
             databaseData = (DatabaseData) throwExceptionOnError(data);
             dataSourceConfig = getDataSourceConfig(throwExceptionOnValidateFail(databaseData, projectUser, fileList));
             dataSourceConfigHashMap.put(dataSourceConfig.getName().toUpperCase(), dataSourceConfig);
@@ -305,7 +369,7 @@ public class BuildPackageCommand extends KafkaCommand {
         return dataSourceConfigHashMap;
     }
 
-    private DatabaseData throwExceptionOnValidateFail(DatabaseData databaseData, ProjectUser projectUser, List<PackageFileData> fileList) throws UnsupportedOperationException, IOException {
+    private DatabaseData throwExceptionOnValidateFail(DatabaseData databaseData, ProjectUser projectUser, List<PackageFileData> fileList) throws UnsupportedOperationException, IOException, ClassNotFoundException, InstantiationException {
         String objectName = "Database(" + databaseData.getName() + ")";
         if (databaseData.getUrl() == null) throw newRequiredException("URL", objectName);
         if (databaseData.getDbms() == null) throw newRequiredException("DBMS", objectName);
@@ -320,12 +384,12 @@ public class BuildPackageCommand extends KafkaCommand {
         return new UnsupportedOperationException(fieldName + " is required on " + objectName);
     }
 
-    private String getDriver(String dbmsName, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
+    private String getDriver(String dbmsName, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, InstantiationException, ClassNotFoundException {
         Dbms dbms = Dbms.valueOf(dbmsName);
         Versioned driverFile = dbms.getDriverFile();
 
         /*add driver jar file to fileList*/
-        Object data = dataManager.getData(ProjectFileType.VERSIONED, projectUser, driverFile.toString());
+        Object data = getData(ProjectFileType.VERSIONED, driverFile.toString());
         BinaryFileData binaryFileData = (BinaryFileData) throwExceptionOnError(data);
         PackageFileData packageFileData = mapper.map(binaryFileData);
         fileList.add(packageFileData);
@@ -368,16 +432,16 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private HashMap<String, HostConfig> createSftpConfigMap(ProjectUser projectUser) throws IOException {
+    private HashMap<String, HostConfig> createSftpConfigMap(ProjectUser projectUser) throws IOException, ClassNotFoundException, InstantiationException {
         HashMap<String, HostConfig> sftpConfigMap = new HashMap<>();
 
-        Object data = dataManager.getData(ProjectFileType.SFTP_LIST, projectUser);
+        Object data = getData(ProjectFileType.SFTP_LIST);
         List<Integer> sftpIdList = (List) throwExceptionOnError(data);
 
         SFTPData sftpData;
         HostConfig hostConfig;
         for (Integer sftpId : sftpIdList) {
-            data = dataManager.getData(ProjectFileType.SFTP, projectUser, sftpId);
+            data = getData(ProjectFileType.SFTP, sftpId);
             sftpData = (SFTPData) throwExceptionOnError(data);
             hostConfig = getHostConfig(throwExceptionOnValidateFail(sftpData));
             sftpConfigMap.put(hostConfig.getName().toUpperCase(), hostConfig);
@@ -417,16 +481,16 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private HashMap<String, ConverterConfigFile> getConverterConfigMap(ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
+    private HashMap<String, ConverterConfigFile> getConverterConfigMap(ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, InstantiationException, ClassNotFoundException {
         HashMap<String, ConverterConfigFile> converterMap = new HashMap<>();
 
-        Object data = dataManager.getData(ProjectFileType.STEP_LIST, projectUser);
+        Object data = getData(ProjectFileType.STEP_LIST);
         List<ItemData> stepIdList = mapper.toItemDataList((List) throwExceptionOnError(data));
 
         StepData stepData;
         ConverterConfigFile converterConfigFile;
         for (ItemData itemData : stepIdList) {
-            data = dataManager.getData(ProjectFileType.STEP, projectUser, itemData.getId(), itemData.getId());
+            data = getData(ProjectFileType.STEP, itemData.getId(), itemData.getId());
             stepData = (StepData) throwExceptionOnError(data);
             converterConfigFile = getConverterConfigFile(stepData, projectUser, fileList);
             converterMap.put(converterConfigFile.getName().toUpperCase(), converterConfigFile);
@@ -435,7 +499,7 @@ public class BuildPackageCommand extends KafkaCommand {
         return converterMap;
     }
 
-    private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException {
+    private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, InstantiationException, ClassNotFoundException {
         String fileExt = Defaults.CONFIG_FILE_EXT.getStringValue();
         String fileName = IDPrefix.STEP.getPrefix() + stepData.getId() + fileExt;
         String loadName = generatedPath + fileName;
@@ -446,22 +510,22 @@ public class BuildPackageCommand extends KafkaCommand {
         converterConfigFile.setIndex(stepData.getIndex());
 
         /*all data-tables*/
-        Object data = dataManager.getData(ProjectFileType.DATA_TABLE_LIST, projectUser, 0, stepData.getId());
+        Object data = getData(ProjectFileType.DATA_TABLE_LIST, 0, stepData.getId());
         List<Integer> dataTableIdList = (List<Integer>) throwExceptionOnError(data);
         HashMap<String, SourceConfig> sourceConfigMap = converterConfigFile.getSourceConfigMap();
         for (Integer dataTableId : dataTableIdList) {
-            data = dataManager.getData(ProjectFileType.DATA_TABLE, projectUser, dataTableId, stepData.getId(), dataTableId);
+            data = getData(ProjectFileType.DATA_TABLE, dataTableId, stepData.getId(), dataTableId);
             DataTableData dataTableData = (DataTableData) throwExceptionOnError(data);
             SourceConfig sourceConfig = getSourceConfig(dataTableData, converterConfigFile, projectUser, stepData.getId(), fileList);
             sourceConfigMap.put(sourceConfig.getName().toUpperCase(), sourceConfig);
         }
 
         /*all transform-tables*/
-        data = dataManager.getData(ProjectFileType.TRANSFORM_TABLE_LIST, projectUser, 0, stepData.getId());
+        data = getData(ProjectFileType.TRANSFORM_TABLE_LIST, 0, stepData.getId());
         List<Integer> transformTableIdList = (List<Integer>) throwExceptionOnError(data);
         HashMap<String, TargetConfig> targetConfigMap = converterConfigFile.getTargetConfigMap();
         for (Integer transformTableId : transformTableIdList) {
-            data = dataManager.getData(ProjectFileType.TRANSFORM_TABLE, projectUser, transformTableId, stepData.getId(), 0, transformTableId);
+            data = getData(ProjectFileType.TRANSFORM_TABLE, transformTableId, stepData.getId(), 0, transformTableId);
             TransformTableData transformTableData = (TransformTableData) throwExceptionOnError(data);
             TargetConfig targetConfig = getTargetConfig(transformTableData, converterConfigFile, projectUser, stepData.getId());
             targetConfigMap.put(targetConfig.getName().toUpperCase(), targetConfig);
@@ -471,23 +535,23 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList) throws IOException {
+    private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList) throws IOException, InstantiationException, ClassNotFoundException {
         SourceConfig sourceConfig = new SourceConfig(dconvers, IDPrefix.DATA_TABLE.getPrefix() + dataTableData.getId(), converterConfigFile);
 
         sourceConfig.setIndex(dataTableData.getIndex());
         sourceConfig.setId(dataTableData.getIdColName());
         sourceConfig.setTarget(dataTableData.getStartPlug().getLineList().size() > 0);
 
-        Object data = dataManager.getData(ProjectFileType.DATA_FILE, projectUser, dataTableData.getDataFile(), stepId);
+        Object data = getData(ProjectFileType.DATA_FILE, dataTableData.getDataFile(), stepId);
         DataFileData dataFileData = (DataFileData) throwExceptionOnError(data);
         Integer lineToDataSourceId = dataFileData.getEndPlug().getLineList().get(0);
 
         /* dataSourceSelector stand at startPlug of a line between dataSource and dataFile */
-        data = dataManager.getData(ProjectFileType.LINE, projectUser, lineToDataSourceId, stepId);
+        data = getData(ProjectFileType.LINE, lineToDataSourceId, stepId);
         LineData lineData = (LineData) throwExceptionOnError(data);
         String dataSourceSelectorId = lineData.getStartSelectableId().substring(IDPrefix.DATA_SOURCE_SELECTOR.getPrefix().length());
 
-        data = dataManager.getData(ProjectFileType.DATA_SOURCE_SELECTOR, projectUser, Integer.parseInt(dataSourceSelectorId), stepId);
+        data = getData(ProjectFileType.DATA_SOURCE_SELECTOR, Integer.parseInt(dataSourceSelectorId), stepId);
         DataSourceSelectorData dataSourceSelectorData = (DataSourceSelectorData) throwExceptionOnError(data);
         DataSourceType dataSourceType = DataSourceType.parse(dataSourceSelectorData.getType());
         if (dataSourceType == null) throw new IOException("Invalid DataSourceType: " + dataSourceSelectorData.getType());
@@ -543,13 +607,13 @@ public class BuildPackageCommand extends KafkaCommand {
         /*Notice: IMPORTANT: DataTable ColumnList will load by Query automatically, once concern before this point if DataSource is not LOCAL need to confirm structure from Uploaded File is corrected*/
 
         /*all outputs of datatable*/
-        data = dataManager.getData(ProjectFileType.DATA_OUTPUT_LIST, projectUser, 0, stepId, dataTableData.getId());
+        data = getData(ProjectFileType.DATA_OUTPUT_LIST, 0, stepId, dataTableData.getId());
         List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
 
         OutputConfig outputConfig = sourceConfig.getOutputConfig();
         OutputFileData outputFileData;
         for (Integer outputId : outputIdList) {
-            data = dataManager.getData(ProjectFileType.DATA_OUTPUT, projectUser, outputId, stepId, dataTableData.getId());
+            data = getData(ProjectFileType.DATA_OUTPUT, outputId, stepId, dataTableData.getId());
             outputFileData = (OutputFileData) throwExceptionOnError(data);
             setOutputConfig(outputConfig, outputFileData);
         }
@@ -645,7 +709,7 @@ public class BuildPackageCommand extends KafkaCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private TargetConfig getTargetConfig(TransformTableData transformTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId) throws IOException {
+    private TargetConfig getTargetConfig(TransformTableData transformTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId) throws IOException, InstantiationException, ClassNotFoundException {
         TargetConfig targetConfig = new TargetConfig(dconvers, IDPrefix.TRANSFORM_TABLE.getPrefix() + transformTableData.getId(), converterConfigFile);
 
         /*TODO: future feature: merge 2 or more sourceTables to a targetTable*/
@@ -656,12 +720,12 @@ public class BuildPackageCommand extends KafkaCommand {
         targetConfig.setId(transformTableData.getIdColName());
 
         /*all transform-columns*/
-        Object data = dataManager.getData(ProjectFileType.TRANSFORM_COLUMN_LIST, projectUser, 0, stepId, 0, transformTableData.getId());
+        Object data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, 0, stepId, 0, transformTableData.getId());
         List<Integer> columnIdList = (List<Integer>) throwExceptionOnError(data);
         List<Pair<String, String>> columnList = targetConfig.getColumnList();
         TransformColumnData transformColumnData;
         for (Integer columnId : columnIdList) {
-            data = dataManager.getData(ProjectFileType.TRANSFORM_COLUMN, projectUser, columnId, stepId, 0, transformTableData.getId());
+            data = getData(ProjectFileType.TRANSFORM_COLUMN, columnId, stepId, 0, transformTableData.getId());
             transformColumnData = (TransformColumnData) throwExceptionOnError(data);
 
             /* ColumnFx has 3 cases for arguments:
@@ -705,23 +769,23 @@ public class BuildPackageCommand extends KafkaCommand {
         }
 
         /*all transformations*/
-        data = dataManager.getData(ProjectFileType.TRANSFORMATION_LIST, projectUser, transformTableData.getId(), stepId, 0, transformTableData.getId());
+        data = getData(ProjectFileType.TRANSFORMATION_LIST, transformTableData.getId(), stepId, 0, transformTableData.getId());
         List<Integer> tableFxDataIdList = (List<Integer>) throwExceptionOnError(data);
         TransformConfig transformConfig = targetConfig.getTransformConfig();
         TableFxData tableFxData;
         for (Integer tableFxDataId : tableFxDataIdList) {
-            data = dataManager.getData(ProjectFileType.TRANSFORMATION, projectUser, tableFxDataId, stepId, 0, transformTableData.getId());
+            data = getData(ProjectFileType.TRANSFORMATION, tableFxDataId, stepId, 0, transformTableData.getId());
             tableFxData = (TableFxData) throwExceptionOnError(data);
             addTransformations(tableFxData, transformConfig);
         }
 
         /*all outputs of transformtable*/
-        data = dataManager.getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, projectUser, 0, stepId, transformTableData.getId());
+        data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, 0, stepId, transformTableData.getId());
         List<Integer> outputIdList = (List<Integer>) throwExceptionOnError(data);
         OutputConfig outputConfig = targetConfig.getOutputConfig();
         OutputFileData outputFileData;
         for (Integer outputId : outputIdList) {
-            data = dataManager.getData(ProjectFileType.TRANSFORM_OUTPUT, projectUser, outputId, stepId, transformTableData.getId());
+            data = getData(ProjectFileType.TRANSFORM_OUTPUT, outputId, stepId, transformTableData.getId());
             outputFileData = (OutputFileData) throwExceptionOnError(data);
             setOutputConfig(outputConfig, outputFileData);
         }

@@ -3,6 +3,7 @@ package com.tflow.model.mapper;
 import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.model.data.*;
+import com.tflow.model.data.record.RecordAttributesData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -75,4 +76,5 @@ public interface PackageMapper {
 
     List<ItemData> fromBinaryFileList(List<BinaryFileData> generatedFileList);
 
+    RecordAttributesData clone(RecordAttributesData recordAttributes);
 }
