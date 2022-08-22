@@ -88,7 +88,7 @@ body .ui-panelgrid .ui-panelgrid-cell {
     width: 97% !important;
 }
 
-.tool-panel .ui-divider.ui-divider-horizontal {
+body .ui-divider.ui-divider-horizontal {
     color: var(--surface-d);
     height: calc(1em + 4px);
     margin-top: 0.5em;
@@ -125,6 +125,11 @@ iframe {
     flex-direction: column;
 }
 
+.button {
+    margin-left: var(--margin);
+}
+
+.button,
 .data-source,
 .data-file,
 .step-output {
@@ -189,6 +194,12 @@ body .ui-panel.function .ui-panel-content {
     display: flex;
 }
 
+.database-panel .data-source img,
+.local-panel .data-source img,
+.sftp-panel .data-source img {
+    width: 2em !important;
+}
+
 .database-panel .selectable,
 .local-panel .selectable,
 .sftp-panel .selectable {
@@ -208,8 +219,8 @@ body .ui-panel.function.active .ui-panel-titlebar,
     background-color: var(--surface-c);
 }
 
+.button:hover,
 .step.selectable:hover,
-.data-source.button:hover,
 .data-source.selectable:hover,
 .data-file.selectable:hover,
 .step-output.selectable:hover,

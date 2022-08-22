@@ -38,11 +38,12 @@ public class SelectStep extends Command {
             throw new UnsupportedOperationException("SelectStep with invalid index(" + stepIndex + "), Project(" + project.getSelectableId() + ") has " + size + " step(s)");
         }
 
+        ProjectManager manager = project.getManager();
         boolean loadStepData = step.getIndex() < 0;
         if (loadStepData) {
             log.warn("selectStep({}): load step data...", stepIndex);
             try {
-                step = project.getManager().loadStep(project, stepIndex);
+                step = manager.loadStep(project, stepIndex);
                 log.info("selectStep: loaded step = {}", step);
             } catch (ProjectDataException ex) {
                 throw new UnsupportedOperationException("SelectStep found error reported from TRcmd service: ", ex);
@@ -61,13 +62,12 @@ public class SelectStep extends Command {
         selectableMap.clear();
         selectableMap.put(project.getSelectableId(), project);
         selectableMap.put(step.getSelectableId(), step);
-        collectSelectableTo(selectableMap, getSelectableList(step.getDataTower().getFloorList()));
-        collectSelectableTo(selectableMap, getSelectableList(step.getTransformTower().getFloorList()));
-        collectSelectableTo(selectableMap, getSelectableList(step.getOutputTower().getFloorList()));
-        collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getDatabaseMap().values()));
-        collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getSftpMap().values()));
-        collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getLocalMap().values()));
-        log.warn("SelectStep: after generate selectableMap step={}", step);
+        manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getDataTower().getFloorList()));
+        manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getTransformTower().getFloorList()));
+        manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getOutputTower().getFloorList()));
+        manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getDatabaseMap().values()));
+        manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getSftpMap().values()));
+        manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getLocalMap().values()));
 
         // need activeObject by selectableId.
         if (loadStepData) {
@@ -112,60 +112,6 @@ public class SelectStep extends Command {
         // save Project data
         dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
 
-    }
-
-    /**
-     * Notice: IMPORTANT: when selectable-object-type is added, need to add script to collect them when Select step as Active-Step.
-     */
-    private void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
-        for (Selectable selectable : selectableList) {
-            map.put(selectable.getSelectableId(), selectable);
-            if (selectable instanceof DataTable) {
-                DataTable dt = (DataTable) selectable;
-
-                for (DataColumn column : dt.getColumnList()) {
-                    map.put(column.getSelectableId(), column);
-                }
-
-                for (DataFile output : dt.getOutputList()) {
-                    map.put(output.getSelectableId(), output);
-                }
-
-                if (selectable instanceof TransformTable) {
-                    TransformTable tt = (TransformTable) selectable;
-                    for (ColumnFx columnFx : tt.getColumnFxTable().getColumnFxList()) {
-                        map.put(columnFx.getSelectableId(), columnFx);
-
-                        for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
-                            map.put(columnFxPlug.getSelectableId(), columnFxPlug);
-                        }
-                    }
-
-                    for (TableFx tableFx : tt.getFxList()) {
-                        map.put(tableFx.getSelectableId(), tableFx);
-                    }
-                }
-
-            }
-        }
-    }
-
-    public List<Selectable> getSelectableList(List<Floor> floorList) {
-        List<Selectable> selectableList = new ArrayList<>();
-        for (Floor floor : floorList) {
-            selectableList.addAll(collectSelectableRoom(floor.getRoomList()));
-        }
-        return selectableList;
-    }
-
-    public List<Selectable> collectSelectableRoom(List<Room> roomList) {
-        List<Selectable> selectableList = new ArrayList<>();
-        for (Room room : roomList) {
-            if (room instanceof Selectable) {
-                selectableList.add((Selectable) room);
-            }
-        }
-        return selectableList;
     }
 
 }

@@ -72,6 +72,7 @@ function showActionButtons(show) {
     contentReady(function () {
         var display = 'hide-actions';
 
+        contentWindow.hideLines();
         if (show) {
             contentWindow.$('.flow-chart').removeClass('hide-actions');
         } else {

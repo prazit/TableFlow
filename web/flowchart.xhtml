@@ -133,7 +133,7 @@
 
                                         </p:repeat>
 
-                                        <p:separator title="output"/>
+                                        <p:divider align="center">output</p:divider>
 
                                         <p:repeat value="#{floor.roomList[2].outputList}" var="output">
 
@@ -236,7 +236,7 @@
                                                 <p:commandButton value="Add Column" onclick="tableAction('addColumn','#{troom.selectableId}')" update="@this"/>
                                             </p:outputPanel>
 
-                                            <p:separator title="transform"/>
+                                            <p:divider align="center">transformation</p:divider>
 
                                             <p:repeat value="#{troom.fxList}" var="tfx">
 
@@ -253,7 +253,7 @@
                                                 <p:commandButton value="Add Transformation" onclick="tableAction('addTransformation','#{troom.selectableId}')" update="@this"/>
                                             </p:outputPanel>
 
-                                            <p:separator title="output"/>
+                                            <p:divider align="center">output</p:divider>
 
                                             <p:repeat value="#{troom.outputList}" var="toutput">
 

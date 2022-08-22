@@ -65,7 +65,7 @@
                                 <p:outputPanel styleClass="data-source flex button" value="addDatabase">
                                     <input name="command" type="hidden" value="addDatabase"/>
                                     <p:remoteCommand name="addDatabase" update="editorForm:tabview:databasetab" onstart="parent.addDatabase()" oncomplete="updatePanelComplete('.database-panel')"/>
-                                    <span class="ui-icon pi pi-plus" style="font-size: 3em;"/>
+                                    <span class="ui-icon pi pi-plus" style="font-size: 2em;"/>
                                     <span>Add Database</span>
                                 </p:outputPanel>
                             </p:outputPanel>
@@ -94,7 +94,7 @@
                                 <p:outputPanel styleClass="data-source flex button" value="addLocal">
                                     <input name="command" type="hidden" value="addLocal"/>
                                     <p:remoteCommand name="addLocal" update="editorForm:tabview:localtab" onstart="parent.addLocal()" oncomplete="updatePanelComplete('.local-panel')"/>
-                                    <span class="ui-icon pi pi-plus" style="font-size: 3em;"/>
+                                    <span class="ui-icon pi pi-plus" style="font-size: 2em;"/>
                                     <span>Add Local Path</span>
                                 </p:outputPanel>
                             </p:outputPanel>
@@ -123,7 +123,7 @@
                                 <p:outputPanel styleClass="data-source flex button" value="addSFTP">
                                     <input name="command" type="hidden" value="addSFTP"/>
                                     <p:remoteCommand name="addSFTP" update="editorForm:tabview:sftptab" onstart="parent.addSFTP()" oncomplete="updatePanelComplete('.sftp-panel')"/>
-                                    <span class="ui-icon pi pi-plus" style="font-size: 3em;"/>
+                                    <span class="ui-icon pi pi-plus" style="font-size: 2em;"/>
                                     <span>Add SFTP Path</span>
                                 </p:outputPanel>
                             </p:outputPanel>
@@ -132,28 +132,28 @@
                     </p:tab>
 
                     <p:tab title="#{ProjectSection.UPLOADED.getTitle()}" styleClass="uploaded tab">
-
                         <h2 style="color: var(--surface-c);">Uploaded Section</h2>
                     </p:tab>
 
                     <p:tab title="#{ProjectSection.PACKAGE.getTitle()}" styleClass="package tab">
-                        <p:outputPanel id="packageTab">
+                        <p:outputPanel id="packageTab" styleClass="package-panel">
                             <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent" oncomplete="console.log('updatePackageTab complated.')"/>
                             <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent" oncomplete="console.log('buildPackage complated.')"/>
 
                             <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0}" styleClass="ui-g">
-                                <p:selectOneMenu value="#{projectCtl.selectedPackageId}" styleClass="ui-sm-6">
+                                <p:selectOneMenu value="#{projectCtl.selectedPackageId}">
                                     <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
                                     <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
                                     <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent"/>
                                 </p:selectOneMenu>
 
-                                <div class="ui-sm-6">
-                                    <p:commandButton value="Build new package" actionListener="#{projectCtl.buildPackage}"/>
-                                </div>
+                                <p:outputPanel styleClass="button">
+                                    <input name="command" type="hidden" value="buildPackage"/>
+                                    <span class="ui-icon pi pi-save"> Build New Package</span>
+                                </p:outputPanel>
                             </p:outputPanel>
 
-                            <p:separator rendered="#{projectCtl.packageList.size() > 0}"/>
+                            <p:divider rendered="#{projectCtl.packageList.size() > 0}" layout="horizontal"/>
 
                             <!-- please select message -->
                             <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() == 0}"><h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/> Need to build one package, click menu Build &gt; Package.</h2></p:outputPanel>
@@ -179,10 +179,9 @@
                                     <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
                                     <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
 
-                                    <h2 style="color: var(--surface-c);" class="selectable"><i class="fa fa-info"/>Package Header</h2>
                                     <p:fieldset styleClass="ui-g">
                                         <p:outputLabel value="Name : " styleClass="ui-sm-3"/>
-                                        <p:inputText value="#{projectCtl.activePackage.name}" styleClass="ui-sm-9"/>
+                                        <p:outputLabel value="#{projectCtl.activePackage.name}" styleClass="ui-sm-9"/>
                                     </p:fieldset>
                                     <p:fieldset styleClass="ui-g">
                                         <p:outputLabel value="Build : " styleClass="ui-sm-3"/>
@@ -194,17 +193,25 @@
                                     </p:fieldset>
                                 </p:outputPanel>
 
-                                <p:separator/>
+                                <p:divider layout="horizontal"/>
 
                                 <p:outputPanel styleClass="ui-g">
-                                    <h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Package File List</h2>
-                                    <p:dataList value="#{projectCtl.activePackage.fileList}" var="packageFile">
-                                        <p:row styleClass="selectable">
-                                            <p:column headerText="Name">#{packageFile.name}</p:column>
-                                        </p:row>
+                                    <p:dataList value="#{projectCtl.activePackage.fileList}" var="packageFile" styleClass="ui-lg-12">
+                                        <p:outputPanel styleClass="selectable ui-g">
+                                            <p:outputLabel styleClass="ui-sm-3">Path: #{packageFile.buildPath}</p:outputLabel>
+                                            <p:outputLabel styleClass="ui-sm-3">Name: #{packageFile.name}</p:outputLabel>
+                                            <p:outputLabel styleClass="ui-sm-3">Type: #{packageFile.ext}</p:outputLabel>
+                                            <p:outputLabel styleClass="ui-sm-3">New:
+                                                <p:outputLabel icon="pi pi-save" value=" " rendered="#{packageFile.updated}"/>
+                                            </p:outputLabel>
+                                        </p:outputPanel>
                                     </p:dataList>
                                 </p:outputPanel>
                             </p:outputPanel>
+
+                            <script>$(function () {
+                                updatePanelComplete('.package-panel');
+                            });</script>
                         </p:outputPanel>
                     </p:tab>
                     <!--/p:accordionPanel-->

@@ -4,6 +4,8 @@ import com.tflow.kafka.*;
 import com.tflow.system.Environment;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
+import com.tflow.zookeeper.ZKConfiguration;
+import com.tflow.zookeeper.ZKConfigNode;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -15,6 +17,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +38,7 @@ public class ProjectDataManager {
     private String writeTopic;
     private String readTopic;
     private String dataTopic;
+    private long maximumTransactionId;
     private long commitAgainMilliseconds;
     private int kafkaTimeout;
     private boolean commitWaiting;
@@ -48,13 +52,58 @@ public class ProjectDataManager {
 
     private Thread commitThread;
 
+    private ZKConfiguration globalConfigs;
+
     public ProjectDataManager(Environment environment, String consumerGroupId) {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
         this.consumerGroupId = consumerGroupId;
         projectDataWriteBufferList = new HashMap<>();
+        loadConfigs();
+    }
+
+    private void loadConfigs() {
         /*TODO: need config for commitAgainMilliseconds*/
         commitAgainMilliseconds = 10000;
         kafkaTimeout = 10000;
+        globalConfigs = new ZKConfiguration();
+
+        try {
+            log.trace("connecting to zookeeper");
+            globalConfigs.connect();
+            log.trace("connected to zookeeper");
+        } catch (Exception ex) {
+            log.error("connect to zookeeper failed!", ex);
+            return;
+        }
+
+        maximumTransactionId = globalConfigs.getLong(ZKConfigNode.MAXIMUM_TRANSACTION_ID, 9999999999L);
+    }
+
+    private long newTransactionId() {
+        return newTransactionId(1);
+    }
+
+    /**
+     * @return first transactionId.
+     */
+    private long newTransactionId(int size) {
+        long lastTransId = globalConfigs.getLong(ZKConfigNode.LAST_TRANSACTION_ID, 1);
+        long setLastTransId = lastTransId + size;
+        if (setLastTransId > maximumTransactionId) {
+            lastTransId = 1;
+            setLastTransId = lastTransId + size;
+        }
+        log.debug("get lastTransId from Zookeeper = {}", lastTransId);
+
+        try {
+            globalConfigs.set(ZKConfigNode.LAST_TRANSACTION_ID, setLastTransId);
+            log.debug("set value to lastTransId = {} success", setLastTransId);
+
+        } catch (KeeperException | InterruptedException ex) {
+            log.error("set value to lastTransId failed!", ex);
+        }
+
+        return lastTransId + 1;
     }
 
     private boolean createProducer() {
@@ -236,10 +285,17 @@ public class ProjectDataManager {
         return true;
     }
 
-    private boolean readyToCapture(Consumer<String, byte[]> consumer, long clientId) {
+    private boolean readyToCapture(Consumer<String, byte[]> consumer, long clientId, KafkaRecordAttributes additional) {
         if (consumer == null && !createConsumer(clientId)) {
             return false;
         }
+
+        /* need transId for capture */
+        long transactionId = newTransactionId();
+        if (transactionId < 0) {
+            return false;
+        }
+        additional.setTransactionId(transactionId);
 
         /* Notice: exceed maximum poll when seekToEnd before poll.
         if (consumer != null) consumer.seekToEnd(topicPartitionArrayList);*/
@@ -263,7 +319,7 @@ public class ProjectDataManager {
                     log.trace("commit again in {} milliseconds by thread {}", milliseconds, Thread.currentThread().getName());
                     Thread.sleep(milliseconds);
                 } catch (InterruptedException ex) {
-                    log.warn("InterruptedException occurred during commit(ms:" + milliseconds + ")", ex);
+                    log.error("InterruptedException occurred during commit(ms:" + milliseconds + ")", ex);
                 }
 
                 /*after wait, need to set commitWaiting = false; and then commit*/
@@ -297,21 +353,26 @@ public class ProjectDataManager {
         commitThread = null;
     }
 
-    private void commitInThread() {
+    public boolean commitInThread() {
         ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList.values());
         KafkaRecordAttributes additional;
         ProjectFileType fileType;
         KafkaRecord kafkaRecord;
         String key;
         commitList.sort((t1, t2) -> Integer.compare(t1.getIndex(), t2.getIndex()));
+
+        if (!ready(producer)) {
+            log.error("commitInTread: producer not ready, try to commit again next {} ms", commitAgainMilliseconds);
+            commit(commitAgainMilliseconds);
+            return false;
+        }
+
+        long transactionId = newTransactionId(commitList.size());
         for (ProjectDataWriteBuffer writeCommand : commitList) {
-            if (!ready(producer)) {
-
-                commit(commitAgainMilliseconds);
-                return;
-            }
-
             additional = writeCommand.getAdditional();
+            additional.setTransactionId(transactionId);
+            transactionId++;
+
             fileType = writeCommand.getFileType();
             key = fileType.name();
             kafkaRecord = new KafkaRecord(writeCommand.getDataObject(), additional);
@@ -319,11 +380,13 @@ public class ProjectDataManager {
 
             Future<RecordMetadata> future = producer.send(new ProducerRecord<>(writeTopic, key, kafkaRecord));
             if (!isSuccess(future)) {
-                return;
+                return false;
             }
 
             projectDataWriteBufferList.remove(writeCommand.uniqueKey());
         }
+
+        return true;
     }
 
     public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project) {
@@ -494,6 +557,7 @@ public class ProjectDataManager {
         headerData.setUserId(additional.getUserId());
         headerData.setClientId(additional.getClientId());
         headerData.setTime(additional.getModifiedDate().getTime());
+        headerData.setTransactionId(additional.getTransactionId());
         return headerData;
     }
 
@@ -504,7 +568,7 @@ public class ProjectDataManager {
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
 
-        if (!readyToCapture(consumer, additional.getClientId())) {
+        if (!readyToCapture(consumer, additional.getClientId(), additional)) {
             log.warn("requestData: consumer not ready to start capture");
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
@@ -586,7 +650,7 @@ public class ProjectDataManager {
                     continue;
                 }
 
-                if(capturedHeader.getResponseCode() < 0) {
+                if (capturedHeader.getResponseCode() < 0) {
                     capturedData = capturedHeader.getResponseCode();
                     polling = false;
                     break;
@@ -604,7 +668,8 @@ public class ProjectDataManager {
         return headerData.getTime() == capturedHeader.getTime() &&
                 headerData.getProjectId().compareTo(capturedHeader.getProjectId()) == 0 &&
                 headerData.getClientId() == capturedHeader.getClientId() &&
-                headerData.getUserId() == capturedHeader.getUserId();
+                headerData.getUserId() == capturedHeader.getUserId() &&
+                headerData.getTransactionId() == capturedHeader.getTransactionId();
     }
 
     private boolean isSuccess(Future<RecordMetadata> future) {
@@ -632,6 +697,10 @@ public class ProjectDataManager {
         }
 
         return result;
+    }
+
+    public boolean isClosable() {
+        return projectDataWriteBufferList.size() == 0 && commitThread == null && !commitWaiting;
     }
 
 }

@@ -129,6 +129,7 @@ public class ReadProjectCommand extends IOCommand {
         headerData.setUserId(additional.getModifiedUserId());
         headerData.setClientId(additional.getModifiedClientId());
         headerData.setTime(additional.getModifiedDate().getTime());
+        headerData.setTransactionId(additional.getTransactionId());
         return headerData;
     }
 

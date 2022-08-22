@@ -167,7 +167,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private String getPackageName(PackageData packageData) {
-        return "Package-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-hhmmss");
+        return "Package-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-HHmmss-SSS");
     }
 
     private void addConfigVersionFile(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) {

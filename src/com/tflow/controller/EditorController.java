@@ -1107,7 +1107,7 @@ public class EditorController extends Controller {
     }
 
     private void setPropertySheet(Selectable activeObject) {
-        log.warn("setPropertySheet(selectable:{})", activeObject);
+        log.trace("setPropertySheet(selectable:{})", (activeObject != null ? activeObject.getSelectableId() : "null"));
         if (activeObject == null) {
             this.activeObject = null;
             propertyList = new ArrayList<>();

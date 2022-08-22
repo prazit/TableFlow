@@ -72,7 +72,7 @@ public enum Properties {
             "name:Name:String",
             "--:Connection:--",
             "host:Host:String",
-            "port:Port:String",
+            "port:Port:Int:0:9999",
             "user:User:String:20",
             "password:Password:String:20::true",
             "retry:Connection Retry:Int:9:0",

@@ -54,10 +54,10 @@ public class ProjectDataWriteBuffer {
 
     @Override
     public String toString() {
-        return "transactionId:{" +
-                "fileType:" + fileType +
-                ", recordId:" + additional.getRecordId() +
+        return "{" +
+                "transactionId:" + additional.getTransactionId() +
                 ", time:" + additional.getModifiedDate().getTime() +
+                ", fileType:" + fileType +
                 '}';
     }
 }

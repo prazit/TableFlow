@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
 public class TBcmd {
@@ -36,7 +37,7 @@ public class TBcmd {
     @SuppressWarnings("unchecked")
     public void start() {
 
-        ProjectDataManager projectDataManager = new ProjectDataManager(environment,"TBcmd");
+        ProjectDataManager projectDataManager = new ProjectDataManager(environment, "TBcmd");
         KafkaConsumer<String, byte[]> consumer = createConsumer();
 
         /*TODO: need to load topicBuild from configuration*/
@@ -92,6 +93,24 @@ public class TBcmd {
                     log.error("Unexpected error occur: ", ex);
                     log.warn("Message rejected: {}", buildPackageCommand.toString());
                 }
+
+                /*Notice: sleeping commit-thread need to notify immediately*/
+                boolean showEndLog = false;
+                Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
+                for (Thread thread : threadMap.keySet()) {
+                    if (thread.getName().contains("Commit")) {
+                        showEndLog = true;
+                        StackTraceElement[] stackTraceElements = threadMap.get(thread);
+                        log.warn("Notify Thread('{}') at {}", thread, stackTraceElements);
+                        try {
+                            thread.notify();
+                        } catch (IllegalMonitorStateException ex) {
+                            log.error("", ex);
+                        }
+                        break;
+                    }
+                }
+                if(showEndLog) log.warn("Next roll is begin after notify commit-thread.");
             }
         }
 

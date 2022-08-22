@@ -4,10 +4,7 @@ import com.tflow.model.data.ProjectDataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataSourceData;
 import com.tflow.model.data.ProjectUser;
-import com.tflow.model.editor.DataFile;
-import com.tflow.model.editor.Project;
-import com.tflow.model.editor.Selectable;
-import com.tflow.model.editor.Step;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -17,6 +14,7 @@ import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
 import org.mapstruct.factory.Mappers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +41,8 @@ public class AddDataSource extends Command {
             id = dataSource.getId();
         }
 
+        ProjectManager manager = project.getManager();
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
         ProjectDataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
@@ -57,6 +57,7 @@ public class AddDataSource extends Command {
                 listFileType = ProjectFileType.DB_LIST;
                 dataSourceData = mapper.map((Database) dataSource);
                 idList = mapper.fromMap(project.getDatabaseMap());
+                manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getDatabaseMap().values()));
                 break;
 
             case SFTP:
@@ -65,6 +66,7 @@ public class AddDataSource extends Command {
                 listFileType = ProjectFileType.SFTP_LIST;
                 dataSourceData = mapper.map((SFTP) dataSource);
                 idList = mapper.fromMap(project.getSftpMap());
+                manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getSftpMap().values()));
                 break;
 
             default: //case LOCAL:
@@ -73,6 +75,7 @@ public class AddDataSource extends Command {
                 listFileType = ProjectFileType.LOCAL_LIST;
                 dataSourceData = mapper.map((Local) dataSource);
                 idList = mapper.fromMap(project.getLocalMap());
+                manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getLocalMap().values()));
         }
 
         Selectable selectable = (Selectable) dataSource;

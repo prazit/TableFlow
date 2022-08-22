@@ -14,6 +14,7 @@ public class KafkaRecordAttributes implements Serializable {
     private String transformTableId;
 
     /* Transaction Field Group: all fields are required */
+    private long transactionId;
     private long clientId;
     private long userId;
     private Date modifiedDate;
@@ -107,17 +108,26 @@ public class KafkaRecordAttributes implements Serializable {
         this.modifiedDate = modifiedDate;
     }
 
+    public long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(long transactionId) {
+        this.transactionId = transactionId;
+    }
+
     @Override
     public String toString() {
         return "{" +
-                "projectId:'" + projectId + '\'' +
+                "transactionId:" + transactionId +
+                ", time:" + (modifiedDate == null ? "null" : modifiedDate.getTime()) +
+                ", userId:" + userId +
+                ", clientId:" + clientId +
+                ", projectId:'" + projectId + '\'' +
                 ", stepId:'" + stepId + '\'' +
                 ", dataTableId:'" + dataTableId + '\'' +
                 ", transformTableId:'" + transformTableId + '\'' +
                 ", recordId:'" + recordId + '\'' +
-                ", clientId:" + clientId +
-                ", userId:" + userId +
-                ", time:" + (modifiedDate == null ? "null" : modifiedDate.getTime()) +
                 '}';
     }
 }

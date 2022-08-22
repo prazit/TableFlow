@@ -39,6 +39,65 @@ public class ProjectManager {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
     }
 
+    /**
+     * Notice: IMPORTANT: when selectable-object-type is added, need to add script to collect them here.
+     */
+    public void collectSelectableTo(Map<String, Selectable> map, List<Selectable> selectableList) {
+        for (Selectable selectable : selectableList) {
+            map.put(selectable.getSelectableId(), selectable);
+            if (selectable instanceof DataTable) {
+                DataTable dt = (DataTable) selectable;
+
+                for (DataColumn column : dt.getColumnList()) {
+                    map.put(column.getSelectableId(), column);
+                }
+
+                for (DataFile output : dt.getOutputList()) {
+                    map.put(output.getSelectableId(), output);
+                }
+
+                if (selectable instanceof TransformTable) {
+                    TransformTable tt = (TransformTable) selectable;
+                    for (ColumnFx columnFx : tt.getColumnFxTable().getColumnFxList()) {
+                        map.put(columnFx.getSelectableId(), columnFx);
+
+                        for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
+                            map.put(columnFxPlug.getSelectableId(), columnFxPlug);
+                        }
+                    }
+
+                    for (TableFx tableFx : tt.getFxList()) {
+                        map.put(tableFx.getSelectableId(), tableFx);
+                    }
+                }
+
+            }
+        }
+    }
+
+    public List<Selectable> getSelectableList(List<Floor> floorList) {
+        List<Selectable> selectableList = new ArrayList<>();
+        for (Floor floor : floorList) {
+            selectableList.addAll(collectSelectableRoom(floor.getRoomList()));
+        }
+        return selectableList;
+    }
+
+    public List<Selectable> collectSelectableRoom(List<Room> roomList) {
+        List<Selectable> selectableList = new ArrayList<>();
+        for (Room room : roomList) {
+            if (room instanceof Selectable) {
+                selectableList.add((Selectable) room);
+            }
+        }
+        return selectableList;
+    }
+
+    public void addSeletable(Selectable selectable, Project project) {
+        Map<String, Selectable> selectableMap = project.getActiveStep().getSelectableMap();
+        selectableMap.put(selectable.getSelectableId(), selectable);
+    }
+
     private Producer<String, Object> createProducer() {
         /*TODO: need to load producer configuration*/
         buildPackageTopic = KafkaTopics.PROJECT_BUILD.getTopic();

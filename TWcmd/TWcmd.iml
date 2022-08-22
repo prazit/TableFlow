@@ -15,5 +15,6 @@
     <orderEntry type="library" name="mapstruct" level="project" />
     <orderEntry type="library" name="json" level="project" />
     <orderEntry type="library" name="dconvers-crypto" level="application" />
+    <orderEntry type="library" name="zookeeper-3.7.1" level="application" />
   </component>
 </module>

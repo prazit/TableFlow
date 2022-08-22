@@ -25,6 +25,7 @@ public class RecordAttributesData implements Serializable {
     private long modifiedUserId;
 
     /* Generated Field Group: generate by WriteCommand */
+    private long transactionId;
     private long createdClientId;
     private long createdUserId;
     private Date createdDate;

@@ -93,7 +93,9 @@ public class ProjectController extends Controller {
     private void reloadPackage() {
         log.trace("reloadPackage.");
         try {
-            activePackage = project.getManager().loadPackage(selectedPackageId, project);
+            ProjectManager manager = project.getManager();
+            activePackage = manager.loadPackage(selectedPackageId, project);
+            manager.addSeletable(activePackage, project);
         } catch (ProjectDataException ex) {
             String msg = "Reload package " + selectedPackageId + " failed: ";
             log.error(msg, ex);

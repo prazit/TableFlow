@@ -16,14 +16,6 @@ import org.mapstruct.ReportingPolicy;
 public interface RecordMapper {
 
     @Mappings({
-            @Mapping(target = "clientId", source = "modifiedClientId"),
-            @Mapping(target = "userId", source = "modifiedUserId")
-    })
-    ClientRecordData toClientRecordData(RecordAttributesData additional);
-
-    KafkaRecordAttributes copy(KafkaRecordAttributes kafkaRecordAttributes);
-
-    @Mappings({
             @Mapping(target = "modifiedClientId", source = "clientId"),
             @Mapping(target = "modifiedUserId", source = "userId")
     })
@@ -36,4 +28,13 @@ public interface RecordMapper {
     KafkaRecordAttributes map(RecordAttributesData additional);
 
     RecordData map(KafkaRecord kafkaRecord);
+
+    @Mappings({
+            @Mapping(target = "clientId", source = "modifiedClientId"),
+            @Mapping(target = "userId", source = "modifiedUserId")
+    })
+    ClientRecordData toClientRecordData(RecordAttributesData additional);
+
+    KafkaRecordAttributes copy(KafkaRecordAttributes kafkaRecordAttributes);
+
 }
