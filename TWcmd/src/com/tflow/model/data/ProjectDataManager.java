@@ -76,7 +76,11 @@ public class ProjectDataManager {
             return;
         }
 
-        maximumTransactionId = globalConfigs.getLong(ZKConfigNode.MAXIMUM_TRANSACTION_ID, 9999999999L);
+        try {
+            maximumTransactionId = globalConfigs.getLong(ZKConfigNode.MAXIMUM_TRANSACTION_ID);
+        } catch (KeeperException | InterruptedException ex) {
+            log.error("loadConfigs failed! ", ex);
+        }
     }
 
     private long newTransactionId() {
@@ -87,7 +91,12 @@ public class ProjectDataManager {
      * @return first transactionId.
      */
     private long newTransactionId(int size) {
-        long lastTransId = globalConfigs.getLong(ZKConfigNode.LAST_TRANSACTION_ID, 1);
+        long lastTransId = 0;
+        try {
+            lastTransId = globalConfigs.getLong(ZKConfigNode.LAST_TRANSACTION_ID);
+        } catch (KeeperException | InterruptedException e) {
+            lastTransId = (Long) ZKConfigNode.LAST_TRANSACTION_ID.getInitialValue();
+        }
         long setLastTransId = lastTransId + size;
         if (setLastTransId > maximumTransactionId) {
             lastTransId = 1;
@@ -99,7 +108,7 @@ public class ProjectDataManager {
             globalConfigs.set(ZKConfigNode.LAST_TRANSACTION_ID, setLastTransId);
             log.debug("set value to lastTransId = {} success", setLastTransId);
 
-        } catch (KeeperException | InterruptedException ex) {
+        } catch (InterruptedException ex) {
             log.error("set value to lastTransId failed!", ex);
         }
 

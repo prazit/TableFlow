@@ -27,8 +27,7 @@
         <appender-ref ref="FILE" />
     </logger>
 
-    <root level="trace">
-        <appender-ref ref="STDOUT" />
+    <root level="info">
         <appender-ref ref="FILE" />
     </root>
 

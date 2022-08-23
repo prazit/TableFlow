@@ -1,11 +1,11 @@
 package com.tflow.zookeeper;
 
 import org.apache.zookeeper.*;
+import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -19,6 +19,8 @@ public class ZKConfiguration implements Watcher {
     private ZooKeeper zooKeeper;
     private String configRoot;
 
+    private Watcher watcher;
+
     public ZKConfiguration() {
         /*nothing*/
     }
@@ -29,38 +31,78 @@ public class ZKConfiguration implements Watcher {
         /*TODO: load all below from zookeeper.properties in same package of this class*/
         String connectString = "localhost:2181";
         int sessionTimeout = 18000;
+        int maxWait = 15;
+        int wait = 0;
         configRoot = "/tflow-configuration";
 
         zooKeeper = new ZooKeeper(connectString, sessionTimeout, this);
-        createConfigurationRoot(configRoot);
+        while (!zooKeeper.getState().isConnected()) {
+            if (maxWait < ++wait) break;
+            log.info("waiting zooKeeper [" + wait + "/" + maxWait + "]...");
+            Thread.sleep(1000);
+        }
     }
 
-    private void createConfigurationRoot(String configRoot) throws KeeperException, InterruptedException {
-        if (zooKeeper.exists(configRoot, false) == null) {
-            String string = zooKeeper.create(configRoot, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.CONTAINER);
-            log.debug("createConfigurationRoot(configRoot:{}) = {}", configRoot, string);
+    public void initial() throws KeeperException, InterruptedException {
+        createNodes(configRoot);
+
+        int version;
+        for (ZKConfigNode zkConfigNode : ZKConfigNode.values()) {
+            Stat stat = zooKeeper.exists(getNode(zkConfigNode), false);
+            if (stat == null) {
+                Object initialValue = zkConfigNode.getInitialValue();
+                if (initialValue instanceof Long) {
+                    set(zkConfigNode, (Long) initialValue);
+                } else {
+                    set(zkConfigNode, (String) initialValue);
+                }
+                version = 0;
+            } else {
+                version = stat.getVersion();
+            }
+            zkConfigNode.setVersion(version);
+        }
+    }
+
+    private void createNodes(String nodePath) throws KeeperException, InterruptedException {
+        String[] nodes = nodePath.split("/");
+        if (nodes.length <= 1) /*root always exists by zookeeper*/ return;
+
+        nodePath = "";
+        for (int index = 1; index < nodes.length; index++) {
+            nodePath += "/" + nodes[index];
+            if (zooKeeper.exists(nodePath, false) == null) {
+                String string = zooKeeper.create(nodePath, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.CONTAINER);
+                log.debug("createNode: {} completed", nodePath);
+            }
         }
     }
 
     public void set(ZKConfigNode configuration, String value) throws KeeperException, InterruptedException {
-        replace(configuration, value.getBytes(StandardCharsets.ISO_8859_1));
+        try {
+            zooKeeper.setData(getNode(configuration), value.getBytes(StandardCharsets.ISO_8859_1), configuration.getVersion());
+        } catch (KeeperException ex) {
+            if (ex.getMessage().contains("BadVersion")) {
+                updateVersion(configuration);
+                set(configuration, value);
+            }
+        }
     }
 
-    public void set(ZKConfigNode configuration, long value) throws KeeperException, InterruptedException {
+    public void set(ZKConfigNode configuration, long value) throws InterruptedException {
+        /* unreadable value in zookeeper is not recommended.
         ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES);
         byteBuffer.putLong(value);
-        byte[] bytes = byteBuffer.array();
-        replace(configuration, bytes);
-    }
+        byte[] bytes = byteBuffer.array();*/
 
-    private void replace(ZKConfigNode configuration, byte[] bytes) throws KeeperException, InterruptedException {
-        String node = getNode(configuration);
         try {
-            zooKeeper.delete(node, 0);
-        } catch (InterruptedException | KeeperException ex) {
-            /*nothing*/
+            zooKeeper.setData(getNode(configuration), String.valueOf(value).getBytes(StandardCharsets.ISO_8859_1), configuration.getVersion());
+        } catch (KeeperException ex) {
+            if (ex.getMessage().contains("BadVersion")) {
+                updateVersion(configuration);
+                set(configuration, value);
+            }
         }
-        zooKeeper.create(node, bytes, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
     }
 
     private String getNode(ZKConfigNode configuration) {
@@ -68,47 +110,60 @@ public class ZKConfiguration implements Watcher {
     }
 
     public String getString(ZKConfigNode configuration) throws KeeperException, InterruptedException {
-        byte[] bytes = zooKeeper.getData(getNode(configuration), false, null);
+        Stat stat = new Stat();
+        byte[] bytes = zooKeeper.getData(getNode(configuration), false, stat);
+        configuration.setVersion(stat.getVersion());
         return new String(bytes, StandardCharsets.ISO_8859_1);
     }
 
-    public String getString(ZKConfigNode configuration, String defaultValue) {
-        log.trace("getString(config:{},default:{})", configuration, defaultValue);
-        try {
-            return getString(configuration);
-        } catch (KeeperException | InterruptedException ex) {
-            log.error("getString failed, defaultValue is returned! {}", ex.getMessage());
-            try {
-                set(configuration, defaultValue);
-            } catch (KeeperException | InterruptedException e) {
-                /*nothing*/
-            }
-            return defaultValue;
-        }
-    }
-
     public long getLong(ZKConfigNode configuration) throws KeeperException, InterruptedException {
+        /* unreadable data in zookeeper is not recommended.
         byte[] bytes = zooKeeper.getData(getNode(configuration), false, null);
-        return ByteBuffer.wrap(bytes).getLong();
+        return ByteBuffer.wrap(bytes).getLong();*/
+
+        String stringValue = getString(configuration);
+        return Long.parseLong(stringValue);
     }
 
-    public long getLong(ZKConfigNode configuration, long defaultValue) {
-        log.trace("getLong(config:{},default:{})", configuration, defaultValue);
-        try {
-            return getLong(configuration);
-        } catch (KeeperException | InterruptedException ex) {
-            log.error("getLong failed, defaultValue is returned! {}", ex.getMessage());
+    public void remove(ZKConfigNode configuration) throws KeeperException, InterruptedException {
+        zooKeeper.delete(getNode(configuration), configuration.getVersion());
+    }
+
+    public void setWatcher(Watcher watcher) {
+        this.watcher = watcher;
+    }
+
+    private void updateVersion(ZKConfigNode node) {
+        String nodePath = getNode(node);
+        Stat stat = new Stat();
+        int version = 0;
+        while (version == 0) {
             try {
-                set(configuration, defaultValue);
-            } catch (KeeperException | InterruptedException e) {
-                /*nothing*/
+                zooKeeper.getData(nodePath, false, stat);
+                version = stat.getVersion();
+            } catch (KeeperException | InterruptedException ex) {
+                /*continue to the next loop*/
             }
-            return defaultValue;
         }
+        node.setVersion(version);
+    }
+
+    public String getConfigRoot() {
+        return configRoot;
+    }
+
+    public void setConfigRoot(String configRoot) {
+        this.configRoot = configRoot;
+    }
+
+    public ZooKeeper getZooKeeper() {
+        return zooKeeper;
     }
 
     @Override
-    public void process(WatchedEvent watchedEvent) {
-        log.debug("ConfigurationManager.process(watchedEvent:{})", watchedEvent);
+    public void process(WatchedEvent event) {
+        if (watcher != null) {
+            watcher.process(event);
+        }
     }
 }
