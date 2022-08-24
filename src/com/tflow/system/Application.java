@@ -1,12 +1,20 @@
 package com.tflow.system;
 
+import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.editor.Workspace;
 import com.tflow.util.DateTimeUtil;
+import com.tflow.zookeeper.ZKConfigNode;
+import com.tflow.zookeeper.ZKConfiguration;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.common.ZKConfig;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.IOException;
 
 @ApplicationScoped
 @Named("app")
@@ -21,17 +29,43 @@ public class Application {
     private String forceReloadResources;
 
     private String appPath;
+    private Environment environment;
+
+    private ZKConfiguration zkConfiguration;
 
     @Inject
     public Application() {
-        /*nothing*/
+        LoggerFactory.getLogger(Workspace.class).trace("Application started.");
     }
 
     @PostConstruct
-    public void onCreation() {
+    public void onCreation() throws IOException {
+        loadConfigs();
+    }
+
+    private void loadConfigs() {
         // TODO: do this after Configuration File Module is completed, load configuration first then remove initialize below
         cssForceReload = true;
         forceReloadResources = "";
+
+        try {
+            zkConfiguration = requiresZK();
+            String environmentName = zkConfiguration.getString(ZKConfigNode.ENVIRONMENT);
+            environment = Environment.valueOf(environmentName);
+        } catch (Exception ex) {
+            /*TODO: do something to notify admin, requires ZooKeeper */
+        }
+    }
+
+    private ZKConfiguration requiresZK() throws IOException {
+        ZKConfiguration zkConfiguration = new ZKConfiguration();
+        try {
+            zkConfiguration.connect();
+            zkConfiguration.initial();
+        } catch (IOException | KeeperException | InterruptedException ex) {
+            throw new IOException("Zookeeper is required for shared configuration!!! ", ex);
+        }
+        return zkConfiguration;
     }
 
     /*private void loadApplicationVersion() {
@@ -75,5 +109,13 @@ public class Application {
 
     public String getForceReloadResources() {
         return forceReloadResources;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public ZKConfiguration getZkConfiguration() {
+        return zkConfiguration;
     }
 }

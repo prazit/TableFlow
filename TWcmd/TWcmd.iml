@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/generated" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -16,6 +17,7 @@
     <orderEntry type="library" name="json" level="project" />
     <orderEntry type="library" name="dconvers-crypto" level="application" />
     <orderEntry type="library" name="zookeeper-3.7.1" level="application" />
-    <orderEntry type="library" name="junit5" level="application" />
+    <orderEntry type="library" scope="TEST" name="junit5" level="application" />
+    <orderEntry type="library" name="sundial-2.2.2" level="application" />
   </component>
 </module>

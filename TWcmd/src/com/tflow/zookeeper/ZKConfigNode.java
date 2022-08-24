@@ -1,10 +1,19 @@
 package com.tflow.zookeeper;
 
+/**
+ * Notice: for Shared Configuration Only.
+ */
 public enum ZKConfigNode {
+
+    /**
+     * HEARTBEAT: internal use only to check version of heartbeat
+     */
+    HEARTBEAT(8L),
 
     LAST_TRANSACTION_ID(1L),
     MAXIMUM_TRANSACTION_ID(999999999L),
-    ;
+
+    ENVIRONMENT("DEVELOPMENT");
 
     Object initialValue;
     int version;
@@ -18,7 +27,6 @@ public enum ZKConfigNode {
         try {
             String node = nodePath.substring(nodePath.lastIndexOf("/") + 1);
             node = node.replaceAll("[.]", "_").toUpperCase();
-            System.out.println("parse(" + nodePath + ") nodeName = '" + node + "'");
             return valueOf(node);
         } catch (Exception ex) {
             return null;
@@ -35,6 +43,5 @@ public enum ZKConfigNode {
 
     public void setVersion(int version) {
         this.version = version;
-        System.out.println("ZK: " + name() + " version updated to " + version);
     }
 }

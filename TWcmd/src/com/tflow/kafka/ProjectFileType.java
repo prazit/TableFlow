@@ -12,6 +12,9 @@ public enum ProjectFileType {
     REQUIRE_TYPE_4("transform-table", 4),
     REQUIRE_TYPE_9("uploaded,package,generated", 9),*/
 
+    CLIENT_LIST("client-list", 0),
+    CLIENT("", 0),
+
     VERSIONED_LIST("versioned-list", 0),
     VERSIONED("", 0),
 

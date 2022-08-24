@@ -48,35 +48,9 @@ class ZKConfigurationUT {
         }
     }
 
-    @BeforeEach
-    void setUp() throws InterruptedException, IOException, KeeperException {
-        zkConfig = new ZKConfiguration();
-        connect();
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
-
-    @Test
-    void connect() throws InterruptedException, IOException, KeeperException {
-        System.out.println("---- connect ----");
-
-        zkConfig.connect();
-        zkConfig.initial();
-
-        println("ZoomKeeper Information:");
-        indent();
-        zooKeeper = zkConfig.getZooKeeper();
-        println(getZooKeeperStatus(zooKeeper).replaceAll("\\n", "\\\n" + indent));
-        indent(-1);
-
-        println("---- connected ----");
-    }
-
     void errorBlocks() throws InterruptedException {
 
-        /* Unable to read additional data from server sessionid 0x1005b9ca3e60011 */
+        /* zooKeeper.whoAmI: Unable to read additional data from server sessionid 0x1005b9ca3e60011 */
         for (ClientInfo clientInfo : zooKeeper.whoAmI()) {
             println("ClientInfo: "
                     + "AuthScheme=" + clientInfo.getAuthScheme()
@@ -166,6 +140,32 @@ class ZKConfigurationUT {
             println("ACL: " + acl.toString().replaceAll("\\n", ""));
         }
         indent(-1);
+    }
+
+    @BeforeEach
+    void setUp() throws InterruptedException, IOException, KeeperException {
+        zkConfig = new ZKConfiguration();
+        connect();
+    }
+
+    @AfterEach
+    void tearDown() {
+    }
+
+    @Test
+    void connect() throws InterruptedException, IOException, KeeperException {
+        System.out.println("---- connect ----");
+
+        zkConfig.connect();
+        zkConfig.initial();
+
+        println("ZoomKeeper Information:");
+        indent();
+        zooKeeper = zkConfig.getZooKeeper();
+        println(getZooKeeperStatus(zooKeeper).replaceAll("\\n", "\\\n" + indent));
+        indent(-1);
+
+        println("---- connected ----");
     }
 
     @Test

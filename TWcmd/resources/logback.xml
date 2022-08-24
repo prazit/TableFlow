@@ -13,9 +13,11 @@
     <!--Daily rolling file appender-->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${root-path}twcmd.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <FileNamePattern>${root-path}twcmd-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxFileSize>3MB</maxFileSize>
             <maxHistory>3</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>%date | %-5level | %msg | [%class:%line]%n</pattern>
@@ -27,7 +29,8 @@
         <appender-ref ref="FILE" />
     </logger>
 
-    <root level="info">
+    <root level="trace">
+        <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>
 

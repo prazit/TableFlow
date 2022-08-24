@@ -1,12 +1,18 @@
 package com.tflow.zookeeper;
 
+import com.tflow.util.DateTimeUtil;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
+import org.knowm.sundial.SundialJobScheduler;
+import org.knowm.sundial.exceptions.SundialSchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: IMPORTANT: need unit test for
@@ -16,8 +22,15 @@ import java.nio.charset.StandardCharsets;
 public class ZKConfiguration implements Watcher {
 
     private Logger log = LoggerFactory.getLogger(ZKConfiguration.class);
+
     private ZooKeeper zooKeeper;
     private String configRoot;
+
+    /**
+     * Send heartbeat to zookeeper after milliseconds.
+     */
+    private long heartbeat;
+    private long nextHeartbeat;
 
     private Watcher watcher;
 
@@ -31,6 +44,7 @@ public class ZKConfiguration implements Watcher {
         /*TODO: load all below from zookeeper.properties in same package of this class*/
         String connectString = "localhost:2181";
         int sessionTimeout = 18000;
+        heartbeat = 15000;
         int maxWait = 15;
         int wait = 0;
         configRoot = "/tflow-configuration";
@@ -41,10 +55,13 @@ public class ZKConfiguration implements Watcher {
             log.info("waiting zooKeeper [" + wait + "/" + maxWait + "]...");
             Thread.sleep(1000);
         }
+
+        heartbeatTick();
     }
 
     public void initial() throws KeeperException, InterruptedException {
         createNodes(configRoot);
+        createHeartbeatJob();
 
         int version;
         for (ZKConfigNode zkConfigNode : ZKConfigNode.values()) {
@@ -62,6 +79,29 @@ public class ZKConfiguration implements Watcher {
             }
             zkConfigNode.setVersion(version);
         }
+
+        heartbeatTick();
+    }
+
+    private void heartbeatTick() {
+        /*try to stop last trigger*/
+        String triggerName = "heartbeat";
+        try {
+            SundialJobScheduler.removeTrigger(triggerName);
+        } catch (SundialSchedulerException ex) {
+            /*ignored*/
+        }
+
+        nextHeartbeat = DateTimeUtil.now().getTime() + heartbeat;
+
+        /*start new trigger*/
+        SundialJobScheduler.addSimpleTrigger(triggerName, SundialJob.ZOOKEEPER_HEARTBEAT.name(), 1, nextHeartbeat);
+    }
+
+    private void createHeartbeatJob() {
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("ZKConfiguration", this);
+        SundialJobScheduler.addJob(SundialJob.ZOOKEEPER_HEARTBEAT.name(), SundialJob.ZOOKEEPER_HEARTBEAT.getJobClass(), parameterMap, false);
     }
 
     private void createNodes(String nodePath) throws KeeperException, InterruptedException {
@@ -76,6 +116,8 @@ public class ZKConfiguration implements Watcher {
                 log.debug("createNode: {} completed", nodePath);
             }
         }
+
+        heartbeatTick();
     }
 
     public void set(ZKConfigNode configuration, String value) throws KeeperException, InterruptedException {
@@ -87,6 +129,8 @@ public class ZKConfiguration implements Watcher {
                 set(configuration, value);
             }
         }
+
+        heartbeatTick();
     }
 
     public void set(ZKConfigNode configuration, long value) throws InterruptedException {
@@ -103,16 +147,15 @@ public class ZKConfiguration implements Watcher {
                 set(configuration, value);
             }
         }
-    }
 
-    private String getNode(ZKConfigNode configuration) {
-        return configRoot + "/" + configuration.name().toLowerCase().replaceAll("[_]", ".");
+        heartbeatTick();
     }
 
     public String getString(ZKConfigNode configuration) throws KeeperException, InterruptedException {
         Stat stat = new Stat();
         byte[] bytes = zooKeeper.getData(getNode(configuration), false, stat);
         configuration.setVersion(stat.getVersion());
+        heartbeatTick();
         return new String(bytes, StandardCharsets.ISO_8859_1);
     }
 
@@ -122,11 +165,13 @@ public class ZKConfiguration implements Watcher {
         return ByteBuffer.wrap(bytes).getLong();*/
 
         String stringValue = getString(configuration);
+        heartbeatTick();
         return Long.parseLong(stringValue);
     }
 
     public void remove(ZKConfigNode configuration) throws KeeperException, InterruptedException {
         zooKeeper.delete(getNode(configuration), configuration.getVersion());
+        heartbeatTick();
     }
 
     public void setWatcher(Watcher watcher) {
@@ -146,6 +191,12 @@ public class ZKConfiguration implements Watcher {
             }
         }
         node.setVersion(version);
+
+        heartbeatTick();
+    }
+
+    private String getNode(ZKConfigNode configuration) {
+        return configRoot + "/" + configuration.name().toLowerCase().replaceAll("[_]", ".");
     }
 
     public String getConfigRoot() {

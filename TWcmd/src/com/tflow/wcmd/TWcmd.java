@@ -89,7 +89,7 @@ public class TWcmd {
                 /*TODO: move this execute block into UpdateProjectCommandQueue*/
                 try {
                     updateProjectCommand.execute();
-                    log.info("Incoming message completed: {}", updateProjectCommand);
+                    log.info("Incoming message completed: {}\n", updateProjectCommand);
 
                     /*TODO: IMPORTANT: after success need to commit consumer-group-offset to know its already done to avoid duplicated commands*/
 

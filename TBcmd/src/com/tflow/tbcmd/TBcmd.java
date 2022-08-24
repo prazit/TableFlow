@@ -5,14 +5,18 @@ import com.tflow.kafka.KafkaTopics;
 import com.tflow.model.data.ProjectDataManager;
 import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
+import com.tflow.zookeeper.ZKConfigNode;
+import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
@@ -26,18 +30,37 @@ public class TBcmd {
 
     private boolean polling;
 
+    private ZKConfiguration zkConfiguration;
+
     private Environment environment;
     private EnvironmentConfigs environmentConfigs;
 
     public TBcmd() {
-        environment = Environment.DEVELOPMENT;
-        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+        try {
+            zkConfiguration = requiresZK();
+            String environmentName = zkConfiguration.getString(ZKConfigNode.ENVIRONMENT);
+            environment = Environment.valueOf(environmentName);
+            environmentConfigs = EnvironmentConfigs.valueOf(environmentName);
+        } catch (Exception ex) {
+            /*TODO: do something to notify admin, requires ZooKeeper */
+        }
+    }
+
+    private ZKConfiguration requiresZK() throws IOException {
+        ZKConfiguration zkConfiguration = new ZKConfiguration();
+        try {
+            zkConfiguration.connect();
+            zkConfiguration.initial();
+        } catch (IOException | KeeperException | InterruptedException ex) {
+            throw new IOException("Zookeeper is required for shared configuration!!! ", ex);
+        }
+        return zkConfiguration;
     }
 
     @SuppressWarnings("unchecked")
     public void start() {
 
-        ProjectDataManager projectDataManager = new ProjectDataManager(environment, "TBcmd");
+        ProjectDataManager projectDataManager = new ProjectDataManager(environment, "TBcmd", zkConfiguration);
         KafkaConsumer<String, byte[]> consumer = createConsumer();
 
         /*TODO: need to load topicBuild from configuration*/

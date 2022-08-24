@@ -54,9 +54,10 @@ public class ProjectDataManager {
 
     private ZKConfiguration globalConfigs;
 
-    public ProjectDataManager(Environment environment, String consumerGroupId) {
+    public ProjectDataManager(Environment environment, String consumerGroupId, ZKConfiguration zkConfiguration) {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
         this.consumerGroupId = consumerGroupId;
+        this.globalConfigs = zkConfiguration;
         projectDataWriteBufferList = new HashMap<>();
         loadConfigs();
     }
@@ -65,7 +66,6 @@ public class ProjectDataManager {
         /*TODO: need config for commitAgainMilliseconds*/
         commitAgainMilliseconds = 10000;
         kafkaTimeout = 10000;
-        globalConfigs = new ZKConfiguration();
 
         try {
             log.trace("connecting to zookeeper");
