@@ -1,9 +1,6 @@
 package com.tflow.zookeeper;
 
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.ClientInfo;
 import org.apache.zookeeper.data.Stat;
@@ -180,9 +177,10 @@ class ZKConfigurationUT {
 
     @Test
     void set() throws KeeperException, InterruptedException {
-        String node = "/tflow-configuration/last.transaction.id";
+        String node = "/tflow-configuration/count-heartbeat";
         byte[] data = "3".getBytes(StandardCharsets.ISO_8859_1);
-        int version = 4;
+        int version = 0;
+        zooKeeper.create(node, data, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zooKeeper.setData(node, data, version);
         println("setData successful");
     }

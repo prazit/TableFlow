@@ -27,6 +27,7 @@ import org.primefaces.model.menu.MenuElement;
 import org.primefaces.model.menu.MenuModel;
 
 import javax.annotation.PostConstruct;
+import javax.faces.application.ViewExpiredException;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -75,6 +76,8 @@ public class EditorController extends Controller {
         initActionPriorityMap();
         initStepList();
         selectProject();
+
+        throw new ViewExpiredException("Test View Expired Exception");
     }
 
     public void preRenderComponent() {

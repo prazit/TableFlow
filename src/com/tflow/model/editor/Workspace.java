@@ -59,6 +59,7 @@ public class Workspace implements Serializable {
 
         // dummy user before Authentication, Notice: after authenticated need to setUser to this workspace.
         user = new User();
+        user.setId(1);
         user.setTheme(Theme.DARK);
 
         // load client information into Client instance.
@@ -82,16 +83,18 @@ public class Workspace implements Serializable {
     private long registerClient(Client client, HttpServletRequest httpRequest, ProjectDataManager projectDataManager) {
         ClientData clientData;
         ProjectUser projectUser = new ProjectUser();
+        clientData = getClientData(client);
         try {
             /*found existing then return existing ID*/
-            clientData = (ClientData) throwExceptionOnError(projectDataManager.getData(ProjectFileType.CLIENT, projectUser));
+            clientData = (ClientData) throwExceptionOnError(projectDataManager.getData(ProjectFileType.CLIENT, projectUser, clientData.getId()));
         } catch (ProjectDataException ex) {
             /*not found, then create and return next to the last ID*/
+            int lastClientId = 0;
             /*TODO: where is lastClientId?
              * last-package-id is in ?
              */
-            clientData = getClientData(client);
-            projectDataManager.addData(ProjectFileType.CLIENT, clientData, projectUser);
+            clientData.setUniqueNumber(++lastClientId);
+            projectDataManager.addData(ProjectFileType.CLIENT, clientData, projectUser, clientData.getId());
         }
         return clientData.getUniqueNumber();
     }

@@ -69,7 +69,7 @@ public class ProjectDataManager {
 
         try {
             log.trace("connecting to zookeeper");
-            globalConfigs.connect();
+            if (!globalConfigs.isConnected()) globalConfigs.connect();
             log.trace("connected to zookeeper");
         } catch (Exception ex) {
             log.error("connect to zookeeper failed!", ex);
@@ -482,8 +482,8 @@ public class ProjectDataManager {
     }
 
     private void validate(ProjectFileType fileType, KafkaRecordAttributes additional) {
-        if (additional.getUserId() <= 0) throw new InvalidParameterException("Required Field: ModifiedUserId for " + fileType);
-        if (additional.getClientId() <= 0) throw new InvalidParameterException("Required Field: ModifiedClientId for " + fileType);
+        if (additional.getUserId() < 0) throw new InvalidParameterException("Invalid Value(" + additional.getUserId() + "): ModifiedUserId for " + fileType);
+        if (additional.getClientId() < 0) throw new InvalidParameterException("Invalid Value(" + additional.getClientId() + "): ModifiedClientId for " + fileType);
 
         // Notice: all of below copied from class com.flow.wcmd.UpdateProjectCommand.validate(String kafkaRecordKey, KafkaRecordValue kafkaRecordValue)
         int requireType = fileType.getRequireType();
@@ -539,8 +539,8 @@ public class ProjectDataManager {
         /*headerData used instead of TransactionID (uniqueKeys: time, userId, clientId, projectId)*/
         Object data = captureData(fileType, getHeaderData(additional));
         if (data == null) {
-            log.error("getData.return null record");
-            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
+            log.error("getData.return null record, no response from read-service!");
+            return KafkaErrorCode.READ_SERVICE_NO_RESPONSE.getCode();
         }
 
         if (data instanceof Long) {

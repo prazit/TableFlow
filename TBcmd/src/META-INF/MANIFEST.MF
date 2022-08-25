@@ -8,5 +8,5 @@ Class-Path: slf4j-api-1.7.25.jar logback-core-1.2.3.jar logback-classic-
  p mapstruct-processor-1.5.2.Final.jar dconvers.jar commons-beanutils-1.
  9.3.jar commons-cli-1.4.jar commons-codec-1.14.jar commons-configuratio
  n2-2.2.jar commons-lang3-3.7.jar commons-logging-1.2.jar zookeeper-3.7.
- 1.jar zookeeper-jute-3.7.1.jar
+ 1.jar zookeeper-jute-3.7.1.jar sundial-2.2.2.jar
 

@@ -2,14 +2,14 @@ package com.tflow.zookeeper;
 
 import org.knowm.sundial.Job;
 
-public enum SundialJob {
+public enum SchdulerJob {
 
     ZOOKEEPER_HEARTBEAT(ZKHeartbeatJob.class)
     ;
 
     private Class<? extends Job> jobClass;
 
-    SundialJob(Class<? extends Job> jobClass) {
+    SchdulerJob(Class<? extends Job> jobClass) {
         this.jobClass = jobClass;
     }
 

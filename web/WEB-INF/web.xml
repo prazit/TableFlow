@@ -13,7 +13,6 @@
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
 
-
     <!--<servlet>
         <servlet-name>LogbackViewer</servlet-name>
         <servlet-class>ch.qos.logback.classic.ViewStatusMessagesServlet</servlet-class>
@@ -24,18 +23,35 @@
         <url-pattern>/logs</url-pattern>
     </servlet-mapping>-->
 
-
     <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>${workspace.user.theme.name}</param-value>
     </context-param>
 
-    <!--TODO: Future Feature: create page for org.apache.kafka.common.errors.TimeoutException-->
+    <error-page>
+        <exception-type>javax.servlet.ServletException</exception-type>
+        <location>/Exception.html</location>
+    </error-page>
+    <error-page>
+        <exception-type>java.lang.NullPointerException</exception-type>
+        <location>/blank.xhtml</location>
+    </error-page>
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/blank.html</location>
+        <location>/blank.xhtml</location>
     </error-page>
-
+    <error-page>
+        <exception-type>org.apache.kafka.common.errors.TimeoutException</exception-type>
+        <location>/blank.xhtml</location>
+    </error-page>
+    <error-page>
+        <exception-type>com.tflow.kafka.KafkaServiceException</exception-type>
+        <location>/blank.xhtml</location>
+    </error-page>
+    <error-page>
+        <exception-type>com.tflow.kafka.ReadServiceException</exception-type>
+        <location>/blank.xhtml</location>
+    </error-page>
 
     <!--<context-root>/TFlow</context-root>-->
 </web-app>

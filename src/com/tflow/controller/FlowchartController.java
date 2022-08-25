@@ -8,6 +8,7 @@ import com.tflow.model.editor.room.Room;
 import com.tflow.util.FacesUtil;
 
 import javax.annotation.PostConstruct;
+import javax.faces.application.ViewExpiredException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;

@@ -14,6 +14,7 @@ public enum KafkaErrorCode {
     /**
      * Error from Read Command Service.
      */
+    READ_SERVICE_NO_RESPONSE(-10),
     INTERNAL_SERVER_ERROR(-11),
     PROJECT_EDITING_BY_ANOTHER(-12),
     DATA_FILE_NOT_FOUND(-13),

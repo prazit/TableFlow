@@ -23,7 +23,7 @@
         <immediateFlush>true</immediateFlush>
     </appender>
 
-    <logger name="org.apache.kafka" level="info">
+    <logger name="org" level="info">
         <appender-ref ref="FILE" />
     </logger>
 

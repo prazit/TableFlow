@@ -4,7 +4,6 @@ import com.tflow.util.DateTimeUtil;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 import org.knowm.sundial.SundialJobScheduler;
-import org.knowm.sundial.exceptions.SundialSchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,13 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-/**
- * TODO: IMPORTANT: need unit test for
- * 1. print all in configRoot.
- * 2. read/write on the same node.
- */
 public class ZKConfiguration implements Watcher {
 
     private Logger log = LoggerFactory.getLogger(ZKConfiguration.class);
@@ -29,7 +22,8 @@ public class ZKConfiguration implements Watcher {
     /**
      * Send heartbeat to zookeeper after milliseconds.
      */
-    private long heartbeat;
+    private long intervalCheckHeartbeat;
+    private long heartbeatDuration;
     private long nextHeartbeat;
 
     private Watcher watcher;
@@ -44,7 +38,8 @@ public class ZKConfiguration implements Watcher {
         /*TODO: load all below from zookeeper.properties in same package of this class*/
         String connectString = "localhost:2181";
         int sessionTimeout = 18000;
-        heartbeat = 15000;
+        intervalCheckHeartbeat = 2000;
+        heartbeatDuration = sessionTimeout - intervalCheckHeartbeat;
         int maxWait = 15;
         int wait = 0;
         configRoot = "/tflow-configuration";
@@ -60,20 +55,24 @@ public class ZKConfiguration implements Watcher {
     }
 
     public void initial() throws KeeperException, InterruptedException {
-        createNodes(configRoot);
         createHeartbeatJob();
+        createNodes(configRoot);
 
         int version;
         for (ZKConfigNode zkConfigNode : ZKConfigNode.values()) {
-            Stat stat = zooKeeper.exists(getNode(zkConfigNode), false);
+            String node = getNode(zkConfigNode);
+            Stat stat = zooKeeper.exists(node, false);
             if (stat == null) {
                 Object initialValue = zkConfigNode.getInitialValue();
+                byte[] data;
                 if (initialValue instanceof Long) {
-                    set(zkConfigNode, (Long) initialValue);
+                    data = toByteArray((Long) initialValue);
                 } else {
-                    set(zkConfigNode, (String) initialValue);
+                    data = toByteArray((String) initialValue);
                 }
+                zooKeeper.create(node, data, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
                 version = 0;
+                log.info("persistent node({} = {}) created on zookeeper", node, initialValue);
             } else {
                 version = stat.getVersion();
             }
@@ -84,24 +83,36 @@ public class ZKConfiguration implements Watcher {
     }
 
     private void heartbeatTick() {
-        /*try to stop last trigger*/
-        String triggerName = "heartbeat";
-        try {
-            SundialJobScheduler.removeTrigger(triggerName);
-        } catch (SundialSchedulerException ex) {
-            /*ignored*/
-        }
-
-        nextHeartbeat = DateTimeUtil.now().getTime() + heartbeat;
-
-        /*start new trigger*/
-        SundialJobScheduler.addSimpleTrigger(triggerName, SundialJob.ZOOKEEPER_HEARTBEAT.name(), 1, nextHeartbeat);
+        nextHeartbeat = DateTimeUtil.now().getTime() + heartbeatDuration;
     }
 
     private void createHeartbeatJob() {
+        log.trace("createHeartbeatJob.");
+        SundialJobScheduler.startScheduler();
+        try {
+            int count = 0;
+            int maxCount = 10;
+            while (SundialJobScheduler.getScheduler() == null) {
+                log.debug("waiting scheduler to be created [{}}/{}]...", ++count, maxCount);
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    log.error("Thread.sleep error: ", e);
+                }
+                if (count >= maxCount) break;
+            }
+        } catch (Exception ex) {
+            log.error("createHeartbeatJob: createScheduler error: ", ex);
+            return;
+        }
+
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("ZKConfiguration", this);
-        SundialJobScheduler.addJob(SundialJob.ZOOKEEPER_HEARTBEAT.name(), SundialJob.ZOOKEEPER_HEARTBEAT.getJobClass(), parameterMap, false);
+
+        String name = SchdulerJob.ZOOKEEPER_HEARTBEAT.name();
+        SundialJobScheduler.addJob(name, SchdulerJob.ZOOKEEPER_HEARTBEAT.getJobClass(), parameterMap, false);
+        log.debug("addJob {} completed.", SchdulerJob.ZOOKEEPER_HEARTBEAT);
+        SundialJobScheduler.addSimpleTrigger(name + "Trigger", name, -1, intervalCheckHeartbeat);
     }
 
     private void createNodes(String nodePath) throws KeeperException, InterruptedException {
@@ -120,9 +131,18 @@ public class ZKConfiguration implements Watcher {
         heartbeatTick();
     }
 
+    private byte[] toByteArray(String stringValue) {
+        return stringValue.getBytes(StandardCharsets.ISO_8859_1);
+    }
+
+    private byte[] toByteArray(Long longValue) {
+        return String.valueOf(longValue).getBytes(StandardCharsets.ISO_8859_1);
+    }
+
     public void set(ZKConfigNode configuration, String value) throws KeeperException, InterruptedException {
+        log.debug("set(configNode:{}, value:'{}')", configuration, value);
         try {
-            zooKeeper.setData(getNode(configuration), value.getBytes(StandardCharsets.ISO_8859_1), configuration.getVersion());
+            zooKeeper.setData(getNode(configuration), toByteArray(value), configuration.getVersion());
         } catch (KeeperException ex) {
             if (ex.getMessage().contains("BadVersion")) {
                 updateVersion(configuration);
@@ -134,17 +154,20 @@ public class ZKConfiguration implements Watcher {
     }
 
     public void set(ZKConfigNode configuration, long value) throws InterruptedException {
+        log.debug("set(configNode:{}, value:{})", configuration, value);
         /* unreadable value in zookeeper is not recommended.
         ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES);
         byteBuffer.putLong(value);
         byte[] bytes = byteBuffer.array();*/
 
         try {
-            zooKeeper.setData(getNode(configuration), String.valueOf(value).getBytes(StandardCharsets.ISO_8859_1), configuration.getVersion());
+            zooKeeper.setData(getNode(configuration), toByteArray(value), configuration.getVersion());
         } catch (KeeperException ex) {
             if (ex.getMessage().contains("BadVersion")) {
                 updateVersion(configuration);
                 set(configuration, value);
+            } else {
+                log.error("", ex);
             }
         }
 
@@ -199,6 +222,10 @@ public class ZKConfiguration implements Watcher {
         return configRoot + "/" + configuration.name().toLowerCase().replaceAll("[_]", ".");
     }
 
+    public long getNextHeartbeat() {
+        return nextHeartbeat;
+    }
+
     public String getConfigRoot() {
         return configRoot;
     }
@@ -216,5 +243,9 @@ public class ZKConfiguration implements Watcher {
         if (watcher != null) {
             watcher.process(event);
         }
+    }
+
+    public boolean isConnected() {
+        return zooKeeper.getState().isConnected();
     }
 }

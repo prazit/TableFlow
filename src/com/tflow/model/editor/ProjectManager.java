@@ -625,6 +625,7 @@ public class ProjectManager {
 
     /**
      * After call buildPackage at least 2 seconds you need to get PackageData for complete-status.
+     *
      * @return mockup data with real-build-date to show for building...
      */
     public Package buildPackage(Project project) {
@@ -645,7 +646,7 @@ public class ProjectManager {
 
         boolean success = isSuccess(future);
         producer.close();
-        if(!success) return null;
+        if (!success) return null;
 
         Package activePackage = new Package();
         activePackage.setId(-1);

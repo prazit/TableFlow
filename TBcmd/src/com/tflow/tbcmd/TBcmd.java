@@ -42,7 +42,8 @@ public class TBcmd {
             environment = Environment.valueOf(environmentName);
             environmentConfigs = EnvironmentConfigs.valueOf(environmentName);
         } catch (Exception ex) {
-            /*TODO: do something to notify admin, requires ZooKeeper */
+            log.error("TBcmd: command creation failed! ", ex);
+            System.exit(-1);
         }
     }
 
@@ -133,7 +134,7 @@ public class TBcmd {
                         break;
                     }
                 }
-                if(showEndLog) log.warn("Next roll is begin after notify commit-thread.");
+                if (showEndLog) log.warn("Next roll is begin after notify commit-thread.");
             }
         }
 
