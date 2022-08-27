@@ -76,8 +76,6 @@ public class EditorController extends Controller {
         initActionPriorityMap();
         initStepList();
         selectProject();
-
-        throw new ViewExpiredException("Test View Expired Exception");
     }
 
     public void preRenderComponent() {

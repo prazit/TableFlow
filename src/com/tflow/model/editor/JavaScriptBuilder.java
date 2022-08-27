@@ -108,7 +108,7 @@ public class JavaScriptBuilder {
         return this;
     }
 
-    private void clearAll(){
+    private void clearAll() {
         preMap.clear();
         jsMap.clear();
         postMap.clear();
@@ -140,8 +140,27 @@ public class JavaScriptBuilder {
         clearAll();
 
         if (defer) javaScript = "$(function(){" + javaScript + "});";
-        log.warn("runOnClient:{}", javaScript);
 
+        /*TODO: need to print caller ot this function*/
+        if (log.isDebugEnabled()) {
+            String stackTraces = getStackTrace(new Exception(""), 6);
+            log.debug("runOnClient:{}, stackTrace:{}", javaScript, stackTraces);
+        }
         FacesUtil.runClientScript(javaScript);
+    }
+
+    private String getStackTrace(Exception exception, int level) {
+        StringBuilder builder = new StringBuilder();
+
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        StackTraceElement element;
+        for (int index = 1; index <= level; index++) {
+            element = stackTrace[index];
+            builder.append("\n").append(element.getClassName()).append("::")
+                    .append(element.getMethodName()).append(":")
+                    .append(element.getLineNumber());
+        }
+
+        return builder.toString();
     }
 }

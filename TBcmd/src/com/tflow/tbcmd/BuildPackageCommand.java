@@ -230,6 +230,7 @@ public class BuildPackageCommand extends IOCommand {
         return data;
     }
 
+    /* TODO: fix it: all generated files need Build-Path != null */
     private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
         int generatedFileId = 0;
         int packageFileId = newPackageFileId(packageData);

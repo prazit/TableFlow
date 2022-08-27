@@ -85,6 +85,9 @@ public class FacesUtil implements Serializable {
         PrimeFaces.current().executeScript(javaScript);
     }
 
+    /**
+     * Notice: IMPORTANT: Use redirect instead of error-page in web.xml, because of it's not work with Exception from Sub-page.
+     */
     public static void redirect(String uriPath) {
         String contextPath = "";
         try {

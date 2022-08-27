@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Notice: all node values from this Service-Class always in String type only.
+ */
 public class ZKConfiguration implements Watcher {
 
     private Logger log = LoggerFactory.getLogger(ZKConfiguration.class);
@@ -22,6 +25,7 @@ public class ZKConfiguration implements Watcher {
     /**
      * Send heartbeat to zookeeper after milliseconds.
      */
+    private boolean heartbeatEnabled;
     private long intervalCheckHeartbeat;
     private long heartbeatDuration;
     private long nextHeartbeat;
@@ -32,11 +36,38 @@ public class ZKConfiguration implements Watcher {
         /*nothing*/
     }
 
-    public void connect() throws IOException, KeeperException, InterruptedException {
+    public boolean isConnectionExpired() {
+        return zooKeeper == null || !zooKeeper.getState().isAlive();
+    }
+
+    /**
+     * @throws IOException in case of Network failure
+     */
+    private void reconnect() throws IOException {
+        if (zooKeeper == null) return;
+
+        if (zooKeeper.getState().isConnected()) {
+            try {
+                zooKeeper.close();
+            } catch (InterruptedException e) {
+                /*ignored*/
+            }
+        }
+        zooKeeper = null;
+
+        /* try to connect until success,  */
+        connect();
+    }
+
+    /**
+     * @throws IOException in case of Network failure
+     */
+    public void connect() throws IOException {
         if (zooKeeper != null) return;
 
         /*TODO: load all below from zookeeper.properties in same package of this class*/
         String connectString = "localhost:2181";
+        heartbeatEnabled = false;
         int sessionTimeout = 18000;
         intervalCheckHeartbeat = 2000;
         heartbeatDuration = sessionTimeout - intervalCheckHeartbeat;
@@ -48,14 +79,18 @@ public class ZKConfiguration implements Watcher {
         while (!zooKeeper.getState().isConnected()) {
             if (maxWait < ++wait) break;
             log.info("waiting zooKeeper [" + wait + "/" + maxWait + "]...");
-            Thread.sleep(1000);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.interrupted();
+            }
         }
 
         heartbeatTick();
     }
 
     public void initial() throws KeeperException, InterruptedException {
-        createHeartbeatJob();
+        if (heartbeatEnabled) createHeartbeatJob();
         createNodes(configRoot);
 
         int version;
@@ -139,57 +174,78 @@ public class ZKConfiguration implements Watcher {
         return String.valueOf(longValue).getBytes(StandardCharsets.ISO_8859_1);
     }
 
-    public void set(ZKConfigNode configuration, String value) throws KeeperException, InterruptedException {
+    /**
+     * @throws InterruptedException in case of all unhandled failures.
+     */
+    public void set(ZKConfigNode configuration, String value) throws InterruptedException {
         log.debug("set(configNode:{}, value:'{}')", configuration, value);
-        try {
-            zooKeeper.setData(getNode(configuration), toByteArray(value), configuration.getVersion());
-        } catch (KeeperException ex) {
-            if (ex.getMessage().contains("BadVersion")) {
-                updateVersion(configuration);
-                set(configuration, value);
-            }
-        }
-
-        heartbeatTick();
+        set(configuration, toByteArray(value));
     }
 
+    /**
+     * @throws InterruptedException in case of all unhandled failures.
+     */
     public void set(ZKConfigNode configuration, long value) throws InterruptedException {
         log.debug("set(configNode:{}, value:{})", configuration, value);
-        /* unreadable value in zookeeper is not recommended.
-        ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES);
-        byteBuffer.putLong(value);
-        byte[] bytes = byteBuffer.array();*/
+        set(configuration, toByteArray(value));
+    }
 
+    private void set(ZKConfigNode configuration, byte[] data) throws InterruptedException {
         try {
-            zooKeeper.setData(getNode(configuration), toByteArray(value), configuration.getVersion());
+            zooKeeper.setData(getNode(configuration), data, configuration.getVersion());
         } catch (KeeperException ex) {
-            if (ex.getMessage().contains("BadVersion")) {
+            if (ex instanceof KeeperException.BadVersionException) {
                 updateVersion(configuration);
-                set(configuration, value);
-            } else {
-                log.error("", ex);
-            }
+                set(configuration, data);
+            } else if (ex instanceof KeeperException.SessionExpiredException) {
+                try {
+                    log.info("Reconnect to zookeeper after Session Expired");
+                    reconnect();
+                    set(configuration, data);
+                } catch (IOException e) {
+                    String msg = "Reconnect to zookeeper failed by Network failure!";
+                    log.error(msg + " set-value(node:{}, data{}) failed", configuration, data);
+                    throw new InterruptedException(msg);
+                }
+            } else throw new InterruptedException("Unexpected error from zookeeper, " + ex.getClass().getSimpleName() + ":" + ex.getMessage());
         }
 
         heartbeatTick();
     }
 
-    public String getString(ZKConfigNode configuration) throws KeeperException, InterruptedException {
+    public String getString(ZKConfigNode configuration) throws InterruptedException {
         Stat stat = new Stat();
-        byte[] bytes = zooKeeper.getData(getNode(configuration), false, stat);
+        byte[] bytes;
+        try {
+            bytes = zooKeeper.getData(getNode(configuration), false, stat);
+        } catch (KeeperException ex) {
+            if (ex instanceof KeeperException.SessionExpiredException) {
+                try {
+                    log.info("Reconnect to zookeeper after Session Expired");
+                    reconnect();
+                    return getString(configuration);
+                } catch (IOException e) {
+                    String msg = "Reconnect to zookeeper failed by Network failure!";
+                    log.error(msg + " get-value(node:{}) failed", configuration);
+                    throw new InterruptedException(msg);
+                }
+            } else throw new InterruptedException("Unexpected error from zookeeper, " + ex.getClass().getSimpleName() + ":" + ex.getMessage());
+        }
+
         configuration.setVersion(stat.getVersion());
         heartbeatTick();
         return new String(bytes, StandardCharsets.ISO_8859_1);
     }
 
-    public long getLong(ZKConfigNode configuration) throws KeeperException, InterruptedException {
-        /* unreadable data in zookeeper is not recommended.
-        byte[] bytes = zooKeeper.getData(getNode(configuration), false, null);
-        return ByteBuffer.wrap(bytes).getLong();*/
-
+    public long getLong(ZKConfigNode configuration) throws InterruptedException {
         String stringValue = getString(configuration);
         heartbeatTick();
-        return Long.parseLong(stringValue);
+
+        try {
+            return Long.parseLong(stringValue);
+        } catch (NumberFormatException ex) {
+            throw new InterruptedException("Invalid value '" + stringValue + "' for Long data-type.");
+        }
     }
 
     public void remove(ZKConfigNode configuration) throws KeeperException, InterruptedException {

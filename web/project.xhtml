@@ -27,8 +27,6 @@
 
         <div class="flow-chart">
             <h:form id="editorForm">
-                <p:growl id="growl" showDetail="true" escape="false"/>
-
                 <p:remoteCommand name="drawLines" action="#{flowchartCtl.drawLines}"/>
 
                 <p:outputPanel id="projectName" style="padding: var(--padding);margin: var(--margin);">
@@ -193,19 +191,23 @@
                                     </p:fieldset>
                                 </p:outputPanel>
 
-                                <p:divider layout="horizontal"/>
+                                <p:divider layout="horizontal">
+                                    <div class="inline-flex align-items-center">
+                                        <i class="pi pi-list mr-2"/>
+                                        <b>File List</b>
+                                    </div>
+                                </p:divider>
 
                                 <p:outputPanel styleClass="ui-g">
-                                    <p:dataList value="#{projectCtl.activePackage.fileList}" var="packageFile" styleClass="ui-lg-12">
-                                        <p:outputPanel styleClass="selectable ui-g">
-                                            <p:outputLabel styleClass="ui-sm-3">Path: #{packageFile.buildPath}</p:outputLabel>
-                                            <p:outputLabel styleClass="ui-sm-3">Name: #{packageFile.name}</p:outputLabel>
-                                            <p:outputLabel styleClass="ui-sm-3">Type: #{packageFile.ext}</p:outputLabel>
-                                            <p:outputLabel styleClass="ui-sm-3">New:
-                                                <p:outputLabel icon="pi pi-save" value=" " rendered="#{packageFile.updated}"/>
-                                            </p:outputLabel>
-                                        </p:outputPanel>
-                                    </p:dataList>
+                                    <p:dataTable value="#{projectCtl.activePackage.fileList}" var="packageFile" styleClass="ui-lg-12">
+                                        <p:column styleClass="ui-sm-3" headerText="Path">#{packageFile.buildPath}</p:column>
+                                        <p:column styleClass="ui-sm-3" headerText="Name">#{packageFile.name}</p:column>
+                                        <p:column styleClass="ui-sm-3" headerText="Type" style="text-align: center">#{packageFile.ext}</p:column>
+                                        <p:column styleClass="ui-sm-3" headerText="New" style="text-align: center">
+                                            <p:outputPanel rendered="#{packageFile.updated}"><i class="pi pi-check" style="font-size: 2em; color: var(--surface-c);"/></p:outputPanel>
+                                            <p:outputPanel rendered="#{not packageFile.updated}"><i class="pi pi-times" style="color: var(--surface-d);"/></p:outputPanel>
+                                        </p:column>
+                                    </p:dataTable>
                                 </p:outputPanel>
                             </p:outputPanel>
 

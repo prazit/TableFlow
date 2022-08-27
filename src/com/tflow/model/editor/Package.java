@@ -1,13 +1,15 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.editor.view.PropertyView;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Package implements Selectable {
+public class Package implements Selectable, HasEvent {
 
     private int id;
 
@@ -20,8 +22,26 @@ public class Package implements Selectable {
     private List<PackageFile> fileList;
     private int lastFileId;
 
+    private EventManager eventManager;
+
     public Package() {
-        /*nothing*/
+        eventManager = new EventManager(this);
+        createEventHandlers();
+    }
+
+    private void createEventHandlers() {
+        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                PropertyView property = (PropertyView) event.getData();
+                LoggerFactory.getLogger(Package.class).debug("Package.PROPERTY_CHANGED: property={}", property);
+                if (PropertyVar.name.equals(property.getVar())) {
+                    String name = (String) property.getNewValue();
+                    event.setEventName(EventName.NAME_CHANGED);
+                    eventManager.fireEvent(EventName.NAME_CHANGED, event);
+                }
+            }
+        });
     }
 
     public int getId() {
@@ -116,5 +136,10 @@ public class Package implements Selectable {
     @Override
     public Map<String, Object> getPropertyMap() {
         return new HashMap<>();
+    }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
     }
 }

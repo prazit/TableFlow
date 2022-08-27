@@ -37,6 +37,24 @@ public class ProjectController extends Controller {
     public void onCreation() {
         log.trace("onCreation.");
         project = workspace.getProject();
+        createPackageEventHandlers();
+    }
+
+    /**
+     * TODO: Test me now!!!
+     */
+    private void createPackageEventHandlers() {
+        if (activePackage == null) return;
+
+        activePackage.getEventManager()
+                .removeHandlers(EventName.NAME_CHANGED)
+                .addHandler(EventName.NAME_CHANGED, new EventHandler() {
+                    @Override
+                    public void handle(Event event) {
+                        log.debug("package.NAME_CHANGED: event = {}", event);
+                        /*TODO: package name on the dropdown list need to update to new value from the event/or do this in the Property-Changed-Action-Command*/
+                    }
+                });
     }
 
     public void openSection(TabChangeEvent event) {
@@ -124,11 +142,11 @@ public class ProjectController extends Controller {
     public void refreshBuildingPackage() {
         if (activePackage.getId() < 0) {
             /*case: mockup package for building process*/
-            int countBefore = packageList.size();
+            int countBefore = packageList == null ? 0 : packageList.size();
             log.debug("refreshBuildingPackage: countBefore = {}", countBefore);
 
             reloadPackageList();
-            int countAfter = packageList.size();
+            int countAfter = packageList == null ? 0 : packageList.size();
             log.debug("refreshBuildingPackage: countAfter = {}", countAfter);
             if (countBefore < countAfter) {
                 selectPackage(countBefore);

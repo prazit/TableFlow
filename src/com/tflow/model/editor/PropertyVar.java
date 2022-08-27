@@ -5,6 +5,7 @@ package com.tflow.model.editor;
  */
 public enum PropertyVar {
 
+    name,
     dataSourceId,
     function,
     ;

@@ -105,7 +105,7 @@ public enum Properties {
     TRANSFORM_COLUMN( /*direct transfer without function*/
             "type:Type:ReadOnly",
             "name:Name:String",
-            "value:Value:Column:sourceTable::[]useFunction",
+            ".:propertyMap:value:Value:Column:sourceTable::[]useFunction",
             "[: Dynamic Value Expression ::@value",
             ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
             "[useFunction: Specific Function ::@dynamicValue",

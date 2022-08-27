@@ -7,6 +7,8 @@ import org.knowm.sundial.exceptions.JobInterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 public class ZKHeartbeatJob extends Job {
     private Logger log = LoggerFactory.getLogger(ZKHeartbeatJob.class);
 
@@ -16,16 +18,14 @@ public class ZKHeartbeatJob extends Job {
 
         ZKConfiguration zkConfiguration = (ZKConfiguration) getJobContext().map.get("ZKConfiguration");
         long nextHeartbeat = zkConfiguration.getNextHeartbeat();
-        if(nextHeartbeat > now) {
-            //log.debug("skip sent heartbeat, nextheartbeat({}) > now({})", nextHeartbeat, now);
-            return;
-        }
+        if (nextHeartbeat > now) return;
 
         try {
-            log.debug("sent heartbeat to zookeeper, nextheartbeat({}) <= now({})", nextHeartbeat, now);
+            log.debug("ZKHeartbeatJob: sent heartbeat to zookeeper, time({})", now);
             zkConfiguration.getString(ZKConfigNode.HEARTBEAT);
-        } catch (KeeperException | InterruptedException ex) {
-            LoggerFactory.getLogger(ZKHeartbeatJob.class).error("Zookeeper Heartbeat Job: get heartbeat failed! {}:{}", ex.getClass().getSimpleName(), ex.getMessage());
+        } catch (InterruptedException ex) {
+            Logger log = LoggerFactory.getLogger(ZKHeartbeatJob.class);
+            log.error("ZKHeartbeatJob: send heartbeat to zookeeper failed by {}:{}", ex.getClass().getSimpleName(), ex.getMessage());
         }
     }
 }

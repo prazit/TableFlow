@@ -6,6 +6,7 @@ import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
 import com.tflow.zookeeper.ZKConfiguration;
 import com.tflow.zookeeper.ZKConfigNode;
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,6 +19,7 @@ import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.zookeeper.KeeperException;
+import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,25 +80,21 @@ public class ProjectDataManager {
 
         try {
             maximumTransactionId = globalConfigs.getLong(ZKConfigNode.MAXIMUM_TRANSACTION_ID);
-        } catch (KeeperException | InterruptedException ex) {
+        } catch (InterruptedException ex) {
             log.error("loadConfigs failed! ", ex);
         }
     }
 
-    private long newTransactionId() {
+    private long newTransactionId() throws InterruptedException {
         return newTransactionId(1);
     }
 
     /**
      * @return first transactionId.
      */
-    private long newTransactionId(int size) {
-        long lastTransId = 0;
-        try {
-            lastTransId = globalConfigs.getLong(ZKConfigNode.LAST_TRANSACTION_ID);
-        } catch (KeeperException | InterruptedException e) {
-            lastTransId = (Long) ZKConfigNode.LAST_TRANSACTION_ID.getInitialValue();
-        }
+    private long newTransactionId(int size) throws InterruptedException {
+        long lastTransId = globalConfigs.getLong(ZKConfigNode.LAST_TRANSACTION_ID);
+
         long setLastTransId = lastTransId + size;
         if (setLastTransId > maximumTransactionId) {
             lastTransId = 1;
@@ -104,13 +102,8 @@ public class ProjectDataManager {
         }
         log.debug("get lastTransId from Zookeeper = {}", lastTransId);
 
-        try {
-            globalConfigs.set(ZKConfigNode.LAST_TRANSACTION_ID, setLastTransId);
-            log.debug("set value to lastTransId = {} success", setLastTransId);
-
-        } catch (InterruptedException ex) {
-            log.error("set value to lastTransId failed!", ex);
-        }
+        globalConfigs.set(ZKConfigNode.LAST_TRANSACTION_ID, setLastTransId);
+        log.debug("set value to lastTransId = {} success", setLastTransId);
 
         return lastTransId + 1;
     }
@@ -300,8 +293,10 @@ public class ProjectDataManager {
         }
 
         /* need transId for capture */
-        long transactionId = newTransactionId();
-        if (transactionId < 0) {
+        long transactionId;
+        try {
+            transactionId = newTransactionId();
+        } catch (InterruptedException e) {
             return false;
         }
         additional.setTransactionId(transactionId);
@@ -350,7 +345,10 @@ public class ProjectDataManager {
             @Override
             public void run() {
                 log.trace("commitInThread: {}", Thread.currentThread().getName());
-                commitInThread();
+                if (!commitInThread()) {
+                    commit(commitAgainMilliseconds);
+                    return;
+                }
                 resetCommitThread();
             }
         }, "Commit-Thread");
@@ -376,7 +374,14 @@ public class ProjectDataManager {
             return false;
         }
 
-        long transactionId = newTransactionId(commitList.size());
+        long transactionId;
+        try {
+            transactionId = newTransactionId(commitList.size());
+        } catch (InterruptedException ex) {
+            log.error("newTransactionId failed!", ex);
+            return false;
+        }
+
         for (ProjectDataWriteBuffer writeCommand : commitList) {
             additional = writeCommand.getAdditional();
             additional.setTransactionId(transactionId);
@@ -674,8 +679,10 @@ public class ProjectDataManager {
     }
 
     private boolean isMyHeader(HeaderData headerData, HeaderData capturedHeader) {
+        String myProjectId = headerData.getProjectId();
+        String projectId = capturedHeader.getProjectId();
         return headerData.getTime() == capturedHeader.getTime() &&
-                headerData.getProjectId().compareTo(capturedHeader.getProjectId()) == 0 &&
+                ((myProjectId == null && projectId == null) || (myProjectId != null && myProjectId.compareTo(projectId) == 0)) &&
                 headerData.getClientId() == capturedHeader.getClientId() &&
                 headerData.getUserId() == capturedHeader.getUserId() &&
                 headerData.getTransactionId() == capturedHeader.getTransactionId();
