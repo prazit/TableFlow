@@ -116,6 +116,14 @@ body .top-menu .ui-menu.ui-menubar-options {
     height: calc(100% - var(--top-bar-height));
 }
 
+.test-group {
+    background-color: var(--surface-b);
+}
+
+.test-cell {
+    background-color: var(--surface-d);
+}
+
 body .tool-panel.ui-panel {
     margin: 1px;
     height: 100%;
@@ -176,4 +184,14 @@ body .tool-panel .ui-tabs .ui-menu {
 
 .ui-nopad {
     padding: 0;
+}
+
+.horizon-scroll-panel {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.vertical-scroll-panel {
+    overflow-x: hidden;
+    overflow-y: auto;
 }

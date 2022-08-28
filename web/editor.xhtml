@@ -22,7 +22,9 @@
 
         <script>console.log('-- first-line of editor --');</script>
         <div class="container">
-            <ui:include src="resources/exceptionMessage.xhtml"/>
+            <ui:include src="resources/ajaxexception.xhtml">
+                <ui:param name="controller" value="#{editorCtl}"/>
+            </ui:include>
             <ui:include src="resources/topMenu.xhtml"/>
             <div class="screen-area">
                 <p:splitter styleClass="p-mb-3" gutterSize="5">

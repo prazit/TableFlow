@@ -1,7 +1,9 @@
 package com.tflow.model.editor;
 
+import com.tflow.controller.Page;
 import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.PageParameter;
 import com.tflow.model.data.ClientData;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.ProjectDataManager;
@@ -49,6 +51,9 @@ public class Workspace implements Serializable {
     private Client client;
     private ProjectDataManager projectDataManager;
 
+    private Map<PageParameter, String> parameterMap;
+    private Page currentPage;
+
     @PostConstruct
     public void onCreation() {
         Logger log = LoggerFactory.getLogger(Workspace.class);
@@ -65,9 +70,9 @@ public class Workspace implements Serializable {
         // load client information into Client instance.
         client = loadClientInfo(httpRequest, projectDataManager);
 
-        // TODO: temporary used to reset-to-empty-project/create-new-project.
-        resetProject();
-
+        parameterMap = new HashMap<>();
+        project = null;
+        
         printHttpSession(httpSession, log);
         printHttpRequest(httpRequest, log);
     }
@@ -245,10 +250,6 @@ public class Workspace implements Serializable {
         log.debug("CreationTime = Date:'{}'", httpSession.getCreationTime());
     }
 
-    public void resetProject() {
-        project = null;
-    }
-
     public Project getProject() {
         return project;
     }
@@ -279,5 +280,17 @@ public class Workspace implements Serializable {
 
     public ProjectDataManager getProjectDataManager() {
         return projectDataManager;
+    }
+
+    public void setCurrentPage(Page page) {
+        currentPage = page;
+    }
+
+    public Page getCurrentPage() {
+        return currentPage;
+    }
+
+    public Map<PageParameter, String> getParameterMap() {
+        return parameterMap;
     }
 }

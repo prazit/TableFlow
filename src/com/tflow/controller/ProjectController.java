@@ -33,7 +33,12 @@ public class ProjectController extends Controller {
     private Package activePackage;
     private boolean pleaseSelectPackage;
 
-    @PostConstruct
+    @Override
+    protected Page getPage() {
+        return Page.EDITOR;
+    }
+
+    @Override
     public void onCreation() {
         log.trace("onCreation.");
         project = workspace.getProject();

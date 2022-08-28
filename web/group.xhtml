@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <h:head>
+        <title>#{groupCtl.currentPage.title}</title>
+
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    </h:head>
+    <h:body>
+        <h:outputStylesheet library="css" name="tflow.css#{groupCtl.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="group.js#{groupCtl.forceReloadResources}" target="head"/>
+
+        <script>console.log('-- first-line of editor --');</script>
+        <div class="container">
+            <ui:include src="resources/ajaxexception.xhtml">
+                <ui:param name="controller" value="#{groupCtl}"/>
+            </ui:include>
+            <ui:include src="resources/topMenu.xhtml"/>
+
+            <p:panel styleClass="screen-area vertical-scroll-panel" header="SCREEN-AREA-#{groupCtl.name}">
+                <div class="ui-g">
+                    <div class="ui-g-3" style="padding:var(--padding)">
+                        <p:commandButton value="Throw Exception 1" actionListener="#{groupCtl.throwException}"/>
+                    </div>
+                    <div class="ui-g-3" style="padding:var(--padding)">
+                        <p:commandButton value="Throw Exception 2" actionListener="#{groupCtl.throwException2}"/>
+                    </div>
+                    <div class="ui-g-3" style="padding:var(--padding)">
+                        <p:commandButton value="Open Projecct P80" actionListener="#{groupCtl.openProject80}"/>
+                    </div>
+                </div>
+            </p:panel>
+        </div>
+    </h:body>
+</f:view>
+</html>

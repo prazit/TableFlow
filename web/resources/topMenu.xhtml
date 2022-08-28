@@ -3,7 +3,7 @@
         xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui">
 
-    <h:outputStylesheet library="css" name="tflow.css${editorCtl.forceReloadResources}" target="head"/>
+    <h:outputStylesheet library="css" name="tflow.css${topMenuCtl.forceReloadResources}" target="head"/>
 
     <div class="top-area fixed-top no-border no-padding no-margin">
         <p:graphicImage library="images" name="logo.jpg" styleClass="logo"/>
@@ -12,10 +12,10 @@
                 <p:menubar>
 
                     <p:menuitem value="Light Mode" icon="pi pi-fw pi-sun"
-                                actionListener="${editorCtl.lightTheme}"
+                                actionListener="${topMenuCtl.lightTheme}"
                                 rendered="${workspace.user.theme=='DARK'}" title="Switch to Light Theme"/>
                     <p:menuitem value="Dark Mode" icon="pi pi-fw pi-moon"
-                                actionListener="${editorCtl.darkTheme}"
+                                actionListener="${topMenuCtl.darkTheme}"
                                 rendered="${workspace.user.theme=='LIGHT'}" title="Switch to Dark Theme"/>
 
                     <p:divider layout="vertical"/>
@@ -26,11 +26,7 @@
                             <p:menuitem value="Project from Existing Project..." icon="pi pi-fw pi-file"/>
                             <p:menuitem value="Project from Template..." icon="pi pi-fw pi-file"/>
                         </p:submenu>
-                        <p:menuitem value="Open..." icon="pi pi-fw pi-open"/>
-                        <p:divider/>
-                        <p:menuitem value="DB Connections..." icon="pi pi-fw pi-open"/>
-                        <p:menuitem value="SFTP Connections..." icon="pi pi-fw pi-open"/>
-                        <p:menuitem value="Variables..." icon="pi pi-fw pi-open"/>
+                        <p:menuitem value="Open..." icon="pi pi-fw pi-open" url="group.xhtml"/>
                         <p:divider/>
                         <p:menuitem value="Import..." icon="pi pi-fw pi-import"/>
                         <p:menuitem value="Export..." icon="pi pi-fw pi-export"/>

@@ -1,0 +1,26 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:p="http://primefaces.org/ui">
+
+    <p:ajaxExceptionHandler type="java.lang.Throwable"
+                            onexception="PF('exceptionbar').show()"
+                            update="exceptionarea"/>
+
+    <p:sidebar widgetVar="exceptionbar"
+               position="bottom"
+               visible="false"
+               showCloseIcon="false"
+               baseZIndex="99999"
+               styleClass="exceptionMsg no-margin"
+               style="height:30%;padding:var(--padding)"
+               onHide="$('#exceptionarea').attr('style','display:none');">
+        <p:panel id="exceptionarea" header="#{pfExceptionHandler.message}" styleClass="vertical-scroll-panel" style="height:100%">
+            <div>
+                <b>#{pfExceptionHandler.type}</b>
+                <p:divider/>
+                <p:outputLabel escape="false" value="#{controller.getFormattedStackTrace(pfExceptionHandler.exception,'com.tflow')}"/>
+            </div>
+        </p:panel>
+    </p:sidebar>
+
+</f:view>

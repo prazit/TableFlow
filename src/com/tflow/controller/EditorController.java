@@ -1,9 +1,9 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.*;
+import com.tflow.model.PageParameter;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.ProjectDataException;
-import com.tflow.model.data.ProjectDataManager;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.action.*;
@@ -13,7 +13,6 @@ import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.RecordMapper;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.system.constant.Theme;
 import com.tflow.util.ProjectUtil;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
@@ -26,8 +25,6 @@ import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.MenuElement;
 import org.primefaces.model.menu.MenuModel;
 
-import javax.annotation.PostConstruct;
-import javax.faces.application.ViewExpiredException;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -59,19 +56,54 @@ public class EditorController extends Controller {
     private Map<String, Integer> actionPriorityMap;
     private boolean fullActionList;
 
-    private JavaScriptBuilder javaScriptBuilder;
+    @Override
+    protected Page getPage() {
+        return Page.EDITOR;
+    }
 
-    @PostConstruct
+    @Override
     public void onCreation() {
-        javaScriptBuilder = new JavaScriptBuilder();
+        leftPanelTitle = "Step List";
 
-        Project project = workspace.getProject();
-        if (project == null) {
-            /*TODO: future task: redirect to Open Project Page, need Open Project Page to created before*/
-            createNewProject();
+        /*TODO: Test Me Now!!!*/
+        /*Open Editor Cases.
+         * 1. hasParameter(GroupId, ProjectId): New Project from Template
+         * 2. hasParameter(ProjectId): Open Project
+         * 3. hasParameter(GroupId): New Empty Project
+         * 4. noParameter: Invalid when WorkSpace.Project is null
+         * 5. noParameter: Normal Working when WorkSpace.Project not null
+         **/
+        Map<PageParameter, String> parameterMap = workspace.getParameterMap();
+        String projectId = parameterMap.get(PageParameter.PROJECT_ID);
+        String groupId = parameterMap.get(PageParameter.GROUP_ID);
+        if (projectId != null && groupId != null) {
+            log.trace("EditorOpenCommand: New Project from Template");
+            /*TODO: New Project from Template*/
+
+        } else if (projectId != null) {
+            log.trace("EditorOpenCommand: Open Project by Id({})", projectId);
+            if (!openProject(projectId)) {
+                FacesUtil.addError("Open project(" + projectId + ") failed!");
+                FacesUtil.redirect("/" + Page.GROUP.getName());
+                return;
+            }
+
+        } else if (groupId != null) {
+            log.trace("EditorOpenCommand: Create New Empty Project");
+            if (!createNewProject()) {
+                FacesUtil.redirect("/" + Page.GROUP.getName());
+                return;
+            }
+
+        } else if (workspace.getProject() == null) {
+            log.warn("EditorOpenCommand: Invalid Parameter");
+            FacesUtil.redirect("/" + Page.GROUP.getName());
+            return;
+
+        } else {
+            log.trace("EditorOpenCommand: Normal");
         }
 
-        leftPanelTitle = "Step List";
         setEditorType(EditorType.STEP);
         initActionPriorityMap();
         initStepList();
@@ -79,13 +111,8 @@ public class EditorController extends Controller {
     }
 
     public void preRenderComponent() {
-        log.warn("preRenderComponent: javaScriptBuilder={}", javaScriptBuilder);
-        javaScriptBuilder.runOnClient(true);
-    }
-
-    public void reloadProject() {
-        workspace.resetProject();
-        onCreation();
+        log.warn("preRenderComponent: javaScriptBuilder={}", jsBuilder);
+        jsBuilder.runOnClient(true);
     }
 
     private void initActionPriorityMap() {
@@ -480,16 +507,6 @@ public class EditorController extends Controller {
         return selectItemList;
     }
 
-    public void lightTheme() {
-        workspace.getUser().setTheme(Theme.LIGHT);
-        FacesUtil.redirect("/editor.xhtml");
-    }
-
-    public void darkTheme() {
-        workspace.getUser().setTheme(Theme.DARK);
-        FacesUtil.redirect("/editor.xhtml");
-    }
-
     public void testSaveProjectTemplate() {
         log.info("testSaveProject: started");
 
@@ -499,28 +516,19 @@ public class EditorController extends Controller {
         log.info("testSaveProject: completed");
     }
 
-    public void testOpenProject() {
-        Project project = null;
-        Project workspaceProject = workspace.getProject();
-        String oldProjectId = workspaceProject.getId();
+    public boolean openProject(String projectId) {
         try {
-            /*TODO: need to test open new project from template (projectId.startsWith('P'))*/
-            workspaceProject.setId("P1");
-            project = workspaceProject.getManager().loadProject(workspace, workspaceProject.getDataManager());
-        } catch (ProjectDataException ex) {
-            log.error("testOpenProject: error from server({})", ex.getMessage());
-        } catch (ClassCastException ex) {
-            log.error("testOpenProject:", ex);
+            ProjectManager projectManager = new ProjectManager(workspace.getEnvironment());
+            projectManager.loadProject(workspace, projectId);
+        } catch (Exception ex) {
+            log.error("openProject: error from server({})", ex.getMessage());
+            return false;
         }
 
-        if (project == null) {
-            log.error("testOpenProject: getProject return NULL.");
-            workspaceProject.setId(oldProjectId);
-        } else {
-            log.info("testOpenProject: getProject runturn Project{}", project);
-            initStepList();
-            preRenderComponent();
-        }
+        log.info("open project({}) success Project={}", projectId, workspace.getProject());
+        initStepList();
+        preRenderComponent();
+        return true;
     }
 
     private void testConvertByteArrayAndString(KafkaRecord kafkaRecord) {
@@ -759,7 +767,7 @@ public class EditorController extends Controller {
         setEditorType(EditorType.PROJECT);
         selectObject(workspace.getProject().getSelectableId());
 
-        javaScriptBuilder.pre(JavaScript.setFlowChart, editorType.getPage())
+        jsBuilder.pre(JavaScript.setFlowChart, editorType.getPage())
                 .post(JavaScript.refreshFlowChart)
                 .runOnClient(true);
     }
@@ -821,7 +829,7 @@ public class EditorController extends Controller {
         refreshActionList(project);
 
         if (refresh) {
-            javaScriptBuilder
+            jsBuilder
                     .pre(JavaScript.setFlowChart, editorType.getPage())
                     .post(JavaScript.refreshFlowChart)
                     .runOnClient();
@@ -850,15 +858,17 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
-    private void createNewProject() {
+    private boolean createNewProject() {
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.WORKSPACE, workspace);
 
         try {
             new AddProject(paramMap).execute();
+            return true;
         } catch (Exception ex) {
             log.error("Create New Project Failed!", ex);
             FacesUtil.addError("Create New Project with Internal Command Error!");
+            return false;
         }
     }
 

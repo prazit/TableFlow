@@ -101,4 +101,22 @@ public class FacesUtil implements Serializable {
             log.error("", e);
         }
     }
+
+    public static String getFormattedStackTrace(Exception exception, String filter) {
+        if (exception == null) return "";
+
+        StringBuilder builder = new StringBuilder();
+        String className;
+        for (StackTraceElement element : exception.getStackTrace()) {
+            className = element.getClassName();
+            if (className.contains(filter)) {
+                builder.append("\nat ").append(className).append(".")
+                        .append(element.getMethodName()).append("(")
+                        .append(element.getFileName()).append(":").append(element.getLineNumber())
+                        .append(")");
+            }
+        }
+        return builder.toString();
+    }
+
 }

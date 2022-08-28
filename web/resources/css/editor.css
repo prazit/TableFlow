@@ -183,11 +183,6 @@ body .ui-panel.function .ui-panel-content {
     background-color: var(--surface-e);
 }
 
-.horizon-scroll-panel {
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
 .database-panel,
 .local-panel,
 .sftp-panel {

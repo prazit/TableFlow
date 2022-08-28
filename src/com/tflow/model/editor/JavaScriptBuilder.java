@@ -4,8 +4,6 @@ import com.tflow.util.FacesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.inject.Default;
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -133,7 +131,6 @@ public class JavaScriptBuilder {
         runOnClient(false);
     }
 
-
     public void runOnClient(boolean defer) {
         String javaScript = toString();
         if (javaScript.isEmpty()) return;
@@ -141,26 +138,10 @@ public class JavaScriptBuilder {
 
         if (defer) javaScript = "$(function(){" + javaScript + "});";
 
-        /*TODO: need to print caller ot this function*/
         if (log.isDebugEnabled()) {
-            String stackTraces = getStackTrace(new Exception(""), 6);
+            String stackTraces = FacesUtil.getFormattedStackTrace(new Exception(""), "com.tflow");
             log.debug("runOnClient:{}, stackTrace:{}", javaScript, stackTraces);
         }
         FacesUtil.runClientScript(javaScript);
-    }
-
-    private String getStackTrace(Exception exception, int level) {
-        StringBuilder builder = new StringBuilder();
-
-        StackTraceElement[] stackTrace = exception.getStackTrace();
-        StackTraceElement element;
-        for (int index = 1; index <= level; index++) {
-            element = stackTrace[index];
-            builder.append("\n").append(element.getClassName()).append("::")
-                    .append(element.getMethodName()).append(":")
-                    .append(element.getLineNumber());
-        }
-
-        return builder.toString();
     }
 }

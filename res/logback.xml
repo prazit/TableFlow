@@ -49,10 +49,8 @@
         <appender-ref ref="KAFKA" />
     </logger>
 
-    <root level="trace">
-        <appender-ref ref="FILE" />
+    <root level="TRACE">
         <appender-ref ref="STDOUT" />
     </root>
-
 
 </configuration>

@@ -21,7 +21,13 @@ import java.util.Map;
 @Named("flowchartCtl")
 public class FlowchartController extends Controller {
 
-    @PostConstruct
+
+    @Override
+    protected Page getPage() {
+        return Page.EDITOR;
+    }
+
+    @Override
     public void onCreation() {
         createEventHandlers();
     }

@@ -301,16 +301,20 @@ public class ProjectManager {
      * TODO: need to support open new project from template (projectId < 0)
      **/
     @SuppressWarnings("unchecked")
-    public Project loadProject(Workspace workspace, ProjectDataManager dataManager) throws ClassCastException, ProjectDataException {
+    public Project loadProject(Workspace workspace, String openProjectId) throws ClassCastException, ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
-        ProjectUser projectUser = mapper.toProjectUser(workspace.getProject());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setId(openProjectId);
+        projectUser.setUserId(workspace.getUser().getId());
+        projectUser.setClientId(workspace.getClient().getId());
 
         /*get project, to know the project is not edit by another */
+        ProjectDataManager dataManager = workspace.getProjectDataManager();
         Object data = dataManager.getData(ProjectFileType.PROJECT, projectUser, projectUser.getId());
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwner(workspace);
         project.setDataManager(dataManager);
-        project.setManager(new ProjectManager(workspace.getEnvironment()));
+        project.setManager(this);
 
         /*get db-list*/
         data = dataManager.getData(ProjectFileType.DB_LIST, projectUser, "1");
