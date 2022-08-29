@@ -139,7 +139,7 @@ public class JavaScriptBuilder {
         if (defer) javaScript = "$(function(){" + javaScript + "});";
 
         if (log.isDebugEnabled()) {
-            String stackTraces = FacesUtil.getFormattedStackTrace(new Exception(""), "com.tflow");
+            String stackTraces = FacesUtil.getFormattedStackTrace(new Exception(""), "com.tflow", "\n");
             log.debug("runOnClient:{}, stackTrace:{}", javaScript, stackTraces);
         }
         FacesUtil.runClientScript(javaScript);

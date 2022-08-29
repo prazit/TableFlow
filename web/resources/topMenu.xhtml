@@ -22,8 +22,8 @@
 
                     <p:submenu label="Project" icon="pi pi-fw pi-file">
                         <p:submenu label="New" icon="pi pi-fw pi-plus">
-                            <p:menuitem value="Project..." icon="pi pi-fw pi-file"/>
-                            <p:menuitem value="Project from Existing Project..." icon="pi pi-fw pi-file"/>
+                            <p:menuitem value="Project..." icon="pi pi-fw pi-file" actionListener="#{topMenuCtl.newEmptyProject}"/>
+                            <p:menuitem value="Project from Existing Project..." icon="pi pi-fw pi-file" url="group.xhtml"/>
                             <p:menuitem value="Project from Template..." icon="pi pi-fw pi-file"/>
                         </p:submenu>
                         <p:menuitem value="Open..." icon="pi pi-fw pi-open" url="group.xhtml"/>

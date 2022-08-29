@@ -10,6 +10,9 @@ import org.slf4j.Logger;
 import com.tflow.system.Application;
 
 import javax.annotation.PostConstruct;
+import javax.faces.context.ExceptionHandler;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ExceptionQueuedEvent;
 import javax.inject.Inject;
 import java.awt.print.Pageable;
 import java.io.Serializable;
@@ -38,6 +41,9 @@ public abstract class Controller implements Serializable {
     public void postConstruct() {
         timestamp = DateTimeUtil.now();
         workspace.setCurrentPage(getPage());
+
+        /*TODO: need to parse parameters from URL-GET into the same parameterMap*/
+
         onCreation();
     }
 
@@ -58,7 +64,6 @@ public abstract class Controller implements Serializable {
         }
         return application.getForceReloadResources();
     }
-
 
     public Step getStep() {
         return workspace.getProject().getActiveStep();
@@ -81,7 +86,11 @@ public abstract class Controller implements Serializable {
     }
 
     public String getFormattedStackTrace(Exception exception, String filter) {
-        return FacesUtil.getFormattedStackTrace(exception,filter);
+        String formattedStackTrace = FacesUtil.getFormattedStackTrace(exception, filter, "<br/>");
+        if (formattedStackTrace.isEmpty()) {
+            formattedStackTrace = FacesUtil.getFormattedStackTrace(exception, ".", "<br/>");
+        }
+        return formattedStackTrace;
     }
 
 }

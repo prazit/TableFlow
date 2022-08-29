@@ -129,8 +129,8 @@
 
                     </p:tab>
 
-                    <p:tab title="#{ProjectSection.UPLOADED.getTitle()}" styleClass="uploaded tab">
-                        <h2 style="color: var(--surface-c);">Uploaded Section</h2>
+                    <p:tab title="#{ProjectSection.VARIABLE.getTitle()}" styleClass="variable tab">
+                        <h2 style="color: var(--surface-c);">Variable Section</h2>
                     </p:tab>
 
                     <p:tab title="#{ProjectSection.PACKAGE.getTitle()}" styleClass="package tab">
@@ -215,6 +215,10 @@
                                 updatePanelComplete('.package-panel');
                             });</script>
                         </p:outputPanel>
+                    </p:tab>
+
+                    <p:tab title="#{ProjectSection.UPLOADED.getTitle()}" styleClass="uploaded tab">
+                        <h2 style="color: var(--surface-c);">Uploaded Section</h2>
                     </p:tab>
                     <!--/p:accordionPanel-->
                 </p:tabView>

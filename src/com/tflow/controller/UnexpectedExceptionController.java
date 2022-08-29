@@ -1,14 +1,14 @@
 package com.tflow.controller;
 
-import com.tflow.util.FacesUtil;
-
-import javax.faces.event.ActionListener;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import java.util.Date;
 
 @ViewScoped
 @Named("unexpectedCtl")
 public class UnexpectedExceptionController extends Controller {
+
+    private Date lastExceptionTimestamp;
 
     @Override
     void onCreation() {
@@ -22,6 +22,15 @@ public class UnexpectedExceptionController extends Controller {
 
     public void noException() {
         log.warn("Open Unexpected Exception Page without Exception.");
-        FacesUtil.redirect("/" + Page.GROUP.getName());
+        workspace.openPage(Page.GROUP);
+    }
+
+    public boolean isNewException(Date timestamp) {
+        return (lastExceptionTimestamp == null) ||
+                (timestamp != null && timestamp.getTime() != lastExceptionTimestamp.getTime());
+    }
+
+    public void handledException(Date timestamp) {
+        lastExceptionTimestamp = timestamp;
     }
 }

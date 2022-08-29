@@ -8,16 +8,18 @@
 
     <p:sidebar widgetVar="exceptionbar"
                position="bottom"
-               visible="false"
+               visible="#{pfExceptionHandler.exception != null and unexpectedCtl.isNewException(pfExceptionHandler.timestamp)}"
                showCloseIcon="false"
                baseZIndex="99999"
                styleClass="exceptionMsg no-margin"
                style="height:30%;padding:var(--padding)"
                onHide="$('#exceptionarea').attr('style','display:none');">
-        <p:panel id="exceptionarea" header="#{pfExceptionHandler.message}" styleClass="vertical-scroll-panel" style="height:100%">
+
+        #{unexpectedCtl.handledException(pfExceptionHandler.timestamp)}
+
+        <p:panel id="exceptionarea" header="[#{pfExceptionHandler.formattedTimestamp}] #{pfExceptionHandler.message}" styleClass="vertical-scroll-panel" style="height:100%">
             <div>
-                <b>#{pfExceptionHandler.type}</b>
-                <p:divider/>
+                <b>#{pfExceptionHandler.type}</b><br/>
                 <p:outputLabel escape="false" value="#{controller.getFormattedStackTrace(pfExceptionHandler.exception,'com.tflow')}"/>
             </div>
         </p:panel>

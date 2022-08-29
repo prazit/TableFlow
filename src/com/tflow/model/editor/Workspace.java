@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.controller.Page;
+import com.tflow.controller.Parameter;
 import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.PageParameter;
@@ -12,6 +13,7 @@ import com.tflow.system.Application;
 import com.tflow.system.Environment;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.DateTimeUtil;
+import com.tflow.util.FacesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +74,7 @@ public class Workspace implements Serializable {
 
         parameterMap = new HashMap<>();
         project = null;
-        
+
         printHttpSession(httpSession, log);
         printHttpRequest(httpRequest, log);
     }
@@ -290,7 +292,20 @@ public class Workspace implements Serializable {
         return currentPage;
     }
 
+    /**
+     * Parameters Map will clear at the beginning of the call of openPage().
+     */
     public Map<PageParameter, String> getParameterMap() {
         return parameterMap;
+    }
+
+    public void openPage(Page page, Parameter... parameters) {
+        parameterMap.clear();
+        if (parameters != null && parameters.length > 0) {
+            for (Parameter parameter : parameters) {
+                parameterMap.put(parameter.getPageParameter(), parameter.getValue());
+            }
+        }
+        FacesUtil.redirect("/" + page.getName());
     }
 }

@@ -1,5 +1,6 @@
 package com.tflow.util;
 
+import com.tflow.controller.Page;
 import org.primefaces.PrimeFaces;
 import org.primefaces.context.PrimeRequestContext;
 import org.slf4j.Logger;
@@ -85,9 +86,6 @@ public class FacesUtil implements Serializable {
         PrimeFaces.current().executeScript(javaScript);
     }
 
-    /**
-     * Notice: IMPORTANT: Use redirect instead of error-page in web.xml, because of it's not work with Exception from Sub-page.
-     */
     public static void redirect(String uriPath) {
         String contextPath = "";
         try {
@@ -102,7 +100,7 @@ public class FacesUtil implements Serializable {
         }
     }
 
-    public static String getFormattedStackTrace(Exception exception, String filter) {
+    public static String getFormattedStackTrace(Exception exception, String filter, String lineFeed) {
         if (exception == null) return "";
 
         StringBuilder builder = new StringBuilder();
@@ -110,7 +108,8 @@ public class FacesUtil implements Serializable {
         for (StackTraceElement element : exception.getStackTrace()) {
             className = element.getClassName();
             if (className.contains(filter)) {
-                builder.append("\nat ").append(className).append(".")
+                builder.append(lineFeed)
+                        .append("at ").append(className).append(".")
                         .append(element.getMethodName()).append("(")
                         .append(element.getFileName()).append(":").append(element.getLineNumber())
                         .append(")");
@@ -118,5 +117,4 @@ public class FacesUtil implements Serializable {
         }
         return builder.toString();
     }
-
 }

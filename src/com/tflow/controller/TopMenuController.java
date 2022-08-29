@@ -1,5 +1,6 @@
 package com.tflow.controller;
 
+import com.tflow.model.PageParameter;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 
@@ -20,15 +21,18 @@ public class TopMenuController extends Controller {
         return workspace.getCurrentPage();
     }
 
+    public void newEmptyProject() {
+        workspace.openPage(Page.EDITOR, new Parameter(PageParameter.GROUP_ID, "0"));
+    }
 
     public void lightTheme() {
         workspace.getUser().setTheme(Theme.LIGHT);
-        FacesUtil.redirect("/" + workspace.getCurrentPage().getName());
+        workspace.openPage(workspace.getCurrentPage());
     }
 
     public void darkTheme() {
         workspace.getUser().setTheme(Theme.DARK);
-        FacesUtil.redirect("/" + workspace.getCurrentPage().getName());
+        workspace.openPage(workspace.getCurrentPage());
     }
 
 }

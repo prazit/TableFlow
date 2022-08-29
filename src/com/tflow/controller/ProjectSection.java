@@ -2,6 +2,7 @@ package com.tflow.controller;
 
 public enum ProjectSection {
 
+    VARIABLE("Variables"),
     DATA_SOURCE("Data Sources"),
     UPLOADED("Uploaded Files"),
     PACKAGE("Packages"),

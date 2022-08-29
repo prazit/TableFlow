@@ -1,11 +1,13 @@
 package com.tflow.controller;
 
+import com.tflow.model.PageParameter;
 import com.tflow.model.editor.Project;
 import com.tflow.util.FacesUtil;
 
 import javax.faces.event.ActionListener;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import java.util.Map;
 
 @ViewScoped
 @Named("groupCtl")
@@ -40,7 +42,6 @@ public class GroupController extends Controller {
     }
 
     public void openProject80() {
-        workspace.setProject(new Project("P80", "Open"));
-        FacesUtil.redirect("/" + Page.EDITOR.getName());
+        workspace.openPage(Page.EDITOR, new Parameter(PageParameter.PROJECT_ID, "P80"));
     }
 }

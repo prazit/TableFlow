@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>redirecting...</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <script>
+        function newLo(path) {
+            return path + "unexpected.xhtml";
+        }
+        if (window !== top) {
+            parent.location = newLo(top.location.href.substr(0, top.location.href.lastIndexOf("/") + 1));
+        } else {
+            location = newLo(location.href.substr(0, location.href.lastIndexOf("/") + 1));
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

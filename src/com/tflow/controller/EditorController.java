@@ -65,9 +65,8 @@ public class EditorController extends Controller {
     public void onCreation() {
         leftPanelTitle = "Step List";
 
-        /*TODO: Test Me Now!!!*/
         /*Open Editor Cases.
-         * 1. hasParameter(GroupId, ProjectId): New Project from Template
+         * 1. hasParameter(GroupId, ProjectId/TemplateId): New Project from Template/Existing Project
          * 2. hasParameter(ProjectId): Open Project
          * 3. hasParameter(GroupId): New Empty Project
          * 4. noParameter: Invalid when WorkSpace.Project is null
@@ -77,31 +76,31 @@ public class EditorController extends Controller {
         String projectId = parameterMap.get(PageParameter.PROJECT_ID);
         String groupId = parameterMap.get(PageParameter.GROUP_ID);
         if (projectId != null && groupId != null) {
-            log.trace("EditorOpenCommand: New Project from Template");
-            /*TODO: New Project from Template*/
+            log.info("EditorOpenCommand: New Project from Template");
+            /*TODO: 1. New Project from Template/Existing Project*/
 
         } else if (projectId != null) {
-            log.trace("EditorOpenCommand: Open Project by Id({})", projectId);
+            log.info("EditorOpenCommand: Open Project by Id({})", projectId);
             if (!openProject(projectId)) {
                 FacesUtil.addError("Open project(" + projectId + ") failed!");
-                FacesUtil.redirect("/" + Page.GROUP.getName());
+                workspace.openPage(Page.GROUP);
                 return;
             }
 
         } else if (groupId != null) {
-            log.trace("EditorOpenCommand: Create New Empty Project");
+            log.info("EditorOpenCommand: Create New Empty Project");
             if (!createNewProject()) {
-                FacesUtil.redirect("/" + Page.GROUP.getName());
+                workspace.openPage(Page.GROUP);
                 return;
             }
 
         } else if (workspace.getProject() == null) {
             log.warn("EditorOpenCommand: Invalid Parameter");
-            FacesUtil.redirect("/" + Page.GROUP.getName());
+            workspace.openPage(Page.GROUP);
             return;
 
         } else {
-            log.trace("EditorOpenCommand: Normal");
+            log.info("EditorOpenCommand: Normal/Refresh");
         }
 
         setEditorType(EditorType.STEP);
@@ -526,8 +525,6 @@ public class EditorController extends Controller {
         }
 
         log.info("open project({}) success Project={}", projectId, workspace.getProject());
-        initStepList();
-        preRenderComponent();
         return true;
     }
 

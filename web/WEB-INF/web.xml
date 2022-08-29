@@ -35,20 +35,20 @@
 
     <error-page>
         <exception-type>java.lang.Throwable</exception-type>
-        <location>/unexpected.xhtml</location>
+        <location>/unexpectedlanding.html</location>
     </error-page>
-    <error-page>
+    <!--<error-page>
         <exception-type>com.tflow.kafka.KafkaServiceException</exception-type>
-        <location>/unexpected.xhtml</location>
+        <location>/unexpectedlanding.html</location>
     </error-page>
     <error-page>
         <exception-type>com.tflow.kafka.ReadServiceException</exception-type>
-        <location>/unexpected.xhtml</location>
+        <location>/unexpectedlanding.html</location>
     </error-page>
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/index.xhtml</location>
-    </error-page>
+        <location>/unexpectedlanding.html</location>
+    </error-page>-->
 
     <!--<context-root>/TFlow</context-root>-->
 </web-app>

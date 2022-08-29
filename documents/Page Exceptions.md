@@ -6,49 +6,23 @@ how to handle UI exceptions.
 
 
 
-## PAGE WITHOUT SUB-PAGE
-
-Example: Group Page, Library Page.
-
-
-
-### EXCEPTION ON POSTSRUCT
+### EXCEPTION ON PAGE-LOAD
 
 All exceptions that occured before page is rendered.
 
 + use **Error-Page** specified in web.xml
 
++ already have generic page: unexpected.xhtml
+
 
 
 ### EXCEPTION ON ACTION-LISTENER
 
-All exceptions that occured after page is rendered.
+All exceptions that occured after page is rendered include ajaxActionListener.
 
-+ use Primeface **ExceptionHandler** tag
++ use Primeface **ajaxExceptionHandler** tag
 
-
-
-----
-
-## PAGE WITH SUB-PAGE
-
-Example: Editor Page.
-
-
-
-### EXCEPTION ON POSTSRUCT of PARENT-PAGE
-
-All exceptions that occured before page is rendered.
-
-+ use Error-Page specified in web.xml
-
-### 
-
-### EXCEPTION ON ACTION-LISTENER
-
-All exceptions that occured after page is rendered.
-
-+ use Primeface ExceptionHandler tag
++ already have UI-VIEW: ajaxexception.xhtml
 
 
 

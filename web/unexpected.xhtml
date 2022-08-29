@@ -17,31 +17,45 @@
         <h:outputStylesheet library="css" name="tflow.css#{unexpectedCtl.forceReloadResources}" target="head"/>
         <p:remoteCommand name="noException" actionListener="#{unexpectedCtl.noException}"/>
 
-        <p:outputPanel rendered="#{pfExceptionHandler.type == null || pfExceptionHandler.type == ''}">
+        <p:outputPanel rendered="#{pfExceptionHandler.exception == null or not unexpectedCtl.isNewException(pfExceptionHandler.timestamp)}">
             <script>$(function(){noException()});</script>
         </p:outputPanel>
 
         <div class="container">
             <ui:include src="resources/topMenu.xhtml"/>
 
+            #{unexpectedCtl.handledException(pfExceptionHandler.timestamp)}
+
             <p:panel styleClass="screen-area error-panel vertical-scroll-panel">
-                <h1>UNEXPECTED ERROR OCCURED</h1>
+                <h1>UNEXPECTED</h1>
                 <h3>You can try to open <a href="#{unexpectedCtl.currentPage.name}">[#{unexpectedCtl.currentPage.title}]</a> again or contact your administrator with this information:</h3>
-                <p:divider/>
+
+                <p:divider align="left">
+                    <div class="inline-flex align-items-center">
+                        <i class="pi pi-exclamation-circle mr-2"/>
+                        <b>Information:</b>
+                    </div>
+                </p:divider>
+
                 <div class="ui-g">
-                    <p:outputLabel class="ui-g-2 ql-align-right">Page: </p:outputLabel><p:outputLabel class="ui-g-10">#{unexpectedCtl.currentPage.title}</p:outputLabel>
+                    <p:outputLabel class="ui-g-2">Time: </p:outputLabel><p:outputLabel styleClass="ui-g-10">#{pfExceptionHandler.formattedTimestamp}</p:outputLabel>
                 </div>
                 <div class="ui-g">
-                    <p:outputLabel class="ui-g-2 ql-align-right">Log Time: </p:outputLabel><p:outputLabel class="ui-g-10">#{unexpectedCtl.timestamp} [#{pfExceptionHandler.formattedTimestamp}]</p:outputLabel>
+                    <p:outputLabel class="ui-g-2">Page: </p:outputLabel><p:outputLabel styleClass="ui-g-10">#{unexpectedCtl.currentPage.title}</p:outputLabel>
                 </div>
-                <div class="ui-g">
-                    <p:outputLabel class="ui-g-2 ql-align-right">Exception: </p:outputLabel><p:outputLabel class="ui-g-10">#{pfExceptionHandler.type}</p:outputLabel>
-                </div>
-                <div class="ui-g">
-                    <p:outputLabel class="ui-g-2 ql-align-right">Message: </p:outputLabel><p:outputLabel class="ui-g-10">#{pfExceptionHandler.message}</p:outputLabel>
-                </div>
-                <div class="ui-g">
-                    <p:outputLabel class="ui-g-2 ql-align-right">StackTrace: </p:outputLabel><p:outputLabel class="ui-g-10" escape="false" value="#{pfExceptionHandler.formattedStackTrace}"/>
+                <p:outputPanel styleClass="ui-g" rendered="#{pfExceptionHandler.message != null}">
+                    <p:outputLabel class="ui-g-2">Message: </p:outputLabel><p:outputLabel styleClass="ui-g-10 bolder">#{pfExceptionHandler.message}</p:outputLabel>
+                </p:outputPanel>
+
+                <p:divider align="left">
+                    <div class="inline-flex align-items-center">
+                        <i class="pi pi-print mr-2"/>
+                        <b>Stack Trace:</b>
+                    </div>
+                </p:divider>
+
+                <div>
+                    <i><p:outputLabel escape="false" value="#{pfExceptionHandler.formattedStackTrace}"/></i>
                 </div>
             </p:panel>
 
