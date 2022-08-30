@@ -1,6 +1,6 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataSourceData;
 import com.tflow.model.data.ProjectUser;
@@ -43,7 +43,7 @@ public class AddDataSource extends Command {
 
         ProjectManager manager = project.getManager();
         Map<String, Selectable> selectableMap = step.getSelectableMap();
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
         ProjectFileType fileType;

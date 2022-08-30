@@ -2,7 +2,7 @@ package com.tflow.tbcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaTopics;
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
 import com.tflow.zookeeper.ZKConfigNode;
@@ -10,7 +10,6 @@ import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -61,7 +60,7 @@ public class TBcmd {
     @SuppressWarnings("unchecked")
     public void start() {
 
-        ProjectDataManager projectDataManager = new ProjectDataManager(environment, "TBcmd", zkConfiguration);
+        DataManager dataManager = new DataManager(environment, "TBcmd", zkConfiguration);
         KafkaConsumer<String, byte[]> consumer = createConsumer();
 
         /*TODO: need to load topicBuild from configuration*/
@@ -98,7 +97,7 @@ public class TBcmd {
                 }
 
                 /*TODO: future feature: add command to UpdateProjectCommandQueue*/
-                BuildPackageCommand buildPackageCommand = new BuildPackageCommand(offset, key, value, environmentConfigs, projectDataManager);
+                BuildPackageCommand buildPackageCommand = new BuildPackageCommand(offset, key, value, environmentConfigs, dataManager);
                 log.info("Incoming message: {}", buildPackageCommand.toString());
 
                 /*TODO: future feature: move this execute block into UpdateProjectCommandQueue*/

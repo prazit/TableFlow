@@ -1,6 +1,6 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.TWData;
@@ -61,7 +61,7 @@ public class RemoveDataFile extends Command {
         paramMap.put(CommandParamKey.DATA_FILE, dataFile);
 
         // save DataFile list
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
         int stepId = step.getId();

@@ -1,7 +1,6 @@
 package com.tflow.model.editor;
 
 import com.google.gson.internal.LinkedTreeMap;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import com.tflow.kafka.*;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.cmd.AddProject;
@@ -116,7 +115,7 @@ public class ProjectManager {
         return new KafkaProducer<>(props);
     }
 
-    public String getNewProjectId(Workspace workspace, ProjectDataManager dataManager) throws ProjectDataException {
+    public String getNewProjectId(Workspace workspace, DataManager dataManager) throws ProjectDataException {
         ProjectUser projectUser = new ProjectUser();
         projectUser.setUserId((int) workspace.getUser().getId());
         projectUser.setClientId((int) workspace.getClient().getId());
@@ -131,7 +130,7 @@ public class ProjectManager {
     }
 
     public void saveProjectAs(String newProjectId, Project project) {
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
 
         String oldId = project.getId();
@@ -177,7 +176,7 @@ public class ProjectManager {
     }
 
     public void saveStep(Step step, Project project) {
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
 
@@ -300,7 +299,7 @@ public class ProjectManager {
 
     public ProjectGroupList loadGroupList(Workspace workspace) throws ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
-        ProjectDataManager dataManager = workspace.getProjectDataManager();
+        DataManager dataManager = workspace.getDataManager();
 
         ProjectUser projectUser = new ProjectUser();
         projectUser.setUserId(workspace.getUser().getId());
@@ -314,7 +313,7 @@ public class ProjectManager {
 
     public ProjectGroup loadProjectGroup(Workspace workspace, int groupId) throws ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
-        ProjectDataManager dataManager = workspace.getProjectDataManager();
+        DataManager dataManager = workspace.getDataManager();
 
         ProjectUser projectUser = new ProjectUser();
         projectUser.setUserId(workspace.getUser().getId());
@@ -338,7 +337,7 @@ public class ProjectManager {
         projectUser.setClientId(workspace.getClient().getId());
 
         /*get project, to know the project is not edit by another */
-        ProjectDataManager dataManager = workspace.getProjectDataManager();
+        DataManager dataManager = workspace.getDataManager();
         Object data = dataManager.getData(ProjectFileType.PROJECT, projectUser, projectUser.getId());
         Project project = mapper.map((ProjectData) throwExceptionOnError(data));
         project.setOwner(workspace);
@@ -404,7 +403,7 @@ public class ProjectManager {
 
     @SuppressWarnings("unchecked")
     public Step loadStep(Project project, int stepIndex) throws Exception {
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
 
@@ -636,7 +635,7 @@ public class ProjectManager {
 
     public List<Item> loadPackageList(Project project) throws ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
 
         ProjectUser projectUser = mapper.toProjectUser(project);
         Object data = dataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);
@@ -647,7 +646,7 @@ public class ProjectManager {
 
     public Package loadPackage(int packageId, Project project) throws ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
 
         ProjectUser projectUser = mapper.toProjectUser(project);
         Object data = dataManager.getData(ProjectFileType.PACKAGE, projectUser, packageId);

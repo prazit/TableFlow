@@ -7,7 +7,7 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.ClientData;
 import com.tflow.model.data.ProjectDataException;
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.system.Application;
 import com.tflow.system.Environment;
@@ -52,7 +52,7 @@ public class Workspace implements Serializable {
     private User user;
     private Client client;
     private ProjectManager projectManager;
-    private ProjectDataManager projectDataManager;
+    private DataManager dataManager;
 
     private Map<PageParameter, String> parameterMap;
     private Page currentPage;
@@ -64,7 +64,7 @@ public class Workspace implements Serializable {
 
         environment = app.getEnvironment();
         projectManager = new ProjectManager(environment);
-        projectDataManager = new ProjectDataManager(environment, httpRequest.getRequestedSessionId(), app.getZkConfiguration());
+        dataManager = new DataManager(environment, httpRequest.getRequestedSessionId(), app.getZkConfiguration());
 
         // dummy user before Authentication, Notice: after authenticated need to setUser to this workspace.
         user = new User();
@@ -72,7 +72,7 @@ public class Workspace implements Serializable {
         user.setTheme(Theme.DARK);
 
         // load client information into Client instance.
-        client = loadClientInfo(httpRequest, projectDataManager);
+        client = loadClientInfo(httpRequest, dataManager);
 
         parameterMap = new HashMap<>();
         project = null;
@@ -81,21 +81,21 @@ public class Workspace implements Serializable {
         printHttpRequest(httpRequest, log);
     }
 
-    private Client loadClientInfo(HttpServletRequest httpRequest, ProjectDataManager projectDataManager) {
+    private Client loadClientInfo(HttpServletRequest httpRequest, DataManager dataManager) {
         Client client = new Client();
         client.setComputerName(getComputerName(httpRequest));
         client.setIp(httpRequest.getRemoteHost());
-        client.setId(registerClient(client, httpRequest, projectDataManager));
+        client.setId(registerClient(client, httpRequest, dataManager));
         return client;
     }
 
-    private long registerClient(Client client, HttpServletRequest httpRequest, ProjectDataManager projectDataManager) {
+    private long registerClient(Client client, HttpServletRequest httpRequest, DataManager dataManager) {
         ClientData clientData;
         ProjectUser projectUser = new ProjectUser();
         clientData = getClientData(client);
         try {
             /*found existing then return existing ID*/
-            clientData = (ClientData) throwExceptionOnError(projectDataManager.getData(ProjectFileType.CLIENT, projectUser, clientData.getId()));
+            clientData = (ClientData) throwExceptionOnError(dataManager.getData(ProjectFileType.CLIENT, projectUser, clientData.getId()));
         } catch (ProjectDataException ex) {
             /*not found, then create and return next to the last ID*/
             int lastClientId = 0;
@@ -103,7 +103,7 @@ public class Workspace implements Serializable {
              * last-package-id is in ?
              */
             clientData.setUniqueNumber(++lastClientId);
-            projectDataManager.addData(ProjectFileType.CLIENT, clientData, projectUser, clientData.getId());
+            dataManager.addData(ProjectFileType.CLIENT, clientData, projectUser, clientData.getId());
         }
         return clientData.getUniqueNumber();
     }
@@ -286,8 +286,8 @@ public class Workspace implements Serializable {
         return projectManager;
     }
 
-    public ProjectDataManager getProjectDataManager() {
-        return projectDataManager;
+    public DataManager getDataManager() {
+        return dataManager;
     }
 
     public void setCurrentPage(Page page) {

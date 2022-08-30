@@ -8,7 +8,7 @@ public class Variable {
 
     private String name;
 
-    /* for ProjectDataManager.getProject only */
+    /* for DataManager.getProject only */
     public Variable(String name) {
         this.name = name;
     }

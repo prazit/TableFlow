@@ -1,14 +1,12 @@
 package com.tflow.model.editor.cmd;
 
 import com.tflow.model.data.ProjectDataException;
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
-import com.tflow.model.editor.room.Floor;
-import com.tflow.model.editor.room.Room;
 import com.tflow.model.mapper.ProjectMapper;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
@@ -103,7 +101,7 @@ public class SelectStep extends Command {
         action.getResultMap().put(ActionResultKey.STEP, step);
 
         // save Step data
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
         int stepId = step.getId();

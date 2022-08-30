@@ -1,6 +1,6 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.TWData;
@@ -30,7 +30,7 @@ public class RemoveDirectLine extends Command {
 
         // save Line data
         Project project = step.getOwner();
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
         dataManager.addData(ProjectFileType.LINE, (TWData) null, projectUser, line.getId(), step.getId());

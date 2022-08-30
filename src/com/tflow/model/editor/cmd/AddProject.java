@@ -1,7 +1,7 @@
 package com.tflow.model.editor.cmd;
 
 import com.tflow.model.data.ProjectDataException;
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.ProjectManager;
 import com.tflow.model.editor.Workspace;
@@ -13,7 +13,7 @@ public class AddProject extends Command {
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
         Workspace workspace = (Workspace) paramMap.get(CommandParamKey.WORKSPACE);
         ProjectManager projectManager = new ProjectManager(workspace.getEnvironment());
-        ProjectDataManager dataManager = workspace.getProjectDataManager();
+        DataManager dataManager = workspace.getDataManager();
 
         Project project = new Project("", "Untitled");
         project.setOwner(workspace);

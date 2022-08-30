@@ -16,7 +16,6 @@ import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
 import com.tflow.wcmd.IOCommand;
-import com.tflow.wcmd.KafkaCommand;
 import javafx.util.Pair;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
@@ -42,13 +41,13 @@ public class BuildPackageCommand extends IOCommand {
     private KafkaRecordAttributes attributes;
     private RecordAttributesData recordAttributes;
 
-    private ProjectDataManager dataManager;
+    private DataManager dataManager;
     private PackageMapper mapper;
 
     private String generatedPath;
     private DConvers dconvers;
 
-    public BuildPackageCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, ProjectDataManager dataManager) {
+    public BuildPackageCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, DataManager dataManager) {
         super(offset, key, value, environmentConfigs);
         this.dataManager = dataManager;
     }

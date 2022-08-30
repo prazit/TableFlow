@@ -6,7 +6,6 @@ import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
 import com.tflow.zookeeper.ZKConfiguration;
 import com.tflow.zookeeper.ZKConfigNode;
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,8 +17,6 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.zookeeper.KeeperException;
-import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +27,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /*TODO: save updated object between line in RemoveDataFile when the Action RemoveDataFile is used in the UI*/
-public class ProjectDataManager {
+public class DataManager {
 
-    private Logger log = LoggerFactory.getLogger(ProjectDataManager.class);
+    private Logger log = LoggerFactory.getLogger(DataManager.class);
 
     private Map<String, ProjectDataWriteBuffer> projectDataWriteBufferList;
 
@@ -56,7 +53,7 @@ public class ProjectDataManager {
 
     private ZKConfiguration globalConfigs;
 
-    public ProjectDataManager(Environment environment, String consumerGroupId, ZKConfiguration zkConfiguration) {
+    public DataManager(Environment environment, String consumerGroupId, ZKConfiguration zkConfiguration) {
         environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
         this.consumerGroupId = consumerGroupId;
         this.globalConfigs = zkConfiguration;

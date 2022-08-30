@@ -1,6 +1,6 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
@@ -150,7 +150,7 @@ public abstract class Command {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         Project project = step.getOwner();
         ProjectUser projectUser = mapper.toProjectUser(project);
-        ProjectDataManager dataManager = project.getDataManager();
+        DataManager dataManager = project.getDataManager();
 
         int stepId = step.getId();
         if (selectable instanceof DataColumn) dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) selectable), projectUser, ((DataColumn) selectable).getId(), step.getId(), ((DataColumn) selectable).getOwner().getId());

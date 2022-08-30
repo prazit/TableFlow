@@ -31,7 +31,7 @@ public class SFTP extends DataSource implements Selectable {
     /* for DataSourceMapper*/
     public SFTP() {/*nothing*/}
 
-    /* for ProjectDataManager.getProject only */
+    /* for DataManager.getProject only */
     public SFTP(int id) {
         this.id = id;
     }

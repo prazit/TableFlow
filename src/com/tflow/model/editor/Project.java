@@ -1,6 +1,6 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.data.ProjectDataManager;
+import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectType;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -35,7 +35,7 @@ public class Project implements Selectable {
 
     private transient ProjectMapper mapper;
     private transient ProjectManager manager;
-    private transient ProjectDataManager dataManager;
+    private transient DataManager dataManager;
 
     /*for ProjectMapper*/
     public Project() {
@@ -154,11 +154,11 @@ public class Project implements Selectable {
         this.manager = manager;
     }
 
-    public ProjectDataManager getDataManager() {
+    public DataManager getDataManager() {
         return dataManager;
     }
 
-    public void setDataManager(ProjectDataManager dataManager) {
+    public void setDataManager(DataManager dataManager) {
         this.dataManager = dataManager;
     }
 
