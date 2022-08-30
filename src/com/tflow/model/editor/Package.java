@@ -18,6 +18,7 @@ public class Package implements Selectable, HasEvent {
     private Date builtDate;
 
     private int complete;
+    private boolean finished;
 
     private List<PackageFile> fileList;
     private int lastFileId;
@@ -84,6 +85,14 @@ public class Package implements Selectable, HasEvent {
         this.complete = complete;
     }
 
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
     public List<PackageFile> getFileList() {
         return fileList;
     }
@@ -108,6 +117,7 @@ public class Package implements Selectable, HasEvent {
                 ", buildDate:" + buildDate +
                 ", builtDate:" + builtDate +
                 ", complete:" + complete +
+                ", finished:" + finished +
                 ", lastFileId:" + lastFileId +
                 ", fileList:" + (fileList == null ? 0 : fileList.size()) +
                 '}';

@@ -23,20 +23,67 @@
                 <ui:param name="controller" value="#{groupCtl}"/>
             </ui:include>
             <ui:include src="resources/topMenu.xhtml"/>
-
-            <p:panel styleClass="screen-area vertical-scroll-panel" header="SCREEN-AREA-#{groupCtl.name}">
-                <div class="ui-g">
-                    <div class="ui-g-3" style="padding:var(--padding)">
-                        <p:commandButton value="Throw Exception 1" actionListener="#{groupCtl.throwException}"/>
-                    </div>
-                    <div class="ui-g-3" style="padding:var(--padding)">
-                        <p:commandButton value="Throw Exception 2" actionListener="#{groupCtl.throwException2}"/>
-                    </div>
-                    <div class="ui-g-3" style="padding:var(--padding)">
-                        <p:commandButton value="Open Projecct P80" actionListener="#{groupCtl.openProject80}"/>
-                    </div>
-                </div>
-            </p:panel>
+            <div class="screen-area" style="background-color:var(--surface-e);padding:var(--padding);display: flex">
+                <h:form id="groupForm">
+                    <p:panel style="width: 100%">
+                        <f:facet name="header">
+                            <p:outputLabel style="padding:var(--padding) !important;">
+                                <i class="pi pi-folder-open" style="font-size:var(--font-size-2)"/>
+                                <p:outputLabel value=" #{groupCtl.currentPage.title}" style="font-weight:bolder;font-size:var(--font-size-2)"/>
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:tabView>
+                            <p:ajax event="tabChange" listener="#{groupCtl.openSection}" update="#{groupCtl.openSectionUpdate}"/>
+                            <p:tab title="Existing Project">
+                                <p:outputLabel value="#{groupCtl.currentPage.description}"/>
+                                <p:panelGrid id="existingProject" columns="3" columnClasses="ui-g-5,ui-g-5,ui-g-2" styleClass="ui-g-12">
+                                    <p:panel header="Group List">
+                                        <!-- TODO: group list -->
+                                    </p:panel>
+                                    <p:panel header="Project List">
+                                        <!-- TODO: project list in a selected group -->
+                                    </p:panel>
+                                    <p:outputPanel>
+                                        <p:commandButton value="Open Project" style="width:100%;margin:var(--margin)"/>
+                                        <p:commandButton value="Clone Project" style="width:100%;margin:var(--margin)"/>
+                                    </p:outputPanel>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Project Template">
+                                <p:outputLabel value="#{groupCtl.currentPage.description}"/>
+                                <p:outputPanel id="projectTemplate" styleClass="ui-g">
+                                    <p:selectOneMenu styleClass="ui-g-10">
+                                        <f:selectItem itemLabel="First Group" itemValue=""/>
+                                        <p:dataTable value="#{groupCtl.groupList}" var="group" selection="true" selectionMode="single">
+                                            <p:column>#{group.name} (#{group.id})</p:column>
+                                        </p:dataTable>
+                                    </p:selectOneMenu>
+                                    <p:outputPanel styleClass="ui-g-2">
+                                        <p:commandButton value="New Project" style="width:100%;"/>
+                                    </p:outputPanel>
+                                </p:outputPanel>
+                                <p:panel styleClass="ui-g-12" header="Template List">
+                                    <!-- TODO: Include Empty Template -->
+                                    <h1>Include Empty Template here</h1>
+                                </p:panel>
+                            </p:tab>
+                            <p:tab title="Testing">
+                                <div class="ui-g">
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Throw Exception 1" actionListener="#{groupCtl.throwException}"/>
+                                    </div>
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Throw Exception 2" actionListener="#{groupCtl.throwException2}"/>
+                                    </div>
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Open Existing Project" actionListener="#{groupCtl.openProject('P102')}"/>
+                                    </div>
+                                </div>
+                            </p:tab>
+                        </p:tabView>
+                    </p:panel>
+                </h:form>
+            </div>
         </div>
     </h:body>
 </f:view>

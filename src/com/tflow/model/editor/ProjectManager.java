@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.google.gson.internal.LinkedTreeMap;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import com.tflow.kafka.*;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.cmd.AddProject;
@@ -295,6 +296,34 @@ public class ProjectManager {
 
         // update Project data: need to update Project record every Action that call the newUniqueId*/
         dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, projectUser.getId());
+    }
+
+    public ProjectGroupList loadGroupList(Workspace workspace) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectDataManager dataManager = workspace.getProjectDataManager();
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setUserId(workspace.getUser().getId());
+        projectUser.setClientId(workspace.getClient().getId());
+
+        Object data = dataManager.getData(ProjectFileType.GROUP_LIST, projectUser);
+        GroupListData groupListData = (GroupListData) throwExceptionOnError(data);
+
+        return mapper.map(groupListData);
+    }
+
+    public ProjectGroup loadProjectGroup(Workspace workspace, int groupId) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectDataManager dataManager = workspace.getProjectDataManager();
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setUserId(workspace.getUser().getId());
+        projectUser.setClientId(workspace.getClient().getId());
+
+        Object data = dataManager.getData(ProjectFileType.GROUP, projectUser, groupId);
+        GroupData groupData = (GroupData) throwExceptionOnError(data);
+
+        return mapper.map(groupData);
     }
 
     /**

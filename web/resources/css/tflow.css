@@ -116,6 +116,14 @@ body .top-menu .ui-menu.ui-menubar-options {
     height: calc(100% - var(--top-bar-height));
 }
 
+.screen-area .ui-panel {
+    height: 100%;
+}
+
+.screen-area .ui-panel .ui-panel-content {
+    overflow: hidden;
+}
+
 .test-group {
     background-color: var(--surface-b);
 }

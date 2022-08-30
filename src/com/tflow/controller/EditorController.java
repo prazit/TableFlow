@@ -77,6 +77,7 @@ public class EditorController extends Controller {
         String groupId = parameterMap.get(PageParameter.GROUP_ID);
         if (projectId != null && groupId != null) {
             log.info("EditorOpenCommand: New Project from Template");
+            parameterMap.clear();
             /*TODO: 1. New Project from Template/Existing Project*/
 
         } else if (projectId != null) {
@@ -89,6 +90,7 @@ public class EditorController extends Controller {
 
         } else if (groupId != null) {
             log.info("EditorOpenCommand: Create New Empty Project");
+            parameterMap.clear();
             if (!createNewProject()) {
                 workspace.openPage(Page.GROUP);
                 return;

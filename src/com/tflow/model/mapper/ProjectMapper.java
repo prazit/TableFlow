@@ -41,6 +41,10 @@ public interface ProjectMapper {
 
     /*---- MAP BETWEEN OBJECT ----*/
 
+    ProjectGroupList map(GroupListData groupListData);
+
+    ProjectGroup map(GroupData groupData);
+
     ProjectData map(Project project);
 
     @Mappings({
@@ -269,4 +273,5 @@ public interface ProjectMapper {
     List<Integer> fromDoubleList(List<Double> doubleList);
 
     List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
+
 }

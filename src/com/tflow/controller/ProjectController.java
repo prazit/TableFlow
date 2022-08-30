@@ -145,7 +145,7 @@ public class ProjectController extends Controller {
      * IMPORTANT: call this function at least 2 seconds after buildPackage.
      */
     public void refreshBuildingPackage() {
-        if (activePackage.getId() < 0) {
+        if (activePackage == null || activePackage.getId() < 0) {
             /*case: mockup package for building process*/
             int countBefore = packageList == null ? 0 : packageList.size();
             log.debug("refreshBuildingPackage: countBefore = {}", countBefore);

@@ -69,6 +69,8 @@ public class BuildPackageCommand extends IOCommand {
         recordAttributes = Mappers.getMapper(RecordMapper.class).map(attributes);
         ProjectUser projectUser = mapper.map(attributes);
 
+        /*TODO: need wrapper function covered by TryCatch and SavePackage before Rejected*/
+
         Object data = getData(ProjectFileType.PACKAGE_LIST);
         //noinspection unchecked (suppress warning about unchecked)
         List<ItemData> packageIdList;

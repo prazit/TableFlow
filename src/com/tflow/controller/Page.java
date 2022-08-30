@@ -3,7 +3,7 @@ package com.tflow.controller;
 public enum Page {
 
     GROUP("group.xhtml", "Open Project", "some description here"),
-    EDITOR("editor.xhtml", "Project", "project editor"),
+    EDITOR("editor.xhtml", "Project Editor", "project editor"),
     ;
 
     String name;

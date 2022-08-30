@@ -51,6 +51,7 @@ public class Workspace implements Serializable {
     private Project project;
     private User user;
     private Client client;
+    private ProjectManager projectManager;
     private ProjectDataManager projectDataManager;
 
     private Map<PageParameter, String> parameterMap;
@@ -62,6 +63,7 @@ public class Workspace implements Serializable {
         log.trace("Session started.");
 
         environment = app.getEnvironment();
+        projectManager = new ProjectManager(environment);
         projectDataManager = new ProjectDataManager(environment, httpRequest.getRequestedSessionId(), app.getZkConfiguration());
 
         // dummy user before Authentication, Notice: after authenticated need to setUser to this workspace.
@@ -278,6 +280,10 @@ public class Workspace implements Serializable {
 
     public Environment getEnvironment() {
         return environment;
+    }
+
+    public ProjectManager getProjectManager() {
+        return projectManager;
     }
 
     public ProjectDataManager getProjectDataManager() {
