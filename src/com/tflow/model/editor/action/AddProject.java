@@ -21,7 +21,9 @@ public class AddProject extends Action {
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.WORKSPACE
+                CommandParamKey.WORKSPACE,
+                CommandParamKey.GROUP_ID,
+                CommandParamKey.TEMPLATE_ID
         );
         setCommands(new com.tflow.model.editor.cmd.AddProject());
     }

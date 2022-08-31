@@ -474,7 +474,11 @@ public class DataManager {
         addData(fileType, (Object) object, additional);
     }
 
-    private void addData(ProjectFileType fileType, Object object, KafkaRecordAttributes additional) throws InvalidParameterException {
+    /**
+     * Notice: Internal used only, please don't use this function!
+     * Internal used in TRcmd.copyProject()
+     */
+    public void addData(ProjectFileType fileType, Object object, KafkaRecordAttributes additional) throws InvalidParameterException {
         validate(fileType, additional);
 
         ProjectDataWriteBuffer projectDataWriteBuffer = new ProjectDataWriteBuffer(projectDataWriteBufferList.size(), fileType, object, additional);

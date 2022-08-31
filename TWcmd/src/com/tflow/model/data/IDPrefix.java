@@ -4,7 +4,8 @@ public enum IDPrefix {
     
     VERSIONED(""),
     GROUP(""),
-    PROJECT(""),
+    TEMPLATE("T"),
+    PROJECT("P"),
     UPLOADED(""),
     PACKAGE("pk"),
     GENERATED(""),

@@ -115,13 +115,10 @@ public class ProjectManager {
         return new KafkaProducer<>(props);
     }
 
-    public String getNewProjectId(Workspace workspace, DataManager dataManager) throws ProjectDataException {
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setUserId((int) workspace.getUser().getId());
-        projectUser.setClientId((int) workspace.getClient().getId());
-        projectUser.setId("TEMPLATE-NOT-FOUND");
-
-        String projectGroupId = "0" /*TODO: workspace.getProjectGroup().getId()*/;
+    public String getNewProjectId(int groupId, Workspace workspace, DataManager dataManager) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(workspace.getProject());
+        String projectGroupId = String.valueOf(groupId);
 
         ProjectData projectData = (ProjectData) throwExceptionOnError(dataManager.getData(ProjectFileType.PROJECT, projectUser, projectGroupId));
         LoggerFactory.getLogger(AddProject.class).debug("projectData = {}", projectData);
@@ -323,6 +320,11 @@ public class ProjectManager {
         GroupData groupData = (GroupData) throwExceptionOnError(data);
 
         return mapper.map(groupData);
+    }
+
+    public List<Item> loadGroup() {
+
+        return null;
     }
 
     /**

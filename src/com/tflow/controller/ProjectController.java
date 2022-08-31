@@ -148,11 +148,11 @@ public class ProjectController extends Controller {
         if (activePackage == null || activePackage.getId() < 0) {
             /*case: mockup package for building process*/
             int countBefore = packageList == null ? 0 : packageList.size();
-            log.debug("refreshBuildingPackage: countBefore = {}", countBefore);
+            log.debug("refreshBuildingPackage:fromClient: countBefore = {}", countBefore);
 
             reloadPackageList();
             int countAfter = packageList == null ? 0 : packageList.size();
-            log.debug("refreshBuildingPackage: countAfter = {}", countAfter);
+            log.debug("refreshBuildingPackage:fromClient: countAfter = {}", countAfter);
             if (countBefore < countAfter) {
                 selectPackage(countBefore);
             }

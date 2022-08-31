@@ -38,14 +38,18 @@
                                 <p:outputLabel value="#{groupCtl.currentPage.description}"/>
                                 <p:panelGrid id="existingProject" columns="3" columnClasses="ui-g-5,ui-g-5,ui-g-2" styleClass="ui-g-12">
                                     <p:panel header="Group List">
-                                        <!-- TODO: group list -->
+                                        <p:dataTable value="#{groupCtl.groupList.groupList}" var="group" selection="#{groupCtl.selectedGroup}" selectionMode="single" rowKey="#{group.id}" stickyHeader="true">
+                                            <p:column>#{group.name} (#{group.id})</p:column>
+                                        </p:dataTable>
                                     </p:panel>
                                     <p:panel header="Project List">
-                                        <!-- TODO: project list in a selected group -->
+                                        <p:dataTable value="#{groupCtl.projectList}" var="project" selection="#{groupCtl.selectedProject}" selectionMode="single" rowKey="#{project.id}" stickyHeader="true">
+                                            <p:column>#{project.name} (#{project.id})</p:column>
+                                        </p:dataTable>
                                     </p:panel>
                                     <p:outputPanel>
-                                        <p:commandButton value="Open Project" style="width:100%;margin:var(--margin)"/>
-                                        <p:commandButton value="Clone Project" style="width:100%;margin:var(--margin)"/>
+                                        <p:commandButton value="Open Project" style="width:100%;margin:var(--margin)" actionListener="#{groupCtl.openSelectedProject}"/>
+                                        <p:commandButton value="Clone Project" style="width:100%;margin:var(--margin)" actionListener="#{groupCtl.cloneSelectedProject}"/>
                                     </p:outputPanel>
                                 </p:panelGrid>
                             </p:tab>
@@ -53,10 +57,7 @@
                                 <p:outputLabel value="#{groupCtl.currentPage.description}"/>
                                 <p:outputPanel id="projectTemplate" styleClass="ui-g">
                                     <p:selectOneMenu styleClass="ui-g-10">
-                                        <f:selectItem itemLabel="First Group" itemValue=""/>
-                                        <p:dataTable value="#{groupCtl.groupList}" var="group" selection="true" selectionMode="single">
-                                            <p:column>#{group.name} (#{group.id})</p:column>
-                                        </p:dataTable>
+                                        <f:selectItems value="#{groupCtl.groupList.groupList}" var="groupItem" itemLabel="#{groupItem.name}" itemValue="#{groupItem.id}"/>
                                     </p:selectOneMenu>
                                     <p:outputPanel styleClass="ui-g-2">
                                         <p:commandButton value="New Project" style="width:100%;"/>
@@ -76,7 +77,10 @@
                                         <p:commandButton value="Throw Exception 2" actionListener="#{groupCtl.throwException2}"/>
                                     </div>
                                     <div class="ui-g-3" style="padding:var(--padding)">
-                                        <p:commandButton value="Open Existing Project" actionListener="#{groupCtl.openProject('P102')}"/>
+                                        <p:commandButton value="Open Project 102" actionListener="#{groupCtl.openProject('P102')}"/>
+                                    </div>
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Clone Project 102" actionListener="#{groupCtl.cloneProject(0,'P102')}"/>
                                     </div>
                                 </div>
                             </p:tab>

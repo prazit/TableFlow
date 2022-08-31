@@ -3,6 +3,7 @@ package com.tflow.controller;
 import com.tflow.kafka.*;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.Dbms;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.Properties;
@@ -76,12 +77,23 @@ public class EditorController extends Controller {
         String projectId = parameterMap.get(PageParameter.PROJECT_ID);
         String groupId = parameterMap.get(PageParameter.GROUP_ID);
         if (projectId != null && groupId != null) {
-            log.info("EditorOpenCommand: New Project from Template");
+            log.info("EditorOpenCommand: New Project from Template/Existing Project {} into Group {}", projectId, groupId);
             parameterMap.clear();
-            /*TODO: 1. New Project from Template/Existing Project*/
+            String newProjectId = createNewProject(Integer.parseInt(groupId), projectId);
+            if (newProjectId == null) {
+                workspace.openPage(Page.GROUP);
+                return;
+            }
+
+            /*new project from template need to load new project after create*/
+            if (!openProject(newProjectId)) {
+                FacesUtil.addError("Open project(" + newProjectId + ") failed!");
+                workspace.openPage(Page.GROUP);
+                return;
+            }
 
         } else if (projectId != null) {
-            log.info("EditorOpenCommand: Open Project by Id({})", projectId);
+            log.info("EditorOpenCommand: Open Project {}", projectId);
             if (!openProject(projectId)) {
                 FacesUtil.addError("Open project(" + projectId + ") failed!");
                 workspace.openPage(Page.GROUP);
@@ -89,15 +101,15 @@ public class EditorController extends Controller {
             }
 
         } else if (groupId != null) {
-            log.info("EditorOpenCommand: Create New Empty Project");
+            log.info("EditorOpenCommand: Create New Empty Project into Group {}", groupId);
             parameterMap.clear();
-            if (!createNewProject()) {
+            if (createNewProject(Integer.parseInt(groupId)) == null) {
                 workspace.openPage(Page.GROUP);
                 return;
             }
 
         } else if (workspace.getProject() == null) {
-            log.warn("EditorOpenCommand: Invalid Parameter");
+            log.warn("EditorOpenCommand: Required Parameter: GroupID, ProjectID.");
             workspace.openPage(Page.GROUP);
             return;
 
@@ -857,17 +869,24 @@ public class EditorController extends Controller {
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
-    private boolean createNewProject() {
+    private String createNewProject(int groupId) {
+        return createNewProject(groupId, "");
+    }
+
+    private String createNewProject(int groupId, String templateId) {
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.WORKSPACE, workspace);
+        paramMap.put(CommandParamKey.GROUP_ID, groupId);
+        paramMap.put(CommandParamKey.TEMPLATE_ID, templateId);
 
         try {
-            new AddProject(paramMap).execute();
-            return true;
+            AddProject action = new AddProject(paramMap);
+            action.execute();
+            return (String) action.getResultMap().get(ActionResultKey.PROJECT_ID);
         } catch (Exception ex) {
             log.error("Create New Project Failed!", ex);
             FacesUtil.addError("Create New Project with Internal Command Error!");
-            return false;
+            return null;
         }
     }
 

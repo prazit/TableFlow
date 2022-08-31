@@ -6,7 +6,7 @@ import java.util.List;
 public class ProjectGroupList {
 
     private int lastProjectId;
-    private List<Item> groupList;
+    private List<GroupItem> groupList;
 
     public int getLastProjectId() {
         return lastProjectId;
@@ -16,11 +16,11 @@ public class ProjectGroupList {
         this.lastProjectId = lastProjectId;
     }
 
-    public List<Item> getGroupList() {
+    public List<GroupItem> getGroupList() {
         return groupList;
     }
 
-    public void setGroupList(List<Item> groupList) {
+    public void setGroupList(List<GroupItem> groupList) {
         this.groupList = groupList;
     }
 

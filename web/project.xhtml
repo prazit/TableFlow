@@ -158,7 +158,7 @@
                             <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() > 0}"><h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/> Select Package from the List above.</h2></p:outputPanel>
 
                             <!-- building message -->
-                            <p:outputPanel id="building" rendered="#{not projectCtl.pleaseSelectPackage and not projectCtl.activePackage.finished}">
+                            <p:outputPanel id="building" rendered="#{projectCtl.activePackage != null and not projectCtl.pleaseSelectPackage and not projectCtl.activePackage.finished}">
                                 <h2 style="color: var(--surface-c);"><i class="fa fa-info"/>Building Package at #{projectCtl.activePackage.buildDate} ... #{projectCtl.activePackage.complete}%</h2>
                                 <script>$(function () {
                                     console.log('setTimeout');

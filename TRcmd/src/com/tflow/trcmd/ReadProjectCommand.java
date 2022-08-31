@@ -1,10 +1,7 @@
 package com.tflow.trcmd;
 
 import com.tflow.kafka.*;
-import com.tflow.model.data.GroupData;
-import com.tflow.model.data.GroupListData;
-import com.tflow.model.data.HeaderData;
-import com.tflow.model.data.ProjectData;
+import com.tflow.model.data.*;
 import com.tflow.model.data.record.ClientRecordData;
 import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
@@ -18,12 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
@@ -37,11 +35,13 @@ public class ReadProjectCommand extends IOCommand {
     private KafkaProducer<String, Object> dataProducer;
     private RecordMapper mapper;
     private HeaderData headerData;
+    private DataManager dataManager;
 
-    public ReadProjectCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, KafkaProducer<String, Object> dataProducer, String topic) {
+    public ReadProjectCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, KafkaProducer<String, Object> dataProducer, String topic, DataManager dataManager) {
         super(offset, key, value, environmentConfigs);
         this.dataProducer = dataProducer;
         this.topic = topic;
+        this.dataManager = dataManager;
     }
 
     @Override
@@ -71,21 +71,54 @@ public class ReadProjectCommand extends IOCommand {
             return;
         }
 
-        /*support open new project from template (projectId starts with "T")*/
-        if (ProjectFileType.PROJECT.equals(projectFileType) && isTemplate(additional.getProjectId())) {
-            String projectId = copyTemplateToNewProject(additional);
-            if (projectId == null) {
+        if (ProjectFileType.PROJECT.equals(projectFileType)) {
+            /* support open new project from template/existing-project.
+             * TEMPLATE_ID/PROJECT_ID:
+             * empty string = Add New Empty Project
+             * templateID = Copy Template to New Project
+             * templatePrefix + projectID = Copy Project to New Project
+             */
+            String templateId = additional.getProjectId();
+            if (templateId.isEmpty()) {
                 /*return EmptyProject with new ProjectID*/
                 log.warn("Project template not found: {}", additional.getProjectId());
+                ProjectData emptyProject = new ProjectData();
+                emptyProject.setName("Untitled");
 
                 /*send Header message and then Data message*/
-                RecordData recordValue = createNewEmptyProject(additional);
-                sendObject(key, headerData);
-                sendObject(key, recordValue);
+                try {
+                    RecordData returnValue = createNewProject(emptyProject, additional);
+                    sendObject(key, headerData);
+                    sendObject(key, returnValue);
+                } catch (Exception ex) {
+                    log.error("INVALID_DATA_FILE: ", ex);
+                    headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
+                    sendObject(key, headerData);
+                }
+                return;
+
+            } else if (templateId.startsWith(IDPrefix.TEMPLATE.getPrefix())) {
+                /*return CopiedProject with new ProjectID*/
+                try {
+                    String prototypeId = getPrototypeId(templateId);
+                    log.debug("prototypeId = {}", prototypeId);
+                    ProjectData prototypeProject = getPrototypeProject(prototypeId, additional);
+                    RecordData returnValue = createNewProject(prototypeProject, additional);
+
+                    copyProject(prototypeId, prototypeProject.getId(), additional);
+
+                    /*send Header message and then Data message*/
+                    sendObject(key, headerData);
+                    sendObject(key, returnValue);
+                } catch (Exception ex) {
+                    log.error("INVALID_DATA_FILE: ", ex);
+                    headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
+                    sendObject(key, headerData);
+                }
                 return;
             }
 
-            additional.setProjectId(projectId);
+            /* otherwise load record normally */
         }
 
         File file = getFile(projectFileType, additional);
@@ -123,6 +156,74 @@ public class ReadProjectCommand extends IOCommand {
         sendObject(key, recordValue);
     }
 
+    /**
+     * IMPORTANT: all write in this function must call DataManager.addData to make the TWcmd can replay for Backup Site
+     **/
+    private void copyProject(String srcProjectId, String destProjectId, RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
+        log.info("copyProject(from:{}, to:{})", srcProjectId, destProjectId);
+        String projectId = additional.getProjectId();
+
+        additional.setProjectId(srcProjectId);
+        File projectFile = getFile(ProjectFileType.PROJECT, additional);
+        File srcProjectDir = projectFile.getParentFile();
+
+        /*collect directory to list*/
+        List<File> dirList = new ArrayList<>(Collections.singletonList(srcProjectDir));
+        File[] subDir = srcProjectDir.listFiles(dir -> !dir.isFile());
+        if (subDir != null) {
+            dirList.addAll(Arrays.asList(subDir));
+        }
+
+        /*add files to Destination-Project using DataManager */
+        RecordData recordData;
+        RecordAttributesData recordAttributes;
+        ProjectFileType projectFileType;
+        KafkaRecordAttributes kafkaRecordAttributes;
+        File[] files;
+        for (File dir : dirList) {
+            files = dir.listFiles(File::isFile);
+            if (files == null) continue;
+
+            for (File file : files) {
+                if (file.getName().contains("client")) continue;
+
+                log.debug("copyProject.file:{}", file);
+                recordData = (RecordData) readFrom(file);
+                recordAttributes = recordData.getAdditional();
+                projectFileType = recordAttributes.getFileType();
+                kafkaRecordAttributes = mapper.map(recordAttributes);
+                kafkaRecordAttributes.setProjectId(destProjectId);
+                dataManager.addData(projectFileType, recordData.getData(), kafkaRecordAttributes);
+            }
+        }
+    }
+
+    private ProjectData getPrototypeProject(String prototypeId, RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
+        String projectId = additional.getProjectId();
+        String recordId = additional.getRecordId();
+        additional.setProjectId(prototypeId);
+        additional.setRecordId(prototypeId);
+
+        File file = getFile(ProjectFileType.PROJECT, additional);
+        if (!file.exists()) {
+            throw new IOException("Prototype-Project(" + prototypeId + ") not found!");
+        }
+        RecordData recordValue = (RecordData) readFrom(file);
+
+        additional.setProjectId(projectId);
+        additional.setRecordId(recordId);
+        return (ProjectData) recordValue.getData();
+    }
+
+    private String getPrototypeId(String templateId) {
+        String projectId = templateId.substring(1);
+        log.debug("getPrototypeId(templateId:{}): projectId = {}", templateId, projectId);
+        if (projectId.startsWith(IDPrefix.PROJECT.getPrefix())) {
+            return projectId;
+        }
+        return templateId;
+    }
+
     private HeaderData getHeaderData(RecordAttributesData additional) {
         HeaderData headerData = new HeaderData();
         headerData.setProjectId(additional.getProjectId());
@@ -133,7 +234,14 @@ public class ReadProjectCommand extends IOCommand {
         return headerData;
     }
 
-    private RecordData createNewEmptyProject(RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
+    /**
+     * @param prototypeData the prototypeData.Id will replaced by new projectId
+     * @return new RecordData with the data = prototypeData
+     */
+    private RecordData createNewProject(ProjectData prototypeData, RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
+
+        /*TODO: IMPORTANT: change all write in this function to call DataManager.addData to make the TWcmd can replay for Backup Site*/
+
         GroupListData groupList;
         File file = getFile(ProjectFileType.GROUP_LIST, additional);
         if (!file.exists()) {
@@ -158,21 +266,19 @@ public class ReadProjectCommand extends IOCommand {
         }
 
         int newProjectId = groupList.getLastProjectId() + 1;
-        String newProjectIdString = "P" + newProjectId;
-        ProjectData emptyProject = new ProjectData();
-        emptyProject.setId(newProjectIdString);
-        emptyProject.setName("Untitled");
+        String newProjectIdString = IDPrefix.PROJECT.getPrefix() + newProjectId;
+        prototypeData.setId(newProjectIdString);
         log.info("new project id = {}", newProjectIdString);
 
         groupList.setLastProjectId(newProjectId);
         writeTo(file, groupList);
 
-        groupData.getProjectList().add(mapper.map(emptyProject));
+        groupData.getProjectList().add(mapper.map(prototypeData));
         writeTo(groupFile, groupData);
 
         /*create empty project object in a recordData*/
         RecordData recordData = new RecordData();
-        recordData.setData(emptyProject);
+        recordData.setData(prototypeData);
         recordData.setAdditional(additional);
         return recordData;
     }
@@ -211,10 +317,6 @@ public class ReadProjectCommand extends IOCommand {
         /*TODO: send message to TWcmd to write new project*/
 
         return null;
-    }
-
-    private boolean isTemplate(String projectId) {
-        return projectId.startsWith("T");
     }
 
     private void sendObject(String key, Object object) {

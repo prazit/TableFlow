@@ -37,8 +37,13 @@ public enum CommandParamKey {
     DATA_TEST1,
     DATA_TEST2,
 
-    INDEX, VIEW_MANAGER, VIEW_MAPPER;
+    INDEX,
+    VIEW_MANAGER,
+    VIEW_MAPPER,
 
+    GROUP_ID,
+    TEMPLATE_ID,
+    ;
 
     boolean optional;
 

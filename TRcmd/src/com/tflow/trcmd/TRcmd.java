@@ -2,20 +2,27 @@ package com.tflow.trcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaTopics;
+import com.tflow.model.data.DataManager;
+import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.TWcmd;
+import com.tflow.zookeeper.ZKConfigNode;
+import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -28,6 +35,7 @@ public class TRcmd {
 
     private boolean polling;
 
+    private Environment environment;
     private EnvironmentConfigs environmentConfigs;
 
     public TRcmd() {
@@ -37,6 +45,15 @@ public class TRcmd {
     @SuppressWarnings("unchecked")
     public void start() {
 
+        ZKConfiguration zkConfiguration = null;
+        try {
+            zkConfiguration = createZK();
+        } catch (Exception ex) {
+            log.error("Zookeeper is required to run TRcmd, ", ex);
+            System.exit(-1);
+        }
+
+        DataManager dataManager = new DataManager(environment, getClass().getSimpleName(), zkConfiguration);
         KafkaConsumer<String, byte[]> consumer = createConsumer();
         KafkaProducer<String, Object> dataProducer = createProducer();
 
@@ -75,7 +92,7 @@ public class TRcmd {
                 }
 
                 /*TODO: add command to UpdateProjectCommandQueue*/
-                ReadProjectCommand readProjectCommand = new ReadProjectCommand(offset, key, value, environmentConfigs, dataProducer, dataTopic);
+                ReadProjectCommand readProjectCommand = new ReadProjectCommand(offset, key, value, environmentConfigs, dataProducer, dataTopic, dataManager);
                 log.info("Incoming message: {}", readProjectCommand.toString());
 
                 /*test only*/
@@ -91,15 +108,44 @@ public class TRcmd {
                     log.error("Hard error: ", ex);
                     log.warn("Message rejected: {}", readProjectCommand.toString());
                 }
+
+                /*Notice: sleeping commit-thread need to notify immediately*/
+                boolean showEndLog = false;
+                Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
+                for (Thread thread : threadMap.keySet()) {
+                    if (thread.getName().contains("Commit")) {
+                        showEndLog = true;
+                        StackTraceElement[] stackTraceElements = threadMap.get(thread);
+                        log.warn("Notify Thread('{}') at {}", thread, stackTraceElements);
+                        try {
+                            thread.notify();
+                        } catch (IllegalMonitorStateException ex) {
+                            log.error("", ex);
+                        }
+                        break;
+                    }
+                }
+                if (showEndLog) log.warn("Next roll is begin after notify commit-thread.");
+
             }
         }
 
         consumer.close();
     }
 
+    private ZKConfiguration createZK() throws IOException, InterruptedException, KeeperException {
+        ZKConfiguration zkConfiguration = new ZKConfiguration();
+        zkConfiguration.connect();
+        zkConfiguration.initial();
+
+        environment = Environment.valueOf(zkConfiguration.getString(ZKConfigNode.ENVIRONMENT));
+        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+
+        return zkConfiguration;
+    }
+
     private KafkaConsumer<String, byte[]> createConsumer() {
         /*TODO: need to load consumer configuration*/
-        environmentConfigs = EnvironmentConfigs.DEVELOPMENT;
         Properties props = new Properties();
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("group.id", "trcmd");

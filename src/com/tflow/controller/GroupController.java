@@ -1,15 +1,17 @@
 package com.tflow.controller;
 
 import com.tflow.model.PageParameter;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.ProjectDataException;
-import com.tflow.model.editor.Item;
-import com.tflow.model.editor.ProjectGroup;
-import com.tflow.model.editor.ProjectGroupList;
+import com.tflow.model.editor.*;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
 import javax.el.MethodExpression;
+import javax.faces.event.ActionListener;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import java.util.ArrayList;
 import java.util.List;
 
 @ViewScoped
@@ -17,12 +19,24 @@ import java.util.List;
 public class GroupController extends Controller {
 
     private String name;
+
     private ProjectGroupList groupList;
+    private GroupItem selectedGroup;
+
+    private ProjectGroup projectList;
+    private ProjectItem selectedProject;
+
     private String openSectionUpdate;
 
     @Override
     void onCreation() {
         log.trace("onCreation.");
+        selectedProject = null;
+        selectedGroup = null;
+        projectList = new ProjectGroup();
+        projectList.setProjectList(new ArrayList<>());
+        groupList = new ProjectGroupList();
+        groupList.setGroupList(new ArrayList<>());
     }
 
     @Override
@@ -30,12 +44,28 @@ public class GroupController extends Controller {
         return Page.GROUP;
     }
 
-    public String getName() {
-        return name;
+    public ProjectGroupList getGroupList() {
+        return groupList;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public ProjectGroup getProjectList() {
+        return projectList;
+    }
+
+    public GroupItem getSelectedGroup() {
+        return selectedGroup;
+    }
+
+    public void setSelectedGroup(GroupItem selectedGroup) {
+        this.selectedGroup = selectedGroup;
+    }
+
+    public ProjectItem getSelectedProject() {
+        return selectedProject;
+    }
+
+    public void setSelectedProject(ProjectItem selectedProject) {
+        this.selectedProject = selectedProject;
     }
 
     public void throwException() {
@@ -46,8 +76,22 @@ public class GroupController extends Controller {
         throw new Exception("Unknown error occurred.");
     }
 
+    public void openSelectedProject() {
+        openProject(selectedProject.getId());
+    }
+
     public void openProject(String projectId) {
         workspace.openPage(Page.EDITOR, new Parameter(PageParameter.PROJECT_ID, projectId));
+    }
+
+    public void cloneSelectedProject() {
+        cloneProject(selectedGroup.getId(), selectedProject.getId());
+    }
+
+    public void cloneProject(int groupId, String projectId) {
+        workspace.openPage(Page.EDITOR,
+                new Parameter(PageParameter.GROUP_ID, String.valueOf(groupId)),
+                new Parameter(PageParameter.PROJECT_ID, IDPrefix.TEMPLATE.getPrefix() + projectId));
     }
 
     public void openSection(TabChangeEvent event) throws ProjectDataException {
@@ -64,14 +108,27 @@ public class GroupController extends Controller {
     }
 
     private String openProjectSection() throws ProjectDataException {
-        /*TODO: clear selected project list*/
-        /*TODO: clear project list*/
-        /*TODO: clear selected group*/
+        if (groupList != null) {
+            log.trace("openProjectSection Again.");
+            return "";
+        }
 
-        /*TODO: load group list*/
         groupList = workspace.getProjectManager().loadGroupList(workspace);
 
         return GroupSection.EXISTING_PROJECT.getUpdate();
+    }
+
+    private void projectGroupSelected(SelectEvent event) throws ProjectDataException {
+        if (selectedGroup.getId() == projectList.getId()) {
+            log.debug("projectGroupSelected: on the same group ({}).", selectedGroup.getId());
+            return;
+        }
+
+        log.debug("projectGroupSelected: event = {}", event);
+        log.debug("projectGroupSelected: selectedGroup = {}", selectedGroup);
+
+        selectedProject = null;
+        projectList = workspace.getProjectManager().loadProjectGroup(workspace, selectedGroup.getId());
     }
 
     private String openTemplateSection() {
