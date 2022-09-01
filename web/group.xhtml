@@ -83,6 +83,29 @@
                                         <p:commandButton value="Clone Project 102" actionListener="#{groupCtl.cloneProject(0,'P102')}"/>
                                     </div>
                                 </div>
+
+                                <p:divider align="left">
+                                    <div class="inline-flex align-items-center">
+                                        <i class="pi pi-circle-on"/>
+                                        <b>Threads</b>
+                                    </div>
+                                </p:divider>
+
+                                <div class="ui-g">
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Throw Exception 1" actionListener="#{groupCtl.throwException}"/>
+                                    </div>
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Throw Exception 2" actionListener="#{groupCtl.throwException2}"/>
+                                    </div>
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Open Project 102" actionListener="#{groupCtl.openProject('P102')}"/>
+                                    </div>
+                                    <div class="ui-g-3" style="padding:var(--padding)">
+                                        <p:commandButton value="Clone Project 102" actionListener="#{groupCtl.cloneProject(0,'P102')}"/>
+                                    </div>
+                                </div>
+
                             </p:tab>
                         </p:tabView>
                     </p:panel>

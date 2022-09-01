@@ -86,6 +86,9 @@ public class RemoveTransformTable extends Command {
         // save Tower data
         Tower tower = floor.getTower();
         dataManager.addData(ProjectFileType.TOWER, mapper.map(tower), projectUser, tower.getId(), step.getId());
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 
 }

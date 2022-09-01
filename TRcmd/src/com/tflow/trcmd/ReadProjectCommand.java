@@ -181,19 +181,32 @@ public class ReadProjectCommand extends IOCommand {
         KafkaRecordAttributes kafkaRecordAttributes;
         File[] files;
         for (File dir : dirList) {
+            log.debug("copyProject.dir:{}", dir);
+
             files = dir.listFiles(File::isFile);
             if (files == null) continue;
 
             for (File file : files) {
+                log.debug("copyProject.file:{}", file);
+
+                // skip client file
                 if (file.getName().contains("client")) continue;
 
-                log.debug("copyProject.file:{}", file);
                 recordData = (RecordData) readFrom(file);
                 recordAttributes = recordData.getAdditional();
                 projectFileType = recordAttributes.getFileType();
                 kafkaRecordAttributes = mapper.map(recordAttributes);
                 kafkaRecordAttributes.setProjectId(destProjectId);
-                dataManager.addData(projectFileType, recordData.getData(), kafkaRecordAttributes);
+                Object data = recordData.getData();
+
+                // change all projectId in projectFile
+                if (projectFileType == ProjectFileType.PROJECT) {
+                    ProjectData projectData = (ProjectData) data;
+                    projectData.setId(destProjectId);
+                    kafkaRecordAttributes.setRecordId(destProjectId);
+                }
+
+                dataManager.addData(projectFileType, data, kafkaRecordAttributes);
             }
         }
     }

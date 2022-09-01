@@ -81,6 +81,9 @@ public class RemoveDataFile extends Command {
         // save Tower data
         Tower tower = floor.getTower();
         dataManager.addData(ProjectFileType.TOWER, mapper.map(tower), projectUser, tower.getId(), stepId);
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 
 }

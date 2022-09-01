@@ -14,7 +14,7 @@ import java.util.GregorianCalendar;
 import java.util.Objects;
 
 public class DateTimeUtil {
-    private static final Logger log = LoggerFactory.getLogger(DateTimeUtil.class);
+    //private static final Logger log = LoggerFactory.getLogger(DateTimeUtil.class);
     public static final String DEFAULT_ZONE = "Asia/Bangkok";
     public static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy";
     public static final String DEFAULT_DATETIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
@@ -241,13 +241,13 @@ public class DateTimeUtil {
     }
 
     public static Duration getWorkHour(Date timeIn, Date timeOut) {
-        log.debug("getWorkHour. (timeIn: {}, timeOut: {})", timeIn, timeOut);
+        //log.debug("getWorkHour. (timeIn: {}, timeOut: {})", timeIn, timeOut);
 
         long mid = 1300;
         long in = Long.parseLong(DateTimeUtil.getDateStr(timeIn, "Hmm"));
         long out = Long.parseLong(DateTimeUtil.getDateStr(timeOut, "Hmm"));
         Duration duration = DateTimeUtil.diffTime(timeIn, timeOut);
-        log.debug("getWorkHour. in:{}, out:{}, mid:{}", in, out, mid);
+        //log.debug("getWorkHour. in:{}, out:{}, mid:{}", in, out, mid);
 
         /* KUDU-22: use this table for WorkHour/Duration (mid = 13:00, before mid is < mid, after mid is => mid)
          *
@@ -267,7 +267,7 @@ public class DateTimeUtil {
             duration = duration.plusHours(-1);
         }
 
-        log.debug("getWorkHour = {}", duration);
+        //log.debug("getWorkHour = {}", duration);
         return duration;
     }
 

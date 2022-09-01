@@ -52,5 +52,8 @@ public class AddProject extends Command {
 
         // save Project
         projectManager.saveProjectAs(newProjectId, project);
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 }

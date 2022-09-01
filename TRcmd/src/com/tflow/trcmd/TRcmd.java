@@ -107,25 +107,9 @@ public class TRcmd {
                 } catch (Exception ex) {
                     log.error("Hard error: ", ex);
                     log.warn("Message rejected: {}", readProjectCommand.toString());
+                } finally {
+                    dataManager.waitAllTasks();
                 }
-
-                /*Notice: sleeping commit-thread need to notify immediately*/
-                boolean showEndLog = false;
-                Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
-                for (Thread thread : threadMap.keySet()) {
-                    if (thread.getName().contains("Commit")) {
-                        showEndLog = true;
-                        StackTraceElement[] stackTraceElements = threadMap.get(thread);
-                        log.warn("Notify Thread('{}') at {}", thread, stackTraceElements);
-                        try {
-                            thread.notify();
-                        } catch (IllegalMonitorStateException ex) {
-                            log.error("", ex);
-                        }
-                        break;
-                    }
-                }
-                if (showEndLog) log.warn("Next roll is begin after notify commit-thread.");
 
             }
         }

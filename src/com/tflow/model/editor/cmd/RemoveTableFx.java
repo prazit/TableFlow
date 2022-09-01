@@ -44,6 +44,9 @@ public class RemoveTableFx extends Command {
         dataManager.addData(ProjectFileType.TRANSFORMATION_LIST, mapper.fromTableFxList(tableFxList), projectUser, tableFx.getId(), step.getId(), 0, tableFx.getId());
 
         // no line, tower, floor to save here
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 
 }

@@ -39,6 +39,9 @@ public class RemoveDirectLine extends Command {
         dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, line.getId(), step.getId());
 
         // no tower, floor to save here
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 
 }

@@ -23,8 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /*TODO: save updated object between line in RemoveDataFile when the Action RemoveDataFile is used in the UI*/
 public class DataManager {
@@ -40,7 +39,6 @@ public class DataManager {
     private long maximumTransactionId;
     private long commitAgainMilliseconds;
     private int kafkaTimeout;
-    private boolean commitWaiting;
     private Producer<String, Object> producer;
 
     private String consumerGroupId;
@@ -49,7 +47,8 @@ public class DataManager {
 
     private Deserializer deserializer;
 
-    private Thread commitThread;
+    private ScheduledFuture<?> scheduled;
+    private ScheduledThreadPoolExecutor threadPool;
 
     private ZKConfiguration globalConfigs;
 
@@ -58,13 +57,15 @@ public class DataManager {
         this.consumerGroupId = consumerGroupId;
         this.globalConfigs = zkConfiguration;
         projectDataWriteBufferList = new HashMap<>();
+        threadPool = new ScheduledThreadPoolExecutor(1);
+        scheduled = null;
         loadConfigs();
     }
 
     private void loadConfigs() {
         /*TODO: need config for commitAgainMilliseconds*/
-        commitAgainMilliseconds = 10000;
-        kafkaTimeout = 10000;
+        commitAgainMilliseconds = 2000;
+        kafkaTimeout = 5000;
 
         try {
             log.trace("connecting to zookeeper");
@@ -97,11 +98,8 @@ public class DataManager {
             lastTransId = 1;
             setLastTransId = lastTransId + size;
         }
-        log.debug("get lastTransId from Zookeeper = {}", lastTransId);
 
         globalConfigs.set(ZKConfigNode.LAST_TRANSACTION_ID, setLastTransId);
-        log.debug("set value to lastTransId = {} success", setLastTransId);
-
         return lastTransId + 1;
     }
 
@@ -308,56 +306,50 @@ public class DataManager {
     }
 
     /**
-     * Wait milliseconds and then commit.
+     * Wait milliseconds and then commit again.
      */
-    private void commit(long milliseconds) {
-        commitWaiting = true;
-        Thread thread = new Thread(new Runnable() {
+    private void commitAgain(long milliseconds) {
+        log.debug("commitAgain(milliseconds:{}, scheduled:{}, threadPool:{})", milliseconds, scheduled, threadPool);
+        if (scheduled != null) return;
+
+        scheduled = threadPool.schedule(new Runnable() {
             @Override
             public void run() {
-                try {
-                    /*Wait milliseconds, please use Scheduler or new Thread and Wait.*/
-                    log.trace("commit again in {} milliseconds by thread {}", milliseconds, Thread.currentThread().getName());
-                    Thread.sleep(milliseconds);
-                } catch (InterruptedException ex) {
-                    log.error("InterruptedException occurred during commit(ms:" + milliseconds + ")", ex);
-                }
-
-                /*after wait, need to set commitWaiting = false; and then commit*/
-                commitWaiting = false;
-                log.trace("call commit by thread {}", Thread.currentThread().getName());
+                scheduled = null;
+                log.debug("call commit by threadPool.schedule on Thread:{}", Thread.currentThread().getName());
                 commit();
             }
-        }, "Waiting-Thread");
-        thread.start();
+        }, milliseconds, TimeUnit.MILLISECONDS);
     }
 
     /**
      * TODO: need to update Client-Data-file before execute first command
      */
     private void commit() {
-        if (commitWaiting || commitThread != null) return;
+        log.debug("commit(scheduled:{}, threadPool:{})", scheduled, threadPool);
+        if (scheduled != null) return;
 
-        commitThread = new Thread(new Runnable() {
+        scheduled = threadPool.schedule(new Runnable() {
             @Override
             public void run() {
-                log.trace("commitInThread: {}", Thread.currentThread().getName());
-                if (!commitInThread()) {
-                    commit(commitAgainMilliseconds);
-                    return;
+                boolean submitResult = submit();
+                scheduled = null;
+                if (!submitResult) {
+                    commitAgain(commitAgainMilliseconds);
+                } else if(projectDataWriteBufferList.size() > 0) {
+                    /*addData between submit process need immediate commit*/
+                    commit();
                 }
-                resetCommitThread();
             }
-        }, "Commit-Thread");
-        commitThread.start();
+        }, 0, TimeUnit.MILLISECONDS);
     }
 
-    private void resetCommitThread() {
-        commitThread.interrupt();
-        commitThread = null;
-    }
+    /**
+     * Notice: submit will always be run within another thread.
+     */
+    private boolean submit() {
+        log.debug("submit: {}", Thread.currentThread().getName());
 
-    public boolean commitInThread() {
         ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList.values());
         KafkaRecordAttributes additional;
         ProjectFileType fileType;
@@ -367,7 +359,6 @@ public class DataManager {
 
         if (!ready(producer)) {
             log.error("commitInTread: producer not ready, try to commit again next {} ms", commitAgainMilliseconds);
-            commit(commitAgainMilliseconds);
             return false;
         }
 
@@ -398,6 +389,21 @@ public class DataManager {
         }
 
         return true;
+    }
+
+    public void waitAllTasks() {
+        if (scheduled == null) {
+            log.warn("waitAllTasks: no task to wait.");
+            return;
+        }
+
+        try {
+            log.info("waitAllTasks: wait commit task.");
+            scheduled.get();
+            log.info("waitAllTasks: commit task completed.");
+        } catch (Exception ex) {
+            log.error("waitAllTasks: got exception during wait commit task.", ex);
+        }
     }
 
     public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project) {
@@ -484,6 +490,7 @@ public class DataManager {
         ProjectDataWriteBuffer projectDataWriteBuffer = new ProjectDataWriteBuffer(projectDataWriteBufferList.size(), fileType, object, additional);
         projectDataWriteBufferList.put(projectDataWriteBuffer.uniqueKey(), projectDataWriteBuffer);
 
+        log.debug("addCommand: write({})", projectDataWriteBuffer);
         commit();
     }
 
@@ -714,10 +721,6 @@ public class DataManager {
         }
 
         return result;
-    }
-
-    public boolean isClosable() {
-        return projectDataWriteBufferList.size() == 0 && commitThread == null && !commitWaiting;
     }
 
 }

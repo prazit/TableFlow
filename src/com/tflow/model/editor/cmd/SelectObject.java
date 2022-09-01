@@ -33,5 +33,8 @@ public class SelectObject extends Command {
         ProjectUser projectUser = mapper.toProjectUser(project);
         int stepId = step.getId();
         dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 }

@@ -47,6 +47,7 @@ public class ChangePropertyValue extends Command {
         if (!saveSelectableData(selectable, step)) {
             throw new UnsupportedOperationException("Change Property Value of Unknown Object Type " + selectable.getClass().getName() + ", property=" + property);
         }
+
     }
 
     private String propertyToMethod(String propertyName) {

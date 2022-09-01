@@ -76,6 +76,9 @@ public class AddDataSourceSelector extends Command {
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
         dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 
 }

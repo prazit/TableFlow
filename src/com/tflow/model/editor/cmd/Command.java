@@ -165,6 +165,10 @@ public abstract class Command {
         else if (selectable instanceof SFTP) dataManager.addData(ProjectFileType.SFTP, mapper.map((SFTP) selectable), projectUser, ((SFTP) selectable).getId());
         else if (selectable instanceof Local) dataManager.addData(ProjectFileType.LOCAL, mapper.map((Local) selectable), projectUser, ((Local) selectable).getId());
         else return false;
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
+
         return true;
     }
 

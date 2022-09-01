@@ -110,6 +110,9 @@ public class SelectStep extends Command {
         // save Project data
         dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
 
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
+
     }
 
 }

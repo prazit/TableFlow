@@ -57,7 +57,8 @@ public class ProjectDataWriteBuffer {
         return "{" +
                 "transactionId:" + additional.getTransactionId() +
                 ", time:" + additional.getModifiedDate().getTime() +
-                ", fileType:" + fileType +
+                ", fileType (key):" + fileType +
+                ", recordId (key):" + additional.getRecordId() +
                 '}';
     }
 }

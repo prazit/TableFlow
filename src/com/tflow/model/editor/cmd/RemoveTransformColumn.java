@@ -44,6 +44,9 @@ public class RemoveTransformColumn extends Command {
         dataManager.addData(ProjectFileType.TRANSFORM_COLUMN_LIST, mapper.fromDataColumnList(columnList), projectUser, transformColumn.getId(), step.getId(), 0, transformTable.getId());
 
         // no line, tower, floor to save here
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 
 }

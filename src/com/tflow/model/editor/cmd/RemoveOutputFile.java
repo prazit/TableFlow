@@ -44,6 +44,9 @@ public class RemoveOutputFile extends Command {
         dataManager.addData(ProjectFileType.DATA_OUTPUT_LIST, mapper.fromOutputFileList(outputList), projectUser, 0, step.getId(), dataTable.getId());
 
         // no line, tower, floor to save here
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
     }
 
 }
