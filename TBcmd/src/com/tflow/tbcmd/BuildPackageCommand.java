@@ -187,7 +187,7 @@ public class BuildPackageCommand extends IOCommand {
         /*TODO: future feature: need to filter by ProjectType on next ProjectType*/
         String filter = ProjectType.BATCH.getCode();
         Object data = getData(ProjectFileType.VERSIONED_LIST);
-        List<StringItemData> binaryFileItemDataList = mapper.toStringItemData((List) throwExceptionOnError(data));
+        List<StringItemData> binaryFileItemDataList = (List<StringItemData>) throwExceptionOnError(data);
         for (StringItemData binaryFileItemData : binaryFileItemDataList) {
             String projectTypeCodes = Versioned.valueOf(binaryFileItemData.getId()).getProjectTypeCodes();
             if (projectTypeCodes.contains(filter)) {
@@ -257,7 +257,7 @@ public class BuildPackageCommand extends IOCommand {
             log.debug("Conversion:saveProperties successful, \n{}", new String(contentBytes, StandardCharsets.ISO_8859_1));
 
             Object data = getData(ProjectFileType.GENERATED_LIST);
-            List<BinaryFileData> generatedFileList = mapper.toBinaryFileDataList((List) throwExceptionOnError(data));
+            List<BinaryFileData> generatedFileList = (List<BinaryFileData>) throwExceptionOnError(data);
 
             /*create Generated Conversion File*/
             BinaryFileData conversionFileData = new BinaryFileData();
@@ -487,7 +487,7 @@ public class BuildPackageCommand extends IOCommand {
         HashMap<String, ConverterConfigFile> converterMap = new HashMap<>();
 
         Object data = getData(ProjectFileType.STEP_LIST);
-        List<ItemData> stepIdList = mapper.toItemDataList((List) throwExceptionOnError(data));
+        List<ItemData> stepIdList = (List<ItemData>) throwExceptionOnError(data);
 
         StepData stepData;
         ConverterConfigFile converterConfigFile;

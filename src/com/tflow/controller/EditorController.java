@@ -534,7 +534,7 @@ public class EditorController extends Controller {
             ProjectManager projectManager = new ProjectManager(workspace.getEnvironment());
             projectManager.loadProject(workspace, projectId);
         } catch (Exception ex) {
-            log.error("openProject: error from server({})", ex.getMessage());
+            log.error("openProject: error from server(" + ex.getMessage() + ")", ex);
             return false;
         }
 

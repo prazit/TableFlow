@@ -14,7 +14,7 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${root-path}tbcmd.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${root-path}tbcmd-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <FileNamePattern>${root-path}tbcmd-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
             <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder>

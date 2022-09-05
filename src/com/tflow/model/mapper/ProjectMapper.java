@@ -1,6 +1,5 @@
 package com.tflow.model.mapper;
 
-import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
@@ -242,17 +241,6 @@ public interface ProjectMapper {
     }
 
     List<ItemData> fromStepList(List<Step> stepList);
-
-    default List<ItemData> fromLinkedTreeMap(List<LinkedTreeMap> linkedTreeMapList) {
-        List<ItemData> itemDataList = new ArrayList<>();
-        for (LinkedTreeMap linkedTreeMap : linkedTreeMapList) {
-            ItemData itemData = new ItemData();
-            itemData.setId(((Double) linkedTreeMap.get("id")).intValue());
-            itemData.setName((String) linkedTreeMap.get("name"));
-            itemDataList.add(itemData);
-        }
-        return itemDataList;
-    }
 
     List<Integer> fromDataTableList(List<DataTable> dataList);
 

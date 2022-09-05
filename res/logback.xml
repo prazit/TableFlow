@@ -19,7 +19,7 @@
     <appender name="KAFKA" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${root-path}tflow-kafka.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${root-path}tflow-kafka-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <FileNamePattern>${root-path}tflow-kafka-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
             <maxFileSize>3MB</maxFileSize>
             <maxHistory>3</maxHistory>
             <totalSizeCap>10MB</totalSizeCap>
@@ -34,7 +34,7 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${root-path}tflow.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${root-path}tflow-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <FileNamePattern>${root-path}tflow-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
             <maxFileSize>3MB</maxFileSize>
             <maxHistory>3</maxHistory>
             <totalSizeCap>10MB</totalSizeCap>

@@ -1,6 +1,5 @@
 package com.tflow.model.editor;
 
-import com.google.gson.internal.LinkedTreeMap;
 import com.tflow.kafka.*;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.cmd.AddProject;
@@ -396,7 +395,7 @@ public class ProjectManager {
 
         /*get step-list*/
         data = dataManager.getData(ProjectFileType.STEP_LIST, projectUser, "5");
-        List<ItemData> itemDataList = mapper.fromLinkedTreeMap((List<LinkedTreeMap>) throwExceptionOnError(data));
+        List<ItemData> itemDataList = (List<ItemData>) throwExceptionOnError(data);
         project.setStepList(mapper.toStepList(itemDataList));
 
         workspace.setProject(project);
@@ -641,7 +640,7 @@ public class ProjectManager {
 
         ProjectUser projectUser = mapper.toProjectUser(project);
         Object data = dataManager.getData(ProjectFileType.PACKAGE_LIST, projectUser);
-        List<ItemData> packageItemDataList = mapper.fromLinkedTreeMap((List) throwExceptionOnError(data));
+        List<ItemData> packageItemDataList = (List<ItemData>) throwExceptionOnError(data);
 
         return mapper.toItemList(packageItemDataList);
     }
