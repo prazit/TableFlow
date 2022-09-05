@@ -5,10 +5,12 @@ import com.tflow.model.data.record.JSONRecordData;
 import com.tflow.model.data.record.RecordData;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -110,16 +112,45 @@ public class JSONInputStream extends DataInputStream implements SerializeReader 
         Class dataClass = Class.forName(jsonRecordData.getDataClass());
         Gson gson = SerializeUtil.getGson();
         try {
-            String dataJson = gson.toJson(jsonRecordData.getData());
-            Object dataObject = gson.fromJson(dataJson, dataClass);
+            Object dataObject = jsonRecordData.getData();
+            if (dataObject instanceof ArrayList) {
+                /* JSON Data Formatted File Problems
+                    1. ArrayList problem: read from file, data-type has changed to LinkedTreeMap
+                    2. ArrayList problem: write to file, unable to check data type of object in the list when list is empty
 
-            /*need to change List<Double> to List<Integer>*/
-            if (dataObject instanceof List) {
-                List list = (List) dataObject;
-                if (list.size() > 0 && list.get(0) instanceof Double) {
-                    dataObject = toIntegerList(list);
+                    Solution:
+                    1. Write to file (JSONOutputSteam) need to transform ArrayList to Array of Object in two cases below
+                       + EmptyList to Empty Array of Object, dataClass=java.lang.Object
+                       + NotEmmptyList to Array of KnownObject, dataClass=KnowObject
+                    2. Read from file (JSONInputStream) need to transform Array to ArrayList
+                       + when data is Array
+                       + create empty ArrayList
+                       + case: data-array.length > 0, convert from JSON using dataClass item by item
+                 **/
+                String dataJson;
+                Object[] objects = (Object[]) ((ArrayList) dataObject).toArray();
+                ArrayList<Object> arrayList = new ArrayList<>();
+                if (objects.length > 0) {
+                    for (Object obj : objects) {
+                        dataJson = gson.toJson(obj);
+                        arrayList.add(gson.fromJson(dataJson, dataClass));
+                    }
                 }
+                dataObject = arrayList;
+
+                /*need to change List<Double> to List<Integer>*/
+                if (Integer.class.getName().compareTo(dataClass.getName()) == 0) {
+                    List list = (List) dataObject;
+                    if (list.size() > 0 && list.get(0) instanceof Double) {
+                        dataObject = toIntegerList(list);
+                    }
+                }
+
+            } else {
+                String dataJson = gson.toJson(dataObject);
+                dataObject = gson.fromJson(dataJson, dataClass);
             }
+
 
             RecordData recordData = new RecordData();
             recordData.setData(dataObject);

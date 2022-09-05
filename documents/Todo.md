@@ -35,6 +35,27 @@
 | :anchor:           | Create Test Case              | [:anchor:] need to know: message always available or not (start stop kafka)<br />+ start kafka and then add more messages by Producer without Consumer<br />+ restart kafka and then start Consumer to see all the messages                                                                                                                                                    |
 | :exclamation:      | Create Test Case              | [:exclamation:] need to know producer connection state (issue: send message when the kafka server is down the message will not automatic resend that make some missing messages)<br/>+ need list of missing messages to send again after kafka is back<br/>+ :car: see: [Data Structure - Kafka.md](C:\Users\prazi\Documents\GitHub\TFlow\documents\Data Structure - Kafka.md) |
 
+
+
+## TECHNOLOGIES
+
+Techonologies want to play with
+
+| name             | url                                                         | remark                                                                                                                                |
+| ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Apache Hop       | https://hop.apache.org/                                     | Something like any workflow playform come with Web GUI and work for Data Integration (Piplines) like TFlow.                           |
+| Apache HBase     | https://www.tutorialspoint.com/hbase/hbase_installation.htm | Table Store using normal file system with optional HDFS support (can move from local file system to Hadoop DFS) , requires Zookeeper. |
+|                  | https://hbase.apache.org/                                   | Standalone Mode and direct access without SQL.                                                                                        |
+| Apache Hadoop    |                                                             | Interesting in MapReduce job with Large Data File (Gigabytes File).                                                                   |
+|                  |                                                             | Using computer clusters () to parallel process data.                                                                                  |
+|                  |                                                             |                                                                                                                                       |
+| Spark SQL engine | https://spark.apache.org/                                   | Interesting in Spark SQL engine, see example java code below                                                                          |
+|                  |                                                             | Dataset df = spark.read().json("logs.json");<br/>df.where("age > 21")<br/>  .select("name.first").show();                           |
+
+
+
+
+
 ----
 
 -- end of document --
