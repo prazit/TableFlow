@@ -30,6 +30,8 @@ public class ZKConfiguration implements Watcher {
     private long heartbeatDuration;
     private long nextHeartbeat;
 
+    private ScheduleJob scheduleJob;
+
     private Watcher watcher;
 
     public ZKConfiguration() {
@@ -44,19 +46,23 @@ public class ZKConfiguration implements Watcher {
      * @throws IOException in case of Network failure
      */
     private void reconnect() throws IOException {
+        try {
+            disconnect();
+        } catch (InterruptedException e) {
+            /*ignored*/
+        }
+        connect();
+    }
+
+    public void disconnect() throws InterruptedException {
+        stopScheduleJob();
+
         if (zooKeeper == null) return;
 
         if (zooKeeper.getState().isConnected()) {
-            try {
-                zooKeeper.close();
-            } catch (InterruptedException e) {
-                /*ignored*/
-            }
+            zooKeeper.close();
         }
         zooKeeper = null;
-
-        /* try to connect until success,  */
-        connect();
     }
 
     /**
@@ -87,10 +93,11 @@ public class ZKConfiguration implements Watcher {
         }
 
         heartbeatTick();
+        if (scheduleJob == null) createScheduleJob(heartbeatEnabled ? ScheduleJob.ZOOKEEPER_HEARTBEAT : ScheduleJob.ZOOKEEPER_DISCONNECT);
+        startScheduleJob();
     }
 
     public void initial() throws KeeperException, InterruptedException {
-        if (heartbeatEnabled) createHeartbeatJob();
         createNodes(configRoot);
 
         int version;
@@ -121,8 +128,9 @@ public class ZKConfiguration implements Watcher {
         nextHeartbeat = DateTimeUtil.now().getTime() + heartbeatDuration;
     }
 
-    private void createHeartbeatJob() {
-        log.trace("createHeartbeatJob.");
+    private void createScheduleJob(ScheduleJob scheduleJob) {
+        log.trace("createScheduleJob({})", scheduleJob);
+        this.scheduleJob = scheduleJob;
         SundialJobScheduler.startScheduler();
         try {
             int count = 0;
@@ -137,17 +145,29 @@ public class ZKConfiguration implements Watcher {
                 if (count >= maxCount) break;
             }
         } catch (Exception ex) {
-            log.error("createHeartbeatJob: createScheduler error: ", ex);
+            log.error("createScheduleJob: createScheduler error: ", ex);
             return;
         }
 
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("ZKConfiguration", this);
 
-        String name = SchdulerJob.ZOOKEEPER_HEARTBEAT.name();
-        SundialJobScheduler.addJob(name, SchdulerJob.ZOOKEEPER_HEARTBEAT.getJobClass(), parameterMap, false);
-        log.debug("addJob {} completed.", SchdulerJob.ZOOKEEPER_HEARTBEAT);
+        String name = scheduleJob.name();
+        SundialJobScheduler.addJob(name, scheduleJob.getJobClass(), parameterMap, false);
+        log.debug("addJob {} completed.", scheduleJob);
+    }
+
+    private void startScheduleJob() {
+        String name = scheduleJob.name();
         SundialJobScheduler.addSimpleTrigger(name + "Trigger", name, -1, intervalCheckHeartbeat);
+    }
+
+    private void stopScheduleJob() {
+        try {
+            SundialJobScheduler.removeTrigger(scheduleJob.name() + "Trigger");
+        } catch (Exception ex) {
+            /*ignored*/
+        }
     }
 
     private void createNodes(String nodePath) throws KeeperException, InterruptedException {
