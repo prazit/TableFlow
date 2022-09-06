@@ -83,7 +83,7 @@ public class DataManager {
         }
     }
 
-    private long newTransactionId() throws InterruptedException {
+    public long newTransactionId() throws InterruptedException {
         return newTransactionId(1);
     }
 

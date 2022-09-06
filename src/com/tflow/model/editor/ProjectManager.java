@@ -665,9 +665,17 @@ public class ProjectManager {
         Date buildDate = DateTimeUtil.now();
         Producer<String, Object> producer = createProducer();
 
-        /*create build Message for TBcmd*/
         Workspace workspace = project.getOwner();
+        long transactionId = 0;
+        try {
+            transactionId = project.getDataManager().newTransactionId();
+        } catch (InterruptedException e) {
+            return null;
+        }
+
+        /*create build Message for TBcmd*/
         KafkaRecordAttributes kafkaRecordAttributes = new KafkaRecordAttributes();
+        kafkaRecordAttributes.setTransactionId(transactionId);
         kafkaRecordAttributes.setProjectId(project.getId());
         kafkaRecordAttributes.setUserId(workspace.getUser().getId());
         kafkaRecordAttributes.setClientId(workspace.getClient().getId());

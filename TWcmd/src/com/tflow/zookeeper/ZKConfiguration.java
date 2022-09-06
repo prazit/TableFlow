@@ -238,8 +238,8 @@ public class ZKConfiguration implements Watcher {
         byte[] bytes;
         try {
             bytes = zooKeeper.getData(getNode(configuration), false, stat);
-        } catch (KeeperException ex) {
-            if (ex instanceof KeeperException.SessionExpiredException) {
+        } catch (Exception ex) {
+            if (ex instanceof KeeperException.SessionExpiredException || ex instanceof NullPointerException) {
                 try {
                     log.info("Reconnect to zookeeper after Session Expired");
                     reconnect();

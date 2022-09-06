@@ -40,7 +40,7 @@ public enum FileNameExtension {
         try {
             return valueOf(names[names.length - 1].toUpperCase());
         } catch (Exception ex) {
-            LoggerFactory.getLogger(FileNameExtension.class).warn("no FileNameExtension match for '{}'", name);
+            LoggerFactory.getLogger(FileNameExtension.class).warn("No FileNameExtension match for '{}'", name);
             return null;
         }
     }

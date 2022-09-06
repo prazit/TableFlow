@@ -66,34 +66,49 @@ public class BuildPackageCommand extends IOCommand {
         mapper = Mappers.getMapper(PackageMapper.class);
         attributes = (KafkaRecordAttributes) value;
         recordAttributes = Mappers.getMapper(RecordMapper.class).map(attributes);
-        ProjectUser projectUser = mapper.map(attributes);
 
-        /*TODO: need wrapper function covered by TryCatch and SavePackage before Rejected*/
-
-        Object data = getData(ProjectFileType.PACKAGE_LIST);
-        //noinspection unchecked (suppress warning about unchecked)
-        List<ItemData> packageIdList;
-        try {
-            packageIdList = (List<ItemData>) throwExceptionOnError(data);
-        } catch (IOException ex) {
-            throw new IOException("TRcmd service may be stopped or not started, ", ex);
-        }
-
-        /*Notice: packageData contains percent complete for ui, update them 4-5 times max*/
-        int packageId = packageIdList.size() + 1;
+        List<ItemData> packageList = null;
         PackageData packageData = new PackageData();
-        packageData.setId(packageId);
-        packageData.setBuildDate(DateTimeUtil.now());
-        packageData.setName("building...");
+        List<PackageFileData> fileList = new ArrayList<>();
+        ProjectUser projectUser = mapper.map(attributes);
+        try {
+            Object data = getData(ProjectFileType.PACKAGE_LIST);
+            packageList = (List<ItemData>) throwExceptionOnError(data);
 
-        ItemData packageItemData = mapper.map(packageData);
-        packageIdList.add(packageItemData);
-        KafkaRecordAttributes attributes = dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
-        log.debug("Save PACKAGE_LIST: {}", attributes);
+            int packageId = packageList.size() + 1;
+            packageData.setId(packageId);
+            packageData.setBuildDate(DateTimeUtil.now());
+            packageData.setName("building...");
 
+            ItemData packageItemData = mapper.map(packageData);
+            packageList.add(packageItemData);
+
+            buildPackage(packageData, fileList, packageList, projectUser);
+
+        } catch (Exception exception) {
+            if (packageList != null) {
+                /*need to savePackage before Throw Exception for Rejected*/
+                packageData.setName(exception.getMessage());
+                packageData.setFileList(fileList);
+                packageData.setFinished(true);
+                updatePackageList(packageData, packageList, projectUser);
+                updatePercentComplete(packageData, projectUser, packageData.getComplete(), DateTimeUtil.now());
+            } else {
+                log.error("Package List not found on project({}), package will not created!", projectUser.getId());
+            }
+
+            throw exception;
+        }
+    }
+
+    /**
+     * @param packageData contains percent complete for ui, this function will update them 4-5 times max
+     */
+    @SuppressWarnings("unchecked")
+    private void buildPackage(PackageData packageData, List<PackageFileData> fileList, List<ItemData> packageList, ProjectUser projectUser) throws InstantiationException, IOException, ClassNotFoundException {
+        updatePackageList(packageData, packageList, projectUser);
         updatePercentComplete(packageData, projectUser, 0, estimateBuiltDate());
 
-        List<PackageFileData> fileList = new ArrayList<>();
         addUploadedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 25, estimateBuiltDate());
 
@@ -104,14 +119,18 @@ public class BuildPackageCommand extends IOCommand {
         addConfigVersionFile(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
-        String packageName = getPackageName(packageData);
-        packageItemData.setName(packageName);
-        dataManager.addData(ProjectFileType.PACKAGE_LIST, packageIdList, projectUser);
-        log.debug("Save PACKAGE_LIST: {}", attributes);
-
-        packageData.setName(packageName);
+        String completeName = getCompleteName(packageData);
+        packageData.setName(completeName);
         packageData.setFileList(fileList);
+        packageData.setFinished(true);
+        updatePackageList(packageData, packageList, projectUser);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
+    }
+
+    private void updatePackageList(PackageData packageData, List<ItemData> packageList, ProjectUser projectUser) {
+        ItemData itemData = packageList.get(packageList.size() - 1);
+        itemData.setName(packageData.getName());
+        KafkaRecordAttributes attributes = dataManager.addData(ProjectFileType.PACKAGE_LIST, packageList, projectUser);
     }
 
     private Object getData(ProjectFileType projectFileType, RecordAttributesData recordAttributesData) throws InstantiationException, IOException, ClassNotFoundException {
@@ -167,7 +186,7 @@ public class BuildPackageCommand extends IOCommand {
         return getData(projectFileType, recordAttributesData);
     }
 
-    private String getPackageName(PackageData packageData) {
+    private String getCompleteName(PackageData packageData) {
         return "Package-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-HHmmss-SSS");
     }
 
@@ -180,6 +199,7 @@ public class BuildPackageCommand extends IOCommand {
         packageData.setComplete(percent);
         packageData.setBuiltDate(builtDate);
         dataManager.addData(ProjectFileType.PACKAGE, packageData, projectUser, packageData.getId());
+        dataManager.waitAllTasks();
     }
 
     @SuppressWarnings("unchecked")
@@ -231,7 +251,6 @@ public class BuildPackageCommand extends IOCommand {
         return data;
     }
 
-    /* TODO: fix it: all generated files need Build-Path != null */
     private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
         int generatedFileId = 0;
         int packageFileId = newPackageFileId(packageData);
@@ -271,7 +290,7 @@ public class BuildPackageCommand extends IOCommand {
             PackageFileData packageFileData = mapper.map(conversionFileData);
             packageFileData.setId(newPackageFileId(packageData));
             packageFileData.setType(FileType.GENERATED);
-            packageFileData.setBuildPath("");
+            packageFileData.setBuildPath(packageFileData.getExt().getBuildPath());
             fileList.add(packageFileData);
 
             BinaryFileData converterFileData;
@@ -295,6 +314,7 @@ public class BuildPackageCommand extends IOCommand {
                 packageFileData = mapper.map(converterFileData);
                 packageFileData.setId(newPackageFileId(packageData));
                 packageFileData.setType(FileType.GENERATED);
+                packageFileData.setBuildPath(packageFileData.getExt().getBuildPath());
                 fileList.add(packageFileData);
             }
 
