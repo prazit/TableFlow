@@ -131,40 +131,45 @@ public class ZKConfiguration implements Watcher {
     private void createScheduleJob(ScheduleJob scheduleJob) {
         log.trace("createScheduleJob({})", scheduleJob);
         this.scheduleJob = scheduleJob;
-        SundialJobScheduler.startScheduler();
-        try {
-            int count = 0;
-            int maxCount = 10;
-            while (SundialJobScheduler.getScheduler() == null) {
-                log.debug("waiting scheduler to be created [{}}/{}]...", ++count, maxCount);
-                try {
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                    log.error("Thread.sleep error: ", e);
+
+        if (SundialJobScheduler.getScheduler() == null) {
+            SundialJobScheduler.startScheduler();
+            try {
+                int count = 0;
+                int maxCount = 10;
+                while (SundialJobScheduler.getScheduler() == null) {
+                    log.debug("waiting scheduler to be created [{}}/{}]...", ++count, maxCount);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        log.error("Thread.sleep error: ", e);
+                    }
+                    if (count >= maxCount) break;
                 }
-                if (count >= maxCount) break;
+            } catch (Exception ex) {
+                log.error("createScheduleJob: createScheduler error: ", ex);
+                return;
             }
-        } catch (Exception ex) {
-            log.error("createScheduleJob: createScheduler error: ", ex);
-            return;
         }
+
+        String name = scheduleJob.name();
+        SundialJobScheduler.removeJob(name);
 
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("ZKConfiguration", this);
 
-        String name = scheduleJob.name();
         SundialJobScheduler.addJob(name, scheduleJob.getJobClass(), parameterMap, false);
         log.debug("addJob {} completed.", scheduleJob);
     }
 
     private void startScheduleJob() {
         String name = scheduleJob.name();
-        SundialJobScheduler.addSimpleTrigger(name + "Trigger", name, -1, intervalCheckHeartbeat);
+        SundialJobScheduler.addSimpleTrigger(name + "_Trigger", name, -1, intervalCheckHeartbeat);
     }
 
     private void stopScheduleJob() {
         try {
-            SundialJobScheduler.removeTrigger(scheduleJob.name() + "Trigger");
+            SundialJobScheduler.removeTrigger(scheduleJob.name() + "_Trigger");
         } catch (Exception ex) {
             /*ignored*/
         }

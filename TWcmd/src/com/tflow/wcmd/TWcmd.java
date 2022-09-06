@@ -2,12 +2,18 @@ package com.tflow.wcmd;
 
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaTopics;
+import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
+import com.tflow.zookeeper.AppName;
+import com.tflow.zookeeper.AppsHeartbeat;
+import com.tflow.zookeeper.ZKConfigNode;
+import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.RecordDeserializationException;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +31,34 @@ public class TWcmd {
 
     private boolean polling;
 
+    private Environment environment;
+    private EnvironmentConfigs environmentConfigs;
+
     public TWcmd() {
         /*nothing*/
     }
 
+    /**
+     * TODO: need Ctrl_C_Monitor like Kafka, to shutdown with return-code = 0.
+     */
     public void start() {
+
+        ZKConfiguration zkConfiguration = null;
+        AppsHeartbeat appsHeartbeat = null;
+        try {
+            zkConfiguration = createZK();
+            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
+            appsHeartbeat.setAutoHeartbeat(AppName.DATA_WRITER);
+
+        } catch (Exception ex) {
+            log.error("Zookeeper is required to run TRcmd, ", ex);
+            System.exit(-1);
+        }
+
         /*example from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_consumer_group_example.htm*/
         Properties props = new Properties();
 
         /*TODO: need configuration for all values below*/
-        EnvironmentConfigs environmentConfigs = EnvironmentConfigs.DEVELOPMENT;
         props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
         props.put("group.id", "twcmd");
         props.put("enable.auto.commit", "true");
@@ -108,15 +132,15 @@ public class TWcmd {
         consumer.close();
     }
 
-    public void testWriteSerialized(byte[] serialized) {
-        try {
-            FileOutputStream fileOut = new FileOutputStream("/Apps/TFlow/tmp/TestConsumerSerialize.ser");
-            fileOut.write(serialized);
-            fileOut.close();
-            log.info("testWriteSerialized: Serialized data is saved in /Apps/TFlow/tmp/TestConsumerSerialize.ser");
-        } catch (IOException i) {
-            log.error("testWriteSerialized failed,", i);
-        }
+    private ZKConfiguration createZK() throws IOException, InterruptedException, KeeperException {
+        ZKConfiguration zkConfiguration = new ZKConfiguration();
+        zkConfiguration.connect();
+        zkConfiguration.initial();
+
+        environment = Environment.valueOf(zkConfiguration.getString(ZKConfigNode.ENVIRONMENT));
+        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+
+        return zkConfiguration;
     }
 
 

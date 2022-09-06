@@ -5,6 +5,8 @@ import com.tflow.kafka.KafkaTopics;
 import com.tflow.model.data.DataManager;
 import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
+import com.tflow.zookeeper.AppName;
+import com.tflow.zookeeper.AppsHeartbeat;
 import com.tflow.zookeeper.ZKConfigNode;
 import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -35,30 +37,22 @@ public class TBcmd {
     private EnvironmentConfigs environmentConfigs;
 
     public TBcmd() {
-        try {
-            zkConfiguration = requiresZK();
-            String environmentName = zkConfiguration.getString(ZKConfigNode.ENVIRONMENT);
-            environment = Environment.valueOf(environmentName);
-            environmentConfigs = EnvironmentConfigs.valueOf(environmentName);
-        } catch (Exception ex) {
-            log.error("TBcmd: command creation failed! ", ex);
-            System.exit(-1);
-        }
-    }
-
-    private ZKConfiguration requiresZK() throws IOException {
-        ZKConfiguration zkConfiguration = new ZKConfiguration();
-        try {
-            zkConfiguration.connect();
-            zkConfiguration.initial();
-        } catch (IOException | KeeperException | InterruptedException ex) {
-            throw new IOException("Zookeeper is required for shared configuration!!! ", ex);
-        }
-        return zkConfiguration;
     }
 
     @SuppressWarnings("unchecked")
     public void start() {
+
+        ZKConfiguration zkConfiguration = null;
+        AppsHeartbeat appsHeartbeat = null;
+        try {
+            zkConfiguration = createZK();
+            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
+            appsHeartbeat.setAutoHeartbeat(AppName.PACKAGE_BUILDER);
+
+        } catch (Exception ex) {
+            log.error("Zookeeper is required to run TRcmd, ", ex);
+            System.exit(-1);
+        }
 
         DataManager dataManager = new DataManager(environment, "TBcmd", zkConfiguration);
         KafkaConsumer<String, byte[]> consumer = createConsumer();
@@ -138,6 +132,18 @@ public class TBcmd {
         props.put("key.deserializer.encoding", "UTF-8");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         return new KafkaConsumer<>(props);
+    }
+
+
+    private ZKConfiguration createZK() throws IOException, InterruptedException, KeeperException {
+        ZKConfiguration zkConfiguration = new ZKConfiguration();
+        zkConfiguration.connect();
+        zkConfiguration.initial();
+
+        environment = Environment.valueOf(zkConfiguration.getString(ZKConfigNode.ENVIRONMENT));
+        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
+
+        return zkConfiguration;
     }
 
     public void stop() {

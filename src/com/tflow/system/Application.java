@@ -2,6 +2,8 @@ package com.tflow.system;
 
 import com.tflow.model.editor.Workspace;
 import com.tflow.util.DateTimeUtil;
+import com.tflow.zookeeper.AppName;
+import com.tflow.zookeeper.AppsHeartbeat;
 import com.tflow.zookeeper.ZKConfigNode;
 import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.zookeeper.KeeperException;
@@ -30,6 +32,7 @@ public class Application {
     private Environment environment;
 
     private ZKConfiguration zkConfiguration;
+    private AppsHeartbeat appsHeartbeat;
 
     @Inject
     public Application() {
@@ -50,7 +53,10 @@ public class Application {
             zkConfiguration = requiresZK();
             String environmentName = zkConfiguration.getString(ZKConfigNode.ENVIRONMENT);
             environment = Environment.valueOf(environmentName);
+            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
+            appsHeartbeat.setAutoHeartbeat(AppName.TABLE_FLOW);
         } catch (Exception ex) {
+            log.error("loadConfigs failed: ", ex);
             /*TODO: do something to notify admin, requires ZooKeeper */
         }
     }

@@ -10,10 +10,27 @@ public enum ZKConfigNode {
      */
     HEARTBEAT(8L),
 
+    /**
+     * LAST_TRANSACTION_ID will be reset when the value reach the MAXIMUM_TRANSACTION_ID.
+     */
     LAST_TRANSACTION_ID(1L),
     MAXIMUM_TRANSACTION_ID(999999999L),
 
-    ENVIRONMENT("DEVELOPMENT");
+    /**
+     * Global Environment.
+     */
+    ENVIRONMENT("DEVELOPMENT"),
+
+    /**
+     * AppInfo for AppsHeartbeat.
+     */
+    APP_TIMEOUT(2000L),
+    TABLE_FLOW("{}"),
+    DATA_WRITER("{}"),
+    DATA_READER("{}"),
+    PACKAGE_BUILDER("{}"),
+
+    ;
 
     Object initialValue;
     int version;

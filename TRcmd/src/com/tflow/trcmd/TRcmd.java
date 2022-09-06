@@ -6,6 +6,8 @@ import com.tflow.model.data.DataManager;
 import com.tflow.system.Environment;
 import com.tflow.util.SerializeUtil;
 import com.tflow.wcmd.TWcmd;
+import com.tflow.zookeeper.AppName;
+import com.tflow.zookeeper.AppsHeartbeat;
 import com.tflow.zookeeper.ZKConfigNode;
 import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -46,8 +48,12 @@ public class TRcmd {
     public void start() {
 
         ZKConfiguration zkConfiguration = null;
+        AppsHeartbeat appsHeartbeat = null;
         try {
             zkConfiguration = createZK();
+            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
+            appsHeartbeat.setAutoHeartbeat(AppName.DATA_READER);
+
         } catch (Exception ex) {
             log.error("Zookeeper is required to run TRcmd, ", ex);
             System.exit(-1);

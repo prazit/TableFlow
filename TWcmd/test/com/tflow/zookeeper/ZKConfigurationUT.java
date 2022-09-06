@@ -7,10 +7,13 @@ import org.apache.zookeeper.data.Stat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.knowm.sundial.SundialJobScheduler;
+import org.quartz.triggers.Trigger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 class ZKConfigurationUT {
 
@@ -188,17 +191,52 @@ class ZKConfigurationUT {
     @Test
     void process() {
         try {
-            ZKConfiguration another = new ZKConfiguration();
-            another.connect();
-            another.initial();
-            another.set(ZKConfigNode.LAST_TRANSACTION_ID, 456L);
-            another.set(ZKConfigNode.LAST_TRANSACTION_ID, 789L);
-            another.set(ZKConfigNode.LAST_TRANSACTION_ID, 123L);
-            another.set(ZKConfigNode.LAST_TRANSACTION_ID, 357L);
-            listAllConfigs();
 
-        } catch (KeeperException | InterruptedException | IOException ex) {
+            //zkConfig.set(ZKConfigNode.APP_TIMEOUT, 2000L);
+            //zkConfig.set(ZKConfigNode.APP_TIMEOUT, 5000L);
+
+            //zkConfig.set(ZKConfigNode.LAST_TRANSACTION_ID, 789L);
+            //listAllConfigs();
+
+            //println("---- BEFORE ----");
+            //printAllJobs();
+
+            AppsHeartbeat appsHeartbeat = new AppsHeartbeat(zkConfig);
+
+            appsHeartbeat.setAppVersion(AppName.DATA_READER, "0.1.1");
+            appsHeartbeat.setAutoHeartbeat(AppName.DATA_READER);
+            println(AppName.DATA_READER + " version is newer than 0.1.1 ? " + appsHeartbeat.isNewer(AppName.DATA_READER, "0.1.1"));
+            println(AppName.DATA_READER + " version is newer than 0.1.0 ? " + appsHeartbeat.isNewer(AppName.DATA_READER, "0.1.0"));
+            println(AppName.DATA_READER + " version is newer than 0.1.2 ? " + appsHeartbeat.isNewer(AppName.DATA_READER, "0.1.2"));
+            println(AppName.DATA_READER + " is online now ? " + appsHeartbeat.isOnline(AppName.DATA_READER));
+
+            println(AppName.TABLE_FLOW + " is online now ? " + appsHeartbeat.isOnline(AppName.TABLE_FLOW));
+            appsHeartbeat.setAppVersion(AppName.TABLE_FLOW, "0.1.1");
+            println(AppName.TABLE_FLOW + " is online now ? " + appsHeartbeat.isOnline(AppName.TABLE_FLOW));
+            println(AppName.DATA_READER + " is online now ? " + appsHeartbeat.isOnline(AppName.DATA_READER));
+
+            //println("---- AFTER ----");
+            printAllJobs();
+
+        } catch (Exception ex) {
             println(ex.getMessage());
+        }
+    }
+
+    private void printAllJobs() {
+        Map<String, List<Trigger>> allJobsAndTriggers = SundialJobScheduler.getAllJobsAndTriggers();
+        for (String jobName : allJobsAndTriggers.keySet()) {
+            println("JOB: " + jobName);
+            indent(2);
+            List<Trigger> triggers = allJobsAndTriggers.get(jobName);
+            if (triggers.size() == 0) {
+                println("(no trigger)");
+            } else {
+                for (Trigger trigger : triggers) {
+                    println(trigger.getName());
+                }
+            }
+            indent(-2);
         }
     }
 }
