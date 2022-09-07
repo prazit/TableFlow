@@ -1,61 +1,39 @@
 package com.tflow.tbcmd;
 
-import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaTopics;
 import com.tflow.model.data.DataManager;
-import com.tflow.system.Environment;
+import com.tflow.system.CLIbase;
 import com.tflow.util.SerializeUtil;
 import com.tflow.zookeeper.AppName;
-import com.tflow.zookeeper.AppsHeartbeat;
-import com.tflow.zookeeper.ZKConfigNode;
-import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
 
-public class TBcmd {
-
-    private Logger log = LoggerFactory.getLogger(TBcmd.class);
-
-    private boolean polling;
-
-    private ZKConfiguration zkConfiguration;
-
-    private Environment environment;
-    private EnvironmentConfigs environmentConfigs;
+public class TBcmd extends CLIbase {
 
     public TBcmd() {
+        super(AppName.PACKAGE_BUILDER);
+    }
+
+    @Override
+    protected void loadConfigs() throws Exception {
+        /*add more Fixed configuration for Consumer*/
+        configs.put("consumer.key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        configs.put("consumer.key.deserializer.encoding", StandardCharsets.UTF_8.name());
+        configs.put("consumer.value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
     }
 
     @SuppressWarnings("unchecked")
-    public void start() {
-
-        ZKConfiguration zkConfiguration = null;
-        AppsHeartbeat appsHeartbeat = null;
-        try {
-            zkConfiguration = createZK();
-            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
-            appsHeartbeat.setAutoHeartbeat(AppName.PACKAGE_BUILDER);
-
-        } catch (Exception ex) {
-            log.error("Zookeeper is required to run TRcmd, ", ex);
-            System.exit(-1);
-        }
+    public void run() {
 
         DataManager dataManager = new DataManager(environment, "TBcmd", zkConfiguration);
-        KafkaConsumer<String, byte[]> consumer = createConsumer();
+        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(getProperties("consumer.", configs));
 
         /*TODO: need to load topicBuild from configuration*/
         String topicBuild = KafkaTopics.PROJECT_BUILD.getTopic();
@@ -76,6 +54,10 @@ public class TBcmd {
         polling = true;
         while (polling) {
             records = consumer.poll(duration);
+
+            if (records.count() == 0) continue;
+
+            terminateOnNewerVersion();
 
             for (ConsumerRecord<String, byte[]> record : records) {
                 long offset = record.offset();
@@ -116,38 +98,6 @@ public class TBcmd {
         }
 
         consumer.close();
-    }
-
-    private KafkaConsumer<String, byte[]> createConsumer() {
-        /*TODO: need to load consumer configuration*/
-        environment = Environment.DEVELOPMENT;
-        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-        props.put("group.id", "tbcmd");
-        props.put("enable.auto.commit", "true");
-        props.put("auto.commit.interval.ms", "1000");
-        props.put("session.timeout.ms", "30000");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("key.deserializer.encoding", "UTF-8");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        return new KafkaConsumer<>(props);
-    }
-
-
-    private ZKConfiguration createZK() throws IOException, InterruptedException, KeeperException {
-        ZKConfiguration zkConfiguration = new ZKConfiguration();
-        zkConfiguration.connect();
-        zkConfiguration.initial();
-
-        environment = Environment.valueOf(zkConfiguration.getString(ZKConfigNode.ENVIRONMENT));
-        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
-
-        return zkConfiguration;
-    }
-
-    public void stop() {
-        polling = false;
     }
 
 }

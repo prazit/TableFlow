@@ -1,73 +1,39 @@
 package com.tflow.wcmd;
 
-import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaTopics;
-import com.tflow.system.Environment;
+import com.tflow.system.CLIbase;
 import com.tflow.util.SerializeUtil;
 import com.tflow.zookeeper.AppName;
-import com.tflow.zookeeper.AppsHeartbeat;
-import com.tflow.zookeeper.ZKConfigNode;
-import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.RecordDeserializationException;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-public class TWcmd {
-
-    private Logger log = LoggerFactory.getLogger(TWcmd.class);
-
-    private boolean polling;
-
-    private Environment environment;
-    private EnvironmentConfigs environmentConfigs;
+public class TWcmd extends CLIbase {
 
     public TWcmd() {
-        /*nothing*/
+        super(AppName.DATA_WRITER);
     }
 
-    /**
-     * TODO: need Ctrl_C_Monitor like Kafka, to shutdown with return-code = 0.
-     */
-    public void start() {
+    @Override
+    protected void loadConfigs() throws Exception {
+        /*add more Fixed configuration for Consumer*/
+        configs.put("consumer.key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        configs.put("consumer.key.deserializer.encoding", StandardCharsets.UTF_8.name());
+        configs.put("consumer.value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+    }
 
-        ZKConfiguration zkConfiguration = null;
-        AppsHeartbeat appsHeartbeat = null;
-        try {
-            zkConfiguration = createZK();
-            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
-            appsHeartbeat.setAutoHeartbeat(AppName.DATA_WRITER);
+    @Override
+    public void run() {
 
-        } catch (Exception ex) {
-            log.error("Zookeeper is required to run TRcmd, ", ex);
-            System.exit(-1);
-        }
-
-        /*example from: https://www.tutorialspoint.com/apache_kafka/apache_kafka_consumer_group_example.htm*/
-        Properties props = new Properties();
-
-        /*TODO: need configuration for all values below*/
-        props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-        props.put("group.id", "twcmd");
-        props.put("enable.auto.commit", "true");
-        props.put("auto.commit.interval.ms", "1000");
-        props.put("session.timeout.ms", "30000");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("key.deserializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
+        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(getProperties("consumer.", configs));
 
         String topic = KafkaTopics.PROJECT_WRITE.getTopic();
         consumer.subscribe(Collections.singletonList(topic));
@@ -86,12 +52,11 @@ public class TWcmd {
         ConsumerRecords<String, byte[]> records;
         polling = true;
         while (polling) {
-            try {
-                records = consumer.poll(duration);
-            } catch (RecordDeserializationException ex) {
-                log.error("Kafka Internal Error: ", ex);
-                continue;
-            }
+            records = consumer.poll(duration);
+
+            if (records.count() == 0) continue;
+
+            terminateOnNewerVersion();
 
             for (ConsumerRecord<String, byte[]> record : records) {
                 long offset = record.offset();
@@ -130,22 +95,6 @@ public class TWcmd {
         }
 
         consumer.close();
-    }
-
-    private ZKConfiguration createZK() throws IOException, InterruptedException, KeeperException {
-        ZKConfiguration zkConfiguration = new ZKConfiguration();
-        zkConfiguration.connect();
-        zkConfiguration.initial();
-
-        environment = Environment.valueOf(zkConfiguration.getString(ZKConfigNode.ENVIRONMENT));
-        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
-
-        return zkConfiguration;
-    }
-
-
-    public void stop() {
-        polling = false;
     }
 
 }

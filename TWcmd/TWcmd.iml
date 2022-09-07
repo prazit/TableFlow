@@ -14,10 +14,10 @@
     <orderEntry type="library" name="logback" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="lombok" level="project" />
     <orderEntry type="library" name="mapstruct" level="project" />
-    <orderEntry type="library" name="json" level="project" />
-    <orderEntry type="library" name="dconvers-crypto" level="application" />
+    <orderEntry type="library" name="gson-2.9.0" level="application" />
     <orderEntry type="library" name="zookeeper-3.7.1" level="application" />
-    <orderEntry type="library" scope="TEST" name="junit5" level="application" />
     <orderEntry type="library" name="sundial-2.2.2" level="application" />
+    <orderEntry type="library" name="dconvers-crypto" level="application" />
+    <orderEntry type="library" scope="TEST" name="junit5" level="application" />
   </component>
 </module>

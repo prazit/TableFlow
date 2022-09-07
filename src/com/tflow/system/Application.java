@@ -2,10 +2,7 @@ package com.tflow.system;
 
 import com.tflow.model.editor.Workspace;
 import com.tflow.util.DateTimeUtil;
-import com.tflow.zookeeper.AppName;
-import com.tflow.zookeeper.AppsHeartbeat;
-import com.tflow.zookeeper.ZKConfigNode;
-import com.tflow.zookeeper.ZKConfiguration;
+import com.tflow.zookeeper.*;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.io.InputStream;
 
 @ApplicationScoped
 @Named("app")
@@ -45,24 +43,44 @@ public class Application {
     }
 
     private void loadConfigs() {
-        // TODO: do this after Configuration File Module is completed, load configuration first then remove initialize below
-        cssForceReload = true;
+        Properties configs = null;
+        try {
+            InputStream configStream = ClassLoader.getSystemResourceAsStream("tflow.properties");
+            configs = new Properties();
+            configs.load(configStream);
+            configStream.close();
+        } catch (Exception ex) {
+            log.error("Load configurations failed! ", ex);
+            System.exit(-1);
+        }
+
+        versionString = configs.getProperty("version");
+        cssForceReload = configs.getPropertyBoolean("force.reload.resources", true);
         forceReloadResources = "";
 
         try {
-            zkConfiguration = requiresZK();
+            zkConfiguration = requiresZK(configs);
             String environmentName = zkConfiguration.getString(ZKConfigNode.ENVIRONMENT);
             environment = Environment.valueOf(environmentName);
-            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
+
+            if (appsHeartbeat.isNewer(AppName.TABLE_FLOW, versionString)) {
+                AppInfo appInfo = appsHeartbeat.getAppInfo(AppName.TABLE_FLOW);
+                log.warn("Application({}) found newer version {} is running, this version {} will be terminated.", AppName.TABLE_FLOW, appInfo.getVersion(), versionString);
+                System.exit(1);
+            }
+
+            appsHeartbeat = new AppsHeartbeat(zkConfiguration, configs);
             appsHeartbeat.setAutoHeartbeat(AppName.TABLE_FLOW);
+            appsHeartbeat.setAppVersion(AppName.TABLE_FLOW, versionString);
         } catch (Exception ex) {
             log.error("loadConfigs failed: ", ex);
+            System.exit(-1);
             /*TODO: do something to notify admin, requires ZooKeeper */
         }
     }
 
-    private ZKConfiguration requiresZK() throws IOException {
-        ZKConfiguration zkConfiguration = new ZKConfiguration();
+    private ZKConfiguration requiresZK(Properties configs) throws IOException {
+        ZKConfiguration zkConfiguration = new ZKConfiguration(configs);
         try {
             zkConfiguration.connect();
             zkConfiguration.initial();

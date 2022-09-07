@@ -1,5 +1,6 @@
 package com.tflow.zookeeper;
 
+import com.tflow.system.Properties;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
 import org.knowm.sundial.SundialJobScheduler;
@@ -17,9 +18,9 @@ public class AppsHeartbeat {
     private long appTimeout;
     private AppName currentAppName;
 
-    public AppsHeartbeat(ZKConfiguration zk) throws InterruptedException {
+    public AppsHeartbeat(ZKConfiguration zk, Properties configs) throws InterruptedException {
         this.zk = zk;
-        appTimeout = zk.getLong(ZKConfigNode.APP_TIMEOUT);
+        appTimeout = configs.getPropertyLong("heartbeat.ms", 2000L);
     }
 
     public boolean isOnline(AppName appName) {
@@ -30,7 +31,7 @@ public class AppsHeartbeat {
 
     public boolean isNewer(AppName appName, String version) {
         AppInfo appInfo = getAppInfo(appName);
-        if (appInfo == null) return false;
+        if (appInfo == null || appInfo.getVersion() == null) return false;
         return appInfo.getVersion().compareTo(version) > 0;
     }
 
@@ -48,6 +49,12 @@ public class AppsHeartbeat {
             log.warn("getAppInfo(" + appName + ") failed, ", ex);
             return null;
         }
+    }
+
+    public String getAppVersion(AppName appName) {
+        AppInfo appInfo = getAppInfo(appName);
+        if (appInfo == null) return null;
+        return appInfo.getVersion();
     }
 
     public void setAppVersion(AppName appName, String version) {

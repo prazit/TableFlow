@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
 Implementation-Title: TFlow Write Command Service
 Main-Class: com.tflow.wcmd.Main
-Class-Path: kafka_2.13-3.1.0.jar kafka-server-common-3.1.0.jar kafka-cli
- ents-3.1.0.jar kafka-tools-3.1.0.jar slf4j-api-1.7.25.jar logback-class
- ic-1.2.3.jar logback-core-1.2.3.jar mapstruct-1.5.2.Final.jar gson-2.9.
- 0.jar dconvers.jar commons-codec-1.14.jar
+Class-Path: slf4j-api-1.7.25.jar logback-core-1.2.3.jar logback-classic-
+ 1.2.3.jar kafka_2.13-3.1.0.jar kafka-server-common-3.1.0.jar kafka-clie
+ nts-3.1.0.jar kafka-tools-3.1.0.jar gson-2.9.0.jar mapstruct-1.5.2.Fina
+ l.jar zookeeper-3.7.1.jar zookeeper-jute-3.7.1.jar sundial-2.2.2.jar dc
+ onvers.jar commons-codec-1.14.jar
 

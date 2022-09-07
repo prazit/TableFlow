@@ -24,7 +24,6 @@ public enum ZKConfigNode {
     /**
      * AppInfo for AppsHeartbeat.
      */
-    APP_TIMEOUT(2000L),
     TABLE_FLOW("{}"),
     DATA_WRITER("{}"),
     DATA_READER("{}"),

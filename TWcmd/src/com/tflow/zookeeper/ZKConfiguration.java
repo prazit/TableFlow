@@ -1,5 +1,6 @@
 package com.tflow.zookeeper;
 
+import com.tflow.system.Properties;
 import com.tflow.util.DateTimeUtil;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -20,11 +21,12 @@ public class ZKConfiguration implements Watcher {
     private Logger log = LoggerFactory.getLogger(ZKConfiguration.class);
 
     private ZooKeeper zooKeeper;
-    private String configRoot;
 
-    /**
-     * Send heartbeat to zookeeper after milliseconds.
-     */
+    private String connectString;
+    private String configRoot;
+    private int sessionTimeout;
+    private int maxWait;
+
     private boolean heartbeatEnabled;
     private long intervalCheckHeartbeat;
     private long heartbeatDuration;
@@ -34,8 +36,18 @@ public class ZKConfiguration implements Watcher {
 
     private Watcher watcher;
 
-    public ZKConfiguration() {
-        /*nothing*/
+    public ZKConfiguration(Properties configs) {
+        loadConfigs(configs);
+    }
+
+    private void loadConfigs(Properties configs) {
+        connectString = configs.getProperty("zookeeper.host", "localhost:2181");
+        heartbeatEnabled = false;
+        sessionTimeout = configs.getPropertyInt("zookeeper.session.timeout.ms", 18000);
+        intervalCheckHeartbeat = configs.getPropertyLong("heartbeat.ms", 2000);
+        heartbeatDuration = ((long) sessionTimeout) - intervalCheckHeartbeat;
+        maxWait = configs.getPropertyInt("zookeeper.connect.timeout.second", 15);
+        configRoot = "/tflow-configuration";
     }
 
     public boolean isConnectionExpired() {
@@ -71,17 +83,8 @@ public class ZKConfiguration implements Watcher {
     public void connect() throws IOException {
         if (zooKeeper != null) return;
 
-        /*TODO: load all below from zookeeper.properties in same package of this class*/
-        String connectString = "localhost:2181";
-        heartbeatEnabled = false;
-        int sessionTimeout = 18000;
-        intervalCheckHeartbeat = 2000;
-        heartbeatDuration = sessionTimeout - intervalCheckHeartbeat;
-        int maxWait = 15;
-        int wait = 0;
-        configRoot = "/tflow-configuration";
-
         zooKeeper = new ZooKeeper(connectString, sessionTimeout, this);
+        int wait = 0;
         while (!zooKeeper.getState().isConnected()) {
             if (maxWait < ++wait) break;
             log.info("waiting zooKeeper [" + wait + "/" + maxWait + "]...");

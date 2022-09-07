@@ -1,5 +1,6 @@
 package com.tflow.zookeeper;
 
+import com.tflow.system.Properties;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.ClientInfo;
@@ -144,7 +145,7 @@ class ZKConfigurationUT {
 
     @BeforeEach
     void setUp() throws InterruptedException, IOException, KeeperException {
-        zkConfig = new ZKConfiguration();
+        zkConfig = new ZKConfiguration(new Properties());
         connect();
     }
 
@@ -189,7 +190,28 @@ class ZKConfigurationUT {
     }
 
     @Test
-    void process() {
+    void appStatus() throws InterruptedException {
+        AppsHeartbeat appsHeartbeat = new AppsHeartbeat(zkConfig, new Properties());
+        println(AppName.TABLE_FLOW + (appsHeartbeat.isOnline(AppName.TABLE_FLOW) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.TABLE_FLOW) : " is offline"));
+        println(AppName.DATA_READER + (appsHeartbeat.isOnline(AppName.DATA_READER) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.DATA_READER) : " is offline"));
+        println(AppName.DATA_WRITER + (appsHeartbeat.isOnline(AppName.DATA_WRITER) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.DATA_WRITER) : " is offline"));
+        println(AppName.PACKAGE_BUILDER + (appsHeartbeat.isOnline(AppName.PACKAGE_BUILDER) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.PACKAGE_BUILDER) : " is offline"));
+    }
+
+    @Test
+    void setVersion() throws InterruptedException {
+        AppsHeartbeat appsHeartbeat = new AppsHeartbeat(zkConfig, new Properties());
+
+        //appsHeartbeat.setAppVersion(AppName.DATA_READER, "0.1.0");
+
+        println(AppName.TABLE_FLOW + " version " + appsHeartbeat.getAppVersion(AppName.TABLE_FLOW));
+        println(AppName.DATA_READER + " version " + appsHeartbeat.getAppVersion(AppName.DATA_READER));
+        println(AppName.DATA_WRITER + " version " + appsHeartbeat.getAppVersion(AppName.DATA_WRITER));
+        println(AppName.PACKAGE_BUILDER + " version " + appsHeartbeat.getAppVersion(AppName.PACKAGE_BUILDER));
+    }
+
+    @Test
+    void jobTest() {
         try {
 
             //zkConfig.set(ZKConfigNode.APP_TIMEOUT, 2000L);
@@ -198,10 +220,10 @@ class ZKConfigurationUT {
             //zkConfig.set(ZKConfigNode.LAST_TRANSACTION_ID, 789L);
             //listAllConfigs();
 
-            //println("---- BEFORE ----");
-            //printAllJobs();
+            println("---- BEFORE ----");
+            printAllJobs();
 
-            AppsHeartbeat appsHeartbeat = new AppsHeartbeat(zkConfig);
+            AppsHeartbeat appsHeartbeat = new AppsHeartbeat(zkConfig, new Properties());
 
             appsHeartbeat.setAppVersion(AppName.DATA_READER, "0.1.1");
             appsHeartbeat.setAutoHeartbeat(AppName.DATA_READER);

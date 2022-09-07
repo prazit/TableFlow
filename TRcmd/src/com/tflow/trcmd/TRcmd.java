@@ -1,67 +1,54 @@
 package com.tflow.trcmd;
 
-import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaTopics;
 import com.tflow.model.data.DataManager;
-import com.tflow.system.Environment;
+import com.tflow.system.CLIbase;
+import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
-import com.tflow.wcmd.TWcmd;
 import com.tflow.zookeeper.AppName;
 import com.tflow.zookeeper.AppsHeartbeat;
-import com.tflow.zookeeper.ZKConfigNode;
 import com.tflow.zookeeper.ZKConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 
 /**
  * TODO: need to remove Client-Data-File-Checker after complete the Heartbeat function
  * TODO: Project Page Command to create new project: when request projectId < 0 (TRcmd send message to TWcmd)
  **/
-public class TRcmd {
-
-    private Logger log = LoggerFactory.getLogger(TRcmd.class);
-
-    private boolean polling;
-
-    private Environment environment;
-    private EnvironmentConfigs environmentConfigs;
+public class TRcmd extends CLIbase {
 
     public TRcmd() {
-        /*nothing*/
+        super(AppName.DATA_READER);
+    }
+
+    @Override
+    protected void loadConfigs() throws Exception {
+        /*add more Fixed configuration for Consumer*/
+        configs.put("consumer.key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        configs.put("consumer.key.deserializer.encoding", StandardCharsets.UTF_8.name());
+        configs.put("consumer.value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+
+        /*add more Fixed configuration for Producer*/
+        configs.put("producer.key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        configs.put("producer.key.serializer.encoding", StandardCharsets.UTF_8.name());
+        configs.put("producer.value.serializer", environmentConfigs.getKafkaSerializer());
     }
 
     @SuppressWarnings("unchecked")
-    public void start() {
-
-        ZKConfiguration zkConfiguration = null;
-        AppsHeartbeat appsHeartbeat = null;
-        try {
-            zkConfiguration = createZK();
-            appsHeartbeat = new AppsHeartbeat(zkConfiguration);
-            appsHeartbeat.setAutoHeartbeat(AppName.DATA_READER);
-
-        } catch (Exception ex) {
-            log.error("Zookeeper is required to run TRcmd, ", ex);
-            System.exit(-1);
-        }
+    public void run() {
 
         DataManager dataManager = new DataManager(environment, getClass().getSimpleName(), zkConfiguration);
-        KafkaConsumer<String, byte[]> consumer = createConsumer();
-        KafkaProducer<String, Object> dataProducer = createProducer();
+        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(getProperties("consumer.", configs));
+        KafkaProducer<String, Object> dataProducer = new KafkaProducer<>(getProperties("producer.", configs));
 
         /*TODO: need to load readTopic from configuration*/
         String readTopic = KafkaTopics.PROJECT_READ.getTopic();
@@ -83,6 +70,10 @@ public class TRcmd {
         polling = true;
         while (polling) {
             records = consumer.poll(duration);
+
+            if (records.count() == 0) continue;
+
+            terminateOnNewerVersion();
 
             for (ConsumerRecord<String, byte[]> record : records) {
                 long offset = record.offset();
@@ -121,50 +112,6 @@ public class TRcmd {
         }
 
         consumer.close();
-    }
-
-    private ZKConfiguration createZK() throws IOException, InterruptedException, KeeperException {
-        ZKConfiguration zkConfiguration = new ZKConfiguration();
-        zkConfiguration.connect();
-        zkConfiguration.initial();
-
-        environment = Environment.valueOf(zkConfiguration.getString(ZKConfigNode.ENVIRONMENT));
-        environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
-
-        return zkConfiguration;
-    }
-
-    private KafkaConsumer<String, byte[]> createConsumer() {
-        /*TODO: need to load consumer configuration*/
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-        props.put("group.id", "trcmd");
-        props.put("enable.auto.commit", "true");
-        props.put("auto.commit.interval.ms", "1000");
-        props.put("session.timeout.ms", "30000");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("key.deserializer.encoding", "UTF-8");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        return new KafkaConsumer<>(props);
-    }
-
-    private KafkaProducer<String, Object> createProducer() {
-        /*TODO: need to load producer configuration*/
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "DESKTOP-K1PAMA3:9092");
-        props.put("acks", "all");
-        props.put("retries", 0);
-        props.put("batch.size", 16384);
-        props.put("linger.ms", 1);
-        props.put("buffer.memory", 33554432);
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("key.serializer.encoding", StandardCharsets.UTF_8.name());
-        props.put("value.serializer", environmentConfigs.getKafkaSerializer());
-        return new KafkaProducer<>(props);
-    }
-
-    public void stop() {
-        polling = false;
     }
 
 }
