@@ -1,5 +1,6 @@
 package com.tflow.thread;
 
+import com.tflow.UTBase;
 import com.tflow.util.DateTimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,37 +9,10 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class BlockingQueueUT {
+public class BlockingQueueUT extends UTBase {
 
     BlockingQueue blockingQueue;
     int id;
-
-    String indent = "";
-    String indentChars = "\t";
-
-    void println(String string) {
-        System.out.println(DateTimeUtil.getStr(DateTimeUtil.now(), "[dd/MM/yyyy HH:mm:ss.SSS] ") + indent + string);
-    }
-
-    void indent() {
-        indent(1);
-    }
-
-    void indent(int addIndent) {
-        if (addIndent > 0) {
-            StringBuilder builder = new StringBuilder(indent);
-            for (; addIndent > 0; addIndent--) builder.append(indentChars);
-            indent = builder.toString();
-            return;
-        }
-        // addIndex < 0
-        int remove = Math.abs(addIndent) * indentChars.length();
-        if (remove > indent.length()) {
-            indent = "";
-        } else {
-            indent = indent.substring(0, indent.length() - remove);
-        }
-    }
 
     void printThreads() {
         printThreads(null);

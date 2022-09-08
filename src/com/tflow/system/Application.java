@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -29,6 +30,7 @@ public class Application {
     private String appPath;
     private Environment environment;
 
+    private Properties configs;
     private ZKConfiguration zkConfiguration;
     private AppsHeartbeat appsHeartbeat;
 
@@ -38,21 +40,24 @@ public class Application {
     }
 
     @PostConstruct
-    public void onCreation() throws IOException {
+    public void onCreation() throws Exception {
         loadConfigs();
     }
 
-    private void loadConfigs() {
-        Properties configs = null;
+    private void loadConfigs() throws Exception {
+        configs = null;
+        String configFileName = "tflow.properties";
         try {
-            InputStream configStream = ClassLoader.getSystemResourceAsStream("tflow.properties");
             configs = new Properties();
+            InputStream configStream = getClass().getResourceAsStream(configFileName);
             configs.load(configStream);
+            //configs.load(new FileReader(configFileName));
             configStream.close();
         } catch (Exception ex) {
-            log.error("Load configurations failed! ", ex);
-            System.exit(-1);
+            log.error("Load configurations file:" + configFileName + " failed! ", ex);
+            throw ex;
         }
+        log.info("{} loaded", configFileName);
 
         versionString = configs.getProperty("version");
         cssForceReload = configs.getPropertyBoolean("force.reload.resources", true);
@@ -60,8 +65,14 @@ public class Application {
 
         try {
             zkConfiguration = requiresZK(configs);
+            log.info("Zookeeper loaded");
+
             String environmentName = zkConfiguration.getString(ZKConfigNode.ENVIRONMENT);
             environment = Environment.valueOf(environmentName);
+            log.info("Active environment: {}", environmentName);
+
+            appsHeartbeat = new AppsHeartbeat(zkConfiguration, configs);
+            log.info("AppsHeartbeat loaded");
 
             if (appsHeartbeat.isNewer(AppName.TABLE_FLOW, versionString)) {
                 AppInfo appInfo = appsHeartbeat.getAppInfo(AppName.TABLE_FLOW);
@@ -69,13 +80,13 @@ public class Application {
                 System.exit(1);
             }
 
-            appsHeartbeat = new AppsHeartbeat(zkConfiguration, configs);
-            appsHeartbeat.setAutoHeartbeat(AppName.TABLE_FLOW);
+            appsHeartbeat.startAutoHeartbeat(AppName.TABLE_FLOW);
             appsHeartbeat.setAppVersion(AppName.TABLE_FLOW, versionString);
+            log.info("{} heartbeat started", AppName.TABLE_FLOW);
+
         } catch (Exception ex) {
-            log.error("loadConfigs failed: ", ex);
-            System.exit(-1);
-            /*TODO: do something to notify admin, requires ZooKeeper */
+            log.error("Load configurations failed! ", ex);
+            throw ex;
         }
     }
 
@@ -90,28 +101,9 @@ public class Application {
         return zkConfiguration;
     }
 
-    /*private void loadApplicationVersion() {
-        log.trace("loadApplicationVersion.");
-        VersionFormatter formatter = new VersionFormatter();
-        version = formatter.versionConfigFile("version.property");
-        versionString = formatter.versionString(version);
-        log.debug("loadApplicationVersion.version = {}", versionString);
-
-        if (cssForceReload) {
-            cssFileName = "kudu." + version.getVersionNumber() + "." + version.getRevisionNumber() + "." + version.getBuildNumber() + ".css";
-        } else {
-            cssFileName = "kudu.css";
-        }
-        log.debug("cssFileName = {}", cssFileName);
-    }*/
-
     public String getVersionString() {
         return versionString;
     }
-
-    /*public VersionConfigFile getVersion() {
-        return version;
-    }*/
 
     public String getAppPath() {
         return appPath;
@@ -135,6 +127,10 @@ public class Application {
 
     public Environment getEnvironment() {
         return environment;
+    }
+
+    public Properties getConfigs() {
+        return configs;
     }
 
     public ZKConfiguration getZkConfiguration() {

@@ -1,5 +1,6 @@
 package com.tflow.thread;
 
+import com.tflow.UTBase;
 import com.tflow.util.DateTimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,45 +14,13 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ConditionUT {
+public class ConditionUT extends UTBase {
 
     ScheduledThreadPoolExecutor scheduler;
     ScheduledFuture<?> scheduledFuture;
     Lock lock;
     Condition condition;
     int id;
-
-    String indent = "";
-    String indentChars = "\t";
-
-    void println(String string) {
-        System.out.println(
-                DateTimeUtil.getStr(DateTimeUtil.now(), "[dd/MM/yyyy HH:mm:ss.SSS] ") +
-                        indent +
-                        " Thread-" + Thread.currentThread().getName() +
-                        ": " + string
-        );
-    }
-
-    void indent() {
-        indent(1);
-    }
-
-    void indent(int addIndent) {
-        if (addIndent > 0) {
-            StringBuilder builder = new StringBuilder(indent);
-            for (; addIndent > 0; addIndent--) builder.append(indentChars);
-            indent = builder.toString();
-            return;
-        }
-        // addIndex < 0
-        int remove = Math.abs(addIndent) * indentChars.length();
-        if (remove > indent.length()) {
-            indent = "";
-        } else {
-            indent = indent.substring(0, indent.length() - remove);
-        }
-    }
 
     void printThreads() {
         printThreads(null);
@@ -76,8 +45,16 @@ public class ConditionUT {
         id = 0;
     }
 
+    Thread awaitThread;
+
     public void await() {
-        Thread thread = new Thread("AWAIT") {
+        awaitThread = new Thread("AWAIT") {
+            @Override
+            public String toString() {
+                println("AWAIT:TICK");
+                return "";
+            }
+
             @Override
             public void run() {
                 String msg = "Command #" + (++id);
@@ -86,7 +63,7 @@ public class ConditionUT {
                 try {
                     lock.lock();
                     condition.await();
-                    println("AWAIT:AFTER: " + msg);
+                    println("AWAIT:AFTER: " + msg + " (blocked by condition)");
                 } catch (Exception ex) {
                     println(ex.getClass().getSimpleName() + " on AWAIT: " + ex.getMessage());
                 } finally {
@@ -95,7 +72,7 @@ public class ConditionUT {
                 }
             }
         };
-        thread.start();
+        awaitThread.start();
     }
 
     public void signal(long delayMs) {
@@ -118,29 +95,72 @@ public class ConditionUT {
         println("SIGNAL:AFTER-SCHEDULE: " + msg);
     }
 
+    public void tick() {
+        lock.lock();
+        condition.signal();
+        lock.unlock();
+        println("tick from another thread completed");
+    }
+
     @Test
-    public void test() {
-        println("-- blocking queue --");
+    public void testBlockMainThread() {
+        printThread = true;
+
+        scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                println("call another function on main thread");
+            }
+        }, 2, TimeUnit.SECONDS);
+
+        scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                println("scheduledTask: run after 3 seconds");
+                tick();
+            }
+        }, 3, TimeUnit.SECONDS);
+
+        println("---- Await ----");
+
+        lock.lock();
+        try {
+            condition.await();
+            lock.unlock();
+        } catch (InterruptedException e) {
+            println("ERROR: "+ e.getMessage());
+            e.printStackTrace();
+        }
+
+        println("---- Signal ----");
+
+    }
+
+    @Test
+    public void testAwaitSignal() {
+        println("-- begin:blocking by condition --");
         indent();
 
         printThreads();
         await();
+        awaitThread.toString();
         printThreads("after await x2");
-        signal(1000);
+        signal(3000);
+        awaitThread.toString();
         printThreads("after signal 1");
 
+        indent(-1);
+        println("-- end:blocking by condition --");
+        println("");
+        println("-- begin:Blocking by scheduledFuture.get --");
+        indent();
+
         if (scheduledFuture != null) {
-            /*while (!scheduledFuture.isDone()) {
-                try {
-                    println("waiting for scheduledFuture.isDone");
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                }
-            }*/
             println("waiting for scheduledFuture.get");
             try {
                 Object something = scheduledFuture.get();
-                println("scheduledFuture.get: return " + something);
+                println("scheduledFuture.get: return " + something + " (blocked by scheduledFuture.get)");
+                awaitThread.toString();
             } catch (Exception ex) {
                 println("scheduledFuture.get failed, " + ex.getMessage());
             }
@@ -149,6 +169,6 @@ public class ConditionUT {
         printThreads("after scheduler.shutdownNow");
 
         indent(-1);
-        println("-- ended --");
+        println("-- end:Blocking by scheduledFuture.get --");
     }
 }

@@ -1,7 +1,11 @@
 package com.tflow.zookeeper;
 
+import com.tflow.UTBase;
 import com.tflow.system.Properties;
-import org.apache.zookeeper.*;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.ClientInfo;
 import org.apache.zookeeper.data.Stat;
@@ -16,38 +20,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-class ZKConfigurationUT {
+class ZKConfigurationUT extends UTBase {
 
     ZooKeeper zooKeeper;
     ZKConfiguration zkConfig;
     String rootNode = "/";
-
-    String indent = "";
-    String indentChars = "\t";
-
-    void println(String string) {
-        System.out.println(indent + string);
-    }
-
-    void indent() {
-        indent(1);
-    }
-
-    void indent(int addIndent) {
-        if (addIndent > 0) {
-            StringBuilder builder = new StringBuilder(indent);
-            for (; addIndent > 0; addIndent--) builder.append(indentChars);
-            indent = builder.toString();
-            return;
-        }
-        // addIndex < 0
-        int remove = Math.abs(addIndent) * indentChars.length();
-        if (remove > indent.length()) {
-            indent = "";
-        } else {
-            indent = indent.substring(0, indent.length() - remove);
-        }
-    }
 
     void errorBlocks() throws InterruptedException {
 
@@ -145,6 +122,7 @@ class ZKConfigurationUT {
 
     @BeforeEach
     void setUp() throws InterruptedException, IOException, KeeperException {
+        setLogLevel("off");
         zkConfig = new ZKConfiguration(new Properties());
         connect();
     }
@@ -191,11 +169,34 @@ class ZKConfigurationUT {
 
     @Test
     void appStatus() throws InterruptedException {
+        setLogLevel("off");
+        setLogLevel("debug", "com.tflow.zookeeper.AppsHeartbeat");
+
         AppsHeartbeat appsHeartbeat = new AppsHeartbeat(zkConfig, new Properties());
-        println(AppName.TABLE_FLOW + (appsHeartbeat.isOnline(AppName.TABLE_FLOW) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.TABLE_FLOW) : " is offline"));
-        println(AppName.DATA_READER + (appsHeartbeat.isOnline(AppName.DATA_READER) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.DATA_READER) : " is offline"));
-        println(AppName.DATA_WRITER + (appsHeartbeat.isOnline(AppName.DATA_WRITER) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.DATA_WRITER) : " is offline"));
-        println(AppName.PACKAGE_BUILDER + (appsHeartbeat.isOnline(AppName.PACKAGE_BUILDER) ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.PACKAGE_BUILDER) : " is offline"));
+        //appsHeartbeat.startAutoHeartbeat(AppName.TABLE_FLOW);
+
+        boolean tf = true;
+        boolean tb = true;
+        boolean tr = true;
+        boolean tw = true;
+        while (true/*tf && tb && tr && tw*/) {
+            tf = appsHeartbeat.isOnline(AppName.TABLE_FLOW);
+            tb = appsHeartbeat.isOnline(AppName.PACKAGE_BUILDER);
+            tr = appsHeartbeat.isOnline(AppName.DATA_READER);
+            tw = appsHeartbeat.isOnline(AppName.DATA_WRITER);
+            println(AppName.TABLE_FLOW + (tf ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.TABLE_FLOW) : " is offline"));
+            println(AppName.PACKAGE_BUILDER + (tb ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.PACKAGE_BUILDER) : " is offline"));
+            println(AppName.DATA_READER + (tr ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.DATA_READER) : " is offline"));
+            println(AppName.DATA_WRITER + (tw ? " is ONLINE version " + appsHeartbeat.getAppVersion(AppName.DATA_WRITER) : " is offline"));
+            println("---- ----");
+            Thread.sleep(9999);
+        }
+        /*println("tf=" + tf);
+        println("tb=" + tb);
+        println("tr=" + tr);
+        println("tw=" + tw);*/
+
+        //appsHeartbeat.stopAutoHeartbeat();
     }
 
     @Test
@@ -226,7 +227,7 @@ class ZKConfigurationUT {
             AppsHeartbeat appsHeartbeat = new AppsHeartbeat(zkConfig, new Properties());
 
             appsHeartbeat.setAppVersion(AppName.DATA_READER, "0.1.1");
-            appsHeartbeat.setAutoHeartbeat(AppName.DATA_READER);
+            appsHeartbeat.startAutoHeartbeat(AppName.DATA_READER);
             println(AppName.DATA_READER + " version is newer than 0.1.1 ? " + appsHeartbeat.isNewer(AppName.DATA_READER, "0.1.1"));
             println(AppName.DATA_READER + " version is newer than 0.1.0 ? " + appsHeartbeat.isNewer(AppName.DATA_READER, "0.1.0"));
             println(AppName.DATA_READER + " version is newer than 0.1.2 ? " + appsHeartbeat.isNewer(AppName.DATA_READER, "0.1.2"));

@@ -169,9 +169,13 @@ public class ReadProjectCommand extends IOCommand {
 
         /*collect directory to list*/
         List<File> dirList = new ArrayList<>(Collections.singletonList(srcProjectDir));
-        File[] subDir = srcProjectDir.listFiles(dir -> !dir.isFile());
-        if (subDir != null) {
-            dirList.addAll(Arrays.asList(subDir));
+        int index = 0;
+        while (index < dirList.size()) {
+            File onDir = dirList.get(index++);
+            File[] subDir = onDir.listFiles(dir -> !dir.isFile());
+            if (subDir != null) {
+                dirList.addAll(Arrays.asList(subDir));
+            }
         }
 
         /*add files to Destination-Project using DataManager */
@@ -208,6 +212,8 @@ public class ReadProjectCommand extends IOCommand {
 
                 dataManager.addData(projectFileType, data, kafkaRecordAttributes);
             }
+
+            dataManager.waitAllTasks();
         }
     }
 

@@ -1,13 +1,18 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.KafkaErrorCode;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.DataManager;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.ProjectManager;
 import com.tflow.model.editor.Workspace;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
+import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Map;
 
@@ -50,10 +55,22 @@ public class AddProject extends Command {
         // result map
         action.getResultMap().put(ActionResultKey.PROJECT_ID, newProjectId);
 
-        // save Project
-        projectManager.saveProjectAs(newProjectId, project);
+        /*need to check existing(copied) or new(empty) before save for empty project*/
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.PROJECT, projectUser, newProjectId);
+        if (isOnError(data)) {
+            // save new Empty Project
+            projectManager.saveProjectAs(newProjectId, project);
 
-        // need to wait commit thread after addData.
-        dataManager.waitAllTasks();
+            // need to wait commit thread after addData.
+            dataManager.waitAllTasks();
+        }
+
     }
+
+    private boolean isOnError(Object data) {
+        return (data instanceof Long);
+    }
+
 }

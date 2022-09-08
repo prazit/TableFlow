@@ -9,24 +9,75 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class AppsHeartbeat {
 
     private Logger log = LoggerFactory.getLogger(AppsHeartbeat.class);
 
     private ZKConfiguration zk;
+    private long heartbeatMs;
     private long appTimeout;
     private AppName currentAppName;
+    private Lock lock;
+    private Condition condition;
 
     public AppsHeartbeat(ZKConfiguration zk, Properties configs) throws InterruptedException {
         this.zk = zk;
-        appTimeout = configs.getPropertyLong("heartbeat.ms", 2000L);
+        heartbeatMs = configs.getPropertyLong("heartbeat.ms", 2000L);
+        appTimeout = (long) (heartbeatMs * 2.2);
     }
 
     public boolean isOnline(AppName appName) {
         AppInfo appInfo = getAppInfo(appName);
         if (appInfo == null) return false;
-        return !isExpired(appInfo);
+        if (!isExpired(appInfo)) return true;
+
+        /*block this thread for thread process below until the next heartbeatTick*/
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
+        scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                unblock();
+            }
+        }, appTimeout, TimeUnit.MILLISECONDS);
+        block(appName);
+        scheduler.shutdownNow();
+
+        // checker needed to confirm no change made to this AppName.
+        AppInfo checkerInfo = getAppInfo(appName);
+        return !(appInfo.getHeartbeat() == checkerInfo.getHeartbeat());
+    }
+
+    private void block(AppName appName) {
+        if (log.isDebugEnabled()) log.debug("block by thread:{} for confirm offline:{} until the next heartbeatTick", Thread.currentThread().getName(), appName);
+        lock = new ReentrantLock();
+        condition = lock.newCondition();
+        try {
+            lock.lock();
+            condition.await();
+            lock.unlock();
+        } catch (InterruptedException e) {
+            /*ignored*/
+        }
+
+        lock = null;
+        condition = null;
+        if (log.isDebugEnabled()) log.debug("unblocked by thread:{} for confirm offline:{}", Thread.currentThread().getName(), appName);
+    }
+
+    private void unblock() {
+        /*unblock checker process*/
+        if (condition != null) {
+            if (log.isDebugEnabled()) log.debug("unblocking by thread:{}", Thread.currentThread().getName());
+            lock.lock();
+            condition.signal();
+            lock.unlock();
+        }
     }
 
     public boolean isNewer(AppName appName, String version) {
@@ -68,7 +119,7 @@ public class AppsHeartbeat {
         }
     }
 
-    public void setAutoHeartbeat(AppName appName) {
+    public void startAutoHeartbeat(AppName appName) {
         currentAppName = appName;
         createScheduleJob();
         startScheduleJob();
@@ -114,12 +165,19 @@ public class AppsHeartbeat {
         parameterMap.put("AppsHeartbeat", this);
 
         SundialJobScheduler.addJob(name, scheduleJob.getJobClass(), parameterMap, false);
-        log.debug("addJob {} completed.", scheduleJob);
+        log.debug("addJob {} completed.", name);
     }
 
     private void startScheduleJob() {
         String name = ScheduleJob.APP_HEARTBEAT.name();
-        SundialJobScheduler.addSimpleTrigger("EVERY-" + appTimeout + "ms", name, -1, appTimeout);
+        SundialJobScheduler.addSimpleTrigger("EVERY-" + heartbeatMs + "ms", name, -1, heartbeatMs);
     }
 
+    public void stopAutoHeartbeat() {
+        SundialJobScheduler.removeTrigger("EVERY-" + heartbeatMs + "ms");
+        String name = ScheduleJob.APP_HEARTBEAT.name();
+        SundialJobScheduler.stopJob(name);
+        SundialJobScheduler.removeJob(name);
+        log.debug("removeJob {} completed.", name);
+    }
 }

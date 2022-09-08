@@ -85,7 +85,7 @@ public abstract class CLIbase {
         try {
             appsHeartbeat = new AppsHeartbeat(zkConfiguration, configs);
             terminateOnNewerVersion();
-            appsHeartbeat.setAutoHeartbeat(appName);
+            appsHeartbeat.startAutoHeartbeat(appName);
             appsHeartbeat.setAppVersion(appName, appVersion);
         } catch (Exception ex) {
             log.error("Cannot start AppsHeartbeat, it is required to run " + getClass().getSimpleName() + ", ", ex);

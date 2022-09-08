@@ -332,14 +332,15 @@ public class DataManager {
         scheduled = threadPool.schedule(new Runnable() {
             @Override
             public void run() {
-                boolean submitResult = submit();
-                scheduled = null;
-                if (!submitResult) {
-                    commitAgain(commitAgainMilliseconds);
-                } else if(projectDataWriteBufferList.size() > 0) {
-                    /*addData between submit process need immediate commit*/
-                    commit();
+                boolean submitResult;
+                while(projectDataWriteBufferList.size() > 0) {
+                    submitResult = submit();
+                    if (!submitResult) {
+                        commitAgain(commitAgainMilliseconds);
+                        break;
+                    }
                 }
+                scheduled = null;
             }
         }, 0, TimeUnit.MILLISECONDS);
     }
@@ -488,9 +489,15 @@ public class DataManager {
         validate(fileType, additional);
 
         ProjectDataWriteBuffer projectDataWriteBuffer = new ProjectDataWriteBuffer(projectDataWriteBufferList.size(), fileType, object, additional);
-        projectDataWriteBufferList.put(projectDataWriteBuffer.uniqueKey(), projectDataWriteBuffer);
+        String key = projectDataWriteBuffer.uniqueKey();
+        if (projectDataWriteBufferList.containsKey(key)) {
+            ProjectDataWriteBuffer existing = projectDataWriteBufferList.get(key);
+            log.warn("addCommand: write:replace-key({}) existing-addition({}) new-addition({})", key, existing.getAdditional(), projectDataWriteBuffer.getAdditional());
+        } else {
+            log.debug("addCommand: write({})", key);
+        }
+        projectDataWriteBufferList.put(key, projectDataWriteBuffer);
 
-        log.debug("addCommand: write({})", projectDataWriteBuffer);
         commit();
     }
 
