@@ -8,6 +8,7 @@ public enum EventName {
     REMOVE_LINE,
 
     /*Event as status notifier*/
+    DATA_LOADED,
     PROPERTY_CHANGED,
     NAME_CHANGED,
     LINE_REMOVED,

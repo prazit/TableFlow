@@ -4,7 +4,9 @@ import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.ProjectUtil;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,6 +84,19 @@ public class Step implements Selectable, HasEvent {
         showPropertyList = true;
         showActionButtons = true;
         eventManager = new EventManager(this);
+        createEventHandlers();
+    }
+
+    private void createEventHandlers() {
+        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                PropertyView property = (PropertyView) event.getData();
+                if (PropertyVar.name.equals(property.getVar())) {
+                    eventManager.fireEvent(EventName.NAME_CHANGED);
+                }
+            }
+        });
     }
 
     public int getId() {

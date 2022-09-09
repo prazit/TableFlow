@@ -12,4 +12,12 @@ public class GroupItemData extends TWData implements Serializable {
     
     private int id;
     private String name;
+
+    public GroupItemData() {
+    }
+
+    public GroupItemData(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

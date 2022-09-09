@@ -14,4 +14,13 @@ public class GroupData extends TWData implements Serializable {
     private int id;
     private String name;
     private List<ProjectItemData> projectList;
+
+    public GroupData() {
+    }
+
+    public GroupData(int id, String name, List<ProjectItemData> projectList) {
+        this.id = id;
+        this.name = name;
+        this.projectList = projectList;
+    }
 }

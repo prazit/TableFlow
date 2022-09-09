@@ -13,4 +13,8 @@ public class ItemData extends TWData implements Serializable {
     private int id;
     private String name;
 
+    public ItemData(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

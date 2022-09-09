@@ -254,12 +254,12 @@ public class ReadProjectCommand extends IOCommand {
     }
 
     /**
+     * IMPORTANT: all write in this function must call DataManager.addData to make the TWcmd can replay for Backup Site
+     *
      * @param prototypeData the prototypeData.Id will replaced by new projectId
      * @return new RecordData with the data = prototypeData
      */
     private RecordData createNewProject(ProjectData prototypeData, RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
-
-        /*TODO: IMPORTANT: change all write in this function to call DataManager.addData to make the TWcmd can replay for Backup Site*/
 
         GroupListData groupList;
         File file = getFile(ProjectFileType.GROUP_LIST, additional);
@@ -268,7 +268,8 @@ public class ReadProjectCommand extends IOCommand {
             groupList = new GroupListData();
             groupList.setGroupList(new ArrayList<>());
         } else {
-            groupList = (GroupListData) readFrom(file);
+            RecordData recordData = (RecordData) readFrom(file);
+            groupList = (GroupListData) recordData.getData();
         }
 
         DataMapper mapper = Mappers.getMapper(DataMapper.class);
@@ -281,7 +282,8 @@ public class ReadProjectCommand extends IOCommand {
             groupData.setProjectList(new ArrayList<>());
             groupList.getGroupList().add(mapper.map(groupData));
         } else {
-            groupData = (GroupData) readFrom(groupFile);
+            RecordData recordData = (RecordData) readFrom(groupFile);
+            groupData = (GroupData) recordData.getData();
         }
 
         int newProjectId = groupList.getLastProjectId() + 1;
@@ -289,16 +291,22 @@ public class ReadProjectCommand extends IOCommand {
         prototypeData.setId(newProjectIdString);
         log.info("new project id = {}", newProjectIdString);
 
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setId(additional.getProjectId());
+        projectUser.setUserId(additional.getModifiedUserId());
+        projectUser.setClientId(additional.getModifiedClientId());
+
         groupList.setLastProjectId(newProjectId);
-        writeTo(file, groupList);
+        dataManager.addData(ProjectFileType.GROUP_LIST, groupList, projectUser);
 
         groupData.getProjectList().add(mapper.map(prototypeData));
-        writeTo(groupFile, groupData);
+        dataManager.addData(ProjectFileType.GROUP, groupData, projectUser, groupData.getId());
 
         /*create empty project object in a recordData*/
         RecordData recordData = new RecordData();
         recordData.setData(prototypeData);
         recordData.setAdditional(additional);
+        additional.setRecordId(additional.getProjectId());
         return recordData;
     }
 

@@ -12,4 +12,9 @@ public class ProjectItemData extends TWData implements Serializable {
 
     private String id;
     private String name;
+
+    public ProjectItemData(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

@@ -76,7 +76,7 @@ public class ChangePropertyValue extends Command {
             if (method.getName().compareTo(methodName) == 0) {
                 Class[] parameterTypes = method.getParameterTypes();
                 Class parameterClass = parameterTypes[0];
-                log.warn("ChangePropertyValue.setPropertyValue(oldValue:{}): using method {}({}:{})", property.getOldValue(), method.getName(), toCSVString(parameterTypes), value);
+                if (log.isDebugEnabled()) log.debug("ChangePropertyValue.setPropertyValue(oldValue:{}): using method {}({}:{})", property.getOldValue(), method.getName(), toCSVString(parameterTypes), value);
                 if (value == null) {
                     method.invoke(selectable, parameterClass.cast(null));
                 } else if (value instanceof Integer || value instanceof Long) {

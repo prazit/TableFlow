@@ -808,6 +808,7 @@ public class EditorController extends Controller {
                 step = addStep();
             }
         }
+        boolean needEventHandler = step.getIndex() < 0;
 
         /*call action SelectStep*/
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
@@ -823,6 +824,8 @@ public class EditorController extends Controller {
             FacesUtil.addError("Select Step Failed with Internal Command Error!");
             return;
         }
+
+        createStepEventHandlers(step);
 
         zoom = step.getZoom();
         showStepList = step.isShowStepList();
@@ -845,6 +848,17 @@ public class EditorController extends Controller {
                     .post(JavaScript.refreshFlowChart)
                     .runOnClient();
         }
+    }
+
+    private void createStepEventHandlers(Step step) {
+        step.getEventManager().addHandler(EventName.NAME_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                Step target = (Step) event.getTarget();
+                log.warn("IMPORTANT: need to update step-list here, caused by event NAME_CHANGED of Step({}):{}", target.getId(), target.getName());
+                /*TODO: need to update step-list*/
+            }
+        });
     }
 
     public void submitZoom() {

@@ -29,6 +29,10 @@
         <appender-ref ref="FILE" />
     </logger>
 
+    <logger name="com.tflow.zookeeper" level="info">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
     <root level="trace">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
