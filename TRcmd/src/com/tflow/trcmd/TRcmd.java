@@ -20,10 +20,6 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-/**
- * TODO: need to remove Client-Data-File-Checker after complete the Heartbeat function
- * TODO: Project Page Command to create new project: when request projectId < 0 (TRcmd send message to TWcmd)
- **/
 public class TRcmd extends CLIbase {
 
     public TRcmd() {
@@ -50,7 +46,7 @@ public class TRcmd extends CLIbase {
         KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(getProperties("consumer.", configs));
         KafkaProducer<String, Object> dataProducer = new KafkaProducer<>(getProperties("producer.", configs));
 
-        /*TODO: need to load readTopic from configuration*/
+        /*don't load readTopic from configuration, unchangeable topic by the TFlow-System.*/
         String readTopic = KafkaTopics.PROJECT_READ.getTopic();
         String dataTopic = KafkaTopics.PROJECT_DATA.getTopic();
         consumer.subscribe(Collections.singletonList(readTopic));
@@ -88,7 +84,7 @@ public class TRcmd extends CLIbase {
                     continue;
                 }
 
-                /*TODO: add command to UpdateProjectCommandQueue*/
+                /*TODO: add command to UpdateProjectCommandQueue (BlockingQueue)*/
                 ReadProjectCommand readProjectCommand = new ReadProjectCommand(offset, key, value, environmentConfigs, dataProducer, dataTopic, dataManager);
                 log.info("Incoming message: {}", readProjectCommand.toString());
 

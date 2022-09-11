@@ -2,9 +2,8 @@ package com.tflow.controller;
 
 public enum GroupSection {
 
-    EXISTING_PROJECT("pi-folder-open", "Existing Project", "existingProject"),
-    PROJECT_TEMPLATE("pi-data", "Project Template", "projectTemplate"),
-    TESTING("pi-check", "Testing", "testing"),
+    EXISTING_PROJECT("pi pi-folder", " Existing Project", "existingProject"),
+    PROJECT_TEMPLATE("pi pi-file", " New Project", "projectTemplate,newProject"),
     ;
 
     String icon;

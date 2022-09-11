@@ -144,4 +144,8 @@ public class JavaScriptBuilder {
         }
         FacesUtil.runClientScript(javaScript);
     }
+
+    /*TODO: client notification message need to manage by this JSbuilder*/
+    /*TODO: can call from main-page and sub-page and automatic update without update-property-values (show on addMessage)*/
+
 }

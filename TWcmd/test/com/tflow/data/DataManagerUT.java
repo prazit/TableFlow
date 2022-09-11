@@ -1,6 +1,7 @@
 package com.tflow.data;
 
 import com.tflow.UTBase;
+import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.*;
 import com.tflow.system.Environment;
@@ -19,6 +20,7 @@ public class DataManagerUT extends UTBase {
     Properties configs;
     ZKConfiguration zkConfiguration;
     Environment environment;
+    EnvironmentConfigs environmentConfigs;
     DataManager dataManager;
     ProjectUser projectUser;
 
@@ -46,6 +48,7 @@ public class DataManagerUT extends UTBase {
         try {
             zkConfiguration = new ZKConfiguration(configs);
             environment = Environment.valueOf(zkConfiguration.getString(ZKConfigNode.ENVIRONMENT));
+            environmentConfigs = EnvironmentConfigs.valueOf(environment.name());
             dataManager = new DataManager(environment, "initial", zkConfiguration);
         } catch (Exception ex) {
             println("ERROR: " + ex.getMessage());
@@ -84,6 +87,12 @@ public class DataManagerUT extends UTBase {
         groupData = new GroupData(3, "Data Warehouse", new ArrayList<>(Arrays.asList(
                 new ProjectItemData("P6", "#6"),
                 new ProjectItemData("P7", "#7")
+        )));
+        dataManager.addData(ProjectFileType.GROUP, groupData, projectUser, groupData.getId());
+
+        groupData = new GroupData(environmentConfigs.getTemplateGroupId(), "Project Template", new ArrayList<>(Arrays.asList(
+                new ProjectItemData("T1", "Template No.1"),
+                new ProjectItemData("T2", "Template No.2")
         )));
         dataManager.addData(ProjectFileType.GROUP, groupData, projectUser, groupData.getId());
 

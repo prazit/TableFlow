@@ -4,6 +4,7 @@ import com.tflow.model.PageParameter;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 
+import javax.faces.event.ActionListener;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
@@ -22,7 +23,11 @@ public class TopMenuController extends Controller {
     }
 
     public void newEmptyProject() {
-        workspace.openPage(Page.EDITOR, new Parameter(PageParameter.GROUP_ID, "0"));
+        workspace.openPage(Page.GROUP, new Parameter(PageParameter.SECTION_INDEX, "1"));
+    }
+
+    public void openProject() {
+        workspace.openPage(Page.GROUP);
     }
 
     public void lightTheme() {
@@ -34,5 +39,4 @@ public class TopMenuController extends Controller {
         workspace.getUser().setTheme(Theme.DARK);
         workspace.openPage(workspace.getCurrentPage());
     }
-
 }

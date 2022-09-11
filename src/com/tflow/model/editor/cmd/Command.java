@@ -147,9 +147,12 @@ public abstract class Command {
     }
 
     /**
-     * Notice: IMPORTANT: when selectable-object-type is added, need to add script to save them on event PropertyChanged.
+     * Notice: IMPORTANT: when selectable-object-type is added, need to add script here to save them on event PropertyChanged.
      *
      * TODO: IMPORTANT: how to save changeable list (step-list, project-list and all ItemData family)
+     * How many list that are changeable?
+     * 1. Project.stepList
+     * 2.
      */
     protected boolean saveSelectableData(Selectable selectable, Step step) {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);

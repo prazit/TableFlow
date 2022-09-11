@@ -77,7 +77,7 @@ public class EditorController extends Controller {
         String projectId = parameterMap.get(PageParameter.PROJECT_ID);
         String groupId = parameterMap.get(PageParameter.GROUP_ID);
         if (projectId != null && groupId != null) {
-            log.info("EditorOpenCommand: New Project from Template/Existing Project {} into Group {}", projectId, groupId);
+            log.info("Open-Page:Editor: New Project from Template/Existing Project {} into Group {}", projectId, groupId);
             parameterMap.clear();
             String newProjectId = createNewProject(Integer.parseInt(groupId), projectId);
             if (newProjectId == null) {
@@ -92,8 +92,11 @@ public class EditorController extends Controller {
                 return;
             }
 
+            /*to support client refresh page will go in case 5.*/
+            parameterMap.clear();
+
         } else if (projectId != null) {
-            log.info("EditorOpenCommand: Open Project {}", projectId);
+            log.info("Open-Page:Editor: Open Project {}", projectId);
             if (!openProject(projectId)) {
                 FacesUtil.addError("Open project(" + projectId + ") failed!");
                 workspace.openPage(Page.GROUP);
@@ -101,20 +104,24 @@ public class EditorController extends Controller {
             }
 
         } else if (groupId != null) {
-            log.info("EditorOpenCommand: Create New Empty Project into Group {}", groupId);
+            log.info("Open-Page:Editor: Create New Empty Project into Group {}", groupId);
             parameterMap.clear();
-            if (createNewProject(Integer.parseInt(groupId)) == null) {
+            String newProjectId = createNewProject(Integer.parseInt(groupId));
+            if (newProjectId == null) {
                 workspace.openPage(Page.GROUP);
                 return;
             }
 
+            /*to support client refresh page will go in case 5.*/
+            parameterMap.clear();
+
         } else if (workspace.getProject() == null) {
-            log.warn("EditorOpenCommand: Required Parameter: GroupID, ProjectID.");
+            log.warn("Open-Page:Editor: Required Parameter: GroupID, ProjectID.");
             workspace.openPage(Page.GROUP);
             return;
 
-        } else {
-            log.info("EditorOpenCommand: Normal/Refresh");
+        } else { /*case 5. workspace.project is not null*/
+            log.info("Open-Page:Editor: Normal/Refresh");
         }
 
         setEditorType(EditorType.STEP);

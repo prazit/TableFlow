@@ -129,25 +129,6 @@ public class ReadProjectCommand extends IOCommand {
             return;
         }
 
-        File clientFile = getClientFile(additional);
-        if (clientFile.exists()) {
-            ClientRecordData clientRecordData = (ClientRecordData) readFrom(clientFile);
-            if (isExpired(clientRecordData.getExpiredDate())) {
-                /*create clientFile at the first read*/
-                writeNewClientTo(clientFile, additional);
-
-            } else if (!isMyClient(clientRecordData, additional)) {
-                headerData.setResponseCode(KafkaErrorCode.PROJECT_EDITING_BY_ANOTHER.getCode());
-                sendObject(key, headerData);
-                log.warn("Project editing by another: {}", clientRecordData);
-                return;
-            }
-
-        } else {
-            /*create clientFile at the first read*/
-            writeNewClientTo(clientFile, additional);
-        }
-
         /*create Data message*/
         RecordData recordValue = (RecordData) readFrom(file);
 
@@ -192,9 +173,6 @@ public class ReadProjectCommand extends IOCommand {
 
             for (File file : files) {
                 log.debug("copyProject.file:{}", file);
-
-                // skip client file
-                if (file.getName().contains("client")) continue;
 
                 recordData = (RecordData) readFrom(file);
                 recordAttributes = recordData.getAdditional();
@@ -324,15 +302,6 @@ public class ReadProjectCommand extends IOCommand {
 
     private boolean isExpired(long expiredDate) {
         return expiredDate < getMilli(0);
-    }
-
-    public boolean isMyClient(ClientRecordData clientRecordData, RecordAttributesData additional) {
-        return additional.getModifiedClientId() == clientRecordData.getClientId() &&
-                additional.getModifiedUserId() == clientRecordData.getUserId();
-    }
-
-    private File getClientFile(RecordAttributesData additional) {
-        return new File(environmentConfigs.getProjectRootPath() + additional.getProjectId() + "/client" + environmentConfigs.getDataFileExt());
     }
 
     private String copyTemplateToNewProject(RecordAttributesData additional) {

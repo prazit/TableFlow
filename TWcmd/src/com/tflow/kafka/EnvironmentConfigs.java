@@ -1,6 +1,5 @@
 package com.tflow.kafka;
 
-/*TODO: for TWcmd module, lets use switch(like dconvers) to select Environment Mode and can specify rootPath for multiple instant test.*/
 public enum EnvironmentConfigs {
 
     PRODUCTION(
@@ -12,7 +11,8 @@ public enum EnvironmentConfigs {
             "/Apps/TFlow/hist/",
             "/Apps/TFlow/bin/",
             36000,
-            ""
+            "",
+            777777777
     ),
 
     DEVELOPMENT(
@@ -24,7 +24,8 @@ public enum EnvironmentConfigs {
             "/Apps/TFlow/hist/",
             "/Apps/TFlow/bin/",
             360000,
-            ".json"
+            ".json",
+            777777777
     );
 
     /* specific values can't replace by CLI Switches */
@@ -43,9 +44,9 @@ public enum EnvironmentConfigs {
 
     private long clientFileTimeoutMs;
 
-    /*TODO: change arguments to single file-name argument*/
-    /*TODO: need function to load configs from specified file, any app need to call this once at startup*/
-    EnvironmentConfigs(String kafkaSerializer, String kafkaDeserializer, String inputStream, String outputStream, String projectRootPath, String historyRootPath, String binaryRootPath, long clientFileTimeoutMs, String dataFileExt) {
+    private int templateGroupId;
+
+    EnvironmentConfigs(String kafkaSerializer, String kafkaDeserializer, String inputStream, String outputStream, String projectRootPath, String historyRootPath, String binaryRootPath, long clientFileTimeoutMs, String dataFileExt, int templateGroupId) {
         this.kafkaSerializer = kafkaSerializer;
         this.kafkaDeserializer = kafkaDeserializer;
         this.inputStream = inputStream;
@@ -55,6 +56,7 @@ public enum EnvironmentConfigs {
         this.binaryRootPath = binaryRootPath;
         this.clientFileTimeoutMs = clientFileTimeoutMs;
         this.dataFileExt = dataFileExt;
+        this.templateGroupId = templateGroupId;
     }
 
     public String getKafkaSerializer() {
@@ -91,5 +93,9 @@ public enum EnvironmentConfigs {
 
     public String getDataFileExt() {
         return dataFileExt;
+    }
+
+    public int getTemplateGroupId() {
+        return templateGroupId;
     }
 }
