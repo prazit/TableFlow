@@ -301,7 +301,7 @@ public class FlowchartController extends Controller {
             action.execute(chain);
         } catch (RequiredParamException e) {
             log.error("Remove Line Failed!", e);
-            FacesUtil.addError("Remove Line Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Remove Line Failed with Internal Command Error!");
         }
     }
 
@@ -328,14 +328,14 @@ public class FlowchartController extends Controller {
             action.execute();
         } catch (RequiredParamException e) {
             log.error("Add ColumnFx Failed!", e);
-            FacesUtil.addError("Add ColumnFx Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add ColumnFx Failed with Internal Command Error!");
             return action;
         }
 
         ColumnFx columnFx = (ColumnFx) action.getResultMap().get(ActionResultKey.COLUMN_FX);
         if (columnFx != null) {
             step.setActiveObject(columnFx);
-            FacesUtil.addInfo("ColumnFx[" + columnFx.getName() + "] added.");
+            jsBuilder.post(JavaScript.notiInfo,"ColumnFx[" + columnFx.getName() + "] added.");
         }
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
@@ -359,7 +359,7 @@ public class FlowchartController extends Controller {
             action.execute(chain);
         } catch (RequiredParamException e) {
             log.error("Add Line Failed!", e);
-            FacesUtil.addError("Add Line Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add Line Failed with Internal Command Error!");
         }
 
         return action;
@@ -380,13 +380,13 @@ public class FlowchartController extends Controller {
             action.execute(false);
         } catch (RequiredParamException e) {
             log.error("Remove ColumnFx Failed!", e);
-            FacesUtil.addError("Remove ColumnFx Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Remove ColumnFx Failed with Internal Command Error!");
             return;
         }
 
         step.setActiveObject(targetColumn);
 
-        FacesUtil.addInfo("ColumnFx[" + columnFx.getName() + "] removed.");
+        jsBuilder.post(JavaScript.notiInfo,"ColumnFx[" + columnFx.getName() + "] removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.post(JavaScript.refreshFlowChart);
@@ -425,13 +425,13 @@ public class FlowchartController extends Controller {
             dataTable = (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
         } catch (Exception e) {
             log.error("Extract Data Failed!", e);
-            FacesUtil.addError("Extract Data Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Extract Data Failed with Internal Command Error!");
             return;
         }
 
         step.setActiveObject(dataTable);
 
-        FacesUtil.addInfo("Table[" + dataTable.getName() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"Table[" + dataTable.getName() + "] added.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList)
@@ -471,13 +471,13 @@ public class FlowchartController extends Controller {
             transformTable = (TransformTable) action.getResultMap().get(ActionResultKey.TRANSFORM_TABLE);
         } catch (RequiredParamException e) {
             log.error("Transfer Data Failed!", e);
-            FacesUtil.addError("Transfer Data Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Transfer Data Failed with Internal Command Error!");
             return;
         }
 
         step.setActiveObject(transformTable);
 
-        FacesUtil.addInfo("Table[" + transformTable.getName() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"Table[" + transformTable.getName() + "] added.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList).post(JavaScript.refreshFlowChart).runOnClient();
@@ -513,17 +513,16 @@ public class FlowchartController extends Controller {
             transformColumn = (TransformColumn) action.getResultMap().get(ActionResultKey.TRANSFORM_COLUMN);
         } catch (RequiredParamException e) {
             log.error("Add Transform Column Failed!", e);
-            FacesUtil.addError("Add Transform Column Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add Transform Column Failed with Internal Command Error!");
             return;
         }
 
         step.setActiveObject(transformColumn);
 
-        FacesUtil.addInfo("Column[" + transformColumn.getSelectableId() + "] added.");
-
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, transformColumn.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, transformTable.getSelectableId());
+        jsBuilder.post(JavaScript.notiInfo, "Column[" + transformColumn.getSelectableId() + "] added.");
         jsBuilder.runOnClient();
     }
 
@@ -557,13 +556,13 @@ public class FlowchartController extends Controller {
             tableFx = (TableFx) action.getResultMap().get(ActionResultKey.TABLE_FX);
         } catch (RequiredParamException e) {
             log.error("Add Table Function Failed!", e);
-            FacesUtil.addError("Add Table Function Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add Table Function Failed with Internal Command Error!");
             return;
         }
 
         step.setActiveObject(tableFx);
 
-        FacesUtil.addInfo("TableFx[" + tableFx.getSelectableId() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"TableFx[" + tableFx.getSelectableId() + "] added.");
 
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, tableFx.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
@@ -601,13 +600,13 @@ public class FlowchartController extends Controller {
             outputFile = (OutputFile) action.getResultMap().get(ActionResultKey.OUTPUT_FILE);
         } catch (RequiredParamException e) {
             log.error("Add Table Function Failed!", e);
-            FacesUtil.addError("Add Table Function Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add Table Function Failed with Internal Command Error!");
             return;
         }
 
         step.setActiveObject(outputFile);
 
-        FacesUtil.addInfo("OutputFile[" + outputFile.getSelectableId() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"OutputFile[" + outputFile.getSelectableId() + "] added.");
 
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, outputFile.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
@@ -632,7 +631,7 @@ public class FlowchartController extends Controller {
             action.execute(false);
         } catch (RequiredParamException e) {
             log.error("Remove TransformTable Failed!", e);
-            FacesUtil.addError("Remove Transformation Table Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Remove Transformation Table Failed with Internal Command Error!");
             return;
         }
 
@@ -644,7 +643,7 @@ public class FlowchartController extends Controller {
             log.warn("removeTransformTable: successful with warning! transformTable({}) contains invalid sourceSelectableId({})", selectableId, sourceSelectableId);
         }
 
-        FacesUtil.addInfo("Table[" + target.getName() + "] is removed.");
+        jsBuilder.post(JavaScript.notiInfo,"Table[" + target.getName() + "] is removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList);
@@ -667,7 +666,7 @@ public class FlowchartController extends Controller {
             action.execute(false);
         } catch (RequiredParamException e) {
             log.error("Remove DataTable Failed!", e);
-            FacesUtil.addError("Remove DataTable Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Remove DataTable Failed with Internal Command Error!");
             return;
         }
 
@@ -675,7 +674,7 @@ public class FlowchartController extends Controller {
             step.setActiveObject(target.getDataFile());
         }
 
-        FacesUtil.addInfo("Table[" + target.getName() + "] is removed.");
+        jsBuilder.post(JavaScript.notiInfo,"Table[" + target.getName() + "] is removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList);

@@ -102,9 +102,10 @@ public enum Properties {
             "name:Table Name:String",
             "idColName:Key Column:Column:id"
     ),
-    TRANSFORM_COLUMN( /*direct transfer without function*/
-            "type:Type:ReadOnly",
-            "name:Name:String",
+
+
+    /*TODO: need to support new option box syntax defined in the comment below*/
+            /*-- properties of TRANSFORM_COLUMN --
             ".:propertyMap:value:Value:Column:sourceTable::[]useFunction",
             "[: Dynamic Value Expression ::@value",
             ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
@@ -113,7 +114,10 @@ public enum Properties {
             "--: Lookup Function Arguments :--",
             "]: Specific Function :",
             "]: Dynamic Value Expression :",
-            "useFunction:useFunction:ReadOnly"
+            "useFunction:useFunction:ReadOnly"*/
+    TRANSFORM_COLUMN( /*direct transfer without function*/
+            "type:Type:ReadOnly",
+            "name:Name:String"
     ),
     FX_PARAM(
             "name:Parameter Name:String"

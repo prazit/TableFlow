@@ -10,6 +10,11 @@ var tflow = {
     }, lines = []
 ;
 
+function noti() {
+    console.log('call parent.noti();');
+    window.parent.noti();
+}
+
 /*Notice: IMPORTANT: this is temporary function, remove this function when server-side functions are updated to refresh a room or a floor already.*/
 function refreshFlowChart() {
     window.parent.refreshFlowChart();

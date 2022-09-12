@@ -148,7 +148,7 @@
                                         </p:repeat>
 
                                         <p:outputPanel styleClass="action column">
-                                            <p:commandButton value="Add Output File" onclick="tableAction('addOutputFile','#{floor.roomList[2].selectableId}')" update="@this"/>
+                                            <p:commandButton value="Add Output File" onclick="event.stopPropagation();tableAction('addOutputFile','#{floor.roomList[2].selectableId}')" update="@this"/>
                                         </p:outputPanel>
 
                                     </p:panel>
@@ -233,7 +233,7 @@
                                             </p:repeat>
 
                                             <p:outputPanel styleClass="action column">
-                                                <p:commandButton value="Add Column" onclick="tableAction('addColumn','#{troom.selectableId}')" update="@this"/>
+                                                <p:commandButton value="Add Column" onclick="event.stopPropagation();tableAction('addColumn','#{troom.selectableId}');" update="@this"/>
                                             </p:outputPanel>
 
                                             <p:divider align="center">transformation</p:divider>
@@ -250,7 +250,7 @@
                                             </p:repeat>
 
                                             <p:outputPanel styleClass="action column">
-                                                <p:commandButton value="Add Transformation" onclick="tableAction('addTransformation','#{troom.selectableId}')" update="@this"/>
+                                                <p:commandButton value="Add Transformation" onclick="event.stopPropagation();tableAction('addTransformation','#{troom.selectableId}')" update="@this"/>
                                             </p:outputPanel>
 
                                             <p:divider align="center">output</p:divider>
@@ -268,7 +268,7 @@
                                             </p:repeat>
 
                                             <p:outputPanel styleClass="action column">
-                                                <p:commandButton value="Add Output File" onclick="tableAction('addOutputFile','#{troom.selectableId}')" update="@this"/>
+                                                <p:commandButton value="Add Output File" onclick="event.stopPropagation();tableAction('addOutputFile','#{troom.selectableId}')" update="@this"/>
                                             </p:outputPanel>
 
                                         </p:panel>

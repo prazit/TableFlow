@@ -93,7 +93,7 @@ public class ProjectController extends Controller {
 
             String msg = "Load package list failed: ";
             log.error(msg, ex);
-            FacesUtil.addError(msg + ex.getMessage());
+            jsBuilder.pre(JavaScript.notiError,msg + ex.getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ public class ProjectController extends Controller {
         } catch (ProjectDataException ex) {
             String msg = "Reload package " + selectedPackageId + " failed: ";
             log.error(msg, ex);
-            FacesUtil.addError(msg + ex.getMessage());
+            jsBuilder.pre(JavaScript.notiError,msg + ex.getMessage());
         }
     }
 
@@ -131,7 +131,7 @@ public class ProjectController extends Controller {
         Package buildPackage = project.getManager().buildPackage(workspace.getProject());
         if (buildPackage == null) {
             String msg = "Unexpected Error Occurred, try to build-package few minutes later";
-            FacesUtil.addError(msg);
+            jsBuilder.pre(JavaScript.notiError,msg);
             log.error(msg);
             return;
         }

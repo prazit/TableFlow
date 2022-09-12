@@ -39,4 +39,8 @@ public class TopMenuController extends Controller {
         workspace.getUser().setTheme(Theme.DARK);
         workspace.openPage(workspace.getCurrentPage());
     }
+
+    public void dummy() {
+        log.debug("dummy called");
+    }
 }

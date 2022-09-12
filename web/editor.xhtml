@@ -157,7 +157,7 @@
                                             <div class="ui-g-4 property-label">#{prop.label}</div><span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" styleClass="ui-g-8">
                                                 <f:selectItem itemLabel="-- select one --"/>
-                                                <f:selectItems value="#{editorCtl.getItemList(prop.type,prop.params)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
+                                                <f:selectItems value="#{editorCtl.getItemList(prop)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:selectOneMenu>
                                             <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>

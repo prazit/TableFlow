@@ -26,7 +26,13 @@ public enum JavaScript {
     preStartup("LeaderLine.positionByWindowResize = false;"),
     postStartup("startup();"),
 
-    contentWindow("contentWindow.");
+    contentWindow("contentWindow."),
+
+    notiInfo(null),
+    notiError(null),
+    notiWarn(null),
+    noti("noti();"),
+    ;
 
     private String javascript;
 

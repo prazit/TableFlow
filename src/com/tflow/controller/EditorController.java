@@ -87,7 +87,7 @@ public class EditorController extends Controller {
 
             /*new project from template need to load new project after create*/
             if (!openProject(newProjectId)) {
-                FacesUtil.addError("Open project(" + newProjectId + ") failed!");
+                jsBuilder.pre(JavaScript.notiError,"Open project(" + newProjectId + ") failed!");
                 workspace.openPage(Page.GROUP);
                 return;
             }
@@ -98,7 +98,7 @@ public class EditorController extends Controller {
         } else if (projectId != null) {
             log.info("Open-Page:Editor: Open Project {}", projectId);
             if (!openProject(projectId)) {
-                FacesUtil.addError("Open project(" + projectId + ") failed!");
+                jsBuilder.pre(JavaScript.notiError,"Open project(" + projectId + ") failed!");
                 workspace.openPage(Page.GROUP);
                 return;
             }
@@ -324,7 +324,11 @@ public class EditorController extends Controller {
         log.warn(msg);
     }
 
-    public List<SelectItem> getItemList(PropertyType type, String[] params) throws ClassNotFoundException, ClassCastException {
+    public List<SelectItem> getItemList(PropertyView propertyView) throws ClassNotFoundException, ClassCastException {
+        log.debug("getItemList(property:{}).", propertyView);
+        PropertyType type = propertyView.getType();
+        String[] params = propertyView.getParams();
+
         List<SelectItem> selectItemList = new ArrayList<>();
 
         Project project = workspace.getProject();
@@ -828,7 +832,7 @@ public class EditorController extends Controller {
             step = (Step) action.getResultMap().get(ActionResultKey.STEP);
         } catch (RequiredParamException e) {
             log.error("Select Step Failed!", e);
-            FacesUtil.addError("Select Step Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Select Step Failed with Internal Command Error!");
             return;
         }
 
@@ -886,7 +890,7 @@ public class EditorController extends Controller {
 
         refreshStepList(project.getStepList());
 
-        FacesUtil.addInfo("Step[" + step.getName() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"Step[" + step.getName() + "] added.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
@@ -906,7 +910,7 @@ public class EditorController extends Controller {
             return (String) action.getResultMap().get(ActionResultKey.PROJECT_ID);
         } catch (Exception ex) {
             log.error("Create New Project Failed!", ex);
-            FacesUtil.addError("Create New Project with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Create New Project with Internal Command Error!");
             return null;
         }
     }
@@ -923,7 +927,7 @@ public class EditorController extends Controller {
             action.execute();
         } catch (RequiredParamException e) {
             log.error("Add Step Failed!", e);
-            FacesUtil.addError("Add Step Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add Step Failed with Internal Command Error!");
             return null;
         }
 
@@ -947,7 +951,7 @@ public class EditorController extends Controller {
             new AddDataSourceSelector(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add DataSourceSelector Failed!", e);
-            FacesUtil.addError("Add DataSourceSelector Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add DataSourceSelector Failed with Internal Command Error!");
             return;
         }
 
@@ -956,7 +960,7 @@ public class EditorController extends Controller {
         selectObject(dataSourceSelector.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.addInfo("DataSourceSelector[" + dataSourceSelector.getName() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"DataSourceSelector[" + dataSourceSelector.getName() + "] added.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
@@ -974,7 +978,7 @@ public class EditorController extends Controller {
             new AddLocal(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add File Directory Failed!", e);
-            FacesUtil.addError("Add File Directory Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add File Directory Failed with Internal Command Error!");
             return;
         }
 
@@ -983,7 +987,7 @@ public class EditorController extends Controller {
         selectObject(local.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.addInfo("Local[" + local.getName() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"Local[" + local.getName() + "] added.");
         jsBuilder.post(JavaScript.refreshLocalList).runOnClient();
     }
 
@@ -1001,7 +1005,7 @@ public class EditorController extends Controller {
             new AddDataBase(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add Database Failed!", e);
-            FacesUtil.addError("Add Database Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add Database Failed with Internal Command Error!");
             return;
         }
 
@@ -1009,7 +1013,7 @@ public class EditorController extends Controller {
 
         selectObject(database.getSelectableId());
 
-        FacesUtil.addInfo("Database[" + database.getName() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"Database[" + database.getName() + "] added.");
         jsBuilder.post(JavaScript.refreshDatabaseList).runOnClient();
     }
 
@@ -1027,7 +1031,7 @@ public class EditorController extends Controller {
             new AddSFTP(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Add SFTP Failed!", e);
-            FacesUtil.addError("Add SFTP Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add SFTP Failed with Internal Command Error!");
             return;
         }
 
@@ -1036,7 +1040,7 @@ public class EditorController extends Controller {
         selectObject(sftp.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.addInfo("SFTP[" + sftp.getName() + "] added.");
+        jsBuilder.post(JavaScript.notiInfo,"SFTP[" + sftp.getName() + "] added.");
         jsBuilder.post(JavaScript.refreshSFTPList).runOnClient();
     }
 
@@ -1057,7 +1061,7 @@ public class EditorController extends Controller {
             selectable = (Selectable) action.getResultMap().get(ActionResultKey.DATA_FILE);
         } catch (RequiredParamException e) {
             log.error("Add DataFile Failed!", e);
-            FacesUtil.addError("Add DataFile Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Add DataFile Failed with Internal Command Error!");
             return;
         }
 
@@ -1079,7 +1083,7 @@ public class EditorController extends Controller {
         if (actionIndex < 0) {
             String message = "Action '{" + actionView.getName() + "}' not found, Undo is aborted.";
             log.error(message);
-            FacesUtil.addError(message);
+            jsBuilder.pre(JavaScript.notiError,message);
             return;
         }
 
@@ -1089,14 +1093,14 @@ public class EditorController extends Controller {
             if (view.getId() != action.getId()) {
                 String message = "Action List not match with the Action History Action(" + actionView + ") History(" + action + "), Undo is aborted.";
                 log.error(message);
-                FacesUtil.addError(message);
+                jsBuilder.pre(JavaScript.notiError,message);
                 return;
             }
             try {
                 action.executeUndo();
             } catch (RequiredParamException e) {
                 log.error("Undo '{}' Failed!", action.getName(), e);
-                FacesUtil.addError("Add " + action.getName() + " Failed with Internal Command Error!");
+                jsBuilder.pre(JavaScript.notiError,"Add " + action.getName() + " Failed with Internal Command Error!");
                 return;
             }
         }
@@ -1106,7 +1110,7 @@ public class EditorController extends Controller {
         selectObject(step.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        FacesUtil.addInfo("Undo[" + actionView.getName() + "] completed.");
+        jsBuilder.post(JavaScript.notiInfo,"Undo[" + actionView.getName() + "] completed.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
@@ -1150,7 +1154,7 @@ public class EditorController extends Controller {
             new SelectObject(paramMap).execute();
         } catch (RequiredParamException e) {
             log.error("Select Object Failed!", e);
-            FacesUtil.addError("Select Object Failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Select Object Failed with Internal Command Error!");
             return;
         }
         setPropertySheet(activeObject);
@@ -1224,7 +1228,7 @@ public class EditorController extends Controller {
             new ChangePropertyValue(paramMap).execute();
         } catch (Exception ex) {
             log.error("Change Property Value Failed!", ex);
-            FacesUtil.addError("Change property value failed with Internal Command Error!");
+            jsBuilder.pre(JavaScript.notiError,"Change property value failed with Internal Command Error!");
         }
     }
 

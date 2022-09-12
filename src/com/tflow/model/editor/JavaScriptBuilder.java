@@ -1,18 +1,20 @@
 package com.tflow.model.editor;
 
+import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Automatic remove duplicated javascript statement.<br/>
  * Part to 3 groups (pre, current, post).<br/>
  * One time use guarantee (toString).<br/>
- * jQuery Defer option (toDeferString).
+ * jQuery Defer option (toDeferString).<br/>
+ * <br/>
+ * Client notification messages (Primefaces) that guarantee to show without update attribute required.<br/>
+ * Same features as JavaScript, use it the same way of javascript.
  */
 public class JavaScriptBuilder {
 
@@ -22,10 +24,21 @@ public class JavaScriptBuilder {
     private Map<String, Integer> jsMap;
     private Map<String, Integer> postMap;
 
+    private ArrayList<String> preList;
+    private ArrayList<String> notiList;
+    private ArrayList<String> postList;
+
+    private long notiTimeout;
+
     public JavaScriptBuilder() {
         preMap = new HashMap<>();
         jsMap = new HashMap<>();
         postMap = new HashMap<>();
+        preList = new ArrayList<>();
+        notiList = new ArrayList<>();
+        postList = new ArrayList<>();
+
+        notiTimeout = 6000;
     }
 
     public JavaScriptBuilder pre(String jsStatement) {
@@ -34,11 +47,7 @@ public class JavaScriptBuilder {
     }
 
     public JavaScriptBuilder pre(JavaScript javaScript, Object... params) {
-        String script = javaScript.getScript();
-        if (params != null && params.length > 0) {
-            script = String.format(script, params);
-        }
-        preMap.put(script, preMap.size());
+        add(preMap, preList, javaScript, params);
         return this;
     }
 
@@ -47,8 +56,8 @@ public class JavaScriptBuilder {
         return this;
     }
 
-    public JavaScriptBuilder append(JavaScript javaScript) {
-        jsMap.put(javaScript.getScript(), jsMap.size());
+    public JavaScriptBuilder append(JavaScript javaScript, Object... params) {
+        add(jsMap, notiList, javaScript, params);
         return this;
     }
 
@@ -58,12 +67,26 @@ public class JavaScriptBuilder {
     }
 
     public JavaScriptBuilder post(JavaScript javaScript, Object... params) {
+        add(postMap, postList, javaScript, params);
+        return this;
+    }
+
+    private void add(Map<String, Integer> jsMap, List<String> notiList, JavaScript javaScript, Object... params) {
         String script = javaScript.getScript();
+        if (script == null) {
+            /*notification*/
+            notiList.add(javaScript.name() + ":" + (String) params[0] + ":" + DateTimeUtil.now().getTime());
+
+            /*Notice: want duplicated filter when the first case occurred*/
+
+            FacesUtil.runClientScript(JavaScript.noti.getScript());
+            return;
+        }
+
         if (params != null && params.length > 0) {
             script = String.format(script, params);
         }
-        postMap.put(script, postMap.size());
-        return this;
+        jsMap.put(script, jsMap.size());
     }
 
     private String getJavaScript(Map<String, Integer> jsMap) {
@@ -133,6 +156,7 @@ public class JavaScriptBuilder {
 
     public void runOnClient(boolean defer) {
         String javaScript = toString();
+        if (hasNoti()) javaScript = JavaScript.noti.getScript() + javaScript;
         if (javaScript.isEmpty()) return;
         clearAll();
 
@@ -140,12 +164,56 @@ public class JavaScriptBuilder {
 
         if (log.isDebugEnabled()) {
             String stackTraces = FacesUtil.getFormattedStackTrace(new Exception(""), "com.tflow", "\n");
-            log.debug("runOnClient:{}, stackTrace:{}", javaScript, stackTraces);
+            log.debug("runOnClient:{}\nstackTrace:{}", javaScript, stackTraces);
         }
         FacesUtil.runClientScript(javaScript);
     }
 
-    /*TODO: client notification message need to manage by this JSbuilder*/
-    /*TODO: can call from main-page and sub-page and automatic update without update-property-values (show on addMessage)*/
+    /**
+     * Called from Controller.showNoti() only, and showNoti() is calling from the remoteCommand(noti) in topMenu.xhtml.
+     */
+    public void runNoti() {
+        if (!hasNoti()) {
+            if (log.isDebugEnabled()) {
+                String stackTraces = FacesUtil.getFormattedStackTrace(new Exception(""), "com.tflow", "\n");
+                log.debug("call runNoti without message in notiMap!\nstackTrace:{}", stackTraces);
+            }
+            return;
+        }
+
+        addMessage(preList);
+        addMessage(notiList);
+        addMessage(postList);
+    }
+
+    private boolean hasNoti() {
+        return preList.size() > 0 || notiList.size() > 0 || postList.size() > 0;
+    }
+
+    private void addMessage(List<String> notiList) {
+        long now = DateTimeUtil.now().getTime();
+
+        for (String noti : new ArrayList<>(notiList)) {
+            String[] parts = noti.split("[:]");
+
+            long time = Long.parseLong(parts[2]);
+            long diff = now - time;
+            if (diff >= notiTimeout) {
+                notiList.remove(noti);
+                continue;
+            }
+
+            switch (JavaScript.valueOf(parts[0])) {
+                case notiInfo:
+                    FacesUtil.addInfo(parts[1]);
+                    break;
+                case notiWarn:
+                    FacesUtil.addWarn(parts[1]);
+                    break;
+                case notiError:
+                    FacesUtil.addError(parts[1]);
+            }
+        }
+    }
 
 }

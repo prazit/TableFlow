@@ -1,6 +1,5 @@
 package com.tflow.util;
 
-import com.tflow.controller.Page;
 import org.primefaces.PrimeFaces;
 import org.primefaces.context.PrimeRequestContext;
 import org.slf4j.Logger;
@@ -26,13 +25,17 @@ public class FacesUtil implements Serializable {
         FacesContext.getCurrentInstance().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_INFO, "[INFO]", message));
     }
 
+    public static void addWarn(String message) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "[WARNING]", message));
+    }
+
     public static void addError(String message) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "[ERROR]", message));
     }
 
-    public static void addError(String clientId, String message) {
+    /*public static void addError(String clientId, String message) {
         FacesContext.getCurrentInstance().addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "[ERROR]", message));
-    }
+    }*/
 
     public static void actionSuccess() {
         PrimeRequestContext requestContext = PrimeRequestContext.getCurrentInstance();

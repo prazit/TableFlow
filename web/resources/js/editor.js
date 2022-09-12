@@ -359,9 +359,6 @@ var tflow = {
     zoomValue,
     sections, contentWindow;
 
-/**
- * TODO: Future Feature: need to update Client-Data-File for heartbeat of the working-project.
- **/
 $(function () {
     leftPanel = $('.left-panel');
     leftGutter = $('.left-panel + .ui-splitter-gutter');

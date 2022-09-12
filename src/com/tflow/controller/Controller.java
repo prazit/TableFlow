@@ -29,7 +29,7 @@ public abstract class Controller implements Serializable {
     @Inject
     Application application;
 
-    JavaScriptBuilder jsBuilder = new JavaScriptBuilder();
+    JavaScriptBuilder jsBuilder;
 
     private boolean init = true;
 
@@ -41,6 +41,7 @@ public abstract class Controller implements Serializable {
     public void postConstruct() {
         timestamp = DateTimeUtil.now();
         workspace.setCurrentPage(getPage());
+        jsBuilder = workspace.getJavaScriptBuilder();
 
         /*TODO: need to parse parameters from URL-GET into the same parameterMap*/
 
@@ -91,6 +92,10 @@ public abstract class Controller implements Serializable {
             formattedStackTrace = FacesUtil.getFormattedStackTrace(exception, ".", "<br/>");
         }
         return formattedStackTrace;
+    }
+
+    public void showNoti() {
+        jsBuilder.runNoti();
     }
 
 }

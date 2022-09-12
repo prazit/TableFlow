@@ -9,6 +9,8 @@
         <p:graphicImage library="images" name="logo.jpg" styleClass="logo"/>
         <div class="top-menu">
             <h:form>
+                <p:growl id="notiMsg" showSummary="true" showDetail="true" escape="false"/>
+                <p:remoteCommand name="noti" actionListener="#{playCtl.showNoti}" update="notiMsg"/>
                 <p:menubar>
 
                     <p:menuitem value="Light Mode" icon="pi pi-fw pi-sun"

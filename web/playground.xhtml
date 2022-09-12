@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <h:head>
+        <title>#{playCtl.currentPage.title}</title>
+
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    </h:head>
+    <h:body>
+        <h:outputStylesheet library="css" name="tflow.css#{playCtl.forceReloadResources}" target="head"/>
+
+        <div class="container">
+            <ui:include src="resources/topMenu.xhtml"/>
+
+            <p:panel styleClass="screen-area error-panel vertical-scroll-panel" style="overflow:hidden">
+                <h1>#{playCtl.currentPage.title}</h1>
+                <h3>#{playCtl.currentPage.description}</h3>
+
+                <p:divider align="left">
+                    <div class="inline-flex align-items-center">
+                        <i class="pi pi-exclamation-circle mr-2"/>
+                        <b>sandbox:</b>
+                    </div>
+                </p:divider>
+
+                <p:tabView styleClass="fit-width" id="view">
+                    <p:tab title="Primeface Messages / Notifaction">
+
+                        <h:form id="mainForm">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
+                            <div class="ui-g">
+                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                                    <p:commandButton actionListener="#{playCtl.notiInfo}" value="Info Message" update="messagePanel"/><br/>
+                                </div>
+                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                                    <p:commandButton actionListener="#{playCtl.notiWarn}" value="Warning Message" update="messagePanel"/>
+                                </div>
+                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                                    <p:commandButton actionListener="#{playCtl.notiError}" value="Error Message" update="messagePanel"/>
+                                </div>
+                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                                    <p:commandButton actionListener="#{playCtl.multiple}" value="Multiple Messages" update="messagePanel"/>
+                                </div>
+                            </div>
+
+                            <p:divider align="left">
+                                <div class="inline-flex align-items-center">
+                                    <i class="pi pi-info-circle"/>
+                                    <b>Messages:</b>
+                                </div>
+                            </p:divider>
+
+                            <p:outputPanel id="messagePanel">
+                                <p:staticMessage severity="info" summary="#{playCtl.messageTitle}" detail="#{playCtl.message}" style="width: 100%"/>
+                            </p:outputPanel>
+
+                        </h:form>
+
+                    </p:tab>
+                </p:tabView>
+
+            </p:panel>
+
+        </div>
+    </h:body>
+</f:view>
+</html>

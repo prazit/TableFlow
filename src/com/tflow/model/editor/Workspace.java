@@ -53,6 +53,7 @@ public class Workspace implements Serializable {
     private Client client;
     private ProjectManager projectManager;
     private DataManager dataManager;
+    private JavaScriptBuilder javaScriptBuilder;
 
     private Map<PageParameter, String> parameterMap;
     private Page currentPage;
@@ -65,6 +66,7 @@ public class Workspace implements Serializable {
         environment = app.getEnvironment();
         projectManager = new ProjectManager(environment);
         dataManager = new DataManager(environment, httpRequest.getRequestedSessionId(), app.getZkConfiguration());
+        javaScriptBuilder = new JavaScriptBuilder();
 
         // dummy user before Authentication, Notice: after authenticated need to setUser to this workspace.
         user = new User();
@@ -288,6 +290,10 @@ public class Workspace implements Serializable {
 
     public DataManager getDataManager() {
         return dataManager;
+    }
+
+    public JavaScriptBuilder getJavaScriptBuilder() {
+        return javaScriptBuilder;
     }
 
     public void setCurrentPage(Page page) {
