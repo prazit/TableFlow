@@ -9,10 +9,10 @@ import java.util.Map;
 
 public class EventManager {
 
-    private Selectable target;
+    private Object target;
     private Map<EventName, List<EventHandler>> eventHandlerMap;
 
-    public EventManager(Selectable target) {
+    public EventManager(Object target) {
         eventHandlerMap = new HashMap<>();
         this.target = target;
     }
@@ -52,8 +52,7 @@ public class EventManager {
             }
 
             handler.setHandling(true);
-            Event ev = new Event(event, target);
-            if (data != null) ev.setData(data);
+            Event ev = new Event(event, target, data);
             LoggerFactory.getLogger(getClass()).warn("fireEvent(event:{}, target:{}, data:{})", event, target, data);
             handler.handle(ev);
             handler.setHandling(false);

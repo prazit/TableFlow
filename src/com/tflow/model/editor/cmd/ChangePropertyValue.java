@@ -1,5 +1,6 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.view.PropertyView;
@@ -14,19 +15,24 @@ public class ChangePropertyValue extends Command {
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
-        Selectable selectable = (Selectable) paramMap.get(CommandParamKey.SELECTABLE);
+        ProjectFileType projectFileType = (ProjectFileType) paramMap.get(CommandParamKey.PROJECT_FILE_TYPE);
+        Object dataObject = paramMap.get(CommandParamKey.DATA);
         PropertyView property = (PropertyView) paramMap.get(CommandParamKey.PROPERTY);
 
-        try {
-            setPropertyValue(selectable, property);
-        } catch (Exception ex) {
-            throw new UnsupportedOperationException("Cannot set property(" + property + ") to selectable(" + selectable.getSelectableId() + ")", ex);
+        Selectable selectable = null;
+        if (dataObject instanceof Selectable) {
+            selectable = (Selectable) dataObject;
+            try {
+                setPropertyValue(selectable, property);
+            } catch (Exception ex) {
+                throw new UnsupportedOperationException("Cannot set property(" + property + ") to selectable(" + selectable.getSelectableId() + ")", ex);
+            }
         }
 
-        boolean hasEvent = selectable instanceof HasEvent;
-        LoggerFactory.getLogger(ChangePropertyValue.class).debug("{} hasEvent = {} ", selectable.getClass().getName(), hasEvent);
+        boolean hasEvent = dataObject instanceof HasEvent;
+        LoggerFactory.getLogger(ChangePropertyValue.class).debug("{} hasEvent = {} ", dataObject.getClass().getName(), hasEvent);
         if (hasEvent) {
-            EventManager eventManager = ((HasEvent) selectable).getEventManager();
+            EventManager eventManager = ((HasEvent) dataObject).getEventManager();
             eventManager.fireEvent(EventName.PROPERTY_CHANGED, property);
         }
 
@@ -39,15 +45,18 @@ public class ChangePropertyValue extends Command {
         // result map
 
         // Specific: ColumnFx.function is changed
-        if (selectable instanceof ColumnFx && PropertyVar.function.equals(property.getVar())) {
-            createEndPlugList((ColumnFx) selectable);
+        if (dataObject instanceof ColumnFx && PropertyVar.function.equals(property.getVar())) {
+            createEndPlugList((ColumnFx) dataObject);
         }
 
         // save data
-        if (!saveSelectableData(selectable, step)) {
-            throw new UnsupportedOperationException("Change Property Value of Unknown Object Type " + selectable.getClass().getName() + ", property=" + property);
+        if (!saveSelectableData(projectFileType, dataObject, step)) {
+            throw new UnsupportedOperationException("Change Property Value of Unsupported type=" + projectFileType + " dataObject=" + dataObject.getClass().getName() + ", property=" + property);
         }
 
+        // need to wait commit thread after addData.
+        step.getOwner().getDataManager().waitAllTasks();
+        
     }
 
     private String propertyToMethod(String propertyName) {

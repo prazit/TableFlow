@@ -1,10 +1,12 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectType;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
 
 import java.util.ArrayList;
@@ -12,7 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Project implements Selectable {
+public class Project implements Selectable, HasEvent {
+    private int groupId;
     private String id;
     private String name;
     private ProjectType type;
@@ -36,6 +39,7 @@ public class Project implements Selectable {
     private transient ProjectMapper mapper;
     private transient ProjectManager manager;
     private transient DataManager dataManager;
+    private transient EventManager eventManager;
 
     /*for ProjectMapper*/
     public Project() {
@@ -56,6 +60,33 @@ public class Project implements Selectable {
     private void init() {
         stepList = new ArrayList<>();
         propertyMap = new HashMap<>();
+        eventManager = new EventManager(this);
+        createEventHandlers();
+    }
+
+    private void createEventHandlers() {
+        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                PropertyView property = (PropertyView) event.getData();
+                if (PropertyVar.name.equals(property.getVar())) {
+                    eventManager.fireEvent(EventName.NAME_CHANGED, property);
+                }
+            }
+        });
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.PROJECT;
+    }
+
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 
     public String getId() {
@@ -179,22 +210,6 @@ public class Project implements Selectable {
     }
 
     @Override
-    public String toString() {
-        return "{" +
-                "id:'" + id + '\'' +
-                ", name:'" + name + '\'' +
-                ", activeStepIndex:" + activeStepIndex +
-                ", stepList:" + stepList +
-                ", databaseMap:" + databaseMap +
-                ", sftpMap:" + sftpMap +
-                ", localMap:" + localMap +
-                ", variableMap:" + variableMap +
-                ", lastElementId:" + lastElementId +
-                ", lastUniqueId:" + lastUniqueId +
-                '}';
-    }
-
-    @Override
     public String getSelectableId() {
         return id;
     }
@@ -223,6 +238,28 @@ public class Project implements Selectable {
     public Step getActiveStep() {
         if (activeStepIndex < 0 || activeStepIndex >= stepList.size()) return null;
         return stepList.get(activeStepIndex);
+    }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "groupId:'" + groupId + '\'' +
+                ", projectId:'" + id + '\'' +
+                ", name:'" + name + '\'' +
+                ", activeStepIndex:" + activeStepIndex +
+                ", stepList:" + stepList +
+                ", databaseMap:" + databaseMap +
+                ", sftpMap:" + sftpMap +
+                ", localMap:" + localMap +
+                ", variableMap:" + variableMap +
+                ", lastElementId:" + lastElementId +
+                ", lastUniqueId:" + lastUniqueId +
+                '}';
     }
 
 }

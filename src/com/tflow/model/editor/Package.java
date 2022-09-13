@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.view.PropertyView;
 import org.slf4j.LoggerFactory;
@@ -35,14 +36,16 @@ public class Package implements Selectable, HasEvent {
             @Override
             public void handle(Event event) {
                 PropertyView property = (PropertyView) event.getData();
-                LoggerFactory.getLogger(Package.class).debug("Package.PROPERTY_CHANGED: property={}", property);
                 if (PropertyVar.name.equals(property.getVar())) {
-                    String name = (String) property.getNewValue();
-                    event.setEventName(EventName.NAME_CHANGED);
-                    eventManager.fireEvent(EventName.NAME_CHANGED, event);
+                    eventManager.fireEvent(EventName.NAME_CHANGED, property);
                 }
             }
         });
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.PACKAGE;
     }
 
     public int getId() {

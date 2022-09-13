@@ -1,5 +1,6 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
@@ -45,6 +46,10 @@ public class SFTP extends DataSource implements Selectable {
         this.setRoomType(RoomType.DATA_SOURCE);
     }
 
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.SFTP;
+    }
 
     public List<String> getPathHistory() {
         return pathHistory;

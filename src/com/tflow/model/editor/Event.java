@@ -3,35 +3,24 @@ package com.tflow.model.editor;
 public class Event {
 
     private EventName eventName;
-    private Selectable target;
+    private Object target;
     private Object data;
 
-    public Event(EventName eventName, Selectable target) {
+    public Event(EventName eventName, Object target, Object data) {
         this.eventName = eventName;
         this.target = target;
+        this.data = data;
     }
 
     public EventName getEventName() {
         return eventName;
     }
 
-    public void setEventName(EventName eventName) {
-        this.eventName = eventName;
-    }
-
-    public Selectable getTarget() {
+    public Object getTarget() {
         return target;
-    }
-
-    public void setTarget(Selectable target) {
-        this.target = target;
     }
 
     public Object getData() {
         return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
     }
 }

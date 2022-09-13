@@ -10,6 +10,8 @@ public enum CommandParamKey {
     ACTION,
     SELECTABLE,
     PROPERTY,
+    DATA,
+    PROJECT_FILE_TYPE,
 
     DATA_SOURCE,
     DATA_SOURCE_SELECTOR,

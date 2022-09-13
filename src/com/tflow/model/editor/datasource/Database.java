@@ -1,5 +1,6 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.LinePlug;
@@ -46,6 +47,11 @@ public class Database extends DataSource implements Selectable {
         passwordEncrypted = true;
         propList = new HashMap<>();
         this.setRoomType(RoomType.DATA_SOURCE);
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.DB;
     }
 
     public Dbms getDbms() {

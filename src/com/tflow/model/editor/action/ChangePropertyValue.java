@@ -22,7 +22,8 @@ public class ChangePropertyValue extends Action {
     protected void initCommands() {
         setParams(
                 CommandParamKey.STEP,
-                CommandParamKey.SELECTABLE,
+                CommandParamKey.PROJECT_FILE_TYPE,
+                CommandParamKey.DATA,
                 CommandParamKey.PROPERTY
         );
         setCommands(
@@ -34,9 +35,12 @@ public class ChangePropertyValue extends Action {
     protected void initUndoCommands() {
         setUndoParams(
                 CommandParamKey.STEP,
-                CommandParamKey.SELECTABLE,
+                CommandParamKey.PROJECT_FILE_TYPE,
+                CommandParamKey.DATA,
                 CommandParamKey.PROPERTY
         );
-        setUndoCommands(new com.tflow.model.editor.cmd.ChangePropertyValue());
+        /*setUndoCommands(
+                new com.tflow.model.editor.cmd.ChangePropertyValue()
+        );*/
     }
 }

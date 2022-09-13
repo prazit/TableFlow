@@ -40,11 +40,13 @@ public interface ProjectMapper {
 
     /*---- MAP BETWEEN OBJECT ----*/
 
-    ProjectGroupList map(GroupListData groupListData);
+    GroupListData map(ProjectGroupList projectGroupList);
 
-    ProjectGroup map(GroupData groupData);
+    GroupData map(ProjectGroup dataObject);
 
     ProjectData map(Project project);
+
+    PackageData map(Package aPackage);
 
     @Mappings({
             @Mapping(target = "dataTower", source = "dataTower.id"),
@@ -89,6 +91,11 @@ public interface ProjectMapper {
     FloorData map(Floor floor);
 
     RoomData map(Room room);
+
+
+    ProjectGroupList map(GroupListData groupListData);
+
+    ProjectGroup map(GroupData groupData);
 
     Project map(ProjectData projectData);
 
@@ -240,6 +247,8 @@ public interface ProjectMapper {
         return new ArrayList<>(variableMap.keySet());
     }
 
+    List<ItemData> fromPackageList(List<Item> packageList);
+
     List<ItemData> fromStepList(List<Step> stepList);
 
     List<Integer> fromDataTableList(List<DataTable> dataList);
@@ -261,5 +270,4 @@ public interface ProjectMapper {
     List<Integer> fromDoubleList(List<Double> doubleList);
 
     List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
-
 }

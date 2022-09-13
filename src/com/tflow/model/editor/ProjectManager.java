@@ -321,11 +321,6 @@ public class ProjectManager {
         return mapper.map(groupData);
     }
 
-    public List<Item> loadGroup() {
-
-        return null;
-    }
-
     /**
      * TODO: need to support open new project from template (projectId < 0)
      **/

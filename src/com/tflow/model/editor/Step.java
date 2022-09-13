@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSourceSelector;
@@ -93,10 +94,15 @@ public class Step implements Selectable, HasEvent {
             public void handle(Event event) {
                 PropertyView property = (PropertyView) event.getData();
                 if (PropertyVar.name.equals(property.getVar())) {
-                    eventManager.fireEvent(EventName.NAME_CHANGED);
+                    eventManager.fireEvent(EventName.NAME_CHANGED, property);
                 }
             }
         });
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.STEP;
     }
 
     public int getId() {

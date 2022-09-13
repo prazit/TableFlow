@@ -4,6 +4,7 @@ import com.tflow.model.data.DataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.Package;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -147,35 +148,142 @@ public abstract class Command {
     }
 
     /**
-     * Notice: IMPORTANT: when selectable-object-type is added, need to add script here to save them on event PropertyChanged.
-     *
-     * TODO: IMPORTANT: how to save changeable list (step-list, project-list and all ItemData family)
-     * How many list that are changeable?
-     * 1. Project.stepList
-     * 2.
+     * Notice: IMPORTANT: when ProjectFileType is added, need to add script here to save them on event PropertyChanged.
      */
-    protected boolean saveSelectableData(Selectable selectable, Step step) {
+    protected boolean saveSelectableData(ProjectFileType projectFileType, Object dataObject, Step step) {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         Project project = step.getOwner();
         ProjectUser projectUser = mapper.toProjectUser(project);
         DataManager dataManager = project.getDataManager();
 
         int stepId = step.getId();
-        if (selectable instanceof DataColumn) dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) selectable), projectUser, ((DataColumn) selectable).getId(), step.getId(), ((DataColumn) selectable).getOwner().getId());
-        else if (selectable instanceof ColumnFx) dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map((ColumnFx) selectable), projectUser, ((ColumnFx) selectable).getId(), step.getId(), 0, ((ColumnFx) selectable).getOwner().getOwner().getId());
-        else if (selectable instanceof DataFile) dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) selectable), projectUser, ((DataFile) selectable).getId(), stepId);
-        else if (selectable instanceof DataSourceSelector) dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map((DataSourceSelector) selectable), projectUser, ((DataSourceSelector) selectable).getId(), stepId);
-        else if (selectable instanceof TransformTable) dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) selectable), projectUser, ((TransformTable) selectable).getId(), stepId, 0, ((TransformTable) selectable).getId());
-        else if (selectable instanceof DataTable) dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) selectable), projectUser, ((DataTable) selectable).getId(), stepId, ((DataTable) selectable).getId());
-        else if (selectable instanceof Step) dataManager.addData(ProjectFileType.STEP, mapper.map((Step) selectable), projectUser, ((Step) selectable).getId(), stepId);
-        else if (selectable instanceof Project) dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) selectable), projectUser, ((Project) selectable).getId());
-        else if (selectable instanceof Database) dataManager.addData(ProjectFileType.DB, mapper.map((Database) selectable), projectUser, ((Database) selectable).getId());
-        else if (selectable instanceof SFTP) dataManager.addData(ProjectFileType.SFTP, mapper.map((SFTP) selectable), projectUser, ((SFTP) selectable).getId());
-        else if (selectable instanceof Local) dataManager.addData(ProjectFileType.LOCAL, mapper.map((Local) selectable), projectUser, ((Local) selectable).getId());
-        else return false;
+        switch (projectFileType) {
+            case PROJECT:
+                dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) dataObject), projectUser, ((Project) dataObject).getId());
+                break;
+            case STEP:
+                dataManager.addData(ProjectFileType.STEP, mapper.map((Step) dataObject), projectUser, ((Step) dataObject).getId(), stepId);
+                break;
+            case DATA_COLUMN:
+                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) dataObject), projectUser, ((DataColumn) dataObject).getId(), step.getId(), ((DataColumn) dataObject).getOwner().getId());
+                break;
+            case STEP_LIST:
+                dataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList((List<Step>) dataObject), projectUser, "");
+                break;
+            case DB:
+                dataManager.addData(ProjectFileType.DB, mapper.map((Database) dataObject), projectUser, ((Database) dataObject).getId());
+                break;
+            case SFTP:
+                dataManager.addData(ProjectFileType.SFTP, mapper.map((SFTP) dataObject), projectUser, ((SFTP) dataObject).getId());
+                break;
+            case LOCAL:
+                dataManager.addData(ProjectFileType.LOCAL, mapper.map((Local) dataObject), projectUser, ((Local) dataObject).getId());
+                break;
+            case DATA_SOURCE_SELECTOR:
+                dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map((DataSourceSelector) dataObject), projectUser, ((DataSourceSelector) dataObject).getId(), stepId);
+                break;
+            case DATA_FILE:
+                dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) dataObject), projectUser, ((DataFile) dataObject).getId(), stepId);
+                break;
+            case DATA_TABLE:
+                dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) dataObject), projectUser, ((DataTable) dataObject).getId(), stepId, ((DataTable) dataObject).getId());
+                break;
+            case TRANSFORM_TABLE:
+                dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) dataObject), projectUser, ((TransformTable) dataObject).getId(), stepId, 0, ((TransformTable) dataObject).getId());
+                break;
 
-        // need to wait commit thread after addData.
-        dataManager.waitAllTasks();
+            case GROUP_LIST:
+                dataManager.addData(ProjectFileType.GROUP_LIST, mapper.map((ProjectGroupList) dataObject), projectUser, 0);
+                break;
+            case GROUP:
+                dataManager.addData(ProjectFileType.GROUP, mapper.map((ProjectGroup) dataObject), projectUser, ((ProjectGroup) dataObject).getId());
+                break;
+
+            case PACKAGE_LIST:
+                dataManager.addData(ProjectFileType.PACKAGE_LIST, mapper.fromPackageList((List<Item>) dataObject), projectUser, "");
+                break;
+            case PACKAGE:
+                dataManager.addData(ProjectFileType.PACKAGE, mapper.map((Package) dataObject), projectUser, ((Package) dataObject).getId());
+                break;
+
+            /*TODO: Notice: need to find Changeable List and do the same way of STEP_LIST
+             * Changeable List are ItemData familiar.
+             * 1. [X] Project.stepList (Item) | [X] Step.eventManager.addHandler(Event.NAME_CHANGED) | [X] EditorController.createStepEventHandlers | [X] TEST
+             * 2. [X] GroupList (GroupItem) | [X] Group.eventManager.addHandler(Event.NAME_CHANGED) | [ ] GroupController.createEventHandlers | [ ] TEST
+             *    [ ] Group.xhtml: need to make editable group-name look like setting in KUDU-App (double click then edit and click save).
+             * 3. [X] Group.ProjectList (ProjectItem) | [X] Project.eventManager.addHandler(Event.NAME_CHANGED) | [X] FlowchartController.createEventHandlers + ProjectController.createEventHandlers | [X] TEST
+             * 4. [X] PackageList (Item) | [X] Package.eventManager.addHandler(Event.NAME_CHANGED) | [X] ProjectController.createEventHandlers | [ ] TEST
+             **/
+            /*case CLIENT_LIST:
+                break;
+            case CLIENT:
+                break;
+            case VERSIONED_LIST:
+                break;
+            case VERSIONED:
+                break;
+            case UPLOADED_LIST:
+                break;
+            case UPLOADED:
+                break;
+            case GENERATED_LIST:
+                break;
+            case GENERATED:
+                break;
+            case DB_LIST:
+                break;
+            case SFTP_LIST:
+                break;
+            case LOCAL_LIST:
+                break;
+            case DS_LIST:
+                break;
+            case DS:
+                break;
+            case VARIABLE_LIST:
+                break;
+            case VARIABLE:
+                break;
+            case DATA_SOURCE_SELECTOR_LIST:
+                break;
+            case DATA_FILE_LIST:
+                break;
+            case DATA_TABLE_LIST:
+                break;
+            case DATA_COLUMN_LIST:
+                break;
+            case DATA_OUTPUT_LIST:
+                break;
+            case DATA_OUTPUT:
+                break;
+            case TRANSFORM_TABLE_LIST:
+                break;
+            case TRANSFORM_COLUMN_LIST:
+                break;
+            case TRANSFORMATION_LIST:
+                break;
+            case TRANSFORM_OUTPUT_LIST:
+                break;
+            case TRANSFORM_COLUMN:
+                break;
+            case TRANSFORM_COLUMNFX:
+                break;
+            case TRANSFORMATION:
+                break;
+            case TRANSFORM_OUTPUT:
+                break;
+            case TOWER:
+                break;
+            case FLOOR:
+                break;
+            case LINE_LIST:
+                break;
+            case LINE:
+                break;*/
+
+            default:
+                return false;
+        }
 
         return true;
     }

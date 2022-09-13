@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 
 import java.util.HashMap;
@@ -33,6 +34,11 @@ public class TableFx implements Selectable {
     /*for projectMapper*/
     public TableFx(int id) {
         this.id = id;
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return null;
     }
 
     public int getId() {

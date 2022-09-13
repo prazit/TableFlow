@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
@@ -103,6 +104,11 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
     public void createPlugListeners() {
         createStartPlugListener();
         createEndPlugListener();
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.DATA_TABLE;
     }
 
     public int getId() {

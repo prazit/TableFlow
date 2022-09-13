@@ -1,5 +1,6 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
@@ -27,6 +28,11 @@ public class Local extends DataSource implements Selectable {
         this.rootPath = rootPath;
         pathHistory = new ArrayList<>();
         this.setRoomType(RoomType.DATA_SOURCE);
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.LOCAL;
     }
 
     public List<String> getPathHistory() {

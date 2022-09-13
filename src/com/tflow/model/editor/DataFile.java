@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 import org.slf4j.Logger;
@@ -78,6 +79,11 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     public void createPlugListeners() {
         createStartPlugListener();
         endPlug.createDefaultPlugListener();
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.DATA_FILE;
     }
 
     public int getId() {

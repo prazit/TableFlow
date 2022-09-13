@@ -1,5 +1,6 @@
 package com.tflow.model.editor.datasource;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.room.RoomType;
@@ -85,6 +86,11 @@ public class DataSourceSelector extends DataSource implements Selectable, HasEve
     public void createPlugListeners() {
         startPlug.createDefaultPlugListener();
         createEventHandlers();
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.DATA_SOURCE_SELECTOR;
     }
 
     public int getDataSourceId() {

@@ -1,5 +1,6 @@
 package com.tflow.controller;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.*;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.Package;
@@ -7,6 +8,7 @@ import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.FacesUtil;
 import org.primefaces.event.TabChangeEvent;
 
@@ -43,12 +45,36 @@ public class ProjectController extends Controller {
         log.trace("onCreation.");
         project = workspace.getProject();
         createPackageEventHandlers();
+        createEventHandlers();
     }
 
-    /**
-     * TODO: Test me now!!!
-     */
+    private void createEventHandlers() {
+        project.getEventManager().addHandler(EventName.NAME_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                PropertyView property = (PropertyView) event.getData();
+
+                Project target = (Project) event.getTarget();
+                String projectId = target.getId();
+                ProjectGroup group;
+                try {
+                    group = target.getManager().loadProjectGroup(workspace, target.getGroupId());
+                    ProjectItem targetProjectItem = group.getProjectList().stream().filter(projectItem -> projectItem.getId().compareTo(projectId) == 0).collect(Collectors.toList()).get(0);
+                    targetProjectItem.setName(target.getName());
+                } catch (ProjectDataException ex) {
+                    String msg = "Project Name '" + target.getName() + "' is changed, but the name in group still unchanged by Internal Error!";
+                    jsBuilder.pre(JavaScript.notiError, msg);
+                    log.error(msg, ex);
+                    return;
+                }
+
+                propertyChanged(ProjectFileType.GROUP, group, property);
+            }
+        });
+    }
+
     private void createPackageEventHandlers() {
+
         if (activePackage == null) return;
 
         activePackage.getEventManager()
@@ -56,10 +82,14 @@ public class ProjectController extends Controller {
                 .addHandler(EventName.NAME_CHANGED, new EventHandler() {
                     @Override
                     public void handle(Event event) {
-                        log.debug("package.NAME_CHANGED: event = {}", event);
-                        /*TODO: package name on the dropdown list need to update to new value from the event/or do this in the Property-Changed-Action-Command*/
+                        PropertyView property = (PropertyView) event.getData();
+                        Package target = (Package) event.getTarget();
+                        packageList.stream().filter(item -> item.getId() == target.getId()).collect(Collectors.toList()).get(0).setName(target.getName());
+                        propertyChanged(ProjectFileType.PACKAGE_LIST, packageList, property);
                     }
                 });
+
+
     }
 
     public void openSection(TabChangeEvent event) {
@@ -118,6 +148,7 @@ public class ProjectController extends Controller {
         try {
             ProjectManager manager = project.getManager();
             activePackage = manager.loadPackage(selectedPackageId, project);
+            createPackageEventHandlers();
             manager.addSeletable(activePackage, project);
         } catch (ProjectDataException ex) {
             String msg = "Reload package " + selectedPackageId + " failed: ";
@@ -137,6 +168,8 @@ public class ProjectController extends Controller {
         }
 
         activePackage = buildPackage;
+        createPackageEventHandlers();
+
         pleaseSelectPackage = false;
         jsBuilder.post(JavaScript.updateEm, "PackageTab").runOnClient();
     }

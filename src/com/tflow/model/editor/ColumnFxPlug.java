@@ -1,5 +1,7 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +23,11 @@ public class ColumnFxPlug extends LinePlug implements Selectable, HasEndPlug {
         this.type = type;
         this.name = name;
         this.owner = owner;
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return null;
     }
 
     public int getId() {

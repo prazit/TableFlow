@@ -1,5 +1,7 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +57,11 @@ public class DataColumn implements Serializable, Selectable {
                 owner.connectionRemoved();
             }
         });
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.DATA_COLUMN;
     }
 
     public int getId() {

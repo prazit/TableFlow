@@ -45,12 +45,13 @@ public class AddDirectLine extends Command {
         // save Object at startPlug.
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         Selectable selectable = selectableMap.get(newLine.getStartSelectableId());
-        if (!saveSelectableData(selectable, step)) {
+        if (!saveSelectableData(selectable.getProjectFileType(), selectable, step)) {
             throw new UnsupportedOperationException("Save data of Unsupported Type " + selectable.getClass().getName() + "(" + selectable.getSelectableId() + ")");
         }
 
         // save Object at endPlug.
-        if (!saveSelectableData(selectableMap.get(newLine.getEndSelectableId()), step)) {
+        Selectable endSelectable = selectableMap.get(newLine.getEndSelectableId());
+        if (!saveSelectableData(endSelectable.getProjectFileType(), endSelectable, step)) {
             throw new UnsupportedOperationException("Save data of Unsupported Type " + selectable.getClass().getName() + "(" + selectable.getSelectableId() + ")");
         }
 

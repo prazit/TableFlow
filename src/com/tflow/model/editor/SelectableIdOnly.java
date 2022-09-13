@@ -1,5 +1,7 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
+
 import java.util.Map;
 
 public class SelectableIdOnly implements Selectable {
@@ -12,6 +14,11 @@ public class SelectableIdOnly implements Selectable {
 
     public void setSelectableId(String selectableId) {
         this.selectableId = selectableId;
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return null;
     }
 
     @Override

@@ -1,9 +1,10 @@
 package com.tflow.controller;
 
-import com.tflow.model.editor.JavaScriptBuilder;
-import com.tflow.model.editor.Selectable;
-import com.tflow.model.editor.Step;
-import com.tflow.model.editor.Workspace;
+import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.editor.*;
+import com.tflow.model.editor.action.ChangePropertyValue;
+import com.tflow.model.editor.cmd.CommandParamKey;
+import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
 import org.slf4j.Logger;
@@ -17,6 +18,8 @@ import javax.inject.Inject;
 import java.awt.print.Pageable;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Controller implements Serializable {
 
@@ -96,6 +99,77 @@ public abstract class Controller implements Serializable {
 
     public void showNoti() {
         jsBuilder.runNoti();
+    }
+
+
+    protected String propertyToMethod(String propertyName) {
+        return "get" +
+                propertyName.substring(0, 1).toUpperCase()
+                + propertyName.substring(1);
+    }
+
+    protected Object getPropertyValue(Selectable selectable, String propertyName) {
+        Object value = selectable.getPropertyMap().get(propertyName);
+        if (value != null) return value;
+
+        try {
+            /*by getValue() method*/
+            value = selectable.getClass().getMethod(propertyToMethod(propertyName)).invoke(selectable);
+        } catch (Exception e) {
+            /*by property.var*/
+            value = getPropertyValue(selectable, selectable.getProperties().getPropertyView(propertyName));
+        }
+
+        return value == null ? "" : value;
+    }
+
+    protected Object getPropertyValue(Selectable selectable, PropertyView property) {
+        Object value = null;
+        if (property == null) {
+            return value;
+        }
+
+        if (property.hasParent())
+            /*by getParent().getValue() method, the parent always be the PropertyMap*/
+            value = selectable.getPropertyMap().get(property.getVar());
+        else
+            try {
+                /*by getValue() method without parent*/
+                value = selectable.getClass().getMethod(propertyToMethod(property.getVar())).invoke(selectable);
+            } catch (Exception e) {
+                /*no property*/
+                log.warn("getPropertyValue: no compatible method to get value from property({})", property);
+                log.error("this is debug information", e);
+            }
+
+        return value == null ? "" : value;
+    }
+
+    public void propertyChanged(PropertyView property) {
+        log.debug("propertyChanged:fromClient");
+        Selectable activeObject = workspace.getProject().getActiveStep().getActiveObject();
+        propertyChanged(activeObject.getProjectFileType(), activeObject, property);
+    }
+
+    protected void propertyChanged(ProjectFileType projectFileType, Object data, PropertyView property) {
+        if (data instanceof Selectable) {
+            property.setNewValue(getPropertyValue(((Selectable) data), property));
+        }
+        log.debug("propertyChanged(type:{}, data:{}, property:{})", projectFileType, data.getClass().getSimpleName(), property);
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.STEP, workspace.getProject().getActiveStep());
+        paramMap.put(CommandParamKey.PROJECT_FILE_TYPE, projectFileType);
+        paramMap.put(CommandParamKey.DATA, data);
+        paramMap.put(CommandParamKey.PROPERTY, property);
+
+        try {
+            new ChangePropertyValue(paramMap).execute();
+        } catch (Exception ex) {
+            jsBuilder.pre(JavaScript.notiError, "Change property value failed by ChangePropertyValue command!");
+            log.error("Change Property Value Failed!, type:{}, data:{}, property:{}", projectFileType, data.getClass().getSimpleName(), property);
+            log.error("", ex);
+        }
     }
 
 }

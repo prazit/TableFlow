@@ -1,6 +1,6 @@
 package com.tflow.model.editor;
 
-import com.tflow.model.editor.view.PropertyView;
+import com.tflow.kafka.ProjectFileType;
 
 import java.util.*;
 
@@ -65,6 +65,11 @@ public class ColumnFx implements Selectable, HasEndPlug {
         for (ColumnFxPlug columnFxPlug : endPlugList) {
             columnFxPlug.createDefaultPlugListener();
         }
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return null;
     }
 
     public int getId() {
