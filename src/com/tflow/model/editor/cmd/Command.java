@@ -148,24 +148,26 @@ public abstract class Command {
     }
 
     /**
-     * Notice: IMPORTANT: when ProjectFileType is added, need to add script here to save them on event PropertyChanged.
+     * Notice: IMPORTANT: when ProjectFileType is added, need to add script here to save data of them on event PropertyChanged.
      */
-    protected boolean saveSelectableData(ProjectFileType projectFileType, Object dataObject, Step step) {
+    protected boolean saveSelectableData(ProjectFileType projectFileType, Object dataObject, DataManager dataManager, ProjectUser projectUser) {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
-        Project project = step.getOwner();
-        ProjectUser projectUser = mapper.toProjectUser(project);
-        DataManager dataManager = project.getDataManager();
-
-        int stepId = step.getId();
+        Step step;
+        int stepId;
         switch (projectFileType) {
             case PROJECT:
                 dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) dataObject), projectUser, ((Project) dataObject).getId());
                 break;
             case STEP:
-                dataManager.addData(ProjectFileType.STEP, mapper.map((Step) dataObject), projectUser, ((Step) dataObject).getId(), stepId);
+                step = (Step) dataObject;
+                stepId = step.getId();
+                dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
                 break;
             case DATA_COLUMN:
-                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map((DataColumn) dataObject), projectUser, ((DataColumn) dataObject).getId(), step.getId(), ((DataColumn) dataObject).getOwner().getId());
+                DataColumn dataColumn = (DataColumn) dataObject;
+                step = dataColumn.getOwner().getOwner();
+                stepId = step.getId();
+                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), projectUser, ((DataColumn) dataObject).getId(), stepId, ((DataColumn) dataObject).getOwner().getId());
                 break;
             case STEP_LIST:
                 dataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList((List<Step>) dataObject), projectUser, "");
@@ -180,16 +182,28 @@ public abstract class Command {
                 dataManager.addData(ProjectFileType.LOCAL, mapper.map((Local) dataObject), projectUser, ((Local) dataObject).getId());
                 break;
             case DATA_SOURCE_SELECTOR:
-                dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map((DataSourceSelector) dataObject), projectUser, ((DataSourceSelector) dataObject).getId(), stepId);
+                DataSourceSelector dataSourceSelector = (DataSourceSelector) dataObject;
+                step = dataSourceSelector.getOwner();
+                stepId = step.getId();
+                dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map(dataSourceSelector), projectUser, dataSourceSelector.getId(), stepId);
                 break;
             case DATA_FILE:
-                dataManager.addData(ProjectFileType.DATA_FILE, mapper.map((DataFile) dataObject), projectUser, ((DataFile) dataObject).getId(), stepId);
+                DataFile dataFile = (DataFile) dataObject;
+                step = ((DataTable) dataFile.getOwner()).getOwner();
+                stepId = step.getId();
+                dataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), projectUser, dataFile.getId(), stepId);
                 break;
             case DATA_TABLE:
-                dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map((DataTable) dataObject), projectUser, ((DataTable) dataObject).getId(), stepId, ((DataTable) dataObject).getId());
+                DataTable dataTable = (DataTable) dataObject;
+                step = dataTable.getOwner();
+                stepId = step.getId();
+                dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(dataTable), projectUser, dataTable.getId(), stepId, dataTable.getId());
                 break;
             case TRANSFORM_TABLE:
-                dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map((TransformTable) dataObject), projectUser, ((TransformTable) dataObject).getId(), stepId, 0, ((TransformTable) dataObject).getId());
+                TransformTable transformTable = (TransformTable) dataObject;
+                step = transformTable.getOwner();
+                stepId = step.getId();
+                dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), projectUser, transformTable.getId(), stepId, 0, transformTable.getId());
                 break;
 
             case GROUP_LIST:
@@ -206,13 +220,13 @@ public abstract class Command {
                 dataManager.addData(ProjectFileType.PACKAGE, mapper.map((Package) dataObject), projectUser, ((Package) dataObject).getId());
                 break;
 
-            /*TODO: Notice: need to find Changeable List and do the same way of STEP_LIST
+            /*Notice: need to find Changeable List and do the same way of STEP_LIST
              * Changeable List are ItemData familiar.
              * 1. [X] Project.stepList (Item) | [X] Step.eventManager.addHandler(Event.NAME_CHANGED) | [X] EditorController.createStepEventHandlers | [X] TEST
-             * 2. [X] GroupList (GroupItem) | [X] Group.eventManager.addHandler(Event.NAME_CHANGED) | [ ] GroupController.createEventHandlers | [ ] TEST
-             *    [ ] Group.xhtml: need to make editable group-name look like setting in KUDU-App (double click then edit and click save).
+             * 2. [X] GroupList (GroupItem) | [X] Group.eventManager.addHandler(Event.NAME_CHANGED) | [X] GroupController.createEventHandlers | [X] TEST
+             *    [X] Group.xhtml: need to make editable group-name look like setting in KUDU-App (double click then edit and click save).
              * 3. [X] Group.ProjectList (ProjectItem) | [X] Project.eventManager.addHandler(Event.NAME_CHANGED) | [X] FlowchartController.createEventHandlers + ProjectController.createEventHandlers | [X] TEST
-             * 4. [X] PackageList (Item) | [X] Package.eventManager.addHandler(Event.NAME_CHANGED) | [X] ProjectController.createEventHandlers | [ ] TEST
+             * 4. [X] PackageList (Item) | [X] Package.eventManager.addHandler(Event.NAME_CHANGED) | [X] ProjectController.createEventHandlers | [X] TEST
              **/
             /*case CLIENT_LIST:
                 break;

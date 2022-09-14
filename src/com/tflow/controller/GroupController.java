@@ -1,10 +1,13 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.EnvironmentConfigs;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.view.PropertyView;
+import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.UnselectEvent;
@@ -16,6 +19,7 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @ViewScoped
 @Named("groupCtl")
@@ -36,6 +40,8 @@ public class GroupController extends Controller {
 
     private int templateGroupId;
     private int selectedGroupId;
+
+    private boolean groupEditable;
 
     @Override
     protected Page getPage() {
@@ -153,6 +159,14 @@ public class GroupController extends Controller {
         this.openSectionUpdate = openSectionUpdate;
     }
 
+    public boolean getGroupEditable() {
+        return groupEditable;
+    }
+
+    public void setGroupEditable(boolean groupEditable) {
+        this.groupEditable = groupEditable;
+    }
+
     public void openSelectedProject() {
         openProject(selectedProject.getId());
     }
@@ -202,7 +216,7 @@ public class GroupController extends Controller {
         return GroupSection.EXISTING_PROJECT.getUpdate();
     }
 
-    public void onGroupSelect(SelectEvent event) throws ProjectDataException {
+    public void onGroupSelect(SelectEvent<GroupItem> event) throws ProjectDataException {
         log.debug("onGroupSelect: selectedGroup = {}", selectedGroup);
         if (selectedGroup.getId() == projectList.getId()) {
             log.debug("projectGroupSelected: on the same group ({}).", selectedGroup.getId());
@@ -213,6 +227,35 @@ public class GroupController extends Controller {
 
         projectList = workspace.getProjectManager().loadProjectGroup(workspace, selectedGroup.getId());
         selectedProject = null;
+    }
+
+    public void onGroupNameChange(RowEditEvent<GroupItem> event) {
+        selectedGroup = event.getObject();
+        jsBuilder.pre(JavaScript.notiInfo, "Selected-groupName: " + selectedGroup.getName());
+        try {
+            ProjectGroup projectGroup = workspace.getProjectManager().loadProjectGroup(workspace, selectedGroup.getId());
+            projectGroup.setName(selectedGroup.getName());
+            createGroupEventHandlers(projectGroup);
+            propertyChanged(ProjectFileType.GROUP, projectGroup, Properties.PROJECT.getPropertyView(PropertyVar.name.name()));
+        } catch (ProjectDataException ex) {
+            String msg = "Load group data failed\n" + ex.getMessage();
+            log.error(msg, ex);
+            jsBuilder.pre(JavaScript.notiError, msg);
+        }
+    }
+
+    private void createGroupEventHandlers(ProjectGroup group) {
+        group.getEventManager().addHandler(EventName.NAME_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                PropertyView property = (PropertyView) event.getData();
+                propertyChanged(ProjectFileType.GROUP_LIST, groupList, property);
+            }
+        });
+    }
+
+    public void onGroupNameCancel(RowEditEvent<GroupItem> event) {
+        selectedGroup = null;
     }
 
     private String openTemplateSection() throws ProjectDataException {
@@ -231,4 +274,7 @@ public class GroupController extends Controller {
         workspace.openPage(Page.EDITOR, new Parameter(PageParameter.GROUP_ID, String.valueOf(selectedGroupId)));
     }
 
+    public void onGroupEditable() {
+        this.groupEditable = !this.groupEditable;
+    }
 }

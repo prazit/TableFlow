@@ -21,7 +21,7 @@ public class ChangePropertyValue extends Action {
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.STEP,
+                CommandParamKey.WORKSPACE,
                 CommandParamKey.PROJECT_FILE_TYPE,
                 CommandParamKey.DATA,
                 CommandParamKey.PROPERTY
@@ -34,7 +34,7 @@ public class ChangePropertyValue extends Action {
     @Override
     protected void initUndoCommands() {
         setUndoParams(
-                CommandParamKey.STEP,
+                CommandParamKey.WORKSPACE,
                 CommandParamKey.PROJECT_FILE_TYPE,
                 CommandParamKey.DATA,
                 CommandParamKey.PROPERTY

@@ -1,9 +1,13 @@
 package com.tflow.model.editor.cmd;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.DataManager;
+import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +18,7 @@ import java.util.Map;
 public class ChangePropertyValue extends Command {
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        Step step = (Step) paramMap.get(CommandParamKey.STEP);
+        Workspace workspace = (Workspace) paramMap.get(CommandParamKey.WORKSPACE);
         ProjectFileType projectFileType = (ProjectFileType) paramMap.get(CommandParamKey.PROJECT_FILE_TYPE);
         Object dataObject = paramMap.get(CommandParamKey.DATA);
         PropertyView property = (PropertyView) paramMap.get(CommandParamKey.PROPERTY);
@@ -50,12 +54,14 @@ public class ChangePropertyValue extends Command {
         }
 
         // save data
-        if (!saveSelectableData(projectFileType, dataObject, step)) {
+        ProjectUser projectUser = workspace.getProjectUser();
+        DataManager dataManager = workspace.getDataManager();
+        if (!saveSelectableData(projectFileType, dataObject, dataManager, projectUser)) {
             throw new UnsupportedOperationException("Change Property Value of Unsupported type=" + projectFileType + " dataObject=" + dataObject.getClass().getName() + ", property=" + property);
         }
 
         // need to wait commit thread after addData.
-        step.getOwner().getDataManager().waitAllTasks();
+        dataManager.waitAllTasks();
         
     }
 

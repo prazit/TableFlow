@@ -203,3 +203,7 @@ body .tool-panel .ui-tabs .ui-menu {
     overflow-x: hidden;
     overflow-y: auto;
 }
+
+.fit-width {
+    width: 100%;
+}

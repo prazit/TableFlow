@@ -320,4 +320,12 @@ public class Workspace implements Serializable {
         }
         FacesUtil.redirect("/" + page.getName());
     }
+
+    public ProjectUser getProjectUser() {
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setUserId(user.getId());
+        projectUser.setClientId(client.getId());
+        if (project != null) projectUser.setId(project.getId());
+        return projectUser;
+    }
 }

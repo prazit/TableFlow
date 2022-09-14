@@ -29,6 +29,8 @@ public class JavaScriptBuilder {
     private ArrayList<String> postList;
 
     private long notiTimeout;
+    private String notiSeparator;
+    private String notiSpliter;
 
     public JavaScriptBuilder() {
         preMap = new HashMap<>();
@@ -39,6 +41,8 @@ public class JavaScriptBuilder {
         postList = new ArrayList<>();
 
         notiTimeout = 6000;
+        notiSeparator = ":--:";
+        notiSpliter = "[:]--[:]";
     }
 
     public JavaScriptBuilder pre(String jsStatement) {
@@ -75,7 +79,8 @@ public class JavaScriptBuilder {
         String script = javaScript.getScript();
         if (script == null) {
             /*notification*/
-            notiList.add(javaScript.name() + ":" + (String) params[0] + ":" + DateTimeUtil.now().getTime());
+            String message = javaScript.name() + notiSeparator + (String) params[0] + notiSeparator + DateTimeUtil.now().getTime();
+            notiList.add(0, message);
 
             /*Notice: want duplicated filter when the first case occurred*/
 
@@ -194,7 +199,7 @@ public class JavaScriptBuilder {
         long now = DateTimeUtil.now().getTime();
 
         for (String noti : new ArrayList<>(notiList)) {
-            String[] parts = noti.split("[:]");
+            String[] parts = noti.split(notiSpliter);
 
             long time = Long.parseLong(parts[2]);
             long diff = now - time;
@@ -203,15 +208,16 @@ public class JavaScriptBuilder {
                 continue;
             }
 
+            String message = parts[1].replaceAll("\n", "<br/>");
             switch (JavaScript.valueOf(parts[0])) {
                 case notiInfo:
-                    FacesUtil.addInfo(parts[1]);
+                    FacesUtil.addInfo(message);
                     break;
                 case notiWarn:
-                    FacesUtil.addWarn(parts[1]);
+                    FacesUtil.addWarn(message);
                     break;
                 case notiError:
-                    FacesUtil.addError(parts[1]);
+                    FacesUtil.addError(message);
             }
         }
     }

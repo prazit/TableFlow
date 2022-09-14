@@ -17,7 +17,6 @@
         <h:outputStylesheet library="css" name="tflow.css#{groupCtl.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="group.js#{groupCtl.forceReloadResources}" target="head"/>
 
-        <script>console.log('-- first-line of editor --');</script>
         <div class="container">
             <ui:include src="resources/ajaxexception.xhtml">
                 <ui:param name="controller" value="#{groupCtl}"/>
@@ -39,11 +38,36 @@
                             <p:tab title="#{GroupSection.EXISTING_PROJECT.getTitle()}" titleStyleClass="#{GroupSection.EXISTING_PROJECT.getIcon()}">
                                 <p:outputLabel value="#{groupCtl.currentPage.description}"/>
                                 <p:panelGrid id="existingProject" columns="3" columnClasses="ui-g-5,ui-g-5,ui-g-2">
-                                    <p:dataTable value="#{groupCtl.groupList.groupList}" var="group" selection="#{groupCtl.selectedGroup}" selectionMode="single" rowKey="#{group.id}" stickyHeader="true">
+                                    <p:dataTable rendered="#{groupCtl.groupEditable==false}" value="#{groupCtl.groupList.groupList}" var="group" selection="#{groupCtl.selectedGroup}" selectionMode="single" rowKey="#{group.id}">
                                         <p:ajax event="rowSelect" listener="#{groupCtl.onGroupSelect}" update="@parent"/>
-                                        <p:column headerText="Group List">#{group.name}</p:column>
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <div class="fit-width">
+                                                    <b class="float-left">Group List</b>
+                                                    <p:commandLink styleClass="float-right" value="editable" actionListener="#{groupCtl.onGroupEditable}" update="@parent:@parent:@parent:@parent"/>
+                                                </div>
+                                            </f:facet>
+                                            <p:outputLabel styleClass="float-left">#{group.name}</p:outputLabel>
+                                        </p:column>
                                     </p:dataTable>
-                                    <p:dataTable value="#{groupCtl.projectList.projectList}" var="project" selection="#{groupCtl.selectedProject}" selectionMode="single" rowKey="#{project.id}" stickyHeader="true">
+                                    <p:dataTable rendered="#{groupCtl.groupEditable==true}" value="#{groupCtl.groupList.groupList}" var="group" editable="#{groupCtl.groupEditable}" rowKey="#{group.id}">
+                                        <p:ajax event="rowEdit" listener="#{groupCtl.onGroupNameChange}"/>
+                                        <p:ajax event="rowEditCancel" listener="#{groupCtl.onGroupNameCancel}"/>
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <div class="fit-width">
+                                                    <b class="float-left">Group List</b>
+                                                    <p:commandLink styleClass="float-right" value="selectable" actionListener="#{groupCtl.onGroupEditable}" update="@parent:@parent:@parent:@parent"/>
+                                                </div>
+                                            </f:facet>
+                                            <p:cellEditor>
+                                                <f:facet name="output"><p:outputLabel styleClass="float-left">#{group.name}</p:outputLabel></f:facet>
+                                                <f:facet name="input"><p:inputText value="#{group.name}" styleClass="float-left no-border no-padding transparent"/></f:facet>
+                                            </p:cellEditor>
+                                            <p:rowEditor styleClass="float-right"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                    <p:dataTable value="#{groupCtl.projectList.projectList}" var="project" selection="#{groupCtl.selectedProject}" selectionMode="single" rowKey="#{project.id}">
                                         <p:ajax event="rowSelect" update="@parent"/>
                                         <p:column headerText="Project List">#{project.name} (#{project.id})</p:column>
                                     </p:dataTable>

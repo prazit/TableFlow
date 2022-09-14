@@ -101,7 +101,6 @@ public abstract class Controller implements Serializable {
         jsBuilder.runNoti();
     }
 
-
     protected String propertyToMethod(String propertyName) {
         return "get" +
                 propertyName.substring(0, 1).toUpperCase()
@@ -158,7 +157,7 @@ public abstract class Controller implements Serializable {
         log.debug("propertyChanged(type:{}, data:{}, property:{})", projectFileType, data.getClass().getSimpleName(), property);
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.STEP, workspace.getProject().getActiveStep());
+        paramMap.put(CommandParamKey.WORKSPACE, workspace);
         paramMap.put(CommandParamKey.PROJECT_FILE_TYPE, projectFileType);
         paramMap.put(CommandParamKey.DATA, data);
         paramMap.put(CommandParamKey.PROPERTY, property);
