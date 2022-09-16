@@ -12,8 +12,8 @@ import java.util.Map;
 /**
  * This Enum use Prototype String like this<br/>
  * <p>
- * 0-Property-Var:1-Property-Label:2-Property-Type:3-param[,4-param]..[,@Update-ID][,Java-Script;][,[x]Enabled-Var][,[]Disabled-Var]
- * <br/>.:1-Property-Var-Parent:2-Property-Var:3-Property-Label:4-Property-Type:5-param[,6-param]..[,@Update-ID][,Java-Script;][,[x]Enabled-Var][,[]Disabled-Var]
+ * 0-Property-Var:1-Property-Label:2-Property-Type:3-param[,4-param]|[,@Update-ID][,Java-Script;][,[x]Enabled-Var][,[]Disabled-Var]
+ * <br/>.:1-Property-Var-Parent:2-Property-Var:3-Property-Label:4-Property-Type:5-param[,6-param]|[,@Update-ID][,Java-Script;][,[x]Enabled-Var][,[]Disabled-Var]
  * <br/><br/><b>Description:</b>
  * <br/>Variable-Name used for UI Value Binding(ActiveObject[Variable-Name.][Sub-Variable-Name])
  * <br/>Update-ID used to update component after the value is changed.
@@ -29,7 +29,7 @@ public enum Properties {
             "name:Parameter Name:String"
     ),
 
-
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     PACKAGE(
             "==: Package : Built package or deployment package used to create new version of project and can download package to deploy on server you want :==",
             "--: Package Properties :--",
@@ -44,7 +44,7 @@ public enum Properties {
     PROJECT(
             "==: Project : Project of the data-conversion can contains many Table-Flows or known as step inside :==",
             "--: Project Properties :--",
-            "name:Name:String:refreshStepList();",
+            "name:Name:String|refreshStepList();",
             "--: More Detail :--",
             "id:ID:ReadOnly",
             "activeStepIndex:Active Step Index:ReadOnly",
@@ -54,7 +54,7 @@ public enum Properties {
     STEP(
             "==: Step : Step contains one table flow chart, one process that consume input-data and produce the output-data at the end :==",
             "--: Step Properties :--",
-            "name:Name:String:refreshStepList();",
+            "name:Name:String|refreshStepList();",
             "--: More Detail :--",
             "id:ID:ReadOnly",
             "zoom:Zoom:ReadOnly",
@@ -65,8 +65,8 @@ public enum Properties {
             "==: Data Source : Source of input file that linked to it :==",
             "--: Data Source Properties :--",
             "name:Name:String",
-            "type:Data Source Type:DATASOURCETYPE:@propertyForm.scrollPanel",
-            "dataSourceId:Data Source:DATASOURCE::type:@propertyForm.scrollPanel"
+            "type:Data Source Type:DATASOURCETYPE|@propertyForm.scrollPanel",
+            "dataSourceId:Data Source:DATASOURCE::type|@propertyForm.scrollPanel"
     ),
     DATA_BASE(
             "==: Data Source : Database connection (JDBC) :==",
@@ -139,9 +139,9 @@ public enum Properties {
             "type:Type:ReadOnly",
             "name:Name:String",
             "--: Value :--",
-            "sourceColumnId:Source Column:Column:sourceId::[]useDynamic",
-            "useDynamic:Dynamic Value Expression:BOOLEAN::refreshProperties();",
-            "dynamicExpression::DynamicValue::[x]useDynamic:[]useFunction",
+            "sourceColumnId:Source Column:Column:sourceId|[]useDynamic",
+            "useDynamic:Dynamic Value Expression:BOOLEAN|refreshProperties();",
+            "dynamicExpression::DynamicValue|[x]useDynamic:[]useFunction",
             "--: More Detail :--",
             "id:ID:ReadOnly"
             /* Value cases:
@@ -156,26 +156,26 @@ public enum Properties {
     INPUT_SYSTEM_ENVIRONMENT(
             "==: Input File (System Environment) : System Environment Data Set :==",
             "--: File Properties :--",
-            "type:Type:DataFileType:in:refreshProperties();",
+            "type:Type:DataFileType:in|refreshProperties();",
             "name:System Environment:System"
     ),
 
     INPUT_TXT(
             "==: Input File (TXT) : Text File in Fixed Length Formatted :==",
             "--: File Properties :--",
-            "type:Type:DataFileType:in:refreshProperties();",
+            "type:Type:DataFileType:in|refreshProperties();",
             "name:File name:String"
     ),
     INPUT_CSV(
             "==: Input File (CSV) : Text File in Comma Separated Values Formatted :==",
             "--: File Properties :--",
-            "type:Type:DataFileType:in:refreshProperties();",
+            "type:Type:DataFileType:in|refreshProperties();",
             "name:File name:String"
     ),
     INPUT_SQL(
             "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
             "--: File Properties :--",
-            "type:Type:DataFileType:in:refreshProperties();",
+            "type:Type:DataFileType:in|refreshProperties();",
             "name:File name:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
@@ -183,13 +183,13 @@ public enum Properties {
     INPUT_MARKDOWN(
             "==: Input File (MD) : Text File contains one or more tables in Markdown Formatted :==",
             "--: File Properties :--",
-            "type:Type:DataFileType:in:refreshProperties();",
+            "type:Type:DataFileType:in|refreshProperties();",
             "name:File name:String" /*TODO: do this after file structure is completed, change String of name to Upload. //"name:Filename:Upload:md,txt",*/
     ),
     INPUT_DIRECTORY(
             "==: Input File (DIR) : List of file in directory as a table :==",
             "--: File Properties :--",
-            "type:Type:DataFileType:in:refreshProperties();",
+            "type:Type:DataFileType:in|refreshProperties();",
             "path:Path:String",
             ".:propertyMap:sub:Include sub-directory:Boolean",
             ".:propertyMap:fileOnly:Show file only:Boolean"
@@ -200,8 +200,8 @@ public enum Properties {
     OUTPUT_TXT(
             "==: Output File (TXT) : Text File in Fixed Length Formatted :==",
             "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType:@type",
-            "type:Output Type:DataFileType:out:refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::dataSourceType|@type",
+            "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -221,7 +221,7 @@ public enum Properties {
             "==: Output File (CSV) : Text File in Comma Separated Values Formatted :==",
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
-            "type:Output Type:DataFileType:out:refreshProperties();",
+            "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -241,7 +241,7 @@ public enum Properties {
             "==: Output File (MD) : Text File contains one or more tables in Markdown Formatted :==",
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
-            "type:Output Type:DataFileType:out:refreshProperties();",
+            "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             "--:Extra Options:--",
@@ -261,7 +261,7 @@ public enum Properties {
             "==: Output File (SQL) : contains list of insert/update/delete statement that can use by another process later :==",
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
-            "type:Output Type:DataFileType:out:refreshProperties();",
+            "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
@@ -275,20 +275,20 @@ public enum Properties {
             ".:propertyMap:create:Generate Table Creation Script:Boolean",
             ".:propertyMap:insert:Generate SQL Insert:Boolean",
             ".:propertyMap:update:Generate SQL Update:Boolean",
-            ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
-            ".:propertyMap:postSQL:Post-SQL:StringArray:;"
+            ".:propertyMap:preSQL:Pre-SQL:StringArray",
+            ".:propertyMap:postSQL:Post-SQL:StringArray"
     ),
     OUTPUT_DBINSERT(
             "==: Output File (DB-Insert) : insert each row into specified table using SQL Insert Statement :==",
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
-            "type:Output Type:DataFileType:out:refreshProperties();",
+            "type:Output Type:DataFileType:out|refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
-            ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
-            ".:propertyMap:postSQL:Post-SQL:StringArray:;"
+            ".:propertyMap:preSQL:Pre-SQL:StringArray",
+            ".:propertyMap:postSQL:Post-SQL:StringArray"
     ),
     OUTPUT_DBUPDATE(
             "==: Output File (DB-Update) : update each row into specified table using SQL Update Statement :==",
@@ -299,8 +299,8 @@ public enum Properties {
             ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
-            ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
-            ".:propertyMap:postSQL:Post-SQL:StringArray:;"
+            ".:propertyMap:preSQL:Pre-SQL:StringArray",
+            ".:propertyMap:postSQL:Post-SQL:StringArray"
     ),
 
     /*Notice: all below will include into TRANSFORM_COLUMN by flag useFunction and the selected function*/
@@ -534,73 +534,67 @@ public enum Properties {
     }
 
     private PropertyView toPropertyView(String prototypeString) {
-        String[] prototypes = prototypeString.split("[:]");
-        PropertyView propView = new PropertyView();
+        String[] parts = prototypeString.split("[|]");
+        String[] prototypes = parts[0].split("[:]");
         String[] params = new String[]{};
-        int length = prototypes.length;
 
         Logger log = LoggerFactory.getLogger(Properties.class);
         log.warn("toPropertyView: prototypes={} from prototypeString='{}'", Arrays.toString(prototypes), prototypeString);
 
+        PropertyView propView = new PropertyView();
         String prototypes0 = prototypes[0];
-        if (prototypes0.equals("--")) {
-            /*separator*/
-            propView.setType(PropertyType.SEPARATOR);
-            propView.setLabel(prototypes[1]);
-            propView.setParams(params);
-            return propView;
+        int length = prototypes.length;
+        switch (prototypes0) {
+            case "--":
+                /*separator*/
+                propView.setType(PropertyType.SEPARATOR);
+                propView.setLabel(prototypes[1]);
+                propView.setParams(params);
+                return propView;
 
-        } else if (prototypes0.equals("==")) {
-            /*title and description*/
-            propView.setType(PropertyType.TITLE);
-            propView.setVar(prototypes[1]);
-            propView.setLabel(prototypes[2]);
-            propView.setParams(params);
-            return propView;
+            case "==":
+                /*title and description*/
+                propView.setType(PropertyType.TITLE);
+                propView.setVar(prototypes[1]);
+                propView.setLabel(prototypes[2]);
+                propView.setParams(params);
+                return propView;
 
-        } else if (prototypes0.equals(".")) {
-            /*var with parent*/
-            if (length > 5) params = Arrays.copyOfRange(prototypes, 5, length);
-            propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
-            propView.setLabel(prototypes[3].isEmpty() ? null : prototypes[3]);
-            propView.setVar(prototypes[2]);
-            propView.setVarParent(prototypes[1]);
+            case ".":
+                /*var with parent*/
+                if (length > 5) params = Arrays.copyOfRange(prototypes, 5, length);
+                propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
+                propView.setLabel(prototypes[3].isEmpty() ? null : prototypes[3]);
+                propView.setVar(prototypes[2]);
+                propView.setVarParent(prototypes[1]);
+                propView.setParams(params);
+                break;
 
-        } else {
-            /*var without parent*/
-            if (length > 3) params = Arrays.copyOfRange(prototypes, 3, length);
-            propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
-            propView.setLabel(prototypes[1].isEmpty() ? null : prototypes[1]);
-            propView.setVar(prototypes0);
-            propView.setVarParent(null);
+            default:
+                /*var without parent*/
+                if (length > 3) params = Arrays.copyOfRange(prototypes, 3, length);
+                propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
+                propView.setLabel(prototypes[1].isEmpty() ? null : prototypes[1]);
+                propView.setVar(prototypes0);
+                propView.setVarParent(null);
+                propView.setParams(params);
         }
 
-        /*property-type parameters*/
-        int paramCount = params.length;
-        for (int i = paramCount - 1; i >= 0; i--) {
-            String parami = params[i];
-            if (parami.startsWith("@")) {
-                paramCount = i;
-                propView.setUpdate(parami.substring(1).replaceAll("[.]", ":"));
-            } else if (parami.endsWith(";")) {
-                paramCount = i;
-                propView.setJavaScript(parami);
-            } else if (parami.startsWith("[]")) {
-                paramCount = i;
-                propView.setDisableVar(parami.substring(2));
-            } else if (parami.startsWith("[x]")) {
-                paramCount = i;
-                propView.setEnableVar(parami.substring(3));
+        /*option*/
+        if (parts.length > 1) {
+            for (String optional : parts[1].split("[:]")) {
+                if (optional.startsWith("@")) {
+                    propView.setUpdate(optional.substring(1).replaceAll("[.]", ":"));
+                } else if (optional.startsWith("[]")) {
+                    propView.setDisableVar(optional.substring(2));
+                } else if (optional.startsWith("[x]")) {
+                    propView.setEnableVar(optional.substring(3));
+                } else if (optional.endsWith(";")) {
+                    propView.setJavaScript(optional);
+                }
             }
         }
 
-        if (paramCount > 0) {
-            params = Arrays.copyOfRange(params, 0, paramCount);
-        } else {
-            params = new String[]{};
-        }
-
-        propView.setParams(params);
         return propView;
     }
 

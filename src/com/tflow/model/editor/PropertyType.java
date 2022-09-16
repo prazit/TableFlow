@@ -5,11 +5,6 @@ import com.tflow.model.data.Dbms;
 
 import java.util.ArrayList;
 
-/**
- * TODO: List
- * [X] 1. move property sheet title to PropertyType
- * [ ] 2. need separator to split between last PropertyType-Parameter and after
- */
 public enum PropertyType {
 
     TITLE(null),
@@ -40,7 +35,7 @@ public enum PropertyType {
     DBTABLE(/*table-name*/"", true),
 
     SOURCETABLE(/*table-selectable-id*/ "", true),
-    COLUMN(/*column-selectable-id*/"", true) /*TODO: COLUMN is special type that have a plug and need specified data-type for the plug*/,
+    COLUMN(/*column-selectable-id*/"", true),
     SFTP(/*sftp-id*/0, true),
 
     COLUMNARRAY(/*column-ids(names)*/new ArrayList<Integer>()),
