@@ -34,6 +34,7 @@ public class AddOutputFile extends Command {
 
         List<OutputFile> outputList = dataTable.getOutputList();
         outputList.add(outputFile);
+        outputFile.setOwner(dataTable);
 
         step.getSelectableMap().put(outputFile.getSelectableId(), outputFile);
 

@@ -193,7 +193,8 @@ public abstract class Command {
                 stepId = step.getId();
                 dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map(dataSourceSelector), projectUser, dataSourceSelector.getId(), stepId);
                 break;
-            case DATA_FILE:
+            case DATA_FILE: /*Notice: DATA_FILE found used in all INPUT_XX and OUTPUT_XX*/
+                /*TODO: error on OUTPUT_XX when change the file type, output file have no parent*/
                 DataFile dataFile = (DataFile) dataObject;
                 step = ((DataTable) dataFile.getOwner()).getOwner();
                 stepId = step.getId();

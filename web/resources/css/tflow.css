@@ -195,11 +195,13 @@ body .tool-panel .ui-tabs .ui-menu {
 }
 
 .horizon-scroll-panel {
+    width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
 }
 
 .vertical-scroll-panel {
+    height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
 }

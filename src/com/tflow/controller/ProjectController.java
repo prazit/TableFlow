@@ -44,7 +44,6 @@ public class ProjectController extends Controller {
     public void onCreation() {
         log.trace("onCreation.");
         project = workspace.getProject();
-        createPackageEventHandlers();
         createEventHandlers();
     }
 
@@ -74,7 +73,6 @@ public class ProjectController extends Controller {
     }
 
     private void createPackageEventHandlers() {
-
         if (activePackage == null) return;
 
         activePackage.getEventManager()

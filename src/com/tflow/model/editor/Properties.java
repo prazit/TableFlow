@@ -29,18 +29,19 @@ public enum Properties {
             "name:Parameter Name:String"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     PACKAGE(
             "==: Package : Built package or deployment package used to create new version of project and can download package to deploy on server you want :==",
             "--: Package Properties :--",
-            "name:Name:String",
+            "name:Name:String|contentWindow.updatePackageList();",
             "buildDate:Build:ReadOnly",
             "builtDate:Built:ReadOnly",
             "--: More Detail :--",
             "id:ID:ReadOnly",
             "complete:Percent Complete:ReadOnly",
-            "finished:Finished:ReadOnly"
+            "finished:Finished:ReadOnly",
+            "--: tested :--"
     ),
+
     PROJECT(
             "==: Project : Project of the data-conversion can contains many Table-Flows or known as step inside :==",
             "--: Project Properties :--",
@@ -49,18 +50,20 @@ public enum Properties {
             "id:ID:ReadOnly",
             "activeStepIndex:Active Step Index:ReadOnly",
             "lastUniqueId:Last Unique ID:ReadOnly",
-            "lastElementId:Last Element ID:ReadOnly"
+            "lastElementId:Last Element ID:ReadOnly",
+            "--: tested :--"
     ),
+
     STEP(
             "==: Step : Step contains one table flow chart, one process that consume input-data and produce the output-data at the end :==",
             "--: Step Properties :--",
             "name:Name:String|refreshStepList();",
             "--: More Detail :--",
             "id:ID:ReadOnly",
-            "zoom:Zoom:ReadOnly",
-            ".:activeObject:selectableId:Active Object:ReadOnly",
-            "selectableMap:Selectable Map:ReadOnly"
+            "--: tested :--"
     ),
+
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     STEP_DATA_SOURCE(
             "==: Data Source : Source of input file that linked to it :==",
             "--: Data Source Properties :--",
@@ -200,7 +203,7 @@ public enum Properties {
     OUTPUT_TXT(
             "==: Output File (TXT) : Text File in Fixed Length Formatted :==",
             "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType|@type",
+            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
@@ -220,7 +223,7 @@ public enum Properties {
     OUTPUT_CSV(
             "==: Output File (CSV) : Text File in Comma Separated Values Formatted :==",
             "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
@@ -240,7 +243,7 @@ public enum Properties {
     OUTPUT_MARKDOWN(
             "==: Output File (MD) : Text File contains one or more tables in Markdown Formatted :==",
             "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
@@ -260,7 +263,7 @@ public enum Properties {
     OUTPUT_SQL(
             "==: Output File (SQL) : contains list of insert/update/delete statement that can use by another process later :==",
             "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
             "name:File Name:String",
             "path:File Path:String",
@@ -270,8 +273,8 @@ public enum Properties {
             ".:propertyMap:eof:EOF:String",
             ".:propertyMap:quotesOfName:Quotes for Name:String",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
-            ".:propertyMap:tableName:String",
-            ".:propertyMap:columnArray:Columns:ColumnArray:,",
+            ".:propertyMap:tableName:Table Name:String",
+            ".:propertyMap:columnArray:Columns:ColumnArray",
             ".:propertyMap:create:Generate Table Creation Script:Boolean",
             ".:propertyMap:insert:Generate SQL Insert:Boolean",
             ".:propertyMap:update:Generate SQL Update:Boolean",
@@ -281,7 +284,7 @@ public enum Properties {
     OUTPUT_DBINSERT(
             "==: Output File (DB-Insert) : insert each row into specified table using SQL Insert Statement :==",
             "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "dataSourceId:Data Source:DATASOURCE:DATABASE",
             "type:Output Type:DataFileType:out|refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
@@ -293,7 +296,7 @@ public enum Properties {
     OUTPUT_DBUPDATE(
             "==: Output File (DB-Update) : update each row into specified table using SQL Update Statement :==",
             "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE::dataSourceType",
+            "dataSourceId:Data Source:DATASOURCE:DATABASE",
             "type:Output Type:DataFileType:out:refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
@@ -495,8 +498,7 @@ public enum Properties {
         propertyList = new ArrayList<>();
         for (String prototypeString : prototypeList) {
             property = toPropertyView(prototypeString);
-            if (property == null) continue;
-
+            /*TODO: remove this comment when all properties are completed // if (property == null) continue;*/
             propertyList.add(property);
         }
 

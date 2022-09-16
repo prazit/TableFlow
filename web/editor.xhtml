@@ -91,7 +91,7 @@
 
                             <h:form id="propertyForm">
                                 <p:remoteCommand name="refreshProperties" action="#{editorCtl.refreshProperties}" update="@parent"/>
-                                <p:outputPanel id="scrollPanel" styleClass="properties vertical-scroll-panel fit-all">
+                                <p:outputPanel id="scrollPanel" styleClass="properties vertical-scroll-panel fit-width">
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
                                     <input name="selectableId" value="#{editorCtl.activeObject.selectableId}" class="hidden-input"/>
                                     <input value="" class="ui-g-8 prev-input"/>

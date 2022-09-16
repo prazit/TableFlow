@@ -394,20 +394,24 @@ public class EditorController extends Controller {
                 }
                 break;
 
-            case DATASOURCE: /*TODO: error on Output*/
-                DataSourceType dataSourceType = null;
-                if (!params[0].isEmpty()) {
-                    dataSourceType = DataSourceType.valueOf(params[0]);
-                } else if (!params[1].isEmpty()) {
-                    dataSourceType = (DataSourceType) getPropertyValue(activeObject, params[1]);
+            case DATASOURCE:
+                /*Notice: found used in STEP_DATA_SOURCE and all OUTPUT_XXX */
+                String dataSourceType = null;
+                int paramCount = params.length;
+                if (paramCount > 0 && !params[0].isEmpty()) {
+                    dataSourceType = params[0].toUpperCase();
+                } else if (paramCount > 1 && !params[1].isEmpty()) {
+                    dataSourceType = ((DataSourceType) getPropertyValue(activeObject, params[1])).name();
                 }
-                if (dataSourceType == null || dataSourceType == DataSourceType.DATABASE) for (Database database : project.getDatabaseMap().values()) {
+                if (dataSourceType == null) dataSourceType = DataSourceType.DATABASE.name() + DataSourceType.LOCAL.name() + DataSourceType.SFTP.name();
+
+                if (dataSourceType.contains(DataSourceType.DATABASE.name())) for (Database database : project.getDatabaseMap().values()) {
                     selectItemList.add(new SelectItem(database.getId(), database.getDbms() + ":" + database.getName()));
                 }
-                if (dataSourceType == null || dataSourceType == DataSourceType.LOCAL) for (Local local : project.getLocalMap().values()) {
+                if (dataSourceType.contains(DataSourceType.LOCAL.name())) for (Local local : project.getLocalMap().values()) {
                     selectItemList.add(new SelectItem(local.getId(), local.getName() + ":" + local.getRootPath()));
                 }
-                if (dataSourceType == null || dataSourceType == DataSourceType.SFTP) for (SFTP sftp : project.getSftpMap().values()) {
+                if (dataSourceType.contains(DataSourceType.SFTP.name())) for (SFTP sftp : project.getSftpMap().values()) {
                     selectItemList.add(new SelectItem(sftp.getId(), sftp.getName() + ":" + sftp.getRootPath()));
                 }
                 break;

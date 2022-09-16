@@ -137,6 +137,7 @@
                         <p:outputPanel id="packageTab" styleClass="package-panel">
                             <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent" oncomplete="console.log('updatePackageTab complated.')"/>
                             <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent" oncomplete="console.log('buildPackage complated.')"/>
+                            <p:remoteCommand name="updatePackageList" update="selectPackage" onstart="console.log('updatePackageList start.')"/>
 
                             <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0}" styleClass="ui-g">
                                 <p:selectOneMenu value="#{projectCtl.selectedPackageId}">
