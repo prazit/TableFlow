@@ -5,9 +5,15 @@ import com.tflow.model.data.Dbms;
 
 import java.util.ArrayList;
 
+/**
+ * TODO: List
+ * [X] 1. move property sheet title to PropertyType
+ * [ ] 2. need separator to split between last PropertyType-Parameter and after
+ */
 public enum PropertyType {
 
-    SEPARATOR(""),
+    TITLE(null),
+    SEPARATOR(null),
 
     EXPRESSION(""),
 

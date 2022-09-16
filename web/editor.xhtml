@@ -91,45 +91,51 @@
 
                             <h:form id="propertyForm">
                                 <p:remoteCommand name="refreshProperties" action="#{editorCtl.refreshProperties}" update="@parent"/>
-                                <p:scrollPanel id="scrollPanel" styleClass="properties" style="height:100%;">
+                                <p:outputPanel id="scrollPanel" styleClass="properties vertical-scroll-panel fit-all">
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
-                                    <h3>#{editorCtl.activeObject.properties}</h3>
-                                    <sup>#{editorCtl.activeObject.getClass().getTypeName()}</sup>
-                                    <p:divider/>
                                     <input name="selectableId" value="#{editorCtl.activeObject.selectableId}" class="hidden-input"/>
                                     <input value="" class="ui-g-8 prev-input"/>
 
                                     <p:repeat value="#{editorCtl.propertyList}" var="prop">
+
+                                        <p:divider rendered="#{PropertyType.TITLE==prop.type}" align="left">
+                                            <span>description</span>
+                                        </p:divider>
+
+                                        <p:outputPanel rendered="#{PropertyType.TITLE==prop.type}">
+                                            <b class="title">#{prop.var}</b><br/>
+                                            <sub class="description">#{prop.label}</sub>
+                                        </p:outputPanel>
 
                                         <p:divider rendered="#{PropertyType.SEPARATOR==prop.type}" align="left">
                                             <span>#{prop.label}</span>
                                         </p:divider>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.READONLY==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
-                                            <div class="ui-g-8 property-label">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</div>
+                                            <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</p:outputLabel>
+                                            <p:outputLabel class="ui-g-8 property-label#{editorCtl.disabledClass(prop)}">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</p:outputLabel>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.STRING==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
-                                            <span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
-                                            <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
+                                            <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}" rendered="#{prop.label != null}">#{prop.label}</p:outputLabel>
+                                            <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
+                                            <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="#{prop.label != null?'ui-g-8':'fit-width'}">
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputText>
                                             <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.DYNAMICVALUE==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
-                                            <span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
-                                            <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
+                                            <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}" rendered="#{prop.label != null}">#{prop.label}</p:outputLabel>
+                                            <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
+                                            <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="#{prop.label != null?'ui-g-8':'fit-width'}">
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputText>
                                             <div class="ui-g-12" style="font-size:8px !important;color:gray;">#{prop}</div>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.STRINGARRAY==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <p:inputTextarea value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" converter="StringArray" converterParam="#{prop.params[0]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
                                                 <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputTextarea>
@@ -137,8 +143,8 @@
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.BOOLEAN==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
-                                            <div class="ui-g-8"><span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
+                                            <div class="ui-g-10 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
+                                            <div class="ui-g-2"><span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                                 <p:inputSwitch value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}">
                                                     <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                 </p:inputSwitch>
@@ -147,7 +153,7 @@
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.INT==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <p:inputNumber value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
                                                 <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputNumber>
@@ -155,7 +161,7 @@
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.COLUMNARRAY==prop.type}">
-                                            <div class="ui-g-4 property-label">#{prop.label}</div>
+                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <p:selectCheckboxMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
                                                 <f:selectItems value="#{editorCtl.getColumnList((prop.paramCount() > 1)?editorCtl.activeObject[prop.params[0]][prop.params[1]]:editorCtl.activeObject[prop.params[0]])}" var="column" itemLabel="#{column.label}" itemValue="#{column.value}"/>
                                                 <p:ajax event="change" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
@@ -164,7 +170,7 @@
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g" rendered="#{prop.type.isItemList()}">
-                                            <div class="ui-g-4 property-label#{editorCtl.disabled(prop)?' disabled':''}">#{prop.label}</div>
+                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
                                                 <f:selectItem itemLabel="-- select one --"/>
@@ -177,7 +183,7 @@
                                     </p:repeat>
 
                                     <input value="" class="ui-g-8 next-input"/>
-                                </p:scrollPanel>
+                                </p:outputPanel>
                                 <script>contentReady(propertyCreated, 'propertyCreated');</script>
                             </h:form>
                         </p:panel>

@@ -23,43 +23,54 @@ import java.util.Map;
  * </p>
  */
 public enum Properties {
-    /*TODO: property description is defined in the PropertyDesc enum, assigned by description-key = propertyVar*/
-    /*TODO: selectable object need lock/unlock status to enable/disable some properties with lock marked*/
 
-    TEST_REDEPLOY(
-            "version.1.0.0",
-            "version.1.0.1"
+    @Deprecated
+    FX_PARAM(
+            "name:Parameter Name:String"
     ),
+
+
     PACKAGE(
+            "==: Package : Built package or deployment package used to create new version of project and can download package to deploy on server you want :==",
+            "--: Package Properties :--",
             "name:Name:String",
-            "--:Debug Only:--",
-            "id:ID:ReadOnly",
             "buildDate:Build:ReadOnly",
             "builtDate:Built:ReadOnly",
-            "complete:Percent Complete:ReadOnly"
+            "--: More Detail :--",
+            "id:ID:ReadOnly",
+            "complete:Percent Complete:ReadOnly",
+            "finished:Finished:ReadOnly"
     ),
     PROJECT(
+            "==: Project : Project of the data-conversion can contains many Table-Flows or known as step inside :==",
+            "--: Project Properties :--",
             "name:Name:String:refreshStepList();",
-            "--:Debug Only:--",
+            "--: More Detail :--",
             "id:ID:ReadOnly",
             "activeStepIndex:Active Step Index:ReadOnly",
             "lastUniqueId:Last Unique ID:ReadOnly",
             "lastElementId:Last Element ID:ReadOnly"
     ),
     STEP(
+            "==: Step : Step contains one table flow chart, one process that consume input-data and produce the output-data at the end :==",
+            "--: Step Properties :--",
             "name:Name:String:refreshStepList();",
-            "--:Debug Only:--",
+            "--: More Detail :--",
             "id:ID:ReadOnly",
             "zoom:Zoom:ReadOnly",
             ".:activeObject:selectableId:Active Object:ReadOnly",
             "selectableMap:Selectable Map:ReadOnly"
     ),
     STEP_DATA_SOURCE(
+            "==: Data Source : Source of input file that linked to it :==",
+            "--: Data Source Properties :--",
             "name:Name:String",
             "type:Data Source Type:DATASOURCETYPE:@propertyForm.scrollPanel",
             "dataSourceId:Data Source:DATASOURCE::type:@propertyForm.scrollPanel"
     ),
     DATA_BASE(
+            "==: Data Source : Database connection (JDBC) :==",
+            "--: Data Source Properties :--",
             "name:Name:String",
             "--:Connection:--",
             "dbms:DBMS:DBMS",
@@ -67,10 +78,12 @@ public enum Properties {
             "user:User:String:20",
             "password:Password:String:20::true",
             "retry:Connection Retry:Int:9:0",
-            "--:Debug Only:--",
+            "--: More Detail :--",
             "id:ID:ReadOnly"
     ),
     SFTP(
+            "==: Data Source : SFTP/FTP/FTPS Connection information :==",
+            "--: Data Source Properties :--",
             "name:Name:String",
             "--:Connection:--",
             "host:Host:String",
@@ -80,104 +93,113 @@ public enum Properties {
             "retry:Connection Retry:Int:9:0",
             "rootPath:Root Path:String",
             "tmp:Downloaded Path:String",
-            "--:Debug Only:--",
+            "--: More Detail :--",
             "id:ID:ReadOnly"
     ),
     LOCAL_FILE(
+            "==: Data Source : Local Directory used for temporary test in standalone environment before change to use SFTP in production environment (just move the link from Local to SFTP) :==",
+            "--: Data Source Properties :--",
             "name:Name:String",
             "rootPath:Root Path:String",
-            "--:Debug Only:--",
+            "--: More Detail :--",
             "id:ID:ReadOnly"
     ),
     DATA_TABLE(
+            "==: Data Table : Data Table contains input data that extracted from the data-file received from the linked data-source :==",
+            "--: Data Table Properties :--",
             "name:Table Name:String",
             "idColName:Key Column:Column:id",
-            "--: more detail :--",
+            "--: More Detail :--",
             "id:Table ID:ReadOnly",
             "level:Table Level:ReadOnly",
             "connectionCount:Connection Count:ReadOnly"
     ),
     DATA_COLUMN(
+            "==: Column : Column in Data Table contains only the name for referenced from any Dynamic Values :==",
+            "--: Column Properties :--",
             "type:Data Type:ReadOnly",
             "name:Column Name:String",
-            "--: more detail :--",
+            "--: More Detail :--",
             "id:Column ID:ReadOnly"
     ),
     TRANSFORM_TABLE(
+            "==: Transformation Table : Transformation Table used to transfer/transform data from linked source table and apply some transformations at the end of transfer :==",
+            "--: Transformation Table Properties :--",
             "name:Table Name:String",
             "idColName:Key Column:Column:id",
-            "--: more detail :--",
+            "--: More Detail :--",
             "id:Table ID:ReadOnly",
             "sourceType:Source Table Type:ReadOnly",
             "sourceId:Source Table ID:ReadOnly"
     ),
 
-
-    /*TODO: need to support new option box syntax defined in the comment below*/
-            /*-- Value case 3: --
-            ".:propertyMap:value:Value:Column:sourceTable::[]useFunction",
-            "[useDynamic: Dynamic Value Expression ::@value",
-            ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
-            "[useFunction: Specific Function ::@dynamicValue",
-            "function:Function:ColumnFunction",
-            "--:Lookup Function Arguments:--",
-            "]: Specific Function :",
-            "]: Dynamic Value Expression :"
-            */
-    TRANSFORM_COLUMN( /*direct transfer without function*/
+    TRANSFORM_COLUMN(
+            "==: Column : Column in Transformation Table :==",
+            "--: Column Properties :--",
             "type:Type:ReadOnly",
             "name:Name:String",
             "--: Value :--",
             "sourceColumnId:Source Column:Column:sourceId::[]useDynamic",
             "useDynamic:Dynamic Value Expression:BOOLEAN::refreshProperties();",
-            "dynamicExpression:Expression:DynamicValue::[x]useDynamic",
-            "--: Debug Only :--",
+            "dynamicExpression::DynamicValue::[x]useDynamic:[]useFunction",
+            "--: More Detail :--",
             "id:ID:ReadOnly"
             /* Value cases:
-             * [ ] 1. direct transfer : useDynamic = false, value = column name from source-table
-             * [ ] 2. dynamic value : useDynamic = true, value = custom dynamic value
-             * [ ] 3. TODO: future feature - single function value : useDynamic = true, useFunction = true, value = generated dynamic value
-             **/
-    ),
-    FX_PARAM(
-            "name:Parameter Name:String"
+             * [X] 1. direct transfer : useDynamic = false, value = column name from source-table
+             * [X] 2. dynamic value : useDynamic = true, value = custom dynamic value
+             * [ ] 3. TODO: future feature - single function helper : useDynamic = true, useFunction = true, value = generated dynamic value
+            "useFunction:Function Helper:BOOLEAN::refreshProperties();",
+             */
+            /*TODO: include properties from specified property name (for selected function)*/
     ),
 
     INPUT_SYSTEM_ENVIRONMENT(
+            "==: Input File (System Environment) : System Environment Data Set :==",
+            "--: File Properties :--",
             "type:Type:DataFileType:in:refreshProperties();",
             "name:System Environment:System"
     ),
 
     INPUT_TXT(
+            "==: Input File (TXT) : Text File in Fixed Length Formatted :==",
+            "--: File Properties :--",
             "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String"
     ),
     INPUT_CSV(
+            "==: Input File (CSV) : Text File in Comma Separated Values Formatted :==",
+            "--: File Properties :--",
             "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String"
     ),
     INPUT_SQL(
+            "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
+            "--: File Properties :--",
             "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String",
             ".:propertyMap:quotesName:Quotes for name:String:\"",
             ".:propertyMap:quotesValue:Quotes for value:String:\""
     ),
     INPUT_MARKDOWN(
+            "==: Input File (MD) : Text File contains one or more tables in Markdown Formatted :==",
+            "--: File Properties :--",
             "type:Type:DataFileType:in:refreshProperties();",
             "name:File name:String" /*TODO: do this after file structure is completed, change String of name to Upload. //"name:Filename:Upload:md,txt",*/
     ),
     INPUT_DIRECTORY(
+            "==: Input File (DIR) : List of file in directory as a table :==",
+            "--: File Properties :--",
             "type:Type:DataFileType:in:refreshProperties();",
             "path:Path:String",
             ".:propertyMap:sub:Include sub-directory:Boolean",
             ".:propertyMap:fileOnly:Show file only:Boolean"
     ),
 
+    /*LOCAL(ALL-FILE-TYPES,CUSTOM-NAME), SFTP(ALL-FILE-TYPES,CUSTOM-NAME)*/
+    /*RESPONSE(JSON,XML,FIXED-NAME), DATABASE(SQL,FIXED-NAME), KAFKAPRODUCER(JSON,XML,JAVASERIAL,FIXED-NAME)*/
     OUTPUT_TXT(
-            /*TODO: Question: how to disable field 'name' for Data Sources with Fixed file name
-             *      Answer: same answer of the question how to retrieve dependency field list */
-            /*LOCAL(ALL-FILE-TYPES,CUSTOM-NAME), SFTP(ALL-FILE-TYPES,CUSTOM-NAME)*/
-            /*RESPONSE(JSON,XML,FIXED-NAME), DATABASE(SQL,FIXED-NAME), KAFKAPRODUCER(JSON,XML,JAVASERIAL,FIXED-NAME)*/
+            "==: Output File (TXT) : Text File in Fixed Length Formatted :==",
+            "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType:@type",
             "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
@@ -196,6 +218,8 @@ public enum Properties {
             ".:propertyMap:format:Format:TxtFormat"
     ),
     OUTPUT_CSV(
+            "==: Output File (CSV) : Text File in Comma Separated Values Formatted :==",
+            "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
@@ -214,6 +238,8 @@ public enum Properties {
             ".:propertyMap:dateTimeFormat:DateTime Format:String"
     ),
     OUTPUT_MARKDOWN(
+            "==: Output File (MD) : Text File contains one or more tables in Markdown Formatted :==",
+            "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
@@ -232,6 +258,8 @@ public enum Properties {
             ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean"
     ),
     OUTPUT_SQL(
+            "==: Output File (SQL) : contains list of insert/update/delete statement that can use by another process later :==",
+            "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "type:Output Type:DataFileType:out:refreshProperties();",
             "name:File Name:String",
@@ -251,6 +279,8 @@ public enum Properties {
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBINSERT(
+            "==: Output File (DB-Insert) : insert each row into specified table using SQL Insert Statement :==",
+            "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "type:Output Type:DataFileType:out:refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
@@ -261,6 +291,8 @@ public enum Properties {
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
     OUTPUT_DBUPDATE(
+            "==: Output File (DB-Update) : update each row into specified table using SQL Update Statement :==",
+            "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE::dataSourceType",
             "type:Output Type:DataFileType:out:refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
@@ -270,6 +302,8 @@ public enum Properties {
             ".:propertyMap:preSQL:Pre-SQL:StringArray:;",
             ".:propertyMap:postSQL:Post-SQL:StringArray:;"
     ),
+
+    /*Notice: all below will include into TRANSFORM_COLUMN by flag useFunction and the selected function*/
 
     CFX_LOOKUP_FIRST_EDITOR(
             "name:Title:String",
@@ -286,8 +320,6 @@ public enum Properties {
             ".:propertyMap:sourceColumn:Value:Column:sourceTable",
             ".:propertyMap:nullValue:Replace Null:String"
     ),
-
-    /*TODO: need complete list for Parameters or All Function Prototypes below*/
 
     /*Notice: columnFx properties below used when expand the column accordion, but when collapse the column accordion will use COLUMN_FUNCTION instead*/
     CFX_LOOKUP(
@@ -479,7 +511,7 @@ public enum Properties {
                 return propertyView;
         }
 
-        LoggerFactory.getLogger(Properties.class).error(this.name() + ".getPropertyView(propertyVar:" + propertyVar + ") property not found!", new Exception(""));
+        LoggerFactory.getLogger(Properties.class).warn(this.name() + ".getPropertyView(propertyVar:" + propertyVar + ") property not found!", new Exception(""));
         return new PropertyView(propertyVar);
     }
 
@@ -516,26 +548,34 @@ public enum Properties {
             propView.setType(PropertyType.SEPARATOR);
             propView.setLabel(prototypes[1]);
             propView.setParams(params);
-            propertyList.add(propView);
-            return null;
+            return propView;
+
+        } else if (prototypes0.equals("==")) {
+            /*title and description*/
+            propView.setType(PropertyType.TITLE);
+            propView.setVar(prototypes[1]);
+            propView.setLabel(prototypes[2]);
+            propView.setParams(params);
+            return propView;
+
         } else if (prototypes0.equals(".")) {
             /*var with parent*/
-            if (length > 5)
-                params = Arrays.copyOfRange(prototypes, 5, length);
+            if (length > 5) params = Arrays.copyOfRange(prototypes, 5, length);
             propView.setType(PropertyType.valueOf(prototypes[4].toUpperCase()));
-            propView.setLabel(prototypes[3]);
+            propView.setLabel(prototypes[3].isEmpty() ? null : prototypes[3]);
             propView.setVar(prototypes[2]);
             propView.setVarParent(prototypes[1]);
+
         } else {
             /*var without parent*/
-            if (length > 3)
-                params = Arrays.copyOfRange(prototypes, 3, length);
+            if (length > 3) params = Arrays.copyOfRange(prototypes, 3, length);
             propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
-            propView.setLabel(prototypes[1]);
+            propView.setLabel(prototypes[1].isEmpty() ? null : prototypes[1]);
             propView.setVar(prototypes0);
             propView.setVarParent(null);
         }
 
+        /*property-type parameters*/
         int paramCount = params.length;
         for (int i = paramCount - 1; i >= 0; i--) {
             String parami = params[i];

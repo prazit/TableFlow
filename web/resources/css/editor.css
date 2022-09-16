@@ -74,8 +74,25 @@ body .ui-panelgrid .ui-panelgrid-cell {
     font-weight: bold;
 }
 
-.tool-panel .properties .property-label.disabled {
+.tool-panel .properties .hidden {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.tool-panel .properties .disabled {
     color: var(--surface-d);
+    font-weight: normal;
+}
+
+.tool-panel .properties .title {
+    color: var(--surface-c);
+    font-weight: bolder;
+    text-transform: uppercase;
+}
+
+.tool-panel .properties .description {
+    color: var(--surface-c);
     font-weight: normal;
 }
 

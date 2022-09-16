@@ -377,9 +377,9 @@ public class EditorController extends Controller {
                 /* params[0] is property-name that contains id of source-table*/
                 Object tableId;
                 DataTable sourceTable;
-                if(ProjectFileType.DATA_TABLE == activeObjectType || ProjectFileType.TRANSFORM_TABLE == activeObjectType) {
+                if (ProjectFileType.DATA_TABLE == activeObjectType || ProjectFileType.TRANSFORM_TABLE == activeObjectType) {
                     tableId = getPropertyValue(activeObject, params[0]);
-                }else{ /*ProjectFileType.DATA_COLUMN || ProjectFileType.TRANSFORM_COLUMN*/
+                } else { /*ProjectFileType.DATA_COLUMN || ProjectFileType.TRANSFORM_COLUMN*/
                     DataColumn dataColumn = (DataColumn) activeObject;
                     tableId = getPropertyValue(dataColumn.getOwner(), params[0]);
                 }
@@ -394,7 +394,7 @@ public class EditorController extends Controller {
                 }
                 break;
 
-            case DATASOURCE:
+            case DATASOURCE: /*TODO: error on Output*/
                 DataSourceType dataSourceType = null;
                 if (!params[0].isEmpty()) {
                     dataSourceType = DataSourceType.valueOf(params[0]);
@@ -548,10 +548,6 @@ public class EditorController extends Controller {
         } catch (Exception ex) {
             log.error("testConvertByteArrayAndString: ", ex);
         }
-    }
-
-    public void testEnumUpdateOnRedeploy() {
-        log.warn("testEnumUpdateOnRedeploy: {}", Properties.TEST_REDEPLOY.getPrototypeList());
     }
 
     @SuppressWarnings("unchecked")
@@ -1187,6 +1183,10 @@ public class EditorController extends Controller {
 
     public void refreshProperties() {
         setPropertySheet(workspace.getProject().getActiveStep().getActiveObject());
+    }
+
+    public String disabledClass(PropertyView property) {
+        return disabled(property) ? " disabled" : "";
     }
 
     public boolean disabled(PropertyView property) {
