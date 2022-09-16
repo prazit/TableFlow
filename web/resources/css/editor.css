@@ -69,6 +69,16 @@ body .ui-panelgrid .ui-panelgrid-cell {
     width: 100% !important;
 }
 
+.tool-panel .properties .property-label {
+    color: var(--text-color);
+    font-weight: bold;
+}
+
+.tool-panel .properties .property-label.disabled {
+    color: var(--surface-d);
+    font-weight: normal;
+}
+
 .hidden-input {
     position: fixed;
     z-index: 1;

@@ -20,15 +20,19 @@ public class TableFx implements Selectable {
 
     /*for projectMapper*/
     public TableFx() {
-        /*nothing*/
+        init();
     }
 
     public TableFx(TableFunction function, String name, TransformTable owner) {
         this.name = name;
         this.owner = owner;
-        propertyMap = new HashMap<>();
         this.function = function;
+        init();
         propertyOrder = function.getProperties().initPropertyMap(propertyMap);
+    }
+
+    private void init() {
+        propertyMap = new HashMap<>();
     }
 
     /*for projectMapper*/

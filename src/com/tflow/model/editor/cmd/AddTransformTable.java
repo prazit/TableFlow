@@ -3,6 +3,7 @@ package com.tflow.model.editor.cmd;
 import com.tflow.model.data.DataManager;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectUser;
+import com.tflow.model.data.SourceType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
@@ -33,7 +34,7 @@ public class AddTransformTable extends Command {
 
         SourceType sourceType = getSourceType(sourceTable);
 
-        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getSelectableId(), sourceType, sourceTable.getIdColName(), ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), step);
+        TransformTable transformTable = new TransformTable("Untitled", sourceTable.getId(), sourceType, sourceTable.getIdColName(), ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), step);
         transformTable.setLevel(sourceTable.getLevel() + 1);
 
         List<DataColumn> sourceColumnList = sourceTable.getColumnList();
@@ -141,7 +142,7 @@ public class AddTransformTable extends Command {
      */
     private EmptyRoom findEmptyRoom(Tower transformTower, DataTable sourceDataTable, Map<String, Selectable> selectableMap) throws UnsupportedOperationException {
         boolean sameTower = sourceDataTable.getFloor().getTower().getId() == transformTower.getId();
-        String sourceDataTableSelectedId = sourceDataTable.getSelectableId();
+        int sourceDataTableId = sourceDataTable.getId();
         int sourceDataTableFloorIndex = sourceDataTable.getFloorIndex();
         int targetRoomIndex = sameTower ? sourceDataTable.getRoomIndex() + 2 : 1;
         int targetFloorIndex = sameTower ? sourceDataTableFloorIndex : 0;
@@ -171,10 +172,10 @@ public class AddTransformTable extends Command {
                 continue;
             }
 
-            String sourceSelectableId = ((TransformTable) room).getSourceSelectableId();
-            DataTable sourceTable = (DataTable) selectableMap.get(sourceSelectableId);
+            int sourceId = ((TransformTable) room).getSourceId();
+            DataTable sourceTable = (DataTable) selectableMap.get(sourceId);
             if (/*not empty and */sourceTable.getFloorIndex() <= sourceDataTableFloorIndex) {
-                directBrother = sourceSelectableId.compareTo(sourceDataTableSelectedId) == 0;
+                directBrother = sourceId == sourceDataTableId;
                 brotherChecked = true;
                 targetFloorIndex++;
                 log.warn("findEmptyRoom: found brother go next floor, targetFloorIndex:{}, roomIndex:{}", targetFloorIndex, targetRoomIndex);

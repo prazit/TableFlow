@@ -325,7 +325,6 @@ public class EditorController extends Controller {
     }
 
     public List<SelectItem> getItemList(PropertyView propertyView) throws ClassNotFoundException, ClassCastException {
-        log.debug("getItemList(property:{}).", propertyView);
         PropertyType type = propertyView.getType();
         String[] params = propertyView.getParams();
 
@@ -334,6 +333,8 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step activeStep = project.getActiveStep();
         Selectable activeObject = activeStep.getActiveObject();
+        ProjectFileType activeObjectType = activeObject.getProjectFileType();
+        log.debug("getItemList(property:{}, activeStep:{}, activeObject:{}).", propertyView, activeStep.getSelectableId(), activeObject);
 
         switch (type) {
             case SYSTEM:
@@ -372,9 +373,20 @@ public class EditorController extends Controller {
                 break;
 
             case COLUMN:
-                /* params[0] is property-name that contains selectable-id of source-table*/
-                Object tableSelectableId = getPropertyValue(activeObject, params[0]);
-                DataTable sourceTable = (DataTable) activeStep.getSelectableMap().get(tableSelectableId.toString());
+                /*Notice: valid only for DataColumn, DataTable*/
+                /* params[0] is property-name that contains id of source-table*/
+                Object tableId;
+                DataTable sourceTable;
+                if(ProjectFileType.DATA_TABLE == activeObjectType || ProjectFileType.TRANSFORM_TABLE == activeObjectType) {
+                    tableId = getPropertyValue(activeObject, params[0]);
+                }else{ /*ProjectFileType.DATA_COLUMN || ProjectFileType.TRANSFORM_COLUMN*/
+                    DataColumn dataColumn = (DataColumn) activeObject;
+                    tableId = getPropertyValue(dataColumn.getOwner(), params[0]);
+                }
+                sourceTable = activeStep.getDataTable((Integer) tableId);
+                if (sourceTable == null) {
+                    sourceTable = activeStep.getTransformTable((Integer) tableId);
+                }
                 if (sourceTable != null) {
                     for (DataColumn sourceColumn : sourceTable.getColumnList()) {
                         selectItemList.add(new SelectItem(sourceColumn.getSelectableId(), sourceColumn.getName()));
@@ -744,6 +756,10 @@ public class EditorController extends Controller {
 
     public void selectProject() {
         setEditorType(EditorType.PROJECT);
+        /**
+         * TODO: need empty step when selectProject to avoid unexpected change of activeObject in first-step.
+         * selectStep( ??? );
+         */
         selectObject(workspace.getProject().getSelectableId());
 
         jsBuilder.pre(JavaScript.setFlowChart, editorType.getPage())
@@ -1172,4 +1188,19 @@ public class EditorController extends Controller {
     public void refreshProperties() {
         setPropertySheet(workspace.getProject().getActiveStep().getActiveObject());
     }
+
+    public boolean disabled(PropertyView property) {
+        boolean disabled = false;
+        boolean enabled = true;
+
+        if (property.getDisableVar() != null) {
+            disabled = (Boolean) getPropertyValue(activeObject, property.getDisableVar());
+        }
+        if (property.getEnableVar() != null) {
+            enabled = (Boolean) getPropertyValue(activeObject, property.getEnableVar());
+        }
+
+        return disabled || !enabled;
+    }
+
 }

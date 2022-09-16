@@ -53,7 +53,7 @@ public class RemoveTransformTable extends Command {
         selectableMap.remove(transformTable.getSelectableId());
 
         /*for Action.executeUndo()*/
-        DataTable dataTable = (DataTable) selectableMap.get(transformTable.getSourceSelectableId());
+        DataTable dataTable = step.getDataTable(transformTable.getSourceId());
         paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
 

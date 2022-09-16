@@ -19,12 +19,24 @@ public class PropertyView {
 
     private String update;
     private String javaScript;
+    private String enableVar;
+    private String disableVar;
 
     private Object oldValue;
     private Object newValue;
-    private String enableVar;
 
     public PropertyView() {
+        init();
+    }
+
+    public PropertyView(String var) {
+        type = PropertyType.READONLY;
+        this.var = var;
+        this.label = var;
+        init();
+    }
+
+    private void init() {
         update = "@this";
         javaScript = "";
     }
@@ -117,6 +129,14 @@ public class PropertyView {
         this.enableVar = enableVar;
     }
 
+    public String getDisableVar() {
+        return disableVar;
+    }
+
+    public void setDisableVar(String disableVar) {
+        this.disableVar = disableVar;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -127,6 +147,7 @@ public class PropertyView {
                 ", update:'" + update + '\'' +
                 ", javaScript:'" + javaScript + '\'' +
                 ", enableVar:'" + enableVar + '\'' +
+                ", disableVar:'" + disableVar + '\'' +
                 ", params:" + Arrays.toString(params) +
                 ", oldValue:" + oldValue +
                 ", newValue:" + newValue +

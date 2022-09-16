@@ -735,7 +735,9 @@ public class BuildPackageCommand extends IOCommand {
         TargetConfig targetConfig = new TargetConfig(dconvers, IDPrefix.TRANSFORM_TABLE.getPrefix() + transformTableData.getId(), converterConfigFile);
 
         /*TODO: future feature: merge 2 or more sourceTables to a targetTable*/
-        targetConfig.setSource(transformTableData.getSourceSelectableId());
+        SourceType sourceType = SourceType.valueOf(transformTableData.getSourceType());
+        String sourceKey = (SourceType.DATA_TABLE == sourceType ? IDPrefix.DATA_TABLE.getPrefix() : IDPrefix.TRANSFORM_TABLE.getPrefix()) + transformTableData.getSourceId();
+        targetConfig.setSource(sourceKey);
         targetConfig.getSourceList().add(targetConfig.getSource());
 
         targetConfig.setIndex(transformTableData.getIndex());
@@ -761,10 +763,17 @@ public class BuildPackageCommand extends IOCommand {
              * */
             if (!transformColumnData.isUseDynamic()) {
                 /*case 1.*/
-                columnList.add(new Pair<>(transformColumnData.getName(), transformColumnData.getDataColName()));
+                Object columnData;
+                if (SourceType.DATA_TABLE == sourceType) {
+                    columnData = getData(ProjectFileType.DATA_COLUMN, transformColumnData.getSourceColumnId(), stepId, transformTableData.getSourceId());
+                } else {
+                    columnData = getData(ProjectFileType.TRANSFORM_COLUMN, transformColumnData.getSourceColumnId(), stepId, 0, transformTableData.getSourceId());
+                }
+                DataColumnData dataColumnData = (DataColumnData) throwExceptionOnError(columnData);
+                columnList.add(new Pair<>(transformColumnData.getName(), dataColumnData.getName()));
             } else if (!transformColumnData.isUseFunction()) {
                 /*case 2.*/
-                columnList.add(new Pair<>(transformColumnData.getName(), transformColumnData.getDataColName()));
+                columnList.add(new Pair<>(transformColumnData.getName(), transformColumnData.getDynamicExpression()));
             } else {
                 /*case 3.*/
                 StringBuilder dynamicValueBuilder = new StringBuilder();

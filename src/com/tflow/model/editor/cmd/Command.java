@@ -167,7 +167,13 @@ public abstract class Command {
                 DataColumn dataColumn = (DataColumn) dataObject;
                 step = dataColumn.getOwner().getOwner();
                 stepId = step.getId();
-                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), projectUser, ((DataColumn) dataObject).getId(), stepId, ((DataColumn) dataObject).getOwner().getId());
+                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), projectUser, dataColumn.getId(), stepId, dataColumn.getOwner().getId());
+                break;
+            case TRANSFORM_COLUMN:
+                TransformColumn transformColumn = (TransformColumn) dataObject;
+                step = transformColumn.getOwner().getOwner();
+                stepId = step.getId();
+                dataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(transformColumn), projectUser, transformColumn.getId(), stepId, 0, transformColumn.getOwner().getId());
                 break;
             case STEP_LIST:
                 dataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList((List<Step>) dataObject), projectUser, "");
@@ -277,8 +283,6 @@ public abstract class Command {
             case TRANSFORMATION_LIST:
                 break;
             case TRANSFORM_OUTPUT_LIST:
-                break;
-            case TRANSFORM_COLUMN:
                 break;
             case TRANSFORM_COLUMNFX:
                 break;

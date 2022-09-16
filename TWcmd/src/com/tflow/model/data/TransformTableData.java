@@ -11,6 +11,6 @@ public class TransformTableData extends DataTableData implements Serializable {
     private static final transient long serialVersionUID = 2021121709996660040L;
 
     private String sourceType;
-    private String sourceSelectableId;
+    private int sourceId;
 
 }

@@ -11,12 +11,12 @@ import java.util.Map;
 public class TransformColumnData extends DataColumnData implements Serializable {
     private static final transient long serialVersionUID = 2021121709996660041L;
 
-    private String dataColName;
+    private int sourceColumnId;
     private String dynamicExpression;
     private boolean useDynamic;
+
     private boolean useFunction;
     private String function;
-
     private Map<String, Object> propertyMap;
     private String propertyOrder;
 

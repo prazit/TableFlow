@@ -1,5 +1,7 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.SourceType;
 import com.tflow.model.editor.room.RoomType;
 
 import java.util.ArrayList;
@@ -9,7 +11,7 @@ import java.util.List;
 public class TransformTable extends DataTable {
 
     private SourceType sourceType;
-    private String sourceSelectableId;
+    private int sourceId;
     private List<TableFx> fxList;
     private ColumnFxTable columnFxTable;
 
@@ -18,9 +20,9 @@ public class TransformTable extends DataTable {
         init();
     }
 
-    public TransformTable(String name, String sourceSelectableId, SourceType sourceType, String idColName, String endPlug, String startPlug, Step owner) {
+    public TransformTable(String name, int sourceTableId, SourceType sourceType, String idColName, String endPlug, String startPlug, Step owner) {
         super(name, null,  idColName,  endPlug, startPlug, owner);
-        this.sourceSelectableId = sourceSelectableId;
+        this.sourceId = sourceTableId;
         this.sourceType = sourceType;
         init();
     }
@@ -39,12 +41,12 @@ public class TransformTable extends DataTable {
         this.sourceType = sourceType;
     }
 
-    public String getSourceSelectableId() {
-        return sourceSelectableId;
+    public int getSourceId() {
+        return sourceId;
     }
 
-    public void setSourceSelectableId(String sourceSelectableId) {
-        this.sourceSelectableId = sourceSelectableId;
+    public void setSourceId(int sourceId) {
+        this.sourceId = sourceId;
     }
 
     public List<TableFx> getFxList() {
@@ -61,6 +63,11 @@ public class TransformTable extends DataTable {
 
     public void setColumnFxTable(ColumnFxTable columnFxTable) {
         this.columnFxTable = columnFxTable;
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.TRANSFORM_TABLE;
     }
 
     @Override
@@ -83,7 +90,7 @@ public class TransformTable extends DataTable {
                 ", columnList:" + Arrays.toString(columnList.toArray()) +
                 ", outputList:" + Arrays.toString(outputList.toArray()) +
                 ", sourceType:" + sourceType +
-                ", sourceSelectableId:'" + sourceSelectableId + '\'' +
+                ", sourceId:'" + sourceId + '\'' +
                 ", fxList:" + Arrays.toString(fxList.toArray()) +
                 ", columnFxTable:" + columnFxTable +
                 '}';

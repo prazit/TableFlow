@@ -1,14 +1,18 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
+
+import java.util.HashMap;
 import java.util.Map;
 
+/* Notice: value of TransformColumn has many cases please find Properties.TRANSFORM_COLUMN for more detailed */
 public class TransformColumn extends DataColumn implements HasEndPlug {
 
-    private String dataColName;
+    private int sourceColumnId;
     private String dynamicExpression;
+    private boolean useDynamic;
 
     /*Notice: function, propertyMap used as fx replacement*/
-    private boolean useDynamic;
     private boolean useFunction;
     private ColumnFunction function;
     private Map<String, Object> propertyMap;
@@ -21,20 +25,27 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     private LinePlug endPlug;
 
     /*for projectMapper*/
-    public TransformColumn() {/*nothing*/}
+    public TransformColumn() {
+        init("");
+    }
 
     public TransformColumn(DataColumn sourceColumn, String endPlug, String startPlug, DataTable owner) {
         super(sourceColumn.getIndex(), sourceColumn.getType(), sourceColumn.getName(), startPlug, owner);
-        dataColName = "" + name;
-        function = ColumnFunction.TRANSFER;
-        createEndPlug(endPlug);
+        sourceColumnId = sourceColumn.getId();
+        init(endPlug);
     }
 
     public TransformColumn(int index, DataType type, String name, String endPlug, String startPlug, DataTable owner) {
         super(index, type, name, startPlug, owner);
-        dataColName = "" + name;
+        sourceColumnId = -1;
+        init(endPlug);
+    }
+
+    private void init(String endPlug) {
         function = ColumnFunction.TRANSFER;
         createEndPlug(endPlug);
+        propertyMap = new HashMap<>();
+        propertyOrder = getProperties().initPropertyMap(propertyMap);
     }
 
     private void createEndPlug(String endPlugId) {
@@ -68,12 +79,12 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
         createEndPlugListener();
     }
 
-    public String getDataColName() {
-        return dataColName;
+    public int getSourceColumnId() {
+        return sourceColumnId;
     }
 
-    public void setDataColName(String dataColName) {
-        this.dataColName = dataColName;
+    public void setSourceColumnId(int sourceColumnId) {
+        this.sourceColumnId = sourceColumnId;
     }
 
     public String getDynamicExpression() {
@@ -125,6 +136,11 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     }
 
     @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.TRANSFORM_COLUMN;
+    }
+
+    @Override
     public Map<String, Object> getPropertyMap() {
         return propertyMap;
     }
@@ -145,7 +161,7 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
 
     @Override
     public Properties getProperties() {
-        return function.getProperties();
+        return Properties.TRANSFORM_COLUMN;
     }
 
     @Override
@@ -155,7 +171,7 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
                 ", index:" + index +
                 ", type:" + type +
                 ", name:'" + name + '\'' +
-                ", dataColName:'" + dataColName + '\'' +
+                ", sourceColumnId:'" + sourceColumnId + '\'' +
                 ", dynamicExpression:'" + dynamicExpression + '\'' +
                 ", useDynamic:" + useDynamic +
                 ", useFunction:" + useFunction +

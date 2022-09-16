@@ -11,12 +11,9 @@ import org.slf4j.Logger;
 import com.tflow.system.Application;
 
 import javax.annotation.PostConstruct;
-import javax.faces.context.ExceptionHandler;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ExceptionQueuedEvent;
 import javax.inject.Inject;
-import java.awt.print.Pageable;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,19 +98,28 @@ public abstract class Controller implements Serializable {
         jsBuilder.runNoti();
     }
 
-    protected String propertyToMethod(String propertyName) {
+    protected String propertyToGetMethod(String propertyName) {
         return "get" +
                 propertyName.substring(0, 1).toUpperCase()
                 + propertyName.substring(1);
     }
 
+    private String propertyToIsMethod(String propertyName) {
+        return "is" +
+                propertyName.substring(0, 1).toUpperCase()
+                + propertyName.substring(1);
+    }
+
     protected Object getPropertyValue(Selectable selectable, String propertyName) {
-        Object value = selectable.getPropertyMap().get(propertyName);
+        Map<String, Object> propertyMap = selectable.getPropertyMap();
+        Object value = propertyMap.get(propertyName);
         if (value != null) return value;
 
         try {
             /*by getValue() method*/
-            value = selectable.getClass().getMethod(propertyToMethod(propertyName)).invoke(selectable);
+            Method method = getMethod(selectable, propertyName);
+            value = method.invoke(selectable);
+            if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:{}, method:{}(), value:({}){}", selectable.getSelectableId(), propertyName, method.getName(), value.getClass().getSimpleName(), value);
         } catch (Exception e) {
             /*by property.var*/
             value = getPropertyValue(selectable, selectable.getProperties().getPropertyView(propertyName));
@@ -122,26 +128,36 @@ public abstract class Controller implements Serializable {
         return value == null ? "" : value;
     }
 
+    private Method getMethod(Selectable selectable, String propertyName) throws NoSuchMethodException {
+        try {
+            return selectable.getClass().getMethod(propertyToGetMethod(propertyName));
+        } catch (NoSuchMethodException ex) {
+            return selectable.getClass().getMethod(propertyToIsMethod(propertyName));
+        }
+    }
+
     protected Object getPropertyValue(Selectable selectable, PropertyView property) {
         Object value = null;
         if (property == null) {
             return value;
         }
 
-        if (property.hasParent())
+        if (property.hasParent()) {
             /*by getParent().getValue() method, the parent always be the PropertyMap*/
             value = selectable.getPropertyMap().get(property.getVar());
-        else
+            if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:propertyMap['{}'], value:({}){}", selectable.getSelectableId(), property.getVar(), value.getClass().getSimpleName(), value);
+        } else
             try {
                 /*by getValue() method without parent*/
-                value = selectable.getClass().getMethod(propertyToMethod(property.getVar())).invoke(selectable);
-            } catch (Exception e) {
-                /*no property*/
-                log.warn("getPropertyValue: no compatible method to get value from property({})", property);
-                log.error("this is debug information", e);
+                Method method = getMethod(selectable, property.getVar());
+                value = method.invoke(selectable);
+                if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:{}, method:{}(), value:({}){}", selectable.getSelectableId(), property.getVar(), method.getName(), value.getClass().getSimpleName(), value);
+            } catch (Exception ex) {
+                log.error("getPropertyValue: no compatible method to get value from selectable:" + selectable.getSelectableId() + ", property:" + property);
             }
 
-        return value == null ? "" : value;
+        //return value == null ? "" : value;
+        return value;
     }
 
     public void propertyChanged(PropertyView property) {

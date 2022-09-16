@@ -50,6 +50,7 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     private void init() {
         this.propertyMap = new HashMap<>();
         this.setRoomType(RoomType.DATA_FILE);
+        propertyMap = new HashMap<>();
     }
 
     private void createStartPlug(String plugId) {

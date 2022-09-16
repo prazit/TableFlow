@@ -12,12 +12,14 @@ import java.util.Map;
 /**
  * This Enum use Prototype String like this<br/>
  * <p>
- * 0-Variable-Name:1-Property-Label:2-Property-Type:3-param[,4-param]..[,@Update-ID][,Java-Script;]
- * <br/>.:1-Variable-Name:2-Sub-Variable-Name:3-Property-Label:4-Property-Type:5-param[,6-param]..[,@Update-ID][,Java-Script;]
+ * 0-Property-Var:1-Property-Label:2-Property-Type:3-param[,4-param]..[,@Update-ID][,Java-Script;][,[x]Enabled-Var][,[]Disabled-Var]
+ * <br/>.:1-Property-Var-Parent:2-Property-Var:3-Property-Label:4-Property-Type:5-param[,6-param]..[,@Update-ID][,Java-Script;][,[x]Enabled-Var][,[]Disabled-Var]
  * <br/><br/><b>Description:</b>
  * <br/>Variable-Name used for UI Value Binding(ActiveObject[Variable-Name.][Sub-Variable-Name])
  * <br/>Update-ID used to update component after the value is changed.
  * <br/>Java-Script will run at the end of event 'value-changed'
+ * <br/>Enabled-Var use value from variable to enable property at rendered phase (true=enabled,false=disabled).
+ * <br/>Disabled-Var use value from variable to disable property at rendered phase (true=disabled,false=enabled).
  * </p>
  */
 public enum Properties {
@@ -91,33 +93,51 @@ public enum Properties {
             "name:Table Name:String",
             "idColName:Key Column:Column:id",
             "--: more detail :--",
+            "id:Table ID:ReadOnly",
             "level:Table Level:ReadOnly",
             "connectionCount:Connection Count:ReadOnly"
     ),
     DATA_COLUMN(
             "type:Data Type:ReadOnly",
-            "name:Column Name:String"
+            "name:Column Name:String",
+            "--: more detail :--",
+            "id:Column ID:ReadOnly"
     ),
     TRANSFORM_TABLE(
             "name:Table Name:String",
-            "idColName:Key Column:Column:id"
+            "idColName:Key Column:Column:id",
+            "--: more detail :--",
+            "id:Table ID:ReadOnly",
+            "sourceType:Source Table Type:ReadOnly",
+            "sourceId:Source Table ID:ReadOnly"
     ),
 
 
     /*TODO: need to support new option box syntax defined in the comment below*/
-            /*-- properties of TRANSFORM_COLUMN --
+            /*-- Value case 3: --
             ".:propertyMap:value:Value:Column:sourceTable::[]useFunction",
-            "[: Dynamic Value Expression ::@value",
+            "[useDynamic: Dynamic Value Expression ::@value",
             ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
             "[useFunction: Specific Function ::@dynamicValue",
             "function:Function:ColumnFunction",
-            "--: Lookup Function Arguments :--",
+            "--:Lookup Function Arguments:--",
             "]: Specific Function :",
-            "]: Dynamic Value Expression :",
-            "useFunction:useFunction:ReadOnly"*/
+            "]: Dynamic Value Expression :"
+            */
     TRANSFORM_COLUMN( /*direct transfer without function*/
             "type:Type:ReadOnly",
-            "name:Name:String"
+            "name:Name:String",
+            "--: Value :--",
+            "sourceColumnId:Source Column:Column:sourceId::[]useDynamic",
+            "useDynamic:Dynamic Value Expression:BOOLEAN::refreshProperties();",
+            "dynamicExpression:Expression:DynamicValue::[x]useDynamic",
+            "--: Debug Only :--",
+            "id:ID:ReadOnly"
+            /* Value cases:
+             * [ ] 1. direct transfer : useDynamic = false, value = column name from source-table
+             * [ ] 2. dynamic value : useDynamic = true, value = custom dynamic value
+             * [ ] 3. TODO: future feature - single function value : useDynamic = true, useFunction = true, value = generated dynamic value
+             **/
     ),
     FX_PARAM(
             "name:Parameter Name:String"
@@ -406,7 +426,7 @@ public enum Properties {
             ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
             "[useFunction: Specific Function ::@dynamicValue",
             "function:Function:ColumnFunction",
-            "--: Filter Arguments :--",
+            "--:Filter Arguments:--",
             ".:parameterMap:Conditions:Function:ColumnFunction",
             "]: Specific Function :",
             "useFunction:useFunction:ReadOnly"
@@ -459,8 +479,8 @@ public enum Properties {
                 return propertyView;
         }
 
-        LoggerFactory.getLogger(Properties.class).warn("getPropertyView: property(var:{}) not found!", propertyVar);
-        return null;
+        LoggerFactory.getLogger(Properties.class).error(this.name() + ".getPropertyView(propertyVar:" + propertyVar + ") property not found!", new Exception(""));
+        return new PropertyView(propertyVar);
     }
 
     /**
@@ -490,14 +510,15 @@ public enum Properties {
         Logger log = LoggerFactory.getLogger(Properties.class);
         log.warn("toPropertyView: prototypes={} from prototypeString='{}'", Arrays.toString(prototypes), prototypeString);
 
-        if (prototypes[0].equals("--")) {
+        String prototypes0 = prototypes[0];
+        if (prototypes0.equals("--")) {
             /*separator*/
             propView.setType(PropertyType.SEPARATOR);
             propView.setLabel(prototypes[1]);
             propView.setParams(params);
             propertyList.add(propView);
             return null;
-        } else if (prototypes[0].equals(".")) {
+        } else if (prototypes0.equals(".")) {
             /*var with parent*/
             if (length > 5)
                 params = Arrays.copyOfRange(prototypes, 5, length);
@@ -511,21 +532,25 @@ public enum Properties {
                 params = Arrays.copyOfRange(prototypes, 3, length);
             propView.setType(PropertyType.valueOf(prototypes[2].toUpperCase()));
             propView.setLabel(prototypes[1]);
-            propView.setVar(prototypes[0]);
+            propView.setVar(prototypes0);
             propView.setVarParent(null);
         }
 
         int paramCount = params.length;
         for (int i = paramCount - 1; i >= 0; i--) {
-            if (params[i].contains("@")) {
+            String parami = params[i];
+            if (parami.startsWith("@")) {
                 paramCount = i;
-                propView.setUpdate(params[i].substring(1).replaceAll("[.]", ":"));
-            } else if (params[i].endsWith(";")) {
+                propView.setUpdate(parami.substring(1).replaceAll("[.]", ":"));
+            } else if (parami.endsWith(";")) {
                 paramCount = i;
-                propView.setJavaScript(params[i]);
-            } else if (params[i].contains("[]")) {
+                propView.setJavaScript(parami);
+            } else if (parami.startsWith("[]")) {
                 paramCount = i;
-                propView.setEnableVar(params[i]);
+                propView.setDisableVar(parami.substring(2));
+            } else if (parami.startsWith("[x]")) {
+                paramCount = i;
+                propView.setEnableVar(parami.substring(3));
             }
         }
 

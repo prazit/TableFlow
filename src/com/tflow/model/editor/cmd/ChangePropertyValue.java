@@ -7,6 +7,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
+import org.apache.kafka.common.protocol.types.Field;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,7 @@ public class ChangePropertyValue extends Command {
                 if (log.isDebugEnabled()) log.debug("ChangePropertyValue.setPropertyValue(oldValue:{}): using method {}({}:{})", property.getOldValue(), method.getName(), toCSVString(parameterTypes), value);
                 if (value == null) {
                     method.invoke(selectable, parameterClass.cast(null));
-                } else if (value instanceof Integer || value instanceof Long) {
+                } else if (value instanceof Integer || value instanceof Long || value instanceof Boolean) {
                     method.invoke(selectable, value);
                 } else if (parameterClass.isEnum() && value instanceof String) {
                     if (((String) value).isEmpty()) {
