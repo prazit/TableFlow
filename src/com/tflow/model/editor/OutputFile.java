@@ -8,7 +8,7 @@ public class OutputFile extends DataFile {
 
     /*for ProjectMapper*/
     public OutputFile() {
-        /*nothing*/
+        super();
     }
 
     public OutputFile(DataFileType type, String path, String endPlug, String startPlug) {
@@ -34,5 +34,20 @@ public class OutputFile extends DataFile {
     @Override
     public String getSelectableId() {
         return "of" + id;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", type:" + type +
+                ", name:'" + name + '\'' +
+                ", path:'" + path + '\'' +
+                ", uploadedId:" + uploadedId +
+                ", endPlug:" + endPlug +
+                ", startPlug:" + startPlug +
+                ", dataSourceType:" + dataSourceType +
+                ", dataSourceId:" + dataSourceId +
+                '}';
     }
 }

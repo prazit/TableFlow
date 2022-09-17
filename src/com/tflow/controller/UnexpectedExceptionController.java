@@ -1,5 +1,7 @@
 package com.tflow.controller;
 
+import com.tflow.model.editor.JavaScript;
+
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.util.Date;
@@ -22,6 +24,12 @@ public class UnexpectedExceptionController extends Controller {
 
     public void noException() {
         log.warn("Open Unexpected Exception Page without Exception.");
+        workspace.openPage(Page.GROUP);
+    }
+
+    public void viewExpired() {
+        log.warn("Open Unexpected Exception Page by ViewExpiredException.");
+        jsBuilder.pre(JavaScript.notiWarn,"View Expired!");
         workspace.openPage(Page.GROUP);
     }
 

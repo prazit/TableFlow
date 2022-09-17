@@ -3,15 +3,14 @@ package com.tflow.model.editor.datasource;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.IDPrefix;
-import com.tflow.model.editor.LinePlug;
-import com.tflow.model.editor.Properties;
-import com.tflow.model.editor.Selectable;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.room.RoomType;
+import com.tflow.model.editor.view.PropertyView;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Database extends DataSource implements Selectable {
+public class Database extends DataSource implements Selectable, HasEvent {
 
     private Dbms dbms;
     private String url;
@@ -19,6 +18,10 @@ public class Database extends DataSource implements Selectable {
     private String user;
     private String password;
     private int retry;
+
+    private String host;
+    private String port;
+    private String schema;
 
     /*always encrypted*/
     private boolean userEncrypted;
@@ -30,12 +33,17 @@ public class Database extends DataSource implements Selectable {
 
     private Map<String, String> propList;
 
+    private EventManager eventManager;
+
     /* for DataSourceMapper*/
-    public Database() {/*nothing*/}
+    public Database() {
+        init();
+    }
 
     /* for ProjectMapper only */
     public Database(int id) {
         this.id = id;
+        init();
     }
 
     public Database(String name, Dbms dbms) {
@@ -47,6 +55,21 @@ public class Database extends DataSource implements Selectable {
         passwordEncrypted = true;
         propList = new HashMap<>();
         this.setRoomType(RoomType.DATA_SOURCE);
+        init();
+    }
+
+    private void init() {
+        eventManager = new EventManager(this);
+        createEventHandlers();
+    }
+
+    private void createEventHandlers() {
+        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                url = dbms.getURL(host, port, schema);
+            }
+        });
     }
 
     @Override
@@ -142,6 +165,35 @@ public class Database extends DataSource implements Selectable {
         this.propList = propList;
     }
 
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
     @Override
     public LinePlug getStartPlug() {
         return null;
@@ -159,7 +211,7 @@ public class Database extends DataSource implements Selectable {
 
     @Override
     public Properties getProperties() {
-        return Properties.DATA_BASE;
+        return Properties.valueOf(dbms.name());
     }
 
     @Override

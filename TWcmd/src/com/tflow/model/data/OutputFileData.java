@@ -11,4 +11,19 @@ public class OutputFileData extends DataFileData {
     private String dataSourceType;
     private int dataSourceId;
 
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", type:" + type +
+                ", name:'" + name + '\'' +
+                ", path:'" + path + '\'' +
+                ", uploadedId:" + uploadedId +
+                ", endPlug:" + endPlug +
+                ", startPlug:" + startPlug +
+                ", dataSourceType:" + dataSourceType +
+                ", dataSourceId:" + dataSourceId +
+                '}';
+    }
+
 }

@@ -120,4 +120,8 @@ public class FacesUtil implements Serializable {
         }
         return builder.toString();
     }
+
+    public static void updateComponent(String componentId) {
+        PrimeFaces.current().ajax().update(componentId);
+    }
 }

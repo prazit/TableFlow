@@ -13,18 +13,18 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     private transient Logger log = LoggerFactory.getLogger(DataFile.class);
 
     protected int id;
-    private DataFileType type;
-    private String name;
-    private String path;
+    protected DataFileType type;
+    protected String name;
+    protected String path;
 
-    private int uploadedId;
+    protected int uploadedId;
 
-    private Map<String, Object> propertyMap;
+    protected Map<String, Object> propertyMap;
 
-    private LinePlug endPlug;
-    private LinePlug startPlug;
+    protected LinePlug endPlug;
+    protected LinePlug startPlug;
 
-    private HasDataFile owner;
+    protected HasDataFile owner;
 
     /*for projectMapper*/
     public DataFile() {

@@ -18,6 +18,10 @@ public class DatabaseData extends DataSourceData {
     private String password;
     private int retry;
 
+    private String host;
+    private String port;
+    private String schema;
+
     /*always encrypted*/
     private boolean userEncrypted;
     private boolean passwordEncrypted;

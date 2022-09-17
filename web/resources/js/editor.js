@@ -1,3 +1,11 @@
+function updateProperty(className) {
+    var id = $('.properties .' + className).attr('id');
+    console.log('updateProperty(className:' + className + ', id:' + id + ')');
+    updateComponent([
+        {name: 'id', value: id}
+    ]);
+}
+
 function setFlowchart(page) {
     tflow.page = page;
 }

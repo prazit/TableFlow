@@ -11,16 +11,16 @@ import java.util.Map;
 public class DataFileData extends RoomData implements Serializable {
     private static final transient long serialVersionUID = 2021121709996660020L;
 
-    private int id;
-    private String type;
-    private String name;
-    private String path;
+    protected int id;
+    protected String type;
+    protected String name;
+    protected String path;
 
-    private int uploadedId;
+    protected int uploadedId;
 
-    private Map<String, Object> propertyMap;
+    protected Map<String, Object> propertyMap;
 
-    private LinePlugData endPlug;
-    private LinePlugData startPlug;
+    protected LinePlugData endPlug;
+    protected LinePlugData startPlug;
 
 }

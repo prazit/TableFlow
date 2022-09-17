@@ -93,6 +93,7 @@
                                 <p:remoteCommand name="refreshProperties" action="#{editorCtl.refreshProperties}" update="@parent"/>
                                 <p:outputPanel id="scrollPanel" styleClass="properties vertical-scroll-panel fit-width">
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
+                                    <p:remoteCommand name="updateComponent" actionListener="#{editorCtl.update}"/>
                                     <input name="selectableId" value="#{editorCtl.activeObject.selectableId}" class="hidden-input"/>
                                     <input value="" class="ui-g-8 prev-input"/>
 
@@ -111,7 +112,7 @@
                                             <span>#{prop.label}</span>
                                         </p:divider>
 
-                                        <p:outputPanel styleClass="ui-g" rendered="#{PropertyType.READONLY==prop.type}">
+                                        <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.READONLY==prop.type}">
                                             <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</p:outputLabel>
                                             <p:outputLabel class="ui-g-8 property-label#{editorCtl.disabledClass(prop)}">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</p:outputLabel>
                                         </p:outputPanel>
@@ -173,7 +174,6 @@
                                             <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
-                                                <f:selectItem itemLabel="-- select one --"/>
                                                 <f:selectItems value="#{editorCtl.getItemList(prop)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:selectOneMenu>

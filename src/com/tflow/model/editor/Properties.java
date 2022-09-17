@@ -35,7 +35,7 @@ public enum Properties {
             "name:Name:String|contentWindow.updatePackageList();",
             "buildDate:Build:ReadOnly",
             "builtDate:Built:ReadOnly",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:ID:ReadOnly",
             "complete:Percent Complete:ReadOnly",
             "finished:Finished:ReadOnly",
@@ -46,7 +46,7 @@ public enum Properties {
             "==: Project : Project of the data-conversion can contains many Table-Flows or known as step inside :==",
             "--: Project Properties :--",
             "name:Name:String|refreshStepList();",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:ID:ReadOnly",
             "activeStepIndex:Active Step Index:ReadOnly",
             "lastUniqueId:Last Unique ID:ReadOnly",
@@ -58,32 +58,102 @@ public enum Properties {
             "==: Step : Step contains one table flow chart, one process that consume input-data and produce the output-data at the end :==",
             "--: Step Properties :--",
             "name:Name:String|refreshStepList();",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:ID:ReadOnly",
             "--: tested :--"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     STEP_DATA_SOURCE(
             "==: Data Source : Source of input file that linked to it :==",
             "--: Data Source Properties :--",
             "name:Name:String",
-            "type:Data Source Type:DATASOURCETYPE|@propertyForm.scrollPanel",
-            "dataSourceId:Data Source:DATASOURCE::type|@propertyForm.scrollPanel"
+            "type:Type:DATASOURCETYPE|refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::type|refreshProperties();",
+            "--: tested :--"
     ),
-    DATA_BASE(
+
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
+    ORACLE_SID(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
             "name:Name:String",
-            "--:Connection:--",
-            "dbms:DBMS:DBMS",
-            "url:Connection String:String",
-            "user:User:String:20",
-            "password:Password:String:20::true",
+            "dbms:DBMS:DBMS|@propertyForm",
+            "--: Oracle SID Connection :--",
+            "host:Host:String:40|updateProperty('url');",
+            "port:Port:String:4|updateProperty('url');",
+            "schema:SID:String:40|updateProperty('url');",
+            "user:User:String:40",
+            "password:Password:String:40::true",
             "retry:Connection Retry:Int:9:0",
-            "--: More Detail :--",
+            "--: Technical Support :--",
+            "url:URL:ReadOnly",
             "id:ID:ReadOnly"
     ),
+    ORACLE_SERVICE(
+            "==: Data Source : Database connection (JDBC) :==",
+            "--: Data Source Properties :--",
+            "name:Name:String",
+            "dbms:DBMS:DBMS|refreshProperties();",
+            "--: Oracle Service Connection :--",
+            "host:Host:String:40|updateProperty('url');",
+            "port:Port:String:4|updateProperty('url');",
+            "schema:Service:String:40|updateProperty('url');",
+            "user:User:String:40",
+            "password:Password:String:40::true",
+            "retry:Connection Retry:Int:9:0",
+            "--: Technical Support :--",
+            "url:URL:ReadOnly",
+            "id:ID:ReadOnly"
+    ),
+    DB2(
+            "==: Data Source : Database connection (JDBC) :==",
+            "--: Data Source Properties :--",
+            "name:Name:String",
+            "dbms:DBMS:DBMS|refreshProperties();",
+            "--: IBM DB2 (type4) Connection :--",
+            "host:Host:String:40|updateProperty('url');",
+            "port:Port:String:4|updateProperty('url');",
+            "schema:Database:String:40|updateProperty('url');",
+            "user:User:String:40",
+            "password:Password:String:40::true",
+            "retry:Connection Retry:Int:9:0",
+            "--: Technical Support :--",
+            "url:URL:ReadOnly",
+            "id:ID:ReadOnly"
+    ),
+    MYSQL(
+            "==: Data Source : Database connection (JDBC) :==",
+            "--: Data Source Properties :--",
+            "name:Name:String",
+            "dbms:DBMS:DBMS|refreshProperties();",
+            "--: MySQL Connection :--",
+            "host:Host:String:40|updateProperty('url');",
+            "port:Port:String:4|updateProperty('url');",
+            "schema:Database:String:40|updateProperty('url');",
+            "user:User:String:40",
+            "password:Password:String:40::true",
+            "retry:Connection Retry:Int:9:0",
+            "--: Technical Support :--",
+            "url:URL:ReadOnly",
+            "id:ID:ReadOnly"
+    ),
+    MARIA_DB(
+            "==: Data Source : Database connection (JDBC) :==",
+            "--: Data Source Properties :--",
+            "name:Name:String",
+            "dbms:DBMS:DBMS|refreshProperties();",
+            "--: MariaDB Connection :--",
+            "host:Host:String:40|updateProperty('url');",
+            "port:Port:String:4|updateProperty('url');",
+            "schema:Database:String:40|updateProperty('url');",
+            "user:User:String:40",
+            "password:Password:String:40::true",
+            "retry:Connection Retry:Int:9:0",
+            "--: Technical Support :--",
+            "url:URL:ReadOnly",
+            "id:ID:ReadOnly"
+    ),
+
     SFTP(
             "==: Data Source : SFTP/FTP/FTPS Connection information :==",
             "--: Data Source Properties :--",
@@ -96,7 +166,7 @@ public enum Properties {
             "retry:Connection Retry:Int:9:0",
             "rootPath:Root Path:String",
             "tmp:Downloaded Path:String",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:ID:ReadOnly"
     ),
     LOCAL_FILE(
@@ -104,7 +174,7 @@ public enum Properties {
             "--: Data Source Properties :--",
             "name:Name:String",
             "rootPath:Root Path:String",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:ID:ReadOnly"
     ),
     DATA_TABLE(
@@ -112,7 +182,7 @@ public enum Properties {
             "--: Data Table Properties :--",
             "name:Table Name:String",
             "idColName:Key Column:Column:id",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:Table ID:ReadOnly",
             "level:Table Level:ReadOnly",
             "connectionCount:Connection Count:ReadOnly"
@@ -122,7 +192,7 @@ public enum Properties {
             "--: Column Properties :--",
             "type:Data Type:ReadOnly",
             "name:Column Name:String",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:Column ID:ReadOnly"
     ),
     TRANSFORM_TABLE(
@@ -130,7 +200,7 @@ public enum Properties {
             "--: Transformation Table Properties :--",
             "name:Table Name:String",
             "idColName:Key Column:Column:id",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:Table ID:ReadOnly",
             "sourceType:Source Table Type:ReadOnly",
             "sourceId:Source Table ID:ReadOnly"
@@ -145,7 +215,7 @@ public enum Properties {
             "sourceColumnId:Source Column:Column:sourceId|[]useDynamic",
             "useDynamic:Dynamic Value Expression:BOOLEAN|refreshProperties();",
             "dynamicExpression::DynamicValue|[x]useDynamic:[]useFunction",
-            "--: More Detail :--",
+            "--: Technical Support :--",
             "id:ID:ReadOnly"
             /* Value cases:
              * [X] 1. direct transfer : useDynamic = false, value = column name from source-table
@@ -496,8 +566,9 @@ public enum Properties {
 
         PropertyView property;
         propertyList = new ArrayList<>();
+        int id = 0;
         for (String prototypeString : prototypeList) {
-            property = toPropertyView(prototypeString);
+            property = toPropertyView(id++, prototypeString);
             /*TODO: remove this comment when all properties are completed // if (property == null) continue;*/
             propertyList.add(property);
         }
@@ -535,7 +606,7 @@ public enum Properties {
         return plugPropertyList;
     }
 
-    private PropertyView toPropertyView(String prototypeString) {
+    private PropertyView toPropertyView(int id, String prototypeString) {
         String[] parts = prototypeString.split("[|]");
         String[] prototypes = parts[0].split("[:]");
         String[] params = new String[]{};

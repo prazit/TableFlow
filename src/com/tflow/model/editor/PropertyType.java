@@ -19,7 +19,7 @@ public enum PropertyType {
     STRINGARRAY(new ArrayList<String>()),
     INT(0, DataType.INTEGER),
 
-    DBMS(Dbms.ORACLE, true),
+    DBMS(Dbms.ORACLE_SID, true),
     DATASOURCE(-1, true),
     DATASOURCETYPE(DataSourceType.LOCAL, true),
     DATAFILETYPE(DataFileType.IN_MARKDOWN, true),

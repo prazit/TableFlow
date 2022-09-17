@@ -92,7 +92,7 @@ body .ui-panelgrid .ui-panelgrid-cell {
 }
 
 .tool-panel .properties .description {
-    color: var(--surface-c);
+    color: var(--text-color-secondary);
     font-weight: normal;
 }
 
@@ -299,9 +299,12 @@ body .flow-chart .ui-panel .ui-panel-content .ui-panelgrid {
 
 .ui-panel .ui-panel-content .column {
     position: relative; /* relative position to support the end-plug */
-    width: 100%;
     padding: var(--padding);
+    width: 100%;
+    max-width: 20em;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .ui-panel .ui-panel-content .column + .column {

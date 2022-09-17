@@ -20,6 +20,7 @@ import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.mapstruct.factory.Mappers;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
@@ -334,7 +335,7 @@ public class EditorController extends Controller {
         Step activeStep = project.getActiveStep();
         Selectable activeObject = activeStep.getActiveObject();
         ProjectFileType activeObjectType = activeObject.getProjectFileType();
-        log.debug("getItemList(property:{}, activeStep:{}, activeObject:{}).", propertyView, activeStep.getSelectableId(), activeObject);
+        if (log.isDebugEnabled()) log.debug("getItemList(property:{}, activeStep:{}, activeObject:({}){}.", propertyView, activeStep.getSelectableId(), activeObject.getClass().getSimpleName(), activeObject);
 
         switch (type) {
             case SYSTEM:
@@ -968,7 +969,7 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
 
-        Database database = new Database("Untitled", Dbms.ORACLE);
+        Database database = new Database("Untitled", Dbms.ORACLE_SID);
 
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.DATA_SOURCE, database);
@@ -1205,6 +1206,12 @@ public class EditorController extends Controller {
         }
 
         return disabled || !enabled;
+    }
+
+    public void update() {
+        String componentId = FacesUtil.getRequestParam("id");
+        log.debug("update:fromClient(id:'{}')", componentId);
+        FacesUtil.updateComponent(componentId);
     }
 
 }
