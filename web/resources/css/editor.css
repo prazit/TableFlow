@@ -74,6 +74,10 @@ body .ui-panelgrid .ui-panelgrid-cell {
     font-weight: bold;
 }
 
+.tool-panel .properties  .ui-inputnumber .ui-inputfield {
+    width: 100%;
+}
+
 .tool-panel .properties .hidden {
     display: none;
     width: 0;
@@ -94,6 +98,21 @@ body .ui-panelgrid .ui-panelgrid-cell {
 .tool-panel .properties .description {
     color: var(--text-color-secondary);
     font-weight: normal;
+}
+
+.tool-panel .properties .ui-datatable,
+.tool-panel .properties .ui-datatable-tablewrapper,
+.tool-panel .properties .ui-datatable table,
+.tool-panel .properties .ui-datatable thead,
+.tool-panel .properties .ui-datatable tbody
+{
+    width: 100%;
+}
+
+.tool-panel .properties .ui-datatable td,
+.tool-panel .properties .ui-datatable th
+{
+    padding: 0;
 }
 
 .hidden-input {

@@ -321,10 +321,17 @@ function refreshTabIndex() {
 function setFocus() {
     tflow.setFocus = null;
 
-    var inputs = $('.properties').find('input');
-
-    if (inputs.length > tflow.propertyFirstIndex) {
-        inputs[tflow.propertyFirstIndex].focus(function (ev) {
+    var $properties = $('.properties'),
+        inputs = $properties.find('input.focus');
+    if (inputs.length === 0) {
+        inputs = $properties.find('input');
+        if (inputs.length > tflow.propertyFirstIndex) {
+            inputs[tflow.propertyFirstIndex].focus(function (ev) {
+                console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
+            });
+        }
+    } else {
+        inputs[0].focus(function (ev) {
             console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
         });
     }

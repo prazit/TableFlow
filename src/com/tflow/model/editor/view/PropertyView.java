@@ -4,6 +4,7 @@ import com.tflow.model.editor.PropertyType;
 import com.tflow.model.editor.PropertyVar;
 
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Store attributes of property.

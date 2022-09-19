@@ -1,14 +1,15 @@
 package com.tflow.model.editor.datasource;
 
+import com.clevel.dconvers.ngin.Crypto;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.room.RoomType;
 import com.tflow.model.editor.view.PropertyView;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Database extends DataSource implements Selectable, HasEvent {
 
@@ -31,34 +32,37 @@ public class Database extends DataSource implements Selectable, HasEvent {
     private String quotesForName;
     private String quotesForValue;
 
-    private Map<String, String> propList;
+    private List<NameValue> propList;
 
     private EventManager eventManager;
 
     /* for DataSourceMapper*/
     public Database() {
+        setImage("database.png");
         init();
     }
 
     /* for ProjectMapper only */
     public Database(int id) {
         this.id = id;
+        setImage("database.png");
         init();
     }
 
     public Database(String name, Dbms dbms) {
         this.dbms = dbms;
-        setType(DataSourceType.DATABASE);
-        setImage("database.png");
+        setImage(dbms.getImage());
         setName(name);
-        userEncrypted = true;
-        passwordEncrypted = true;
-        propList = new HashMap<>();
-        this.setRoomType(RoomType.DATA_SOURCE);
         init();
     }
 
     private void init() {
+        setType(DataSourceType.DATABASE);
+        userEncrypted = true;
+        passwordEncrypted = true;
+        propList = new ArrayList<>();
+        addProp();
+        this.setRoomType(RoomType.DATA_SOURCE);
         eventManager = new EventManager(this);
         createEventHandlers();
     }
@@ -70,6 +74,14 @@ public class Database extends DataSource implements Selectable, HasEvent {
                 url = dbms.getURL(host, port, schema);
             }
         });
+    }
+
+    public void addProp() {
+        for (NameValue prop : propList) {
+            prop.setLast(false);
+        }
+
+        propList.add(new NameValue(true));
     }
 
     @Override
@@ -105,8 +117,12 @@ public class Database extends DataSource implements Selectable, HasEvent {
         return user;
     }
 
+    public String getDecryptedUser() {
+        return Crypto.decrypt(user);
+    }
+
     public void setUser(String user) {
-        this.user = user;
+        this.user = Crypto.encrypt(user);
     }
 
     public boolean isUserEncrypted() {
@@ -119,6 +135,10 @@ public class Database extends DataSource implements Selectable, HasEvent {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getDecryptedPassword() {
+        return Crypto.decrypt(password);
     }
 
     public void setPassword(String password) {
@@ -157,12 +177,15 @@ public class Database extends DataSource implements Selectable, HasEvent {
         this.quotesForValue = quotesForValue;
     }
 
-    public Map<String, String> getPropList() {
+    public List<NameValue> getPropList() {
         return propList;
     }
 
-    public void setPropList(Map<String, String> propList) {
+    public void setPropList(List<NameValue> propList) {
         this.propList = propList;
+        if (propList.size() > 0) {
+            propList.get(propList.size() - 1).setLast(true);
+        }
     }
 
     public String getHost() {

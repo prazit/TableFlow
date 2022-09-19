@@ -3,6 +3,7 @@ package com.tflow.model.data;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -30,7 +31,7 @@ public class DatabaseData extends DataSourceData {
     private String quotesForName;
     private String quotesForValue;
 
-    private Map<String, String> propList;
+    private List<NameValueData> propList;
 
 }
 

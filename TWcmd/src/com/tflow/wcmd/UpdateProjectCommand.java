@@ -69,35 +69,10 @@ public class UpdateProjectCommand extends IOCommand {
         if (recordData.getData() == null) {
             remove(file);
         } else {
-            encrypt(recordData);
             writeTo(file, recordData);
         }
     }
-
-    private void encrypt(RecordData recordData) {
-        /*need to decrypt/encrypt user and password depend on userEncrypted/passwordEncrypted*/
-        Object data = recordData.getData();
-        if (data instanceof DatabaseData) {
-            DatabaseData databaseData = (DatabaseData) data;
-            String user = databaseData.getUser();
-            String password = databaseData.getPassword();
-            databaseData.setUser(encrypt(user));
-            databaseData.setPassword(encrypt(password));
-            databaseData.setUserEncrypted(true);
-            databaseData.setPasswordEncrypted(true);
-        } else if (data instanceof SFTPData) {
-            SFTPData sftpData = (SFTPData) data;
-            sftpData.setUser(encrypt(sftpData.getUser()));
-            sftpData.setPassword(encrypt(sftpData.getPassword()));
-            sftpData.setUserEncrypted(true);
-            sftpData.setPasswordEncrypted(true);
-        }
-    }
-
-    private String encrypt(String source) {
-        return source == null || source.isEmpty() ? "" : Crypto.encrypt(source);
-    }
-
+    
     private File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {
         return getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath() + getFileName(projectFileType.getPrefix(), additional.getRecordId()) + "/", DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS") + environmentConfigs.getDataFileExt());
     }

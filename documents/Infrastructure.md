@@ -321,6 +321,15 @@ JavaScriptBuilder-->ActionParameter
 Client-->UserEvent-->Controller
 ```
 
+## Encryption
+
+| data                                | description                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| User.name                           | Need to encrypt immediately after entered using Authentication Encryption Class |
+| User.password                       | Need to encrypt immediately after entered using Authentication Encryption Class |
+| Database.user<br/>SFTP.user         | Need to encrypt immediately after entered using DConvers Encryption Class       |
+| Database.password<br/>SFTP.password | Need to encrypt immediately after entered using DConvers Encryption Class       |
+
 ----
 
 -- end of document --

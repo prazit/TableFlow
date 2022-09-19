@@ -32,7 +32,9 @@ public enum JavaScript {
     notiError(null),
     notiWarn(null),
     noti("noti();"),
-    ;
+
+    updateProperty("updateProperty('%s');"),
+    refreshProperties("refreshProperties();");
 
     private String javascript;
 

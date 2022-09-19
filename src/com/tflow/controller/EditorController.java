@@ -19,6 +19,7 @@ import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
+import org.apache.zookeeper.common.StringUtils;
 import org.mapstruct.factory.Mappers;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.TabChangeEvent;
@@ -58,6 +59,8 @@ public class EditorController extends Controller {
     private Map<String, Integer> actionPriorityMap;
     private boolean fullActionList;
 
+    private boolean focusOnDBParameter;
+
     @Override
     protected Page getPage() {
         return Page.EDITOR;
@@ -66,6 +69,7 @@ public class EditorController extends Controller {
     @Override
     public void onCreation() {
         leftPanelTitle = "Step List";
+        focusOnDBParameter = false;
 
         /*Open Editor Cases.
          * 1. hasParameter(GroupId, ProjectId/TemplateId): New Project from Template/Existing Project
@@ -317,6 +321,12 @@ public class EditorController extends Controller {
 
     public EditorType getEditorType() {
         return editorType;
+    }
+
+    public boolean isFocusOnDBParameter() {
+        boolean trueOfFalse = this.focusOnDBParameter;
+        focusOnDBParameter = false;
+        return trueOfFalse;
     }
 
     /*== Public Methods ==*/
@@ -1209,9 +1219,36 @@ public class EditorController extends Controller {
     }
 
     public void update() {
-        String componentId = FacesUtil.getRequestParam("id");
-        log.debug("update:fromClient(id:'{}')", componentId);
-        FacesUtil.updateComponent(componentId);
+        FacesUtil.updateComponent(FacesUtil.getRequestParam("id"));
+    }
+
+    public String masked(String value) {
+        return new String(new char[value.length()]).replaceAll("\0", "*");
+    }
+
+    public void addDBParameter(PropertyView property) {
+        if (!(activeObject instanceof Database)) {
+            String msg = "addDBParameter called on " + activeObject.getClass().getSimpleName() + " is not allowed!";
+            jsBuilder.pre(JavaScript.notiError, msg);
+            log.error(msg);
+            return;
+        }
+
+        Database database = (Database) this.activeObject;
+        database.addProp();
+
+        focusOnDBParameter = true;
+        jsBuilder.pre(JavaScript.refreshProperties).runOnClient();
+    }
+
+    public void removeDBParameter() {
+        Database database = (Database) this.activeObject;
+        List<NameValue> propList = database.getPropList();
+        propList.remove(propList.size() - 1);
+        propList.get(propList.size() - 1).setLast(true);
+
+        focusOnDBParameter = true;
+        jsBuilder.pre(JavaScript.refreshProperties).runOnClient();
     }
 
 }

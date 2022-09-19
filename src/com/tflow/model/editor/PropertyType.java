@@ -4,6 +4,7 @@ import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.data.Dbms;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public enum PropertyType {
 
@@ -12,12 +13,17 @@ public enum PropertyType {
 
     EXPRESSION(""),
 
+
     READONLY(""),
-    BOOLEAN(Boolean.FALSE, DataType.INTEGER),
     STRING(""),
-    DYNAMICVALUE(""),
+    PASSWORD(""),
     STRINGARRAY(new ArrayList<String>()),
+    DYNAMICVALUE(""),
+    PROPERTIES(new HashMap<String, String>()),
+
+    BOOLEAN(Boolean.FALSE, DataType.INTEGER),
     INT(0, DataType.INTEGER),
+    NUMBER(0.0d, DataType.DECIMAL),
 
     DBMS(Dbms.ORACLE_SID, true),
     DATASOURCE(-1, true),

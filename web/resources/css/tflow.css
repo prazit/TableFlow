@@ -191,7 +191,7 @@ body .tool-panel .ui-tabs .ui-menu {
 }
 
 .ui-nopad {
-    padding: 0;
+    padding: 0 !important;
 }
 
 .horizon-scroll-panel {
@@ -207,5 +207,6 @@ body .tool-panel .ui-tabs .ui-menu {
 }
 
 .fit-width {
+    display: block;
     width: 100%;
 }
