@@ -1218,10 +1218,6 @@ public class EditorController extends Controller {
         return disabled || !enabled;
     }
 
-    public void update() {
-        FacesUtil.updateComponent(FacesUtil.getRequestParam("id"));
-    }
-
     public String masked(String value) {
         return new String(new char[value.length()]).replaceAll("\0", "*");
     }
@@ -1241,7 +1237,7 @@ public class EditorController extends Controller {
         jsBuilder.pre(JavaScript.refreshProperties).runOnClient();
     }
 
-    public void removeDBParameter() {
+    public void removeDBParameter(PropertyView property) {
         Database database = (Database) this.activeObject;
         List<NameValue> propList = database.getPropList();
         propList.remove(propList.size() - 1);
@@ -1249,6 +1245,8 @@ public class EditorController extends Controller {
 
         focusOnDBParameter = true;
         jsBuilder.pre(JavaScript.refreshProperties).runOnClient();
+
+        propertyChanged(property);
     }
 
 }

@@ -122,7 +122,7 @@ public class Database extends DataSource implements Selectable, HasEvent {
     }
 
     public void setUser(String user) {
-        this.user = Crypto.encrypt(user);
+        this.user = user;
     }
 
     public boolean isUserEncrypted() {

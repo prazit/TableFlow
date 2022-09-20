@@ -55,7 +55,7 @@
                                         <input name="selectableId" type="hidden" value="#{database.selectableId}"/>
                                         <b>#{database.name}</b><br/>
                                         <p:remoteCommand name="update#{database.selectableId}" update="@parent" oncomplete="updateComplete('#{database.selectableId}')"/>
-                                        <p:graphicImage library="images" name="#{database.image}"/><br/>
+                                        <p:graphicImage library="images" name="#{database.dbms.image}"/><br/>
                                         <span>#{database.dbms}</span>
                                     </p:outputPanel>
                                     <p:spacer/>

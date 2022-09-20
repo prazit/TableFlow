@@ -187,4 +187,13 @@ public abstract class Controller implements Serializable {
         }
     }
 
+    public void updateComponent() {
+        log.trace("updateComponent:fromClient");
+
+        String id = FacesUtil.getRequestParam("componentId");
+        log.debug("updateComponent:fromClient(id:{})", id);
+
+        FacesUtil.updateComponent(id);
+    }
+
 }

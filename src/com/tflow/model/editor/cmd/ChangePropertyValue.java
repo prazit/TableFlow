@@ -1,5 +1,6 @@
 package com.tflow.model.editor.cmd;
 
+import com.clevel.dconvers.ngin.Crypto;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
@@ -63,7 +64,7 @@ public class ChangePropertyValue extends Command {
 
         // need to wait commit thread after addData.
         dataManager.waitAllTasks();
-        
+
     }
 
     private String propertyToMethod(String propertyName) {
@@ -92,16 +93,22 @@ public class ChangePropertyValue extends Command {
             if (method.getName().compareTo(methodName) == 0) {
                 Class[] parameterTypes = method.getParameterTypes();
                 Class parameterClass = parameterTypes[0];
-                if (log.isDebugEnabled()) log.debug("ChangePropertyValue.setPropertyValue(oldValue:{}): using method {}({}:{})", property.getOldValue(), method.getName(), toCSVString(parameterTypes), value);
+                if (log.isDebugEnabled()) log.debug("ChangePropertyValue.setPropertyValue(oldValue:{}, property:{}:{}): using method {}({}:{})", property.getOldValue(), property.getVar(), property.getType(), method.getName(), toCSVString(parameterTypes), value);
                 if (value == null) {
                     method.invoke(selectable, parameterClass.cast(null));
                 } else if (value instanceof Integer || value instanceof Long || value instanceof Boolean) {
                     method.invoke(selectable, value);
-                } else if (parameterClass.isEnum() && value instanceof String) {
+                } else if (value instanceof String) {
                     if (((String) value).isEmpty()) {
                         method.invoke(selectable, parameterClass.cast(null));
-                    } else {
+                    } else if (parameterClass.isEnum()) {
                         method.invoke(selectable, Enum.valueOf(parameterClass, (String) value));
+                    } else if (PropertyType.PASSWORD == property.getType()) {
+                        String stringValue = Crypto.encrypt((String) value);
+                        property.setNewValue(stringValue);
+                        method.invoke(selectable, stringValue);
+                    } else {
+                        method.invoke(selectable, value);
                     }
                 } else if (!parameterClass.isInstance(value)) {
                     method.invoke(selectable, parameterClass.cast(value));

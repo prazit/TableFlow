@@ -74,6 +74,11 @@ body .ui-panelgrid .ui-panelgrid-cell {
     font-weight: bold;
 }
 
+.tool-panel .properties .property-label.fit-width
+{
+    padding: 0.5em;
+}
+
 .tool-panel .properties  .ui-inputnumber .ui-inputfield {
     width: 100%;
 }
@@ -183,7 +188,7 @@ iframe {
     border: var(--surface-c) solid 1px;
     border-radius: var(--border-radius);
     background-color: var(--surface-e);
-    min-width: 8rem;
+    /*min-width: 8rem;*/
     padding: var(--padding);
     text-align: center;
 }
@@ -245,7 +250,6 @@ body .ui-panel.function .ui-panel-content {
 .local-panel .selectable,
 .sftp-panel .selectable {
     display: inline-block;
-    width: 10rem;
     margin: var(--margin);
 }
 

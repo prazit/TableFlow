@@ -79,9 +79,9 @@ public enum Properties {
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: Oracle SID :--",
             "host:Host:String:40|updateProperty('url');",
-            "port:Port:Number:9999:1:0|updateProperty('url');",
+            "port:Port:Number:9999:0:0|updateProperty('url');",
             "schema:SID:String:40|updateProperty('url');",
-            "url:URL:ReadOnly",
+            "url::ReadOnly",
             "--: Connection :--",
             "user:User:Password:40",
             "password:Password:Password:40",
@@ -91,6 +91,7 @@ public enum Properties {
             "id:ID:ReadOnly",
             "--: tested :--"
     ),
+    
     ORACLE_SERVICE(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
@@ -98,8 +99,9 @@ public enum Properties {
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: Oracle Service Connection :--",
             "host:Host:String:40|updateProperty('url');",
-            "port:Port:Number:9999:1:0|updateProperty('url');",
+            "port:Port:Number:9999:0:0|updateProperty('url');",
             "schema:Service:String:40|updateProperty('url');",
+            "url::ReadOnly",
             "--: Connection :--",
             "user:User:Password:40",
             "password:Password:Password:40",
@@ -107,8 +109,10 @@ public enum Properties {
             "propList:Connection Parameters:Properties",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "--: tested :--"
     ),
+
     DB2(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
@@ -116,8 +120,9 @@ public enum Properties {
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: IBM DB2 (type4) Connection :--",
             "host:Host:String:40|updateProperty('url');",
-            "port:Port:Number:9999:1:0|updateProperty('url');",
+            "port:Port:Number:9999:0:0|updateProperty('url');",
             "schema:Database:String:40|updateProperty('url');",
+            "url::ReadOnly",
             "--: Connection :--",
             "user:User:Password:40",
             "password:Password:Password:40",
@@ -125,8 +130,10 @@ public enum Properties {
             "propList:Connection Parameters:Properties",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "--: tested :--"
     ),
+
     MYSQL(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
@@ -134,8 +141,9 @@ public enum Properties {
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: MySQL Connection :--",
             "host:Host:String:40|updateProperty('url');",
-            "port:Port:Number:9999:1:0|updateProperty('url');",
+            "port:Port:Number:9999:0:0|updateProperty('url');",
             "schema:Database:String:40|updateProperty('url');",
+            "url::ReadOnly",
             "--: Connection :--",
             "user:User:Password:40",
             "password:Password:Password:40",
@@ -143,8 +151,10 @@ public enum Properties {
             "propList:Connection Parameters:Properties",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "--: tested :--"
     ),
+
     MARIA_DB(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
@@ -152,8 +162,9 @@ public enum Properties {
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: MariaDB Connection :--",
             "host:Host:String:40|updateProperty('url');",
-            "port:Port:Number:9999:1:0|updateProperty('url');",
+            "port:Port:Number:9999:0:0|updateProperty('url');",
             "schema:Database:String:40|updateProperty('url');",
+            "url::ReadOnly",
             "--: Connection :--",
             "user:User:Password:40",
             "password:Password:Password:40",
@@ -161,35 +172,41 @@ public enum Properties {
             "propList:Connection Parameters:Properties",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "--: tested :--"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     SFTP(
             "==: Data Source : SFTP/FTP/FTPS Connection information :==",
             "--: Data Source Properties :--",
             "name:Name:String",
-            "--:Connection:--",
-            "host:Host:String",
-            "port:Port:Int:0:9999",
-            "user:User:String:20",
-            "password:Password:String:20::true",
-            "retry:Connection Retry:Int:9:0",
-            "rootPath:Root Path:String",
-            "tmp:Downloaded Path:String",
+            "--: SFTP/FTP :--",
+            "host:Host:String:40|updateProperty('url');",
+            "port:Port:Number:9999:0:0|updateProperty('url');",
+            "rootPath:Remote Path:String",
+            "--: Connection :--",
+            "user:User:Password:40",
+            "password:Password:Password:40",
+            "retry:Attemp:Int:9:0",
+            "--: Temporary Downloaded File Path :--",
+            "tmp:Tmp:String",
             "--: Technical Support :--",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "--: tested :--"
     ),
+
     LOCAL_FILE(
             "==: Data Source : Local Directory used for temporary test in standalone environment before change to use SFTP in production environment (just move the link from Local to SFTP) :==",
             "--: Data Source Properties :--",
             "name:Name:String",
             "rootPath:Root Path:String",
             "--: Technical Support :--",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "--: tested :--"
     ),
+
     DATA_TABLE(
-            "==: Data Table : Data Table contains input data that extracted from the data-file received from the linked data-source :==",
+            "==: Data Table : Data Table contains extracted columns from the data-file, not allow to make change to the column list :==",
             "--: Data Table Properties :--",
             "name:Table Name:String",
             "idColName:Key Column:Column:id",
@@ -198,14 +215,17 @@ public enum Properties {
             "level:Table Level:ReadOnly",
             "connectionCount:Connection Count:ReadOnly"
     ),
+
     DATA_COLUMN(
-            "==: Column : Column in Data Table contains only the name for referenced from any Dynamic Values :==",
-            "--: Column Properties :--",
+            "==: Column : Column in Data Table contains only the name for referenced from Dynamic Value Expression :==",
+            "--: Data Table Column :--",
             "type:Data Type:ReadOnly",
-            "name:Column Name:String",
+            "name:Column Name:ReadOnly",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly"
     ),
+
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     TRANSFORM_TABLE(
             "==: Transformation Table : Transformation Table used to transfer/transform data from linked source table and apply some transformations at the end of transfer :==",
             "--: Transformation Table Properties :--",
@@ -621,9 +641,6 @@ public enum Properties {
         String[] parts = prototypeString.split("[|]");
         String[] prototypes = parts[0].split("[:]");
         String[] params = new String[]{};
-
-        Logger log = LoggerFactory.getLogger(Properties.class);
-        log.warn("toPropertyView: prototypes={} from prototypeString='{}'", Arrays.toString(prototypes), prototypeString);
 
         PropertyView propView = new PropertyView();
         String prototypes0 = prototypes[0];

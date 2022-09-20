@@ -1,9 +1,12 @@
 function updateProperty(className) {
-    var id = $('.properties .' + className).attr('id');
-    console.log('updateProperty(className:' + className + ', id:' + id + ')');
-    updateComponent([
-        {name: 'id', value: id}
+    var $property = $('.properties .' + className);
+    var id = $property.attr('id');
+    console.log('updateProperty(property:"' + className + '", id:"' + id + '")');
+    refreshElement([
+        {name: 'componentId', value: id}
     ]);
+    $property.css('background-color', 'var(--surface-c)');
+    console.log('updateProperty completed');
 }
 
 function setFlowchart(page) {
@@ -320,6 +323,8 @@ function refreshTabIndex() {
 
 function setFocus() {
     tflow.setFocus = null;
+
+    /* TODO: don't focus on the next-input */
 
     var $properties = $('.properties'),
         inputs = $properties.find('input.focus');
