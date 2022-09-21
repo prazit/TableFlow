@@ -41,7 +41,10 @@ public class JSONDeserializer implements Deserializer<Object> {
             Class dataClass = Class.forName(jsonRecordData.getDataClass());
             Object dataObject = jsonRecordData.getData();
             Gson gson = SerializeUtil.getGson();
-            if (dataObject instanceof ArrayList) {
+            if (dataObject == null) {
+                /*ignored*/
+
+            } else if (dataObject instanceof ArrayList) {
                 /* JSON Data Formatted File Problems
                     1. ArrayList problem: read from file, data-type has changed to LinkedTreeMap
                     2. ArrayList problem: write to file, unable to check data type of object in the list when list is empty

@@ -24,7 +24,11 @@ public class JSONSerializer implements Serializer<Object> {
                 JSONKafkaRecord jsonData = new JSONKafkaRecord();
                 Object data = kafkaRecord.getData();
 
-                if (data instanceof ArrayList) {
+                if (data == null) {
+                    jsonData.setDataClass("java.lang.Object");
+                    jsonData.setData(data);
+
+                } else if (data instanceof ArrayList) {
                     /* JSON Data Formatted File Problems
                         1. ArrayList problem: read from file, data-type has changed to LinkedTreeMap
                         2. ArrayList problem: write to file, unable to check data type of object in the list when list is empty
