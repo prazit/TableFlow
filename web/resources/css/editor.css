@@ -74,13 +74,25 @@ body .ui-panelgrid .ui-panelgrid-cell {
     font-weight: bold;
 }
 
-.tool-panel .properties .property-label.fit-width
-{
+.tool-panel .properties .property-label.fit-width {
     padding: 0.5em;
 }
 
-.tool-panel .properties  .ui-inputnumber .ui-inputfield {
+.tool-panel .properties .ui-inputnumber .ui-inputfield {
     width: 100%;
+}
+
+.tool-panel .properties .fileupload label {
+    display: inline-block;
+    width: calc(100% - 2.7em);
+}
+
+.tool-panel .properties .fileupload .ui-fileupload-simple {
+    width: 2.7em
+}
+
+.tool-panel .properties .ui-fileupload-simple .ui-button.ui-button-text-icon-left .ui-button-text {
+    padding: 0.429rem 0.2rem;
 }
 
 .tool-panel .properties .hidden {
@@ -109,14 +121,12 @@ body .ui-panelgrid .ui-panelgrid-cell {
 .tool-panel .properties .ui-datatable-tablewrapper,
 .tool-panel .properties .ui-datatable table,
 .tool-panel .properties .ui-datatable thead,
-.tool-panel .properties .ui-datatable tbody
-{
+.tool-panel .properties .ui-datatable tbody {
     width: 100%;
 }
 
 .tool-panel .properties .ui-datatable td,
-.tool-panel .properties .ui-datatable th
-{
+.tool-panel .properties .ui-datatable th {
     padding: 0;
 }
 

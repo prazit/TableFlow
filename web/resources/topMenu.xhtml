@@ -8,7 +8,7 @@
     <div class="top-area fixed-top no-border no-padding no-margin">
         <p:graphicImage library="images" name="logo.jpg" styleClass="logo"/>
         <div class="top-menu">
-            <h:form>
+            <h:form id="topForm">
                 <p:growl id="notiMsg" showSummary="true" showDetail="true" escape="false"/>
                 <p:remoteCommand name="noti" actionListener="#{playCtl.showNoti}" update="notiMsg"/>
                 <p:menubar>
@@ -33,6 +33,9 @@
                     <p:divider layout="vertical"/>
 
                     <p:submenu label="Administrator" icon="pi pi-fw pi-user">
+                        <p:menuitem value="Playground:messages" rendered="#{topMenuCtl.inDevelopment}" icon="pi pi-fw pi-play" actionListener="#{topMenuCtl.openPlayground(0)}"/>
+                        <p:menuitem value="Playground:fileupload" rendered="#{topMenuCtl.inDevelopment}" icon="pi pi-fw pi-play" actionListener="#{topMenuCtl.openPlayground(1)}"/>
+                        <p:divider rendered="#{topMenuCtl.inDevelopment}"/>
                         <p:menuitem value="Activities" icon="pi pi-fw pi-user-plus"/>
                         <p:divider/>
                         <p:menuitem value="Users" icon="pi pi-fw pi-user-plus"/>

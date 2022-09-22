@@ -195,6 +195,7 @@ public abstract class Command {
                 break;
             case DATA_FILE: /*Notice: DATA_FILE found used in all INPUT_XX and OUTPUT_XX*/
                 /*TODO: error on OUTPUT_XX when change the file type, output file have no parent*/
+                /*TODO: error on INPUT_XX when change the file type, input file have no parent*/
                 DataFile dataFile = (DataFile) dataObject;
                 step = ((DataTable) dataFile.getOwner()).getOwner();
                 stepId = step.getId();

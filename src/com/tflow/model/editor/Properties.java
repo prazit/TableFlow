@@ -26,13 +26,25 @@ public enum Properties {
 
     @Deprecated
     FX_PARAM(
-            "name:Parameter Name:String"
+            "name:Parameter Name:String:1000"
+    ),
+
+    PROJECT(
+            "==: Project : Project of the data-conversion can contains many Table-Flows or known as step inside :==",
+            "--: Project Properties :--",
+            "name:Name:String:1000|refreshStepList();",
+            "--: Technical Support :--",
+            "id:ID:ReadOnly",
+            "activeStepIndex:Active Step Index:ReadOnly",
+            "lastUniqueId:Last Unique ID:ReadOnly",
+            "lastElementId:Last Element ID:ReadOnly",
+            "--: tested :--"
     ),
 
     PACKAGE(
             "==: Package : Built package or deployment package used to create new version of project and can download package to deploy on server you want :==",
             "--: Package Properties :--",
-            "name:Name:String|contentWindow.updatePackageList();",
+            "name:Name:String:1000|contentWindow.updatePackageList();",
             "buildDate:Build:ReadOnly",
             "builtDate:Built:ReadOnly",
             "--: Technical Support :--",
@@ -42,40 +54,10 @@ public enum Properties {
             "--: tested :--"
     ),
 
-    PROJECT(
-            "==: Project : Project of the data-conversion can contains many Table-Flows or known as step inside :==",
-            "--: Project Properties :--",
-            "name:Name:String|refreshStepList();",
-            "--: Technical Support :--",
-            "id:ID:ReadOnly",
-            "activeStepIndex:Active Step Index:ReadOnly",
-            "lastUniqueId:Last Unique ID:ReadOnly",
-            "lastElementId:Last Element ID:ReadOnly",
-            "--: tested :--"
-    ),
-
-    STEP(
-            "==: Step : Step contains one table flow chart, one process that consume input-data and produce the output-data at the end :==",
-            "--: Step Properties :--",
-            "name:Name:String|refreshStepList();",
-            "--: Technical Support :--",
-            "id:ID:ReadOnly",
-            "--: tested :--"
-    ),
-
-    STEP_DATA_SOURCE(
-            "==: Data Source : Source of input file that linked to it :==",
-            "--: Data Source Properties :--",
-            "name:Name:String",
-            "type:Type:DATASOURCETYPE|refreshProperties();",
-            "dataSourceId:Data Source:DATASOURCE::type|refreshProperties();",
-            "--: tested :--"
-    ),
-
     ORACLE_SID(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
-            "name:Name:String",
+            "name:Name:String:1000",
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: Oracle SID :--",
             "host:Host:String:40|updateProperty('url');",
@@ -95,7 +77,7 @@ public enum Properties {
     ORACLE_SERVICE(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
-            "name:Name:String",
+            "name:Name:String:1000",
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: Oracle Service Connection :--",
             "host:Host:String:40|updateProperty('url');",
@@ -116,7 +98,7 @@ public enum Properties {
     DB2(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
-            "name:Name:String",
+            "name:Name:String:1000",
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: IBM DB2 (type4) Connection :--",
             "host:Host:String:40|updateProperty('url');",
@@ -137,7 +119,7 @@ public enum Properties {
     MYSQL(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
-            "name:Name:String",
+            "name:Name:String:1000",
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: MySQL Connection :--",
             "host:Host:String:40|updateProperty('url');",
@@ -158,7 +140,7 @@ public enum Properties {
     MARIA_DB(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
-            "name:Name:String",
+            "name:Name:String:1000",
             "dbms:DBMS:DBMS|refreshProperties();",
             "--: MariaDB Connection :--",
             "host:Host:String:40|updateProperty('url');",
@@ -179,7 +161,7 @@ public enum Properties {
     SFTP(
             "==: Data Source : SFTP/FTP/FTPS Connection information :==",
             "--: Data Source Properties :--",
-            "name:Name:String",
+            "name:Name:String:1000",
             "--: SFTP/FTP :--",
             "host:Host:String:40|updateProperty('url');",
             "port:Port:Number:9999:0:0|updateProperty('url');",
@@ -198,17 +180,35 @@ public enum Properties {
     LOCAL_FILE(
             "==: Data Source : Local Directory used for temporary test in standalone environment before change to use SFTP in production environment (just move the link from Local to SFTP) :==",
             "--: Data Source Properties :--",
-            "name:Name:String",
+            "name:Name:String:1000",
             "rootPath:Root Path:String",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "--: tested :--"
     ),
 
+    STEP(
+            "==: Step : Step contains one table flow chart, one process that consume input-data and produce the output-data at the end :==",
+            "--: Step Properties :--",
+            "name:Name:String:1000|refreshStepList();",
+            "--: Technical Support :--",
+            "id:ID:ReadOnly",
+            "--: tested :--"
+    ),
+
+    STEP_DATA_SOURCE(
+            "==: Data Source : Source of input file that linked to it :==",
+            "--: Data Source Properties :--",
+            "name:Name:String:1000",
+            "type:Type:DATASOURCETYPE|refreshProperties();",
+            "dataSourceId:Data Source:DATASOURCE::type|refreshProperties();",
+            "--: tested :--"
+    ),
+
     DATA_TABLE(
             "==: Data Table : Data Table contains extracted columns from the data-file, not allow to make change to the column list :==",
             "--: Data Table Properties :--",
-            "name:Table Name:String",
+            "name:Table Name:String:1000",
             "idColName:Key Column:Column:id",
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
@@ -218,18 +218,78 @@ public enum Properties {
 
     DATA_COLUMN(
             "==: Column : Column in Data Table contains only the name for referenced from Dynamic Value Expression :==",
-            "--: Data Table Column :--",
+            "--: Column Properties :--",
             "type:Data Type:ReadOnly",
             "name:Column Name:ReadOnly",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly"
     ),
 
+    INPUT_SYSTEM_ENVIRONMENT(
+            "==: Input File (System Environment) : System Environment Data Set :==",
+            "--: Input File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "--: System Environment Properties :--",
+            "name:Data Set:System",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly"
+    ),
+
+    INPUT_DIRECTORY(
+            "==: Input File (DIR) : List all file within specified directory with some attributes (depends on version of DConvers) :==",
+            "--: Input File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "--: Directory List Properties :--",
+            "path:Directory:String",
+            ".:propertyMap:sub:Dive into sub-directory:Boolean",
+            ".:propertyMap:fileOnly:File only (exclude directory):Boolean",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly"
+    ),
+
     /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
+    INPUT_MARKDOWN(
+            "==: Input File (MD) : Text File contains one or more tables in Markdown Formatted :==",
+            "--: Input File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "--: Markdown Properties :--",
+            "name:File Name:Upload:type:uploadedId",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly"
+    ),
+
+    INPUT_TXT(
+            "==: Input File (TXT) : Text File in Fixed Length Formatted :==",
+            "--: File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "name:File Name:String:1000",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly"
+    ),
+
+    INPUT_CSV(
+            "==: Input File (CSV) : Text File in Comma Separated Values Formatted :==",
+            "--: File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "name:File Name:String:1000",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly"
+    ),
+    INPUT_SQL(
+            "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
+            "--: File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "name:File Name:String:1000",
+            ".:propertyMap:quotesName:Quotes for name:String:1000",
+            ".:propertyMap:quotesValue:Quotes for value:String:1000",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly"
+    ),
+
     TRANSFORM_TABLE(
             "==: Transformation Table : Transformation Table used to transfer/transform data from linked source table and apply some transformations at the end of transfer :==",
             "--: Transformation Table Properties :--",
-            "name:Table Name:String",
+            "name:Table Name:String:1000",
             "idColName:Key Column:Column:id",
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
@@ -241,7 +301,7 @@ public enum Properties {
             "==: Column : Column in Transformation Table :==",
             "--: Column Properties :--",
             "type:Type:ReadOnly",
-            "name:Name:String",
+            "name:Name:String:1000",
             "--: Value :--",
             "sourceColumnId:Source Column:Column:sourceId|[]useDynamic",
             "useDynamic:Dynamic Value Expression:BOOLEAN|refreshProperties();",
@@ -257,48 +317,6 @@ public enum Properties {
             /*TODO: include properties from specified property name (for selected function)*/
     ),
 
-    INPUT_SYSTEM_ENVIRONMENT(
-            "==: Input File (System Environment) : System Environment Data Set :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();",
-            "name:System Environment:System"
-    ),
-
-    INPUT_TXT(
-            "==: Input File (TXT) : Text File in Fixed Length Formatted :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();",
-            "name:File name:String"
-    ),
-    INPUT_CSV(
-            "==: Input File (CSV) : Text File in Comma Separated Values Formatted :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();",
-            "name:File name:String"
-    ),
-    INPUT_SQL(
-            "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();",
-            "name:File name:String",
-            ".:propertyMap:quotesName:Quotes for name:String:\"",
-            ".:propertyMap:quotesValue:Quotes for value:String:\""
-    ),
-    INPUT_MARKDOWN(
-            "==: Input File (MD) : Text File contains one or more tables in Markdown Formatted :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();",
-            "name:File name:String" /*TODO: do this after file structure is completed, change String of name to Upload. //"name:Filename:Upload:md,txt",*/
-    ),
-    INPUT_DIRECTORY(
-            "==: Input File (DIR) : List of file in directory as a table :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();",
-            "path:Path:String",
-            ".:propertyMap:sub:Include sub-directory:Boolean",
-            ".:propertyMap:fileOnly:Show file only:Boolean"
-    ),
-
     /*LOCAL(ALL-FILE-TYPES,CUSTOM-NAME), SFTP(ALL-FILE-TYPES,CUSTOM-NAME)*/
     /*RESPONSE(JSON,XML,FIXED-NAME), DATABASE(SQL,FIXED-NAME), KAFKAPRODUCER(JSON,XML,JAVASERIAL,FIXED-NAME)*/
     OUTPUT_TXT(
@@ -306,7 +324,7 @@ public enum Properties {
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
-            "name:File Name:String",
+            "name:File Name:String:1000",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
@@ -326,7 +344,7 @@ public enum Properties {
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
-            "name:File Name:String",
+            "name:File Name:String:1000",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
@@ -346,7 +364,7 @@ public enum Properties {
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
-            "name:File Name:String",
+            "name:File Name:String:1000",
             "path:File Path:String",
             "--:Extra Options:--",
             ".:propertyMap:append:Append:Boolean",
@@ -366,15 +384,15 @@ public enum Properties {
             "--: File Properties :--",
             "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
             "type:Output Type:DataFileType:out|refreshProperties();",
-            "name:File Name:String",
+            "name:File Name:String:1000",
             "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
             ".:propertyMap:eol:EOL:String",
             ".:propertyMap:eof:EOF:String",
-            ".:propertyMap:quotesOfName:Quotes for Name:String",
+            ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
-            ".:propertyMap:tableName:Table Name:String",
+            ".:propertyMap:tableName:Table Name:String:1000",
             ".:propertyMap:columnArray:Columns:ColumnArray",
             ".:propertyMap:create:Generate Table Creation Script:Boolean",
             ".:propertyMap:insert:Generate SQL Insert:Boolean",
@@ -389,7 +407,7 @@ public enum Properties {
             "type:Output Type:DataFileType:out|refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
-            ".:propertyMap:quotesOfName:Quotes for Name:String",
+            ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray"
@@ -401,7 +419,7 @@ public enum Properties {
             "type:Output Type:DataFileType:out:refreshProperties();",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columnList:Column List:ColumnList",
-            ".:propertyMap:quotesOfName:Quotes for Name:String",
+            ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray"
@@ -428,7 +446,7 @@ public enum Properties {
     /*Notice: columnFx properties below used when expand the column accordion, but when collapse the column accordion will use COLUMN_FUNCTION instead*/
     CFX_LOOKUP(
             "type:Type:ReadOnly",
-            "name:Name:String",
+            "name:Name:String:1000",
             ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
             "[useFunction: Value Function ::@columnId",
             ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
@@ -446,7 +464,7 @@ public enum Properties {
 
     CFX_GET(
             "type:Type:ReadOnly",
-            "name:Name:String",
+            "name:Name:String:1000",
             ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
             "[useFunction: Value Function ::@columnId",
             "function:Function:ColumnFunction",
@@ -461,7 +479,7 @@ public enum Properties {
 
     CFX_CONCAT(
             "type:Type:ReadOnly",
-            "name:Name:String",
+            "name:Name:String:1000",
             ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
             "[useFunction: Value Function ::@columnId",
             "function:Function:ColumnFunction",
@@ -473,7 +491,7 @@ public enum Properties {
 
     CFX_ROWCOUNT(
             "type:Type:ReadOnly",
-            "name:Name:String",
+            "name:Name:String:1000",
             ".:propertyMap:columnId:Value:Column:sourceTable::[]useFunction",
             "[useFunction: Value Function ::@columnId",
             "function:Function:ColumnFunction",
@@ -558,7 +576,7 @@ public enum Properties {
 
 
     TFX_FILTER(
-            "name:Name:String",
+            "name:Name:String:1000",
             ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",
             "[useFunction: Specific Function ::@dynamicValue",
             "function:Function:ColumnFunction",
@@ -569,7 +587,7 @@ public enum Properties {
     ),
 
     TFX_SORT(
-            "name:Name:String",
+            "name:Name:String:1000",
             "value:Value:Column:sourceTable::[]useFunction",
             "[: Dynamic Value Expression ::@value",
             ".:propertyMap:dynamicValue:Dynamic Value Expression:DynamicValue",

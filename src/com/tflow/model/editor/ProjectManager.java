@@ -691,6 +691,28 @@ public class ProjectManager {
         return activePackage;
     }
 
+    public List<BinaryFileItem> loadUploadedList(Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        DataManager dataManager = project.getDataManager();
+
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.UPLOADED_LIST, projectUser);
+        List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
+
+        return mapper.toBinaryFileItemList(binaryFileItemDataList);
+    }
+
+    public BinaryFile loadUploaded(int fileId, Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        DataManager dataManager = project.getDataManager();
+
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.UPLOADED, projectUser, fileId);
+        BinaryFileData binaryFileData = (BinaryFileData) throwExceptionOnError(data);
+
+        return mapper.map(binaryFileData);
+    }
+
     private boolean isSuccess(Future<RecordMetadata> future) {
         while (!future.isDone()) {
             try {

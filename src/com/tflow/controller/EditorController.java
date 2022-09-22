@@ -3,6 +3,7 @@ package com.tflow.controller;
 import com.tflow.kafka.*;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.Dbms;
+import com.tflow.model.data.FileNameExtension;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.editor.*;
@@ -22,12 +23,16 @@ import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.apache.zookeeper.common.StringUtils;
 import org.mapstruct.factory.Mappers;
 import org.primefaces.PrimeFaces;
+import org.primefaces.component.fileupload.FileUpload;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.model.file.UploadedFile;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.MenuElement;
 import org.primefaces.model.menu.MenuModel;
 
+import javax.faces.component.UIComponent;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -132,7 +137,7 @@ public class EditorController extends Controller {
         setEditorType(EditorType.STEP);
         initActionPriorityMap();
         initStepList();
-        selectProject();
+        //selectProject();
     }
 
     public void preRenderComponent() {
@@ -425,6 +430,10 @@ public class EditorController extends Controller {
                 if (dataSourceType.contains(DataSourceType.SFTP.name())) for (SFTP sftp : project.getSftpMap().values()) {
                     selectItemList.add(new SelectItem(sftp.getId(), sftp.getName() + ":" + sftp.getRootPath()));
                 }
+                if (dataSourceType.contains(DataSourceType.SYSTEM.name())) for (SystemEnvironment sys : SystemEnvironment.values()) {
+                    selectItemList.add(new SelectItem(sys.getId(), sys.name().replaceAll("[_]", " ")));
+                }
+
                 break;
 
             case DATASOURCETYPE:
@@ -1247,6 +1256,61 @@ public class EditorController extends Controller {
         jsBuilder.pre(JavaScript.refreshProperties).runOnClient();
 
         propertyChanged(property);
+    }
+
+    public void uploadBinaryFile(FileUploadEvent event) {
+        log.trace("uploadBinaryFile.");
+
+        UploadedFile file = event.getFile();
+        String fileName = file.getFileName();
+        FileUpload component = (FileUpload) event.getComponent();
+        log.debug("file:'{}', content-type:'{}', source:{}:'{}', component:{}:'{}'",
+                fileName,
+                file.getContentType(),
+                event.getSource().getClass().getName(),
+                event.getSource(),
+                component.getClass().getName(),
+                component.getClientId()
+        );
+
+        /*get property by property-var in StyleClass*/
+        PropertyView property = activeObject.getProperties().getPropertyView(component.getStyleClass());
+        log.debug("property: {}", property);
+
+        /*turn uploadedFile to binaryFile*/
+        BinaryFile binaryFile = new BinaryFile();
+        binaryFile.setName(fileName);
+        binaryFile.setContent(file.getContent());
+        /*Notice: OWASP: may be need to change Ext to real content type from Apache Tika*/
+        binaryFile.setExt(FileNameExtension.forName(fileName));
+        log.debug("uploaded as binaryFile: {}", binaryFile);
+
+        /*---- send binaryFile to Action AddUploaded ----*/
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.PROJECT, workspace.getProject());
+        paramMap.put(CommandParamKey.BINARY_FILE, binaryFile);
+        paramMap.put(CommandParamKey.PROPERTY, property);
+        paramMap.put(CommandParamKey.SELECTABLE, activeObject);
+        try {
+            /*TODO: create AddUploaded Action Class and Command Class
+             * 1. add Uploaded file to current project
+             * 2. set name to property-var
+             * 3. set file-id to property-param[1]
+             **/
+            //new AddUploaded(paramMap).execute();
+        } catch (Exception ex) {
+            log.error("Uploaded File Failed!", ex);
+            jsBuilder.pre(JavaScript.notiError, "Uploaded File Failed with Internal Command Error!");
+            return;
+        }
+
+        if (binaryFile.getId() == 0) {
+            log.error("Invalid Uploaded File ID!");
+            jsBuilder.pre(JavaScript.notiError, "Found Invalid Uploaded File ID!");
+            return;
+        }
+
+        propertyChanged(activeObject.getProjectFileType(), activeObject, property);
     }
 
 }

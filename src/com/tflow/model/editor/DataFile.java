@@ -12,8 +12,9 @@ import java.util.Map;
 public class DataFile extends Room implements Selectable, HasEndPlug {
     private transient Logger log = LoggerFactory.getLogger(DataFile.class);
 
-    protected int id;
     protected DataFileType type;
+
+    protected int id;
     protected String name;
     protected String path;
 
@@ -169,6 +170,13 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     @Override
     public String getSelectableId() {
         return "df" + id;
+    }
+
+    /**
+     * view only
+     **/
+    public boolean getTypeDisabled() {
+        return startPlug.isPlugged();
     }
 
     @Override

@@ -141,23 +141,13 @@ public interface ProjectMapper {
 
     LinePlug map(LinePlugData linePlugData);
 
-    List<Step> toStepList(List<ItemData> itemDataList);
-
-    List<ItemData> toItemDataList(List<Step> stepList);
-
-    @Mappings({
-            @Mapping(target = "userId", source = "owner.user.id"),
-            @Mapping(target = "clientId", source = "owner.client.id")
-    })
-    ProjectUser toProjectUser(Project project);
-
     Package map(PackageData packageData);
 
     PackageFile map(PackageFileData packageFileData);
 
-    List<Item> toItemList(List<ItemData> itemDataList);
+    BinaryFile map(BinaryFileData binaryFileData);
 
-    /*List<PackageFile> map(List<PackageFileData> packageFileData);*/
+    BinaryFileItem map(BinaryFileItemData binaryFileItemData);
 
     /*---- ALL ABOUT ID ----*/
 
@@ -205,6 +195,20 @@ public interface ProjectMapper {
         return selectable.getSelectableId();
     }
 
+
+    @Mappings({
+            @Mapping(target = "userId", source = "owner.user.id"),
+            @Mapping(target = "clientId", source = "owner.client.id")
+    })
+    ProjectUser toProjectUser(Project project);
+
+    List<Step> toStepList(List<ItemData> itemDataList);
+
+    List<ItemData> toItemDataList(List<Step> stepList);
+
+    List<Item> toItemList(List<ItemData> itemDataList);
+
+    List<BinaryFileItem> toBinaryFileItemList(List<BinaryFileItemData> binaryFileItemDataList);
 
     default DataSource toDataSource(Integer id) {
         return new Local(id);
@@ -270,4 +274,5 @@ public interface ProjectMapper {
     List<Integer> fromDoubleList(List<Double> doubleList);
 
     List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
+
 }

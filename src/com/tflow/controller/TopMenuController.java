@@ -1,6 +1,7 @@
 package com.tflow.controller;
 
 import com.tflow.model.PageParameter;
+import com.tflow.system.Environment;
 import com.tflow.system.constant.Theme;
 import com.tflow.util.FacesUtil;
 
@@ -12,14 +13,25 @@ import javax.inject.Named;
 @Named("topMenuCtl")
 public class TopMenuController extends Controller {
 
-    @Override
-    void onCreation() {
-        /*nothing*/
-    }
+    private boolean inDevelopment;
 
     @Override
     protected Page getPage() {
         return workspace.getCurrentPage();
+    }
+
+    public boolean isInDevelopment() {
+        return inDevelopment;
+    }
+
+    @Override
+    void onCreation() {
+        Environment currentEnvironment = workspace.getEnvironment();
+        inDevelopment = Environment.DEVELOPMENT == currentEnvironment;
+    }
+
+    public void openPlayground(int sectionIndex) {
+        workspace.openPage(Page.PLAYGROUND, new Parameter(PageParameter.SECTION_INDEX, String.valueOf(sectionIndex)));
     }
 
     public void newEmptyProject() {

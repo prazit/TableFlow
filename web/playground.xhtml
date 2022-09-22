@@ -30,12 +30,10 @@
                     </div>
                 </p:divider>
 
-                <p:tabView styleClass="fit-width" id="view">
+                <p:tabView styleClass="fit-width" id="view" activeIndex="#{playCtl.initialSectionIndex}">
                     <p:tab title="Primeface Messages / Notifaction">
 
-                        <h:form id="mainForm">
-                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-
+                        <h:form id="notiForm">
                             <div class="ui-g">
                                 <div class="ui-g-3" style="display:flex;justify-content: center;">
                                     <p:commandButton actionListener="#{playCtl.notiInfo}" value="Info Message" update="messagePanel"/><br/>
@@ -64,6 +62,66 @@
 
                         </h:form>
 
+                    </p:tab>
+                    <p:tab title="Upload File">
+                        <p:outputPanel styleClass="ui-g" id="uploadPanel">
+                            <h3>Upload Files</h3>
+
+                            <p:divider align="left">
+                                <div class="inline-flex align-items-center">
+                                    <i class="pi pi-info-circle"/>
+                                    <b>Commands:</b>
+                                </div>
+                            </p:divider>
+
+                            <div class="ui-g-6" style="background-color: var(--surface-d)">
+                                <p:outputPanel styleClass="ui-g">
+                                    <p:outputLabel styleClass="ui-g-12" value="Perform by Listener"/>
+                                </p:outputPanel>
+
+                                <h:form id="uploadForm" enctype="multipart/form-data">
+                                    <p:outputPanel styleClass="ui-g">
+                                        <p:outputLabel styleClass="ui-g-4" value="File: "/>
+                                        <p:outputPanel styleClass="ui-g-8 ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-filled">
+                                            <p:outputLabel id="uploadName" value="#{playCtl.binaryFile.name}" style="width:calc(100% - 2.7em);display:inline-block;"/>
+                                            <p:fileUpload listener="#{playCtl.upload}" allowTypes="#{playCtl.dataFileType.allowTypes}" validateContentType="true" performVirusScan="true" mode="simple" skinSimple="true" chooseIcon="pi pi-ellipsis-h" label="" auto="true" style="width:2.7em" update="topForm:notiMsg,view:uploadForm:uploadName,view:uploadForm:uploadContent" onvalidationfailure="onValidationFailure(this);" onerror="onError(this);"/>
+                                        </p:outputPanel>
+                                        <p:outputPanel id="uploadContent" styleClass="ui-g-12">
+                                            <code>#{playCtl.binaryFileContent}</code>
+                                        </p:outputPanel>
+                                    </p:outputPanel>
+                                </h:form>
+                                <script>
+                                    function onValidationFailure(something) {
+                                        console.log('onValidationFailure:');
+                                        console.log(something);
+                                    }
+
+                                    function onError(something) {
+                                        console.log('onError:');
+                                        console.log(something);
+                                    }
+                                </script>
+                            </div>
+                            <div class="ui-g-6" style="background-color: var(--surface-c)">
+                                <p:outputPanel styleClass="ui-g">
+                                    <p:outputLabel styleClass="ui-g-12" value="Perform by Object Binding"/>
+                                </p:outputPanel>
+
+                                <h:form id="uploadBindingForm" enctype="multipart/form-data">
+                                    <p:outputPanel styleClass="ui-g">
+                                        <p:outputLabel styleClass="ui-g-4" value="File: "/>
+                                        <p:outputPanel styleClass="ui-g-8">
+                                            <p:outputLabel id="uploadBindingName" value="#{playCtl.binaryFile.name}" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-filled" style="width:calc(100% - 2.7em);display:inline-block;"/>
+                                            <p:fileUpload value="#{playCtl.uploadedFile}" allowTypes="#{playCtl.dataFileType.allowTypes}" validateContentType="true" performVirusScan="true" mode="simple" skinSimple="true" chooseIcon="pi pi-ellipsis-h" label="" auto="true" style="width:2.7em" update="view:uploadBindingForm:uploadBindingName,view:uploadBindingForm:uploadBindingContent" onvalidationfailure="onValidationFailure(this);" onerror="onError(this);"/>
+                                        </p:outputPanel>
+                                        <p:outputPanel id="uploadBindingContent" styleClass="ui-g-12">
+                                            <code>#{playCtl.uploadedFileContent}</code>
+                                        </p:outputPanel>
+                                    </p:outputPanel>
+                                </h:form>
+                            </div>
+                        </p:outputPanel>
                     </p:tab>
                 </p:tabView>
 

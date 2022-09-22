@@ -45,6 +45,8 @@ public enum CommandParamKey {
 
     GROUP_ID,
     TEMPLATE_ID,
+
+    BINARY_FILE,
     ;
 
     boolean optional;

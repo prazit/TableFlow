@@ -244,7 +244,7 @@ function propertyCreated() {
     var $scrollPanel = $('.properties');
 
     if (!tflow.showDebugInfo) {
-        $scrollPanel.find('.ui-g-12').hide();
+        $scrollPanel.find('.debug').hide();
     }
 
     /*scroll panel need to resize when the window resized or the splitter resized*/
@@ -324,19 +324,22 @@ function refreshTabIndex() {
 function setFocus() {
     tflow.setFocus = null;
 
-    /* TODO: don't focus on the next-input */
-
     var $properties = $('.properties'),
-        inputs = $properties.find('input.focus');
+        inputs = $properties.find('input.focus'),
+        input = undefined;
+
     if (inputs.length === 0) {
         inputs = $properties.find('input');
         if (inputs.length > tflow.propertyFirstIndex) {
-            inputs[tflow.propertyFirstIndex].focus(function (ev) {
-                console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
-            });
+            input = inputs[tflow.propertyFirstIndex];
         }
     } else {
-        inputs[0].focus(function (ev) {
+        input = inputs[0];
+    }
+
+    /* ignore next-input */
+    if (input !== undefined && !$(input).hasClass('next-input')) {
+        input.focus(function (ev) {
             console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
         });
     }
