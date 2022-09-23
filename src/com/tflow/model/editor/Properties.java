@@ -1,9 +1,13 @@
 package com.tflow.model.editor;
 
+import com.clevel.dconvers.ngin.Crypto;
+import com.tflow.model.editor.cmd.ChangePropertyValue;
 import com.tflow.model.editor.view.PropertyView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -213,7 +217,8 @@ public enum Properties {
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
             "level:Table Level:ReadOnly",
-            "connectionCount:Connection Count:ReadOnly"
+            "connectionCount:Connection Count:ReadOnly",
+            "--: tested :--"
     ),
 
     DATA_COLUMN(
@@ -222,29 +227,34 @@ public enum Properties {
             "type:Data Type:ReadOnly",
             "name:Column Name:ReadOnly",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly"
+            "id:Column ID:ReadOnly",
+            "--: tested :--"
     ),
 
     INPUT_SYSTEM_ENVIRONMENT(
             "==: Input File (System Environment) : System Environment Data Set :==",
             "--: Input File Properties :--",
+            "name:Name:ReadOnly",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "--: System Environment Properties :--",
-            "name:Data Set:System",
+            "name:Data Set:System|updateProperty('name');:[]typeDisabled",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly"
+            "id:Column ID:ReadOnly",
+            "--: tested :--"
     ),
 
     INPUT_DIRECTORY(
             "==: Input File (DIR) : List all file within specified directory with some attributes (depends on version of DConvers) :==",
             "--: Input File Properties :--",
+            "name:Name:String:40",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "--: Directory List Properties :--",
             "path:Directory:String",
             ".:propertyMap:sub:Dive into sub-directory:Boolean",
             ".:propertyMap:fileOnly:File only (exclude directory):Boolean",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly"
+            "id:Column ID:ReadOnly",
+            "--: tested :--"
     ),
 
     INPUT_MARKDOWN(
@@ -254,10 +264,10 @@ public enum Properties {
             "--: Markdown Properties :--",
             "name:File Name:Upload:type:uploadedId:Invalid markdown file!|updateProperty('name');",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly"
+            "id:Column ID:ReadOnly",
+            "--: tested :--"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     INPUT_SQL(
             "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
             "--: File Properties :--",
@@ -267,9 +277,11 @@ public enum Properties {
             ".:propertyMap:quotesName:Quotes for name:String:1000",
             ".:propertyMap:quotesValue:Quotes for value:String:1000",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly"
+            "id:Column ID:ReadOnly",
+            "--: tested :--"
     ),
 
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     TRANSFORM_TABLE(
             "==: Transformation Table : Transformation Table used to transfer/transform data from linked source table and apply some transformations at the end of transfer :==",
             "--: Transformation Table Properties :--",
@@ -714,5 +726,134 @@ public enum Properties {
         }
         return propertyOrder.length() > 0 ? propertyOrder.substring(1) : "";
     }
+
+    /*getProperty*/
+
+    private String propertyToGetMethod(String propertyName) {
+        return "get" +
+                propertyName.substring(0, 1).toUpperCase()
+                + propertyName.substring(1);
+    }
+
+    private String propertyToIsMethod(String propertyName) {
+        return "is" +
+                propertyName.substring(0, 1).toUpperCase()
+                + propertyName.substring(1);
+    }
+
+    private Method getMethod(Selectable selectable, String propertyName) throws NoSuchMethodException {
+        try {
+            return selectable.getClass().getMethod(propertyToGetMethod(propertyName));
+        } catch (NoSuchMethodException ex) {
+            return selectable.getClass().getMethod(propertyToIsMethod(propertyName));
+        }
+    }
+
+    public Object getPropertyValue(Selectable selectable, String propertyName, Logger log) {
+        Map<String, Object> propertyMap = selectable.getPropertyMap();
+        Object value = propertyMap.get(propertyName);
+        if (value != null) return value;
+
+        try {
+            /*by getValue() method*/
+            Method method = getMethod(selectable, propertyName);
+            value = method.invoke(selectable);
+            if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:{}, method:{}(), value:({}){}", selectable.getSelectableId(), propertyName, method.getName(), value.getClass().getSimpleName(), value);
+        } catch (Exception e) {
+            /*by property.var*/
+            value = getPropertyValue(selectable, getPropertyView(propertyName), log);
+        }
+
+        return value == null ? "" : value;
+    }
+
+    public Object getPropertyValue(Selectable selectable, PropertyView property, Logger log) {
+        Object value = null;
+        if (property == null) {
+            return value;
+        }
+
+        if (property.hasParent()) {
+            /*by getParent().getValue() method, the parent always be the PropertyMap*/
+            value = selectable.getPropertyMap().get(property.getVar());
+            if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:propertyMap['{}'], value:({}){}", selectable.getSelectableId(), property.getVar(), value.getClass().getSimpleName(), value);
+        } else
+            try {
+                /*by getValue() method without parent*/
+                Method method = getMethod(selectable, property.getVar());
+                value = method.invoke(selectable);
+                if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:{}, method:{}(), value:({}){}", selectable.getSelectableId(), property.getVar(), method.getName(), value.getClass().getSimpleName(), value);
+            } catch (Exception ex) {
+                log.error("getPropertyValue: no compatible method to get value from selectable:" + selectable.getSelectableId() + ", property:" + property);
+            }
+
+        //return value == null ? "" : value;
+        return value;
+    }
+
+    /*setProperty*/
+
+    private String propertyToSetMethod(String propertyName) {
+        return "set" +
+                propertyName.substring(0, 1).toUpperCase()
+                + propertyName.substring(1);
+    }
+
+    private String toCSVString(Class<?>[] parameterTypes) {
+        if (parameterTypes.length == 0) return "";
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Class<?> parameterType : parameterTypes) {
+            stringBuilder.append(parameterType.getName()).append(",");
+        }
+        return stringBuilder.toString().substring(0, stringBuilder.length() - 1);
+    }
+
+    public void setPropertyValue(Selectable selectable, PropertyView property, Logger log) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassCastException {
+        Object value = property.getNewValue();
+        Map<String, Object> propertyMap = selectable.getPropertyMap();
+        String propertyName = property.getVar();
+        if (propertyMap != null && propertyMap.containsKey(propertyName)) {
+            propertyMap.put(propertyName, value);
+            return;
+        }
+
+        /*by setValue() method*/
+        String methodName = propertyToSetMethod(propertyName);
+        Method[] methods = selectable.getClass().getMethods();
+        for (Method method : methods) {
+            if (method.getName().compareTo(methodName) == 0) {
+                Class[] parameterTypes = method.getParameterTypes();
+                Class parameterClass = parameterTypes[0];
+                if (log.isDebugEnabled()) log.debug("setPropertyValue(oldValue:{}, property:{}:{}): using method {}({}:{})", property.getOldValue(), property.getVar(), property.getType(), method.getName(), toCSVString(parameterTypes), value);
+                if (value == null) {
+                    method.invoke(selectable, parameterClass.cast(null));
+                } else if (value instanceof Integer || value instanceof Long || value instanceof Boolean) {
+                    method.invoke(selectable, value);
+                } else if (value instanceof String) {
+                    if (((String) value).isEmpty()) {
+                        method.invoke(selectable, parameterClass.cast(null));
+                    } else if (parameterClass.isEnum()) {
+                        method.invoke(selectable, Enum.valueOf(parameterClass, (String) value));
+                    } else if (PropertyType.PASSWORD == property.getType()) {
+                        String stringValue = Crypto.encrypt((String) value);
+                        property.setNewValue(stringValue);
+                        method.invoke(selectable, stringValue);
+                    } else {
+                        method.invoke(selectable, value);
+                    }
+                } else if (!parameterClass.isInstance(value)) {
+                    method.invoke(selectable, parameterClass.cast(value));
+                } else {
+                    method.invoke(selectable, value);
+                }
+
+                return;
+            }
+        }
+
+        throw new NoSuchMethodException("No method " + methodName + "(Object) in " + selectable.getClass().getName() + "[" + selectable.getSelectableId() + "]");
+    }
+
 
 }

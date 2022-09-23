@@ -21,7 +21,7 @@
         <f:event type="preRenderComponent" listener="#{editorCtl.preRenderComponent}"/>
 
         <p:remoteCommand name="refreshProperties" action="#{editorCtl.refreshProperties}" update="propertyForm"/>
-        <p:remoteCommand name="refreshElement" action="#{editorCtl.updateComponent}"/>
+        <p:remoteCommand name="refreshElement" action="#{editorCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="notification" action="#{editorCtl.showNoti}"/>
 
         <script>console.log('-- first-line of editor --');</script>

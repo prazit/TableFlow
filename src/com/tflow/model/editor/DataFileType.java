@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.editor.cmd.ExtractSystemEnvironment;
 import com.tflow.model.editor.datasource.DataSourceType;
 
 /**
@@ -7,11 +8,12 @@ import com.tflow.model.editor.datasource.DataSourceType;
  */
 public enum DataFileType {
 
-    /*TODO: when future feature 'DataSourceType.KAFKAPRODUCER' is added also need to remove dataSourceType from this enum*/
-    IN_MARKDOWN("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "input.md", "/(\\.|\\/)(md|markdown)$/"),
-    IN_SQL("SQL File", "sql.png", /*DataSourceType.DATABASE*/ null, Properties.INPUT_SQL, "input.sql", "/(\\.|\\/)(sql)$/"),
-    IN_DIR("Directory List", "dir.png", DataSourceType.LOCAL, Properties.INPUT_DIRECTORY, "/", null),
-    IN_ENVIRONMENT("System Environment", "system.png", DataSourceType.SYSTEM, Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment", null),
+    /*TODO: Future feature 'DataSourceType.KAFKAPRODUCER' is added also need to remove dataSourceType from this enum*/
+    /*TODO: create real Extractor class for each INPUT types*/
+    IN_MARKDOWN("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "input.md", "/(\\.|\\/)(md|markdown)$/", ExtractSystemEnvironment.class),
+    IN_SQL("SQL File", "sql.png", /*DataSourceType.DATABASE*/ null, Properties.INPUT_SQL, "input.sql", "/(\\.|\\/)(sql)$/", ExtractSystemEnvironment.class),
+    IN_DIR("Directory List", "dir.png", DataSourceType.LOCAL, Properties.INPUT_DIRECTORY, "/", null, ExtractSystemEnvironment.class),
+    IN_ENVIRONMENT("System Environment", "system.png", DataSourceType.SYSTEM, Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment", null, ExtractSystemEnvironment.class),
 
     /*-- TODO: Future Feature: output to Database
     OUT_DBINSERT("Insert to Database", "sql.png", DataSourceType.DATABASE, Properties.OUTPUT_DBINSERT, "no-output-file", ""),
@@ -37,6 +39,18 @@ public enum DataFileType {
 
     private String defaultFileName;
 
+    private Class extractorClass;
+
+    DataFileType(String name, String image, DataSourceType dataSourceType, Properties properties, String defaultFileName, String allowTypes, Class extractorClass) {
+        this.name = name;
+        this.image = image;
+        this.dataSourceType = dataSourceType;
+        this.properties = properties;
+        this.defaultFileName = defaultFileName;
+        this.allowTypes = allowTypes;
+        this.extractorClass = extractorClass;
+    }
+
     DataFileType(String name, String image, DataSourceType dataSourceType, Properties properties, String defaultFileName, String allowTypes) {
         this.name = name;
         this.image = image;
@@ -44,6 +58,7 @@ public enum DataFileType {
         this.properties = properties;
         this.defaultFileName = defaultFileName;
         this.allowTypes = allowTypes;
+        this.extractorClass = null;
     }
 
     public String getName() {
@@ -76,5 +91,9 @@ public enum DataFileType {
 
     public String getAllowTypes() {
         return allowTypes;
+    }
+
+    public Class getExtractorClass() {
+        return extractorClass;
     }
 }

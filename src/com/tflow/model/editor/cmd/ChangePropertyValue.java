@@ -5,6 +5,7 @@ import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.view.PropertyView;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
@@ -12,6 +13,8 @@ import java.util.Map;
 public class ChangePropertyValue extends Command {
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
+        Logger log = LoggerFactory.getLogger(getClass());
+
         Workspace workspace = (Workspace) paramMap.get(CommandParamKey.WORKSPACE);
         ProjectFileType projectFileType = (ProjectFileType) paramMap.get(CommandParamKey.PROJECT_FILE_TYPE);
         Object dataObject = paramMap.get(CommandParamKey.DATA);
@@ -21,7 +24,7 @@ public class ChangePropertyValue extends Command {
         if (dataObject instanceof Selectable) {
             selectable = (Selectable) dataObject;
             try {
-                setPropertyValue(selectable, property);
+                selectable.getProperties().setPropertyValue(selectable, property, log);
             } catch (Exception ex) {
                 throw new UnsupportedOperationException("Cannot set property(" + property + ") to selectable(" + selectable.getSelectableId() + ")", ex);
             }

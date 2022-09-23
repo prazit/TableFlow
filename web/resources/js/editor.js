@@ -6,14 +6,15 @@ function warning(msg) {
 }
 
 function updateProperty(className) {
-    var $property = $('.properties .' + className);
+    var $properties = $('.properties');
+    var $property = $properties.find('.' + className);
     var id = $property.attr('id');
-    console.log('updateProperty(property:"' + className + '", id:"' + id + '")');
+    tflow.postRefreshElement = function(){
+        hideDebugInfo($properties);
+    };
     refreshElement([
         {name: 'componentId', value: id}
     ]);
-    $property.css('background-color', 'var(--surface-c)');
-    console.log('updateProperty completed');
 }
 
 function setFlowchart(page) {
@@ -243,16 +244,20 @@ function updateEm(selectableId) {
     contentWindow['update' + selectableId]();
 }
 
+function hideDebugInfo($container) {
+    console.log('hideDebugInfo( showDebugInfo:' + tflow.showDebugInfo + ', $container:' + $container.attr('class') + ' )');
+    if (!tflow.showDebugInfo) {
+        $container.find('.debug').hide();
+    }
+}
+
 function propertyCreated() {
     if (tflow.propertyCreatedEnding) return;
     tflow.propertyCreatedEnding = true;
 
     /* init all behaviors of input boxes*/
     var $scrollPanel = $('.properties');
-
-    if (!tflow.showDebugInfo) {
-        $scrollPanel.find('.debug').hide();
-    }
+    hideDebugInfo($scrollPanel);
 
     /*scroll panel need to resize when the window resized or the splitter resized*/
     $scrollPanel.css('width', '100%');

@@ -20,6 +20,10 @@ import com.tflow.util.FacesUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
+import org.apache.tika.Tika;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
 import org.apache.zookeeper.common.StringUtils;
 import org.mapstruct.factory.Mappers;
 import org.primefaces.PrimeFaces;
@@ -349,6 +353,7 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step activeStep = project.getActiveStep();
         Selectable activeObject = activeStep.getActiveObject();
+        Properties properties = activeObject.getProperties();
         ProjectFileType activeObjectType = activeObject.getProjectFileType();
         if (log.isDebugEnabled()) log.debug("getItemList(property:{}, activeStep:{}, activeObject:({}){}.", propertyView, activeStep.getSelectableId(), activeObject.getClass().getSimpleName(), activeObject);
 
@@ -394,10 +399,10 @@ public class EditorController extends Controller {
                 Object tableId;
                 DataTable sourceTable;
                 if (ProjectFileType.DATA_TABLE == activeObjectType || ProjectFileType.TRANSFORM_TABLE == activeObjectType) {
-                    tableId = getPropertyValue(activeObject, params[0]);
+                    tableId = properties.getPropertyValue(activeObject, params[0], log);
                 } else { /*ProjectFileType.DATA_COLUMN || ProjectFileType.TRANSFORM_COLUMN*/
                     DataColumn dataColumn = (DataColumn) activeObject;
-                    tableId = getPropertyValue(dataColumn.getOwner(), params[0]);
+                    tableId = properties.getPropertyValue(dataColumn.getOwner(), params[0], log);
                 }
                 sourceTable = activeStep.getDataTable((Integer) tableId);
                 if (sourceTable == null) {
@@ -417,7 +422,7 @@ public class EditorController extends Controller {
                 if (paramCount > 0 && !params[0].isEmpty()) {
                     dataSourceType = params[0].toUpperCase();
                 } else if (paramCount > 1 && !params[1].isEmpty()) {
-                    dataSourceType = ((DataSourceType) getPropertyValue(activeObject, params[1])).name();
+                    dataSourceType = ((DataSourceType) properties.getPropertyValue(activeObject, params[1], log)).name();
                 }
                 if (dataSourceType == null) dataSourceType = DataSourceType.DATABASE.name() + DataSourceType.LOCAL.name() + DataSourceType.SFTP.name();
 
@@ -1217,11 +1222,12 @@ public class EditorController extends Controller {
         boolean disabled = false;
         boolean enabled = true;
 
+        Properties properties = activeObject.getProperties();
         if (property.getDisableVar() != null) {
-            disabled = (Boolean) getPropertyValue(activeObject, property.getDisableVar());
+            disabled = (Boolean) properties.getPropertyValue(activeObject, property.getDisableVar(), log);
         }
         if (property.getEnableVar() != null) {
-            enabled = (Boolean) getPropertyValue(activeObject, property.getEnableVar());
+            enabled = (Boolean) properties.getPropertyValue(activeObject, property.getEnableVar(), log);
         }
 
         return disabled || !enabled;
@@ -1271,8 +1277,13 @@ public class EditorController extends Controller {
         binaryFile.setExt(FileNameExtension.forName(fileName));
         log.debug("uploadBinaryFile: property: {}, uploadedFile: {}", property, binaryFile);
 
-        /*TODO: Notice: OWASP: may be need to change Ext to real content type from Apache Tika*/
-
+        // Notice: OWASP: need mime-type from Apache-Tika, don't use file.getContentType() it always return 'application/octet-stream'.
+        Tika tika = new Tika();
+        String mimeType = tika.detect(binaryFile.getContent());
+        if (mimeType.compareTo("text/plain") != 0) {
+            jsBuilder.pre(JavaScript.notiWarn, property.getParams()[2]);
+            return;
+        }
 
         /*send binaryFile to Action AddUploaded*/
         Map<CommandParamKey, Object> paramMap = new HashMap<>();

@@ -5,13 +5,13 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.BinaryFileItemData;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
-import com.tflow.model.editor.BinaryFile;
-import com.tflow.model.editor.PropertyType;
-import com.tflow.model.editor.Selectable;
-import com.tflow.model.editor.Workspace;
+import com.tflow.model.data.TWData;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
 import org.mapstruct.factory.Mappers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +20,8 @@ public class AddUploaded extends Command {
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
+        Logger log = LoggerFactory.getLogger(getClass());
+
         Workspace workspace = (Workspace) paramMap.get(CommandParamKey.WORKSPACE);
         BinaryFile binaryFile = (BinaryFile) paramMap.get(CommandParamKey.BINARY_FILE);
         PropertyView property = (PropertyView) paramMap.get(CommandParamKey.PROPERTY);
@@ -28,23 +30,40 @@ public class AddUploaded extends Command {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         DataManager dataManager = workspace.getDataManager();
         ProjectUser projectUser = workspace.getProjectUser();
+        Properties properties = selectable.getProperties();
 
-        // add Uploaded file to current project
         Object data = dataManager.getData(ProjectFileType.UPLOADED_LIST, projectUser);
         List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
         int fileId = binaryFileItemDataList.size() + 1;
+
+        /*need to replace older uploaded file if exists*/
+        PropertyView newProperty = new PropertyView();
+        newProperty.setVar(property.getParams()[1]);
+        newProperty.setType(PropertyType.INT);
+        Object uploadedFileId = properties.getPropertyValue(selectable, newProperty, log);
+        boolean append = true;
+        if (uploadedFileId instanceof Integer) {
+            Integer olderFileId = (Integer) uploadedFileId;
+            if (olderFileId > 0) {
+                fileId = olderFileId;
+                append = false;
+            }
+        }
+
         binaryFile.setId(fileId);
-        binaryFileItemDataList.add(mapper.toBinaryFileItemData(binaryFile));
-        dataManager.addData(ProjectFileType.UPLOADED_LIST, binaryFileItemDataList, projectUser);
+        if (append) {
+            // add Uploaded file to current project
+            binaryFileItemDataList.add(mapper.toBinaryFileItemData(binaryFile));
+            dataManager.addData(ProjectFileType.UPLOADED_LIST, binaryFileItemDataList, projectUser);
+        }
+
+        // save file content
         dataManager.addData(ProjectFileType.UPLOADED, mapper.map(binaryFile), projectUser, fileId);
 
         // set file-id to selectable[property-param[1]]
-        PropertyView newProperty = new PropertyView();
+        newProperty.setNewValue(fileId);
         try {
-            newProperty.setVar(property.getParams()[1]);
-            newProperty.setType(PropertyType.INT);
-            newProperty.setNewValue(fileId);
-            setPropertyValue(selectable, newProperty);
+            properties.setPropertyValue(selectable, newProperty, log);
         } catch (Exception ex) {
             throw new UnsupportedOperationException("Cannot set property(" + newProperty + ") to selectable(" + selectable.getSelectableId() + ")", ex);
         }

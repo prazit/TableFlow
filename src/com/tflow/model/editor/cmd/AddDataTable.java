@@ -13,6 +13,7 @@ import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,8 @@ import java.util.Map;
  * Extract Data File, Create DataTable and then add to DATA TOWER and DataTable List.
  */
 public class AddDataTable extends Command {
+
+    private Logger log = LoggerFactory.getLogger(AddDataTable.class);
 
     @SuppressWarnings("unchecked")
     public void execute(Map<CommandParamKey, Object> paramMap) {
@@ -33,7 +36,7 @@ public class AddDataTable extends Command {
         boolean isExecute = dataTable == null;
         if (isExecute) {
             /*execute*/
-            dataTable = extractData(dataFile, step);
+            dataTable = extractData(dataFile.getType(), paramMap);
             dataTable.setLevel(0);
         }
 
@@ -122,7 +125,6 @@ public class AddDataTable extends Command {
         int dataFileRoomIndex = dataFile.getRoomIndex();
         int dataTableRoomIndex = dataFileRoomIndex + 1;
 
-        Logger log = LoggerFactory.getLogger(AddDataTable.class);
         int floorIndex = dataFileFloorIndex;
         EmptyRoom emptyRoom = null;
         Room room;
@@ -172,35 +174,24 @@ public class AddDataTable extends Command {
         }
     }
 
-    private DataTable extractData(DataFile dataFile, Step step) {
+    private DataTable extractData(DataFileType type, Map<CommandParamKey, Object> paramMap) {
+        Command extractor = null;
+        try {
+            Class extractorClass = type.getExtractorClass();
+            Constructor constructor = extractorClass.getConstructor();
+            extractor = (Command) constructor.newInstance();
+        } catch (Exception ex) {
+            throw new UnsupportedOperationException("create data extractor failure", ex);
+        }
 
-        Project project = step.getOwner();
+        try {
+            extractor.execute(paramMap);
+        } catch (Exception ex) {
+            throw new UnsupportedOperationException("extract data failure", ex);
+        }
 
-        /*TODO: create compatible Extractor (dataFile.type) | DConvers lib need to make some changes to accept configuration in config class instant*/
-        /*TODO: call Extractor.extract*/
-
-        /*-- TODO: remove mockup data below, used to test the command --*/
-        DataTable dataTable = new DataTable("Untitled", dataFile, "", ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), step);
-
-        List<DataColumn> columnList = dataTable.getColumnList();
-        columnList.add(new DataColumn(1, DataType.STRING, "String Column", ProjectUtil.newElementId(project), dataTable));
-        columnList.add(new DataColumn(2, DataType.INTEGER, "Integer Column", ProjectUtil.newElementId(project), dataTable));
-        columnList.add(new DataColumn(3, DataType.DECIMAL, "Decimal Column", ProjectUtil.newElementId(project), dataTable));
-        columnList.add(new DataColumn(4, DataType.DATE, "Date Column", ProjectUtil.newElementId(project), dataTable));
-
-        OutputFile outputCSVFile = new OutputFile(
-                DataFileType.OUT_CSV,
-                "out/",
-                ProjectUtil.newElementId(project),
-                ProjectUtil.newElementId(project)
-        );
-
-        List<OutputFile> outputList = dataTable.getOutputList();
-        outputList.add(outputCSVFile);
-
-        ProjectUtil.generateId(step.getSelectableMap(), dataTable, project);
-
-        return dataTable;
+        Action action = (Action) paramMap.get(CommandParamKey.ACTION);
+        return (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
     }
 
 }
