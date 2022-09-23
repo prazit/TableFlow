@@ -247,39 +247,23 @@ public enum Properties {
             "id:Column ID:ReadOnly"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     INPUT_MARKDOWN(
             "==: Input File (MD) : Text File contains one or more tables in Markdown Formatted :==",
             "--: Input File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "--: Markdown Properties :--",
-            "name:File Name:Upload:type:uploadedId",
+            "name:File Name:Upload:type:uploadedId:Invalid markdown file!|updateProperty('name');",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly"
     ),
 
-    INPUT_TXT(
-            "==: Input File (TXT) : Text File in Fixed Length Formatted :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
-            "name:File Name:String:1000",
-            "--: Technical Support :--",
-            "id:Column ID:ReadOnly"
-    ),
-
-    INPUT_CSV(
-            "==: Input File (CSV) : Text File in Comma Separated Values Formatted :==",
-            "--: File Properties :--",
-            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
-            "name:File Name:String:1000",
-            "--: Technical Support :--",
-            "id:Column ID:ReadOnly"
-    ),
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     INPUT_SQL(
             "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
             "--: File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
-            "name:File Name:String:1000",
+            "--: SQL Properties :--",
+            "name:File Name:Upload:type:uploadedId:Invalid SQL file!|updateProperty('name');",
             ".:propertyMap:quotesName:Quotes for name:String:1000",
             ".:propertyMap:quotesValue:Quotes for value:String:1000",
             "--: Technical Support :--",

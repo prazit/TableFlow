@@ -70,7 +70,7 @@ public class RemoveDataTable extends Command {
         dataManager.addData(ProjectFileType.LINE, (TWData) null, projectUser, removedLine.getId(), step.getId());
 
         // save object(DataFile) at endPlug.
-        dataManager.addData(ProjectFileType.DATA_FILE, (TWData) null, projectUser, dataFile.getId(), step.getId());
+        dataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), projectUser, dataFile.getId(), step.getId());
 
         // save Line list
         dataManager.addData(ProjectFileType.LINE_LIST, mapper.fromLineList(step.getLineList()), projectUser, 1, step.getId());

@@ -1,3 +1,10 @@
+function warning(msg) {
+    notification([
+        {name: 'message', value: msg},
+        {name: 'type', value: 'notiWarn'}
+    ]);
+}
+
 function updateProperty(className) {
     var $property = $('.properties .' + className);
     var id = $property.attr('id');

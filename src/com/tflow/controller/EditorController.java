@@ -1259,58 +1259,34 @@ public class EditorController extends Controller {
     }
 
     public void uploadBinaryFile(FileUploadEvent event) {
-        log.trace("uploadBinaryFile.");
-
         UploadedFile file = event.getFile();
         String fileName = file.getFileName();
         FileUpload component = (FileUpload) event.getComponent();
-        log.debug("file:'{}', content-type:'{}', source:{}:'{}', component:{}:'{}'",
-                fileName,
-                file.getContentType(),
-                event.getSource().getClass().getName(),
-                event.getSource(),
-                component.getClass().getName(),
-                component.getClientId()
-        );
-
-        /*get property by property-var in StyleClass*/
         PropertyView property = activeObject.getProperties().getPropertyView(component.getStyleClass());
-        log.debug("property: {}", property);
 
         /*turn uploadedFile to binaryFile*/
         BinaryFile binaryFile = new BinaryFile();
         binaryFile.setName(fileName);
         binaryFile.setContent(file.getContent());
-        /*Notice: OWASP: may be need to change Ext to real content type from Apache Tika*/
         binaryFile.setExt(FileNameExtension.forName(fileName));
-        log.debug("uploaded as binaryFile: {}", binaryFile);
+        log.debug("uploadBinaryFile: property: {}, uploadedFile: {}", property, binaryFile);
 
-        /*---- send binaryFile to Action AddUploaded ----*/
+        /*TODO: Notice: OWASP: may be need to change Ext to real content type from Apache Tika*/
+
+
+        /*send binaryFile to Action AddUploaded*/
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.PROJECT, workspace.getProject());
+        paramMap.put(CommandParamKey.WORKSPACE, workspace);
         paramMap.put(CommandParamKey.BINARY_FILE, binaryFile);
         paramMap.put(CommandParamKey.PROPERTY, property);
         paramMap.put(CommandParamKey.SELECTABLE, activeObject);
         try {
-            /*TODO: create AddUploaded Action Class and Command Class
-             * 1. add Uploaded file to current project
-             * 2. set name to property-var
-             * 3. set file-id to property-param[1]
-             **/
-            //new AddUploaded(paramMap).execute();
+            new AddUploaded(paramMap).execute();
         } catch (Exception ex) {
             log.error("Uploaded File Failed!", ex);
             jsBuilder.pre(JavaScript.notiError, "Uploaded File Failed with Internal Command Error!");
             return;
         }
-
-        if (binaryFile.getId() == 0) {
-            log.error("Invalid Uploaded File ID!");
-            jsBuilder.pre(JavaScript.notiError, "Found Invalid Uploaded File ID!");
-            return;
-        }
-
-        propertyChanged(activeObject.getProjectFileType(), activeObject, property);
     }
 
 }

@@ -48,6 +48,8 @@ public interface ProjectMapper {
 
     PackageData map(Package aPackage);
 
+    BinaryFileData map(BinaryFile binaryFile);
+
     @Mappings({
             @Mapping(target = "dataTower", source = "dataTower.id"),
             @Mapping(target = "transformTower", source = "transformTower.id"),
@@ -202,9 +204,11 @@ public interface ProjectMapper {
     })
     ProjectUser toProjectUser(Project project);
 
-    List<Step> toStepList(List<ItemData> itemDataList);
-
     List<ItemData> toItemDataList(List<Step> stepList);
+
+    BinaryFileItemData toBinaryFileItemData(BinaryFile binaryFile);
+
+    List<Step> toStepList(List<ItemData> itemDataList);
 
     List<Item> toItemList(List<ItemData> itemDataList);
 

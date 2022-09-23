@@ -22,6 +22,7 @@
 
         <p:remoteCommand name="refreshProperties" action="#{editorCtl.refreshProperties}" update="propertyForm"/>
         <p:remoteCommand name="refreshElement" action="#{editorCtl.updateComponent}"/>
+        <p:remoteCommand name="notification" action="#{editorCtl.showNoti}"/>
 
         <script>console.log('-- first-line of editor --');</script>
         <div class="container">
@@ -241,7 +242,7 @@
                                             <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <p:outputPanel styleClass="ui-g-8 fileupload ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-filled">
                                                 <p:outputLabel id="uploadName" value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}"/>
-                                                <p:fileUpload styleClass="#{prop.var}" listener="#{editorCtl.uploadBinaryFile}" allowTypes="#{editorCtl.activeObject[prop.params[0]].allowTypes}" validateContentType="true" performVirusScan="true" mode="simple" skinSimple="true" chooseIcon="pi pi-ellipsis-h" label="" auto="true" update="@parent topForm:notiMsg" onvalidationfailure="console.log('onValidationFailure')" onerror="console.log('onError')"/>
+                                                <p:fileUpload styleClass="#{prop.var}" listener="#{editorCtl.uploadBinaryFile}" allowTypes="#{editorCtl.activeObject[prop.params[0]].allowTypes}" validateContentType="true" performVirusScan="true" mode="simple" skinSimple="true" chooseIcon="pi pi-ellipsis-h" label="" auto="true" update="@parent topForm:notiMsg" onvalidationfailure="warning('#{prop.params[2]}');" onerror="warning('#{prop.params[2]}');" oncomplete="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this"/>
                                             </p:outputPanel>
                                         </p:outputPanel>
 

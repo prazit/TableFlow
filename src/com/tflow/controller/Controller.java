@@ -95,7 +95,14 @@ public abstract class Controller implements Serializable {
     }
 
     public void showNoti() {
-        jsBuilder.runNoti();
+        String message = FacesUtil.getRequestParam("message");
+        if (message == null) {
+            jsBuilder.runNoti();
+        } else {
+            String type = FacesUtil.getRequestParam("type");
+            JavaScript notiType = JavaScript.valueOf(type);
+            jsBuilder.pre(notiType, message);
+        }
     }
 
     protected String propertyToGetMethod(String propertyName) {
