@@ -47,7 +47,7 @@ public class AddTransformTable extends Command {
         }
 
         /*need to add ColumnFxTable to the room before Transform Table*/
-        EmptyRoom emptyRoom = findEmptyRoom(tower, sourceTable, step.getSelectableMap());
+        EmptyRoom emptyRoom = findEmptyRoom(tower, sourceTable, step.getSelectableMap(), step);
         tower.setRoom(emptyRoom.getFloorIndex(), emptyRoom.getRoomIndex() - 1, transformTable.getColumnFxTable());
         tower.setRoom(emptyRoom.getFloorIndex(), emptyRoom.getRoomIndex(), transformTable);
 
@@ -140,7 +140,7 @@ public class AddTransformTable extends Command {
     /**
      * Find empty room for TransformTable only.
      */
-    private EmptyRoom findEmptyRoom(Tower transformTower, DataTable sourceDataTable, Map<String, Selectable> selectableMap) throws UnsupportedOperationException {
+    private EmptyRoom findEmptyRoom(Tower transformTower, DataTable sourceDataTable, Map<String, Selectable> selectableMap, Step step) throws UnsupportedOperationException {
         boolean sameTower = sourceDataTable.getFloor().getTower().getId() == transformTower.getId();
         int sourceDataTableId = sourceDataTable.getId();
         int sourceDataTableFloorIndex = sourceDataTable.getFloorIndex();
@@ -173,7 +173,7 @@ public class AddTransformTable extends Command {
             }
 
             int sourceId = ((TransformTable) room).getSourceId();
-            DataTable sourceTable = (DataTable) selectableMap.get(sourceId);
+            DataTable sourceTable = step.getDataTable(sourceId);
             if (/*not empty and */sourceTable.getFloorIndex() <= sourceDataTableFloorIndex) {
                 directBrother = sourceId == sourceDataTableId;
                 brotherChecked = true;

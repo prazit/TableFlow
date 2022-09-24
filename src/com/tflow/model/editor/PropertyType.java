@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public enum PropertyType {
+    TOSTRING(null),
 
     TITLE(null),
     SEPARATOR(null),

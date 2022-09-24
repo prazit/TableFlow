@@ -15,7 +15,8 @@ public class LinePlugData extends TWData implements Serializable {
     private String plug;
 
     private boolean plugged;
-    private List<Integer> lineList;
+    /*Notice: all line in lineList already exists in Step.lineList and will be added at the end of SelectStep action.
+       private List<Integer> lineList;*/
 
     private String removeButtonTip;
     private boolean removeButton;

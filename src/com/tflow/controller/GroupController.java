@@ -186,11 +186,11 @@ public class GroupController extends Controller {
     }
 
     public void openSection(TabChangeEvent event) throws ProjectDataException {
-        String title = event.getTab().getTitle();
+        String title = event.getTab().getFacet("title").toString();
         log.debug("openSection: selectedTitle={}, event={}", title, event);
-        if (title.compareTo(GroupSection.EXISTING_PROJECT.getTitle()) == 0) {
+        if (title.contains(GroupSection.EXISTING_PROJECT.getTitle())) {
             openSectionUpdate = openProjectSection();
-        } else if (title.compareTo(GroupSection.PROJECT_TEMPLATE.getTitle()) == 0) {
+        } else if (title.contains(GroupSection.PROJECT_TEMPLATE.getTitle())) {
             openSectionUpdate = openTemplateSection();
         } else {
             openSectionUpdate = "";

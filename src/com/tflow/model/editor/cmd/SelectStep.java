@@ -81,12 +81,15 @@ public class SelectStep extends Command {
                 log.warn("line={}", line);
                 try {
                     line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
+                    /*TODO: LinePlug.lineList need this line too*/
                 } catch (NullPointerException ex) {
                     log.error("startSelectableId:{} not found", line.getStartSelectableId());
                 }
 
                 try {
-                    line.setEndPlug(((HasEndPlug) selectableMap.get(line.getEndSelectableId())).getEndPlug());
+                    LinePlug endPlug = ((HasEndPlug) selectableMap.get(line.getEndSelectableId())).getEndPlug();
+                    line.setEndPlug(endPlug);
+                    endPlug.getLineList().add(line);
                 } catch (NullPointerException ex) {
                     log.error("endSelectableId:{} not found", line.getEndSelectableId());
                 }

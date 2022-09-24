@@ -416,7 +416,7 @@ public class EditorController extends Controller {
                 break;
 
             case DATASOURCE:
-                /*Notice: found used in STEP_DATA_SOURCE and all OUTPUT_XXX */
+                /*Notice: found used in STEP_DATA_SOURCE, INPUT_XXX, OUTPUT_XXX */
                 String dataSourceType = null;
                 int paramCount = params.length;
                 if (paramCount > 0 && !params[0].isEmpty()) {
@@ -427,16 +427,16 @@ public class EditorController extends Controller {
                 if (dataSourceType == null) dataSourceType = DataSourceType.DATABASE.name() + DataSourceType.LOCAL.name() + DataSourceType.SFTP.name();
 
                 if (dataSourceType.contains(DataSourceType.DATABASE.name())) for (Database database : project.getDatabaseMap().values()) {
-                    selectItemList.add(new SelectItem(database.getId(), database.getDbms() + ":" + database.getName()));
+                    selectItemList.add(new SelectItem(DataSourceType.DATABASE + ":" + database.getId(), database.getDbms() + ":" + database.getName()));
                 }
                 if (dataSourceType.contains(DataSourceType.LOCAL.name())) for (Local local : project.getLocalMap().values()) {
-                    selectItemList.add(new SelectItem(local.getId(), local.getName() + ":" + local.getRootPath()));
+                    selectItemList.add(new SelectItem(DataSourceType.LOCAL + ":" + local.getId(), local.getName() + ":" + local.getRootPath()));
                 }
                 if (dataSourceType.contains(DataSourceType.SFTP.name())) for (SFTP sftp : project.getSftpMap().values()) {
-                    selectItemList.add(new SelectItem(sftp.getId(), sftp.getName() + ":" + sftp.getRootPath()));
+                    selectItemList.add(new SelectItem(DataSourceType.SFTP + ":" + sftp.getId(), sftp.getName() + ":" + sftp.getRootPath()));
                 }
                 if (dataSourceType.contains(DataSourceType.SYSTEM.name())) for (SystemEnvironment sys : SystemEnvironment.values()) {
-                    selectItemList.add(new SelectItem(sys.getId(), sys.name().replaceAll("[_]", " ")));
+                    selectItemList.add(new SelectItem(DataSourceType.SYSTEM + ":" + sys.getId(), sys.name().replaceAll("[_]", " ")));
                 }
 
                 break;

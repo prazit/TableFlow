@@ -11,6 +11,9 @@ import java.util.Map;
 public class DataFileData extends RoomData implements Serializable {
     private static final transient long serialVersionUID = 2021121709996660020L;
 
+    protected String dataSourceType;
+    protected int dataSourceId;
+
     protected int id;
     protected String type;
     protected String name;

@@ -35,7 +35,11 @@
                         <p:importEnum type="com.tflow.controller.GroupSection" var="GroupSection"/>
                         <p:tabView style="width: 100%" activeIndex="#{groupCtl.sectionIndex}">
                             <p:ajax event="tabChange" listener="#{groupCtl.openSection}" update="#{groupCtl.openSectionUpdate}"/>
-                            <p:tab title="#{GroupSection.EXISTING_PROJECT.getTitle()}" titleStyleClass="#{GroupSection.EXISTING_PROJECT.getIcon()}">
+                            <p:tab>
+                                <f:facet name="title">
+                                    <i class="pi #{GroupSection.EXISTING_PROJECT.icon}"/>
+                                    <p:outputLabel value=" #{GroupSection.EXISTING_PROJECT.title}"/>
+                                </f:facet>
                                 <p:outputLabel value="#{groupCtl.currentPage.description}"/>
                                 <p:panelGrid id="existingProject" columns="3" columnClasses="ui-g-5,ui-g-5,ui-g-2">
                                     <p:dataTable rendered="#{groupCtl.groupEditable==false}" value="#{groupCtl.groupList.groupList}" var="group" selection="#{groupCtl.selectedGroup}" selectionMode="single" rowKey="#{group.id}">
@@ -77,7 +81,11 @@
                                     </p:outputPanel>
                                 </p:panelGrid>
                             </p:tab>
-                            <p:tab title="#{GroupSection.PROJECT_TEMPLATE.getTitle()}" titleStyleClass="#{GroupSection.PROJECT_TEMPLATE.getIcon()}">
+                            <p:tab>
+                                <f:facet name="title">
+                                    <i class="pi #{GroupSection.PROJECT_TEMPLATE.icon}"/>
+                                    <p:outputLabel value=" #{GroupSection.PROJECT_TEMPLATE.title}"/>
+                                </f:facet>
                                 <p:outputLabel value="#{groupCtl.currentPage.description}"/>
                                 <p:panelGrid id="newProject" columns="2" columnClasses="ui-g-10,ui-g-2" styleClass="ui-g-12">
                                     <p:outputPanel>

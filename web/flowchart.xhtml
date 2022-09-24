@@ -178,7 +178,7 @@
                             <tr>
                                 <p:repeat value="#{tfloor.roomList}" var="troom">
                                     <td>
-                                        <p:outputPanel rendered="#{troom.roomType==RoomType.COLUMN_FX_TABLE and troom.columnFxList.size() > 0}">
+                                        <!--<p:outputPanel rendered="#{troom.roomType==RoomType.COLUMN_FX_TABLE and troom.columnFxList.size() > 0}">
                                             <p:repeat value="#{troom.columnFxList}" var="tcolumnfx">
                                                 <p:panel header="" styleClass="#{tcolumnfx.owner.type.name().toLowerCase()} function selectable#{flowchartCtl.active(tcolumnfx)}">
                                                     <input name="selectableId" type="hidden" value="#{tcolumnfx.selectableId}"/>
@@ -203,7 +203,7 @@
                                                     </p:repeat>
                                                 </p:panel>
                                             </p:repeat>
-                                        </p:outputPanel>
+                                        </p:outputPanel>-->
 
                                         <p:panel rendered="#{troom.roomType==RoomType.TRANSFORM_TABLE}" header="" styleClass="data-table transfered selectable#{flowchartCtl.active(troom)}">
                                             <input name="selectableId" type="hidden" value="#{troom.selectableId}"/>

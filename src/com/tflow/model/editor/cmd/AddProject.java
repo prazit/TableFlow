@@ -1,10 +1,9 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.DataManager;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.ProjectDataException;
-import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.ProjectManager;
@@ -40,6 +39,7 @@ public class AddProject extends Command {
         project.setOwner(workspace);
         project.setDataManager(dataManager);
         project.setManager(projectManager);
+        project.setGroupId(groupId);
         workspace.setProject(project);
 
         String newProjectId = null;

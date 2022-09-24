@@ -218,6 +218,9 @@ public enum Properties {
             "id:Table ID:ReadOnly",
             "level:Table Level:ReadOnly",
             "connectionCount:Connection Count:ReadOnly",
+            "endPlug:End Plug:ReadOnly",
+            "startPlug:Start Plug:ReadOnly",
+            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -234,19 +237,19 @@ public enum Properties {
     INPUT_SYSTEM_ENVIRONMENT(
             "==: Input File (System Environment) : System Environment Data Set :==",
             "--: Input File Properties :--",
-            "name:Name:ReadOnly",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "--: System Environment Properties :--",
-            "name:Data Set:System|updateProperty('name');:[]typeDisabled",
+            "name:Name:System|[]nameDisabled",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
+            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
     INPUT_DIRECTORY(
             "==: Input File (DIR) : List all file within specified directory with some attributes (depends on version of DConvers) :==",
             "--: Input File Properties :--",
-            "name:Name:String:40",
+            "name:Name:String:40|updateProperty('type');",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "--: Directory List Properties :--",
             "path:Directory:String",
@@ -254,6 +257,7 @@ public enum Properties {
             ".:propertyMap:fileOnly:File only (exclude directory):Boolean",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
+            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -261,10 +265,14 @@ public enum Properties {
             "==: Input File (MD) : Text File contains one or more tables in Markdown Formatted :==",
             "--: Input File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
             "--: Markdown Properties :--",
             "name:File Name:Upload:type:uploadedId:Invalid markdown file!|updateProperty('name');",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -272,12 +280,16 @@ public enum Properties {
             "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
             "--: File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "dataSourceIdentifier:Source:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
             "--: SQL Properties :--",
             "name:File Name:Upload:type:uploadedId:Invalid SQL file!|updateProperty('name');",
             ".:propertyMap:quotesName:Quotes for name:String:1000",
             ".:propertyMap:quotesValue:Quotes for value:String:1000",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -290,7 +302,9 @@ public enum Properties {
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
             "sourceType:Source Table Type:ReadOnly",
-            "sourceId:Source Table ID:ReadOnly"
+            "sourceId:Source Table ID:ReadOnly",
+            "this:-- This as Json --:toString",
+            "--: tested :--"
     ),
 
     TRANSFORM_COLUMN(

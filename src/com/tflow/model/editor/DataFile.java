@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 import org.slf4j.Logger;
@@ -11,6 +12,9 @@ import java.util.Map;
 
 public class DataFile extends Room implements Selectable, HasEndPlug {
     private transient Logger log = LoggerFactory.getLogger(DataFile.class);
+
+    protected DataSourceType dataSourceType;
+    protected int dataSourceId;
 
     protected DataFileType type;
 
@@ -86,6 +90,22 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     @Override
     public ProjectFileType getProjectFileType() {
         return ProjectFileType.DATA_FILE;
+    }
+
+    public DataSourceType getDataSourceType() {
+        return dataSourceType;
+    }
+
+    public void setDataSourceType(DataSourceType dataSourceType) {
+        this.dataSourceType = dataSourceType;
+    }
+
+    public int getDataSourceId() {
+        return dataSourceId;
+    }
+
+    public void setDataSourceId(int dataSourceId) {
+        this.dataSourceId = dataSourceId;
     }
 
     public int getId() {
@@ -172,20 +192,38 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         return "df" + id;
     }
 
-    /**
-     * view only
-     **/
     public boolean getTypeDisabled() {
-        return startPlug.isPlugged();
+        return name != null && !name.isEmpty();
+    }
+
+    public boolean getNameDisabled() {
+        return type == DataFileType.IN_ENVIRONMENT && startPlug.isPlugged();
+    }
+
+    public String getDataSourceIdentifier() {
+        return dataSourceType + ":" + dataSourceId;
+    }
+
+    public void setDataSourceIdentifier(String dataSourceIdentifier) {
+        log.debug("setDataSourceIdentifier(dataSourceIdentifier:'{}')", dataSourceIdentifier);
+        if (dataSourceIdentifier == null) {
+            dataSourceType = null;
+            dataSourceId = 0;
+            return;
+        }
+        String[] parts = dataSourceIdentifier.split("[:]");
+        dataSourceType = DataSourceType.valueOf(parts[0]);
+        dataSourceId = Integer.parseInt(parts[1]);
     }
 
     @Override
     public String toString() {
         return "{" +
                 "id:" + id +
+                ", dataSourceType:" + dataSourceType +
+                ", dataSourceId:" + dataSourceId +
                 ", type:" + type +
                 ", name:'" + name + '\'' +
-                ", path:'" + path + '\'' +
                 ", uploadedId:" + uploadedId +
                 ", endPlug:" + endPlug +
                 ", startPlug:" + startPlug +

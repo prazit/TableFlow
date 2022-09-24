@@ -10,8 +10,8 @@ public enum DataFileType {
 
     /*TODO: Future feature 'DataSourceType.KAFKAPRODUCER' is added also need to remove dataSourceType from this enum*/
     /*TODO: create real Extractor class for each INPUT types*/
-    IN_MARKDOWN("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "input.md", "/(\\.|\\/)(md|markdown)$/", ExtractSystemEnvironment.class),
-    IN_SQL("SQL File", "sql.png", /*DataSourceType.DATABASE*/ null, Properties.INPUT_SQL, "input.sql", "/(\\.|\\/)(sql)$/", ExtractSystemEnvironment.class),
+    IN_MARKDOWN("Markdown File", "markdown.png", DataSourceType.LOCAL, Properties.INPUT_MARKDOWN, "", "/(\\.|\\/)(md|markdown)$/", ExtractSystemEnvironment.class),
+    IN_SQL("SQL File", "sql.png", /*DataSourceType.DATABASE*/ null, Properties.INPUT_SQL, "", "/(\\.|\\/)(sql)$/", ExtractSystemEnvironment.class),
     IN_DIR("Directory List", "dir.png", DataSourceType.LOCAL, Properties.INPUT_DIRECTORY, "/", null, ExtractSystemEnvironment.class),
     IN_ENVIRONMENT("System Environment", "system.png", DataSourceType.SYSTEM, Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment", null, ExtractSystemEnvironment.class),
 

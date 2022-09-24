@@ -85,7 +85,7 @@ public class FlowchartController extends Controller {
                     group = target.getManager().loadProjectGroup(workspace, target.getGroupId());
                     ProjectItem targetProjectItem = group.getProjectList().stream().filter(projectItem -> projectItem.getId().compareTo(projectId) == 0).collect(Collectors.toList()).get(0);
                     targetProjectItem.setName(target.getName());
-                } catch (ProjectDataException ex) {
+                } catch (Exception ex) {
                     String msg = "Project Name '" + target.getName() + "' is changed, but the name in group still unchanged by Internal Error!";
                     jsBuilder.pre(JavaScript.notiError, msg);
                     log.error(msg, ex);

@@ -1,5 +1,7 @@
 package com.tflow.model.editor;
 
+import com.tflow.util.SerializeUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,18 +20,23 @@ public class LinePlug {
 
     private boolean notEndPlug;
 
-    private PlugListener listener;
+    private transient PlugListener listener;
 
     /*for ProjectMapper*/
     public LinePlug() {
+        init();
         createDefaultPlugListener();
     }
 
     public LinePlug(String plug) {
         this.plug = plug;
+        init();
+        createDefaultPlugListener();
+    }
+
+    private void init() {
         lineList = new ArrayList<>();
         removeButtonTip = "";
-        createDefaultPlugListener();
     }
 
     /**
@@ -156,6 +163,10 @@ public class LinePlug {
 
     public void setListener(PlugListener listener) {
         this.listener = listener;
+    }
+
+    public String getJson() {
+        return SerializeUtil.getGson().toJson(this);
     }
 
     @Override

@@ -562,21 +562,13 @@ public class BuildPackageCommand extends IOCommand {
 
         sourceConfig.setIndex(dataTableData.getIndex());
         sourceConfig.setId(dataTableData.getIdColName());
-        sourceConfig.setTarget(dataTableData.getStartPlug().getLineList().size() > 0);
+        sourceConfig.setTarget(dataTableData.getStartPlug().isPlugged());
 
         Object data = getData(ProjectFileType.DATA_FILE, dataTableData.getDataFile(), stepId);
         DataFileData dataFileData = (DataFileData) throwExceptionOnError(data);
-        Integer lineToDataSourceId = dataFileData.getEndPlug().getLineList().get(0);
 
-        /* dataSourceSelector stand at startPlug of a line between dataSource and dataFile */
-        data = getData(ProjectFileType.LINE, lineToDataSourceId, stepId);
-        LineData lineData = (LineData) throwExceptionOnError(data);
-        String dataSourceSelectorId = lineData.getStartSelectableId().substring(IDPrefix.DATA_SOURCE_SELECTOR.getPrefix().length());
-
-        data = getData(ProjectFileType.DATA_SOURCE_SELECTOR, Integer.parseInt(dataSourceSelectorId), stepId);
-        DataSourceSelectorData dataSourceSelectorData = (DataSourceSelectorData) throwExceptionOnError(data);
-        DataSourceType dataSourceType = DataSourceType.parse(dataSourceSelectorData.getType());
-        if (dataSourceType == null) throw new IOException("Invalid DataSourceType: " + dataSourceSelectorData.getType());
+        DataSourceType dataSourceType = DataSourceType.parse(dataFileData.getDataSourceType());
+        if (dataSourceType == null) throw new IOException("Invalid DataSourceType: " + dataFileData.getDataSourceType());
 
         /*
          * find DataSource and Query.
@@ -593,7 +585,7 @@ public class BuildPackageCommand extends IOCommand {
 
                 // query=$[FTP:sftpserver/SFTP-Staging-Path/ALITLNDP_STEP2.md]
                 PackageFileData sftpPackageFileData = findUploadedFileData(dataFileData, fileList);
-                sourceConfig.setQuery("$[FTP:" + IDPrefix.SFTP.getPrefix() + dataSourceSelectorData.getDataSourceId() + "/" + sftpPackageFileData.getBuildPath() + sftpPackageFileData.getName() + "]");
+                sourceConfig.setQuery("$[FTP:" + IDPrefix.SFTP.getPrefix() + dataFileData.getDataSourceId() + "/" + sftpPackageFileData.getBuildPath() + sftpPackageFileData.getName() + "]");
                 break;
 
             case LOCAL:
@@ -617,7 +609,7 @@ public class BuildPackageCommand extends IOCommand {
 
             case DATABASE:
                 // datasource from DataBaseId
-                sourceConfig.setDataSource(IDPrefix.DB.getPrefix() + dataSourceSelectorData.getDataSourceId());
+                sourceConfig.setDataSource(IDPrefix.DB.getPrefix() + dataFileData.getDataSourceId());
 
                 // query from content of DataFile.name
                 /* query=$[TXT:IFRS9/sql/shared/TFSHEADER.sql] */

@@ -8,9 +8,6 @@ import lombok.EqualsAndHashCode;
 public class OutputFileData extends DataFileData {
     private static final transient long serialVersionUID = 2021121709996660021L;
 
-    private String dataSourceType;
-    private int dataSourceId;
-
     @Override
     public String toString() {
         return "{" +
