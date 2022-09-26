@@ -23,6 +23,7 @@
         <p:remoteCommand name="refreshProperties" action="#{editorCtl.refreshProperties}" update="propertyForm"/>
         <p:remoteCommand name="refreshElement" action="#{editorCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="notification" action="#{editorCtl.showNoti}"/>
+        <p:remoteCommand name="propertiesAppend" action="#{editorCtl.propertiesAppend}"/>
 
         <script>console.log('-- first-line of editor --');</script>
         <div class="container">
@@ -94,7 +95,7 @@
                             </f:facet>
 
                             <h:form id="propertyForm">
-                                <p:tooltip globalSelector="label,:input" position="top" />
+                                <p:tooltip widgetVar="propertiesToolTip" globalSelector="label,:input" position="top"/>
                                 <p:outputPanel id="scrollPanel" styleClass="properties vertical-scroll-panel fit-width">
                                     <p:importEnum type="com.tflow.model.editor.PropertyType" var="PropertyType"/>
                                     <input name="selectableId" value="#{editorCtl.activeObject.selectableId}" class="hidden-input"/>
@@ -209,39 +210,51 @@
                                             <span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
                                                 <f:selectItems value="#{editorCtl.getItemList(prop)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
-                                                <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="topForm:notiMsg #{prop.update}"/>
                                             </p:selectOneMenu>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.PROPERTIES==prop.type}">
+                                            <script>
+                                                function propAppend(cfg, event, propertyVar) {
+                                                    if (event.key === 'Enter') {
+                                                        propertiesAppend([
+                                                            {name: "propertyVar", value: propertyVar}
+                                                        ]);
+                                                    }
+                                                }
+                                            </script>
                                             <p:divider align="left">
                                                 <span>#{prop.label} (#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var].size():editorCtl.activeObject[prop.var].size()})</span>
                                             </p:divider>
                                             <p:dataTable value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" var="property" disabled="#{editorCtl.disabled(prop)}">
-                                                <p:column headerText="parameter">
-                                                    <p:inputText maxlength="80" value="#{property.name}" styleClass="fit-width#{property.last and editorCtl.focusOnDBParameter?' focus':''}">
+                                                <p:column headerText="#{prop.params[0]}">
+                                                    <p:inputText title="press Enter to add new row below" maxlength="80" value="#{property.name}" styleClass="fit-width#{property.last and editorCtl.focusOnLastProperties?' focus':''}" rendered="#{property.last}">
+                                                        <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                        <p:ajax event="keypress" onstart="propAppend(cfg,event,'#{prop.var}');"/>
+                                                    </p:inputText>
+                                                    <p:inputText maxlength="80" value="#{property.name}" styleClass="fit-width#{property.last and editorCtl.focusOnLastProperties?' focus':''}" rendered="#{not property.last}">
                                                         <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                     </p:inputText>
                                                 </p:column>
 
-                                                <p:column headerText="value">
-                                                    <p:inputText maxlength="120" value="#{property.value}" styleClass="fit-width" rendered="#{property.last}">
-                                                        <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                                        <p:ajax event="blur" listener="#{editorCtl.addDBParameter(prop)}"/>
+                                                <p:column headerText="#{prop.params[1]}">
+                                                    <p:inputText title="press Enter to add new row below" maxlength="120" value="#{property.value}" styleClass="fit-width" rendered="#{property.last}" onfocus="PF('propertiesToolTip').show();">
+                                                        <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                        <p:ajax event="keypress" onstart="propAppend(cfg,event,'#{prop.var}');"/>
                                                     </p:inputText>
                                                     <p:inputText maxlength="120" value="#{property.value}" styleClass="fit-width" rendered="#{not property.last}">
-                                                        <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                        <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                     </p:inputText>
                                                 </p:column>
 
                                                 <p:column width="1em">
                                                     <p:commandLink rendered="#{property.last and (prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var].size():editorCtl.activeObject[prop.var].size()) gt 1}">
                                                         <span class="ui-icon pi pi-minus-circle"/>
-                                                        <p:ajax event="click" listener="#{editorCtl.removeDBParameter(prop)}" onsuccess="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                        <p:ajax event="click" listener="#{editorCtl.propertiesRemove(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                     </p:commandLink>
                                                 </p:column>
                                             </p:dataTable>
-                                            <input value="" class="hidden-input before-next-input"/>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.UPLOAD==prop.type}">

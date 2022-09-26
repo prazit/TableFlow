@@ -296,4 +296,21 @@ public class DataTable extends Room implements Selectable, HasDataFile, HasEndPl
                 '}';
     }
 
+    public DataColumn getColumn(int columnId) {
+        for (DataColumn column : columnList) {
+            if (column.getId() == columnId) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    public DataColumn getColumn(String columnName) {
+        for (DataColumn column : columnList) {
+            if (column.getName().equalsIgnoreCase(columnName)) {
+                return column;
+            }
+        }
+        return null;
+    }
 }

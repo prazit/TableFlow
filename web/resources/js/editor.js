@@ -9,7 +9,7 @@ function updateProperty(className) {
     var $properties = $('.properties');
     var $property = $properties.find('.' + className);
     var id = $property.attr('id');
-    tflow.postRefreshElement = function(){
+    tflow.postRefreshElement = function () {
         hideDebugInfo($properties);
     };
     refreshElement([
@@ -166,8 +166,8 @@ function zoomEnd(submit) {
     ]);
 }
 
-function lineStart() {
-    /*start of line creation*/
+/*function lineStart() {
+    console.debug("DEBUG: lineStart.")
     lines.lineStart = {
         left: window.scrollX,
         top: window.scrollY
@@ -176,13 +176,13 @@ function lineStart() {
 }
 
 function lineEnd() {
-    /*end of line creation*/
+    console.debug("DEBUG: lineEnd.")
     lines.lineEnd = {
         left: lines.lineStart,
         top: window.scrollY
     };
     window.scrollTo(lines.lineEnd);
-}
+}*/
 
 function serverStart() {
     /*show progress and disable all server action (allow client action)*/
@@ -270,8 +270,7 @@ function propertyCreated() {
     });
 
     /*setFocus to the default field or first field*/
-    if (tflow.setFocus != null) clearTimeout(tflow.setFocus);
-    tflow.setFocus = setTimeout(setFocus, tflow.setFocusTimeout);
+    setFocus();
 
     /*Tab index system*/
     refreshTabIndex();
@@ -333,7 +332,16 @@ function refreshTabIndex() {
     });
 }
 
-function setFocus() {
+function setFocus(millis) {
+    console.debug('TRACE: setFocus.');
+    if (tflow.setFocus == null) {
+        console.debug('DEBUG: setTimeout ' + (millis === undefined ? tflow.setFocusTimeout : millis) + 'millis');
+        tflow.setFocus = setTimeout(setFocus, (millis === undefined ? tflow.setFocusTimeout : millis));
+        return;
+    }
+
+    console.debug('DEBUG: clearTimeout');
+    clearTimeout(tflow.setFocus);
     tflow.setFocus = null;
 
     var $properties = $('.properties'),
@@ -343,7 +351,14 @@ function setFocus() {
     if (inputs.length === 0) {
         inputs = $properties.find('input');
         if (inputs.length > tflow.propertyFirstIndex) {
-            input = inputs[tflow.propertyFirstIndex];
+            var index = tflow.propertyFirstIndex;
+            while (input === undefined && index < inputs.length) {
+                if (!inputs[index].disabled) {
+                    input = inputs[index];
+                    continue;
+                }
+                index++;
+            }
         }
     } else {
         input = inputs[0];
@@ -355,6 +370,8 @@ function setFocus() {
             console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
         });
     }
+
+    console.debug('DEBUG: setFocus completed');
 }
 
 function contentReady(func, label) {

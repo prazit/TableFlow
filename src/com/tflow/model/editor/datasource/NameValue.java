@@ -1,12 +1,20 @@
 package com.tflow.model.editor.datasource;
 
-public class NameValue {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class NameValue {
     private String name;
     private String value;
 
     /*ui-only*/
     private boolean last;
+
+    public NameValue(String name, String value) {
+        this.name = name;
+        this.value = value;
+        this.last = false;
+    }
 
     public NameValue() {
         this.last = false;

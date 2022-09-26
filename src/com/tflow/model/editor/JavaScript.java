@@ -33,6 +33,7 @@ public enum JavaScript {
     notiWarn(null),
     noti("noti();"),
 
+    setFocus("setFocus(%s);"),
     updateProperty("updateProperty('%s');"),
     refreshProperties("refreshProperties();");
 

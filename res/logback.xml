@@ -5,7 +5,8 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date | %-5level | %msg | %class.method\(%line\)%n</pattern>
+            <!-- full list of converter see PatternLayout.java -->
+            <pattern>%date | %-5level | %msg | %method\(%file:%line\)%n</pattern>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>

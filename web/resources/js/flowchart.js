@@ -83,13 +83,13 @@ function lineStart() {
         top: window.scrollY
     };
     window.scrollTo(0, 0);
+    hideLines();
 }
 
 function lineEnd() {
     /*end of line creation*/
-    if (lines.lineScroll.enabled) window.scrollTo(lines.lineScroll);
-
     showLines();
+    if (lines.lineScroll.enabled) window.scrollTo(lines.lineScroll);
 }
 
 function draggableEnter($dragTarget, $droppable) {
@@ -315,6 +315,12 @@ function startup() {
     /*zoom to current value*/
     parentWindow.zoomStart();
     parentWindow.zoomEnd();
+    tflow.postStartUp = setTimeout(function(){
+        /*TODO: this is temporary workaround, need to find where is the line-hide man*/
+        clearTimeout(tflow.postStartUp);
+        lineStart();
+        lineEnd();
+    },1000);
 
     draggableStartup();
 

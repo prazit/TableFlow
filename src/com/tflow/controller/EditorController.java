@@ -4,8 +4,6 @@ import com.tflow.kafka.*;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.FileNameExtension;
-import com.tflow.model.data.IDPrefix;
-import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.action.*;
@@ -21,12 +19,7 @@ import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.apache.tika.Tika;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.mime.MimeType;
-import org.apache.tika.mime.MimeTypeException;
-import org.apache.zookeeper.common.StringUtils;
 import org.mapstruct.factory.Mappers;
-import org.primefaces.PrimeFaces;
 import org.primefaces.component.fileupload.FileUpload;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -36,7 +29,6 @@ import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.MenuElement;
 import org.primefaces.model.menu.MenuModel;
 
-import javax.faces.component.UIComponent;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -68,7 +60,7 @@ public class EditorController extends Controller {
     private Map<String, Integer> actionPriorityMap;
     private boolean fullActionList;
 
-    private boolean focusOnDBParameter;
+    private boolean focusOnLastProperties;
 
     @Override
     protected Page getPage() {
@@ -78,7 +70,7 @@ public class EditorController extends Controller {
     @Override
     public void onCreation() {
         leftPanelTitle = "Step List";
-        focusOnDBParameter = false;
+        focusOnLastProperties = false;
 
         /*Open Editor Cases.
          * 1. hasParameter(GroupId, ProjectId/TemplateId): New Project from Template/Existing Project
@@ -332,9 +324,9 @@ public class EditorController extends Controller {
         return editorType;
     }
 
-    public boolean isFocusOnDBParameter() {
-        boolean trueOfFalse = this.focusOnDBParameter;
-        focusOnDBParameter = false;
+    public boolean isFocusOnLastProperties() {
+        boolean trueOfFalse = this.focusOnLastProperties;
+        focusOnLastProperties = false;
         return trueOfFalse;
     }
 
@@ -409,8 +401,9 @@ public class EditorController extends Controller {
                     sourceTable = activeStep.getTransformTable((Integer) tableId);
                 }
                 if (sourceTable != null) {
+                    boolean useId = params[1].toUpperCase().equals("ID");
                     for (DataColumn sourceColumn : sourceTable.getColumnList()) {
-                        selectItemList.add(new SelectItem(sourceColumn.getSelectableId(), sourceColumn.getName()));
+                        selectItemList.add(new SelectItem((useId?sourceColumn.getId():sourceColumn.getName()), sourceColumn.getName()));
                     }
                 }
                 break;
@@ -1155,6 +1148,10 @@ public class EditorController extends Controller {
             jsBuilder.pre(JavaScript.notiError, "Select Object Failed with Internal Command Error!");
             return;
         }
+
+        if (activeObject instanceof TransformTable) {
+            ((TransformTable) activeObject).refreshQuickColumnList();
+        }
         setPropertySheet(activeObject);
     }
 
@@ -1237,29 +1234,76 @@ public class EditorController extends Controller {
         return new String(new char[value.length()]).replaceAll("\0", "*");
     }
 
-    public void addDBParameter(PropertyView property) {
-        if (!(activeObject instanceof Database)) {
-            String msg = "addDBParameter called on " + activeObject.getClass().getSimpleName() + " is not allowed!";
+    /**
+     * for PropertyType.PROPERTIES
+     */
+    public void propertiesAppend() {
+        String propertyVar = FacesUtil.getRequestParam("propertyVar");
+        if (propertyVar == null || propertyVar.isEmpty()) {
+            String msg = "propertiesAppend called without required propertyVar argument !";
             jsBuilder.pre(JavaScript.notiError, msg);
             log.error(msg);
             return;
         }
 
-        Database database = (Database) this.activeObject;
-        database.addProp();
+        boolean invalid = false;
+        try {
+            List<NameValue> nameValueList = (List<NameValue>) activeObject.getProperties().getPropertyValue(activeObject, propertyVar, log);
+            String name, value;
+            for (NameValue nameValue : nameValueList) {
+                nameValue.setLast(false);
+                name = nameValue.getName();
+                value = nameValue.getValue();
+                if (name == null || name.isEmpty() || value == null || value.isEmpty()) {
+                    invalid = true;
+                }
+            }
+            if (invalid) {
+                nameValueList.get(nameValueList.size() - 1).setLast(true);
+            } else {
+                nameValueList.add(new NameValue(true));
+            }
+        } catch (Exception ex) {
+            String msg = "propertiesAppend(propertyVar:" + propertyVar + ") found error";
+            jsBuilder.pre(JavaScript.notiError, msg);
+            log.error(msg, ex);
+            return;
+        }
 
-        focusOnDBParameter = true;
-        jsBuilder.pre(JavaScript.refreshProperties).runOnClient();
+        focusOnLastProperties = true;
+        jsBuilder.pre(JavaScript.updateProperty, propertyVar)
+                .post(JavaScript.setFocus, 1000);
+
+        if (invalid) {
+            String msg = "Please correct empty value before append!";
+            jsBuilder.pre(JavaScript.notiWarn, msg);
+        }
+
+        jsBuilder.runOnClient(true);
     }
 
-    public void removeDBParameter(PropertyView property) {
-        Database database = (Database) this.activeObject;
-        List<NameValue> propList = database.getPropList();
-        propList.remove(propList.size() - 1);
-        propList.get(propList.size() - 1).setLast(true);
+    /**
+     * for PropertyType.PROPERTIES
+     */
+    public void propertiesRemove(PropertyView property) {
+        try {
+            List<NameValue> nameValueList = (List<NameValue>) activeObject.getProperties().getPropertyValue(activeObject, property.getVar(), log);
+            nameValueList.remove(nameValueList.size() - 1);
+            for (NameValue nameValue : nameValueList) {
+                nameValue.setLast(false);
+            }
+            nameValueList.get(nameValueList.size() - 1).setLast(true);
+        } catch (Exception ex) {
+            String msg = "propertiesRemove(propertyVar:" + property.getVar() + ") found error";
+            jsBuilder.pre(JavaScript.notiError, msg);
+            log.error(msg, ex);
+            return;
+        }
 
-        focusOnDBParameter = true;
-        jsBuilder.pre(JavaScript.refreshProperties).runOnClient();
+        focusOnLastProperties = true;
+        jsBuilder.pre(JavaScript.updateProperty, property.getVar())
+                .post(JavaScript.setFocus, 1000)
+                .runOnClient(true);
 
         propertyChanged(property);
     }

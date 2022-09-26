@@ -105,13 +105,14 @@ public class FlowchartController extends Controller {
      * Draw lines on the client when page loaded.
      */
     public void drawLines() {
-        jsBuilder.pre(JavaScript.lineStart).pre(JavaScript.preStartup);
+        log.debug("drawLines:fromClient");
+        jsBuilder.pre(JavaScript.preStartup);
         Step step = getStep();
         for (Line line : step.getLineList()) {
             jsBuilder.append(line.getJsAdd());
         }
-        jsBuilder.post(JavaScript.postStartup).post(JavaScript.lineEnd);
-        jsBuilder.runOnClient(true);
+        jsBuilder.append(JavaScript.postStartup)
+                .runOnClient(true);
     }
 
     /**

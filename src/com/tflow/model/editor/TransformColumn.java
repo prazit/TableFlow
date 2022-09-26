@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.SourceType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -180,5 +181,60 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
                 ", propertyOrder:'" + propertyOrder + '\'' +
                 ", selectableId:'" + getSelectableId() + '\'' +
                 '}';
+    }
+
+    public String getValue() {
+        return useDynamic ? dynamicExpression : getSourceColumnName(getSourceColumnId());
+    }
+
+    /**
+     * return solved name for existing column or return null for invalid column name.
+     */
+    public String setValue(String value) {
+        if (value == null) {
+            useDynamic = false;
+            dynamicExpression = "";
+            sourceColumnId = 0;
+        } else if (value.contains("$[")) {
+            useDynamic = true;
+            dynamicExpression = value;
+            sourceColumnId = 0;
+        } else {
+            useDynamic = false;
+            dynamicExpression = "";
+            StringBuilder sourceColumnName = new StringBuilder(value);
+            sourceColumnId = getSourceColumnId(sourceColumnName);
+            value = sourceColumnName.toString();
+        }
+        return value;
+    }
+
+    private int getSourceColumnId(StringBuilder sourceColumnName) {
+        TransformTable table = (TransformTable) getOwner();
+        Step step = table.getOwner();
+        DataTable sourceTable;
+        if (table.getSourceType() == SourceType.DATA_TABLE) {
+            sourceTable = step.getDataTable(table.getSourceId());
+        } else {
+            sourceTable = step.getTransformTable(table.getSourceId());
+        }
+        DataColumn column = sourceTable.getColumn(sourceColumnName.toString());
+        if (column == null) return 0;
+        sourceColumnName.replace(0, sourceColumnName.length(), column.getName());
+        return column.getId();
+    }
+
+    private String getSourceColumnName(int sourceColumnId) {
+        TransformTable table = (TransformTable) getOwner();
+        Step step = table.getOwner();
+        DataTable sourceTable;
+        if (table.getSourceType() == SourceType.DATA_TABLE) {
+            sourceTable = step.getDataTable(table.getSourceId());
+        } else {
+            sourceTable = step.getTransformTable(table.getSourceId());
+        }
+        DataColumn column = sourceTable.getColumn(sourceColumnId);
+        if (column == null) return null;
+        return column.getName();
     }
 }

@@ -20,15 +20,16 @@ public class ChangePropertyValue extends Command {
         Object dataObject = paramMap.get(CommandParamKey.DATA);
         PropertyView property = (PropertyView) paramMap.get(CommandParamKey.PROPERTY);
 
-        Selectable selectable = null;
-        if (dataObject instanceof Selectable) {
-            selectable = (Selectable) dataObject;
+        /*TODO: try to remove set value within the ChangePropertyValue command
+                or use some parameters to switch on/off to support Undo/Redo command.*/
+        /*if (dataObject instanceof Selectable) {
+            Selectable selectable = (Selectable) dataObject;
             try {
                 selectable.getProperties().setPropertyValue(selectable, property, log);
             } catch (Exception ex) {
                 throw new UnsupportedOperationException("Cannot set property(" + property + ") to selectable(" + selectable.getSelectableId() + ")", ex);
             }
-        }
+        }*/
 
         boolean hasEvent = dataObject instanceof HasEvent;
         LoggerFactory.getLogger(ChangePropertyValue.class).debug("{} hasEvent = {} ", dataObject.getClass().getName(), hasEvent);

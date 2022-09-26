@@ -13,6 +13,10 @@
                 <p:remoteCommand name="noti" actionListener="#{playCtl.showNoti}" update="notiMsg"/>
                 <p:menubar>
 
+                    <p:outputLabel value="#{topMenuCtl.page.name}"/>
+
+                    <p:divider layout="vertical"/>
+
                     <p:menuitem value="Light Mode" icon="pi pi-fw pi-sun"
                                 actionListener="${topMenuCtl.lightTheme}"
                                 rendered="${workspace.user.theme=='DARK'}" title="Switch to Light Theme"/>

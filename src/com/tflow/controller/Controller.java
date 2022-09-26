@@ -3,6 +3,7 @@ package com.tflow.controller;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.ChangePropertyValue;
+import com.tflow.model.editor.action.SetQuickColumnList;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.DateTimeUtil;
@@ -108,10 +109,30 @@ public abstract class Controller implements Serializable {
     public void propertyChanged(PropertyView property) {
         log.debug("propertyChanged:fromClient");
         Selectable activeObject = workspace.getProject().getActiveStep().getActiveObject();
-        propertyChanged(activeObject.getProjectFileType(), activeObject, property);
+
+        if (PropertyVar.quickColumnList.equals(property.getVar())) {
+            setQuickColumnList((TransformTable) activeObject, property);
+        } else {
+            propertyChanged(activeObject.getProjectFileType(), activeObject, property);
+        }
+    }
+
+    protected void setQuickColumnList(TransformTable transformTable, PropertyView property) {
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.WORKSPACE, workspace);
+        paramMap.put(CommandParamKey.TRANSFORM_TABLE, transformTable);
+
+        try {
+            new SetQuickColumnList(paramMap).execute();
+        } catch (Exception ex) {
+            jsBuilder.pre(JavaScript.notiError, "Change property value failed by SetQuickColumnList command!");
+            log.error("Change Property Value Failed!, type:QuickColumnList, table:{}, property:{}", transformTable.getSelectableId(), property);
+            log.error("", ex);
+        }
     }
 
     protected void propertyChanged(ProjectFileType projectFileType, Object data, PropertyView property) {
+        /*Notice: at this point, the value already set to the property before*/
         if (data instanceof Selectable) {
             Selectable selectable = (Selectable) data;
             property.setNewValue(selectable.getProperties().getPropertyValue(selectable, property, log));
@@ -134,8 +155,6 @@ public abstract class Controller implements Serializable {
     }
 
     public void updateComponent() {
-        log.trace("updateComponent:fromClient");
-
         String id = FacesUtil.getRequestParam("componentId");
         log.debug("updateComponent:fromClient(id:{})", id);
 

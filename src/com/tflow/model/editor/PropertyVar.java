@@ -8,6 +8,7 @@ public enum PropertyVar {
     name,
     dataSourceId,
     function,
+    quickColumnList,
     ;
 
     public boolean equals(String varName) {

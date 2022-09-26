@@ -72,7 +72,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties",
+            "propList:Connection Parameters:Properties:Parameter:Value",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "--: tested :--"
@@ -92,7 +92,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties",
+            "propList:Connection Parameters:Properties:Parameter:Value",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -113,7 +113,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties",
+            "propList:Connection Parameters:Properties:Parameter:Value",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -134,7 +134,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties",
+            "propList:Connection Parameters:Properties:Parameter:Value",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -155,7 +155,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties",
+            "propList:Connection Parameters:Properties:Parameter:Value",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -213,7 +213,7 @@ public enum Properties {
             "==: Data Table : Data Table contains extracted columns from the data-file, not allow to make change to the column list :==",
             "--: Data Table Properties :--",
             "name:Table Name:String:1000",
-            "idColName:Key Column:Column:id",
+            "idColName:Key Column:Column:id:NAME",
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
             "level:Table Level:ReadOnly",
@@ -293,31 +293,34 @@ public enum Properties {
             "--: tested :--"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     TRANSFORM_TABLE(
             "==: Transformation Table : Transformation Table used to transfer/transform data from linked source table and apply some transformations at the end of transfer :==",
             "--: Transformation Table Properties :--",
             "name:Table Name:String:1000",
-            "idColName:Key Column:Column:id",
+            "idColName:Key Column:Column:id:NAME",
+            "quickColumnList:Quick Column Editor:Properties:Column Name:Dynamic Value|updateProperty('quickColumnList');updateProperty('idColName');",
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
-            "sourceType:Source Table Type:ReadOnly",
-            "sourceId:Source Table ID:ReadOnly",
+            "sourceType:SourceTable Type:ReadOnly",
+            "sourceId:SourceTable ID:ReadOnly",
             "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     TRANSFORM_COLUMN(
             "==: Column : Column in Transformation Table :==",
             "--: Column Properties :--",
             "type:Type:ReadOnly",
             "name:Name:String:1000",
             "--: Value :--",
-            "sourceColumnId:Source Column:Column:sourceId|[]useDynamic",
+            "sourceColumnId:Source Column:Column:sourceId:ID|[]useDynamic|updateProperty('sourceColumnId');",
             "useDynamic:Dynamic Value Expression:BOOLEAN|refreshProperties();",
             "dynamicExpression::DynamicValue|[x]useDynamic:[]useFunction",
             "--: Technical Support :--",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "this:-- This as Json --:toString",
+            "--: tested :--"
             /* Value cases:
              * [X] 1. direct transfer : useDynamic = false, value = column name from source-table
              * [X] 2. dynamic value : useDynamic = true, value = custom dynamic value

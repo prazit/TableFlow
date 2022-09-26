@@ -27,6 +27,7 @@ public enum CommandParamKey {
     DATA_COLUMN,
 
     TRANSFORM_TABLE,
+    NAMEVALUE_LIST,
     TRANSFORM_COLUMN,
     COLUMN_FX,
     TABLE_FX,
@@ -46,8 +47,7 @@ public enum CommandParamKey {
     GROUP_ID,
     TEMPLATE_ID,
 
-    BINARY_FILE,
-    ;
+    BINARY_FILE;
 
     boolean optional;
 

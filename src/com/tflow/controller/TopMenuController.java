@@ -14,6 +14,7 @@ import javax.inject.Named;
 public class TopMenuController extends Controller {
 
     private boolean inDevelopment;
+    private Page currentPage;
 
     @Override
     protected Page getPage() {
@@ -28,6 +29,7 @@ public class TopMenuController extends Controller {
     void onCreation() {
         Environment currentEnvironment = workspace.getEnvironment();
         inDevelopment = Environment.DEVELOPMENT == currentEnvironment;
+        currentPage = workspace.getCurrentPage();
     }
 
     public void openPlayground(int sectionIndex) {
