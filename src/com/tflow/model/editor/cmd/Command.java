@@ -157,21 +157,15 @@ public abstract class Command {
             case PROJECT:
                 dataManager.addData(ProjectFileType.PROJECT, mapper.map((Project) dataObject), projectUser, ((Project) dataObject).getId());
                 break;
+
             case STEP:
                 step = (Step) dataObject;
                 dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
                 break;
-            case DATA_COLUMN:
-                DataColumn dataColumn = (DataColumn) dataObject;
-                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), projectUser, dataColumn.getId(), stepId, dataColumn.getOwner().getId());
-                break;
-            case TRANSFORM_COLUMN:
-                TransformColumn transformColumn = (TransformColumn) dataObject;
-                dataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(transformColumn), projectUser, transformColumn.getId(), stepId, 0, transformColumn.getOwner().getId());
-                break;
             case STEP_LIST:
                 dataManager.addData(ProjectFileType.STEP_LIST, mapper.fromStepList((List<Step>) dataObject), projectUser, "");
                 break;
+
             case DB:
                 dataManager.addData(ProjectFileType.DB, mapper.map((Database) dataObject), projectUser, ((Database) dataObject).getId());
                 break;
@@ -185,17 +179,40 @@ public abstract class Command {
                 DataSourceSelector dataSourceSelector = (DataSourceSelector) dataObject;
                 dataManager.addData(ProjectFileType.DATA_SOURCE_SELECTOR, mapper.map(dataSourceSelector), projectUser, dataSourceSelector.getId(), stepId);
                 break;
+
             case DATA_FILE: /*Notice: DATA_FILE found used in all INPUT_XX and OUTPUT_XX*/
                 DataFile dataFile = (DataFile) dataObject;
                 dataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), projectUser, dataFile.getId(), stepId);
                 break;
+
             case DATA_TABLE:
                 DataTable dataTable = (DataTable) dataObject;
                 dataManager.addData(ProjectFileType.DATA_TABLE, mapper.map(dataTable), projectUser, dataTable.getId(), stepId, dataTable.getId());
                 break;
+            case DATA_COLUMN:
+                DataColumn dataColumn = (DataColumn) dataObject;
+                dataManager.addData(ProjectFileType.DATA_COLUMN, mapper.map(dataColumn), projectUser, dataColumn.getId(), stepId, dataColumn.getOwner().getId());
+                break;
+            case DATA_OUTPUT:
+                OutputFile outputFile = (OutputFile) dataObject;
+                dataManager.addData(ProjectFileType.DATA_OUTPUT, mapper.map(outputFile), projectUser, outputFile.getId(), stepId, ((DataTable) outputFile.getOwner()).getId());
+                break;
+
             case TRANSFORM_TABLE:
                 TransformTable transformTable = (TransformTable) dataObject;
                 dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), projectUser, transformTable.getId(), stepId, 0, transformTable.getId());
+                break;
+            case TRANSFORM_COLUMN:
+                TransformColumn transformColumn = (TransformColumn) dataObject;
+                dataManager.addData(ProjectFileType.TRANSFORM_COLUMN, mapper.map(transformColumn), projectUser, transformColumn.getId(), stepId, 0, transformColumn.getOwner().getId());
+                break;
+            case TRANSFORM_OUTPUT:
+                OutputFile transformOutputFile = (OutputFile) dataObject;
+                dataManager.addData(ProjectFileType.TRANSFORM_OUTPUT, mapper.map(transformOutputFile), projectUser, transformOutputFile.getId(), stepId, 0, ((TransformTable) transformOutputFile.getOwner()).getId());
+                break;
+            case TRANSFORMATION:
+                TableFx tableFx = (TableFx) dataObject;
+                dataManager.addData(ProjectFileType.TRANSFORMATION, mapper.map(tableFx), projectUser, tableFx.getId(), stepId, 0, tableFx.getOwner().getId());
                 break;
 
             case GROUP_LIST:
@@ -258,10 +275,6 @@ public abstract class Command {
                 break;
             case DATA_COLUMN_LIST:
                 break;
-            case DATA_OUTPUT_LIST:
-                break;
-            case DATA_OUTPUT:
-                break;
             case TRANSFORM_TABLE_LIST:
                 break;
             case TRANSFORM_COLUMN_LIST:
@@ -271,10 +284,6 @@ public abstract class Command {
             case TRANSFORM_OUTPUT_LIST:
                 break;
             case TRANSFORM_COLUMNFX:
-                break;
-            case TRANSFORMATION:
-                break;
-            case TRANSFORM_OUTPUT:
                 break;
             case TOWER:
                 break;

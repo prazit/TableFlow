@@ -84,7 +84,7 @@
                                 </td>
 
                                 <td>
-                                    <p:outputPanel rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}" styleClass="data-file selectable#{flowchartCtl.active(floor.roomList[1])} #{floor.roomList[1].type.dataSourceType.name().toLowerCase()}">
+                                    <p:outputPanel rendered="#{floor.roomList[1].roomType==RoomType.DATA_FILE}" styleClass="data-file selectable#{flowchartCtl.active(floor.roomList[1])} #{floor.roomList[1].dataSourceType.name().toLowerCase()}">
                                         <input name="selectableId" type="hidden" value="#{floor.roomList[1].selectableId}"/>
                                         <p:remoteCommand name="update#{floor.roomList[1].selectableId}" update="@parent" oncomplete="updateComplete('#{floor.roomList[1].selectableId}')"/>
 
@@ -262,7 +262,7 @@
                                                     <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
                                                     <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="updateComplete('#{toutput.selectableId}')"/>
                                                     <p:graphicImage library="images" name="#{toutput.type.image}"/>
-                                                    <label>#{toutput.type.dataSourceType.name()} - (#{toutput.name})</label>
+                                                    <label>#{toutput.dataSourceType.name()} - (#{toutput.name})</label>
                                                     <div class="#{toutput.startPlug.styleClass}" id="#{toutput.startPlug}"></div>
                                                 </p:outputPanel>
 

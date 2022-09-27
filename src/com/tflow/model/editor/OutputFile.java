@@ -1,5 +1,7 @@
 package com.tflow.model.editor;
 
+import com.tflow.kafka.ProjectFileType;
+
 public class OutputFile extends DataFile {
 
     /*for ProjectMapper*/
@@ -16,4 +18,11 @@ public class OutputFile extends DataFile {
         return "of" + id;
     }
 
+    @Override
+    public ProjectFileType getProjectFileType() {
+        if (owner instanceof TransformTable)
+            return ProjectFileType.TRANSFORM_OUTPUT;
+        else
+            return ProjectFileType.DATA_OUTPUT;
+    }
 }

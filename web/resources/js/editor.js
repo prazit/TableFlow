@@ -91,13 +91,13 @@ function showActionButtons(show) {
     contentReady(function () {
         var display = 'hide-actions';
 
-        contentWindow.hideLines();
+        contentWindow.lineStart();
         if (show) {
             contentWindow.$('.flow-chart').removeClass('hide-actions');
         } else {
             contentWindow.$('.flow-chart').addClass('hide-actions');
         }
-        contentWindow.showLines();
+        contentWindow.lineEnd();
 
         setToolPanel([
             {name: 'actionButtons', value: '' + show}

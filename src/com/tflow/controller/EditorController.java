@@ -1344,4 +1344,21 @@ public class EditorController extends Controller {
         }
     }
 
+    public Boolean isEmpty(Object object) {
+        if (object == null) return true;
+        if (object instanceof String) {
+            String string = (String) object;
+            if (string.contains(":")) {
+                // itemList.DATASOURCE = "DataSourceType:dataSourceId"
+                String[] parts = string.split("[:]");
+                if (parts[0].isEmpty()) return true;
+                return Integer.parseInt(parts[1]) == 0;
+            } else {
+                return string.isEmpty();
+            }
+        } else if (object instanceof Integer) {
+            return ((Integer) object) == 0;
+        }
+        return false;
+    }
 }
