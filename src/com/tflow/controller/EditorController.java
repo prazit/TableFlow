@@ -211,7 +211,7 @@ public class EditorController extends Controller {
         int index = 0;
         for (Step step : stepList) {
             menuItemList.add(DefaultMenuItem.builder()
-                    .value("Step: " + step.getName())
+                    .value(step.getName().isEmpty() ? "Step: Untitled" : step.getName())
                     .icon("pi pi-play")
                     .command("${editorCtl.selectStep(" + (index++) + ")}")
                     .update("actionForm,propertyForm")
@@ -403,7 +403,7 @@ public class EditorController extends Controller {
                 if (sourceTable != null) {
                     boolean useId = params[1].toUpperCase().equals("ID");
                     for (DataColumn sourceColumn : sourceTable.getColumnList()) {
-                        selectItemList.add(new SelectItem((useId?sourceColumn.getId():sourceColumn.getName()), sourceColumn.getName()));
+                        selectItemList.add(new SelectItem((useId ? sourceColumn.getId() : sourceColumn.getName()), sourceColumn.getName()));
                     }
                 }
                 break;

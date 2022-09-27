@@ -74,6 +74,7 @@ public class AddUploaded extends Command {
         // for next command
         paramMap.put(CommandParamKey.PROJECT_FILE_TYPE, selectable.getProjectFileType());
         paramMap.put(CommandParamKey.DATA, selectable);
+        paramMap.put(CommandParamKey.SWITCH_ON, true);
 
     }
 

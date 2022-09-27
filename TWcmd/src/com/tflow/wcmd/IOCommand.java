@@ -86,6 +86,7 @@ public abstract class IOCommand extends KafkaCommand {
         info("remove(file: {})", file);
         try {
             if (!file.delete()) throw new IOException("remove( file: " + file + " ) failed! file.delete() return false.");
+            /*TODO: if the file is parent folder (id == parentFolder.name) need to delete child automatic (move to history)*/
         } catch (Exception ex) {
             throw new IOException("remove( file: " + file + " ) failed!", ex);
         }

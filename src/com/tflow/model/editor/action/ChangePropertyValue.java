@@ -25,6 +25,8 @@ public class ChangePropertyValue extends Action {
                 CommandParamKey.PROJECT_FILE_TYPE,
                 CommandParamKey.DATA,
                 CommandParamKey.PROPERTY
+
+                /*Optional: default = false: CommandParamKey.SWITCH_ON*/
         );
         setCommands(
                 new com.tflow.model.editor.cmd.ChangePropertyValue()
@@ -33,12 +35,13 @@ public class ChangePropertyValue extends Action {
 
     @Override
     protected void initUndoCommands() {
-        setUndoParams(
+        /*setUndoParams(
                 CommandParamKey.WORKSPACE,
                 CommandParamKey.PROJECT_FILE_TYPE,
                 CommandParamKey.DATA,
                 CommandParamKey.PROPERTY
-        );
+                CommandParamKey.SWITCH_ON
+        );*/
         /*setUndoCommands(
                 new com.tflow.model.editor.cmd.ChangePropertyValue()
         );*/

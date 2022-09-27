@@ -132,22 +132,22 @@ function zoomEnd(submit) {
     zoom();
 
     var active = contentWindow.$('.active').first();
-    var scrollX, scrollY;
+    /*var scrollX, scrollY;
     if (active.length === 0) {
         scrollX = contentWindow.scrollX;
         scrollY = contentWindow.scrollY;
-    }
+    }*/
 
     contentWindow.scrollTo(0, 0);
     contentWindow.showLines();
 
-    if (active.length === 0) {
+    /*if (active.length === 0) {
         contentWindow.scrollTo(scrollX, scrollY);
-    } else {
-        /*TODO: Future Feature: need to calculate new scrollXY by zoomFactor and then remove scrollToActive below,
-           keep scrollXY before zoom(previous-zoom) and the calculate after zoom(new-zoom) */
-        scrollToObj(active);
-    }
+    } else {*/
+    /*TODO: Future Feature: need to calculate new scrollXY by zoomFactor and then remove scrollToActive below,
+       keep scrollXY before zoom(previous-zoom) and the calculate after zoom(new-zoom) */
+    scrollToObj(active);
+    /*}*/
 
     if (submit === undefined) return;
 
@@ -208,17 +208,14 @@ function scrollToObj(active) {
         /*return;*/
     }
 
-    if (active === undefined || active.length === 0) {
-        active = contentWindow.$(".selectable.step");
-    }
-
-    if (active.hasClass('step')) {
-        /*scroll to first data-source*/
-        var ds = contentWindow.$('.data-source');
-        if (ds.length === 0) {
-            return;
+    if (active === undefined || active.length === 0 || active.hasClass('step')) {
+        active = contentWindow.$(".selectable");
+        // 0=step, 1=project, 2=first-selectable
+        if (active.length > 2) {
+            active = $(active[2]);
+        } else {
+            active = $(active[0]);
         }
-        active = ds.first();
     }
 
     var zoomed = zoomVal().replace('%', '') / 100.0;
@@ -396,6 +393,8 @@ var tflow = {
         page: "blank.xhtml",
         allowScrollDuration: 1000,
         lastScroll: Date.now(),
+
+        isFirstFlow: true,
 
         setFocus: null,
         setFocusTimeout: 500,

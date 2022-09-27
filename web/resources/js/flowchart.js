@@ -315,12 +315,16 @@ function startup() {
     /*zoom to current value*/
     parentWindow.zoomStart();
     parentWindow.zoomEnd();
-    tflow.postStartUp = setTimeout(function(){
-        /*TODO: this is temporary workaround, need to find where is the line-hide man*/
-        clearTimeout(tflow.postStartUp);
-        lineStart();
-        lineEnd();
-    },1000);
+
+    /*Notice: support for first load with zooming factor to show lines again after 1 second*/
+    if (parentWindow.tflow.isFirstFlow) {
+        parentWindow.tflow.isFirstFlow = false;
+        tflow.postStartUp = setTimeout(function () {
+            clearTimeout(tflow.postStartUp);
+            lineStart();
+            lineEnd();
+        }, 1000);
+    }
 
     draggableStartup();
 

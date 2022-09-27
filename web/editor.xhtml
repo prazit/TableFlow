@@ -143,18 +143,11 @@
                                             </p:password>
                                         </p:outputPanel>
 
-                                        <!--<p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.MASK==prop.type}">
-                                            <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}" rendered="#{prop.label != null}">#{prop.label}</p:outputLabel>
-                                            <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
-                                            <p:inputMask mask="#{prop.params[0]}" value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="#{prop.label != null?'ui-g-8':'fit-width'}">
-                                                <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                            </p:inputMask>
-                                        </p:outputPanel>-->
-
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.DYNAMICVALUE==prop.type}">
                                             <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}" rendered="#{prop.label != null}">#{prop.label}</p:outputLabel>
                                             <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:inputText value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="#{prop.label != null?'ui-g-8':'fit-width'}">
+                                                <!--TODO: need button to open Dynamic Value Expression Editor(Helper like PowerScript)-->
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputText>
                                         </p:outputPanel>

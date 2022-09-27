@@ -307,7 +307,6 @@ public enum Properties {
             "--: tested :--"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     TRANSFORM_COLUMN(
             "==: Column : Column in Transformation Table :==",
             "--: Column Properties :--",
@@ -321,24 +320,22 @@ public enum Properties {
             "id:ID:ReadOnly",
             "this:-- This as Json --:toString",
             "--: tested :--"
-            /* Value cases:
-             * [X] 1. direct transfer : useDynamic = false, value = column name from source-table
-             * [X] 2. dynamic value : useDynamic = true, value = custom dynamic value
-             * [ ] 3. TODO: future feature - single function helper : useDynamic = true, useFunction = true, value = generated dynamic value
-            "useFunction:Function Helper:BOOLEAN::refreshProperties();",
-             */
-            /*TODO: include properties from specified property name (for selected function)*/
+            /* TODO: future feature: need to choose between Single Function Helper here or Dynamic Value Expression Bar (like PowerBuilder helper dialogs)
+                single function helper : useDynamic = true, useFunction = true, value = generated dynamic value
+                "useFunction:Function Helper:BOOLEAN::refreshProperties();",
+            // need to include properties from specified property name (for selected function) */
     ),
 
-    /*LOCAL(ALL-FILE-TYPES,CUSTOM-NAME), SFTP(ALL-FILE-TYPES,CUSTOM-NAME)*/
-    /*RESPONSE(JSON,XML,FIXED-NAME), DATABASE(SQL,FIXED-NAME), KAFKAPRODUCER(JSON,XML,JAVASERIAL,FIXED-NAME)*/
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
+    /*LOCAL(ALL-FILE-TYPES,CUSTOM-NAME), SFTP(ALL-FILE-TYPES,CUSTOM-NAME), DATABASE(SQL,FIXED-NAME)*/
+    /*RESPONSE(JSON,XML,FIXED-NAME), KAFKAPRODUCER(JSON,XML,JAVASERIAL,FIXED-NAME)*/
     OUTPUT_TXT(
             "==: Output File (TXT) : Text File in Fixed Length Formatted :==",
-            "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
-            "type:Output Type:DataFileType:out|refreshProperties();",
+            "--: Output File Properties :--",
+            "type:Type:DataFileType:out|refreshProperties();",
+            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            "--: Fixed Length Properties :--",
             "name:File Name:String:1000",
-            "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
             ".:propertyMap:eol:EOL:String",
@@ -350,15 +347,21 @@ public enum Properties {
             ".:propertyMap:fillString:String Filler:String",
             ".:propertyMap:fillNumber:Number Filler:String",
             ".:propertyMap:fillDate:Date Filler:String",
-            ".:propertyMap:format:Format:TxtFormat"
+            ".:propertyMap:format:Format:TxtFormat",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString"
     ),
+
     OUTPUT_CSV(
             "==: Output File (CSV) : Text File in Comma Separated Values Formatted :==",
-            "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
-            "type:Output Type:DataFileType:out|refreshProperties();",
+            "--: Output File Properties :--",
+            "type:Type:DataFileType:out|refreshProperties();",
+            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            "--: CSV Properties :--",
             "name:File Name:String:1000",
-            "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
             ".:propertyMap:bof:BOF:String",
@@ -370,16 +373,21 @@ public enum Properties {
             ".:propertyMap:integerFormat:Integer Format:String",
             ".:propertyMap:decimalFormat:Decimal Format:String",
             ".:propertyMap:dateFormat:Date Format:String",
-            ".:propertyMap:dateTimeFormat:DateTime Format:String"
+            ".:propertyMap:dateTimeFormat:DateTime Format:String",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString"
     ),
+
     OUTPUT_MARKDOWN(
             "==: Output File (MD) : Text File contains one or more tables in Markdown Formatted :==",
-            "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
-            "type:Output Type:DataFileType:out|refreshProperties();",
+            "--: Output File Properties :--",
+            "type:Type:DataFileType:out|refreshProperties();",
+            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            "--: Markdown Properties :--",
             "name:File Name:String:1000",
-            "path:File Path:String",
-            "--:Extra Options:--",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
             ".:propertyMap:eol:EOL:String",
@@ -390,15 +398,21 @@ public enum Properties {
             ".:propertyMap:showTableTitle:Show Table Name:Boolean",
             ".:propertyMap:showRowNumber:Show Row Number:Boolean",
             ".:propertyMap:showFlowChart:Show Flowchart:Boolean",
-            ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean"
+            ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString"
     ),
+
     OUTPUT_SQL(
             "==: Output File (SQL) : contains list of insert/update/delete statement that can use by another process later :==",
-            "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE:LOCAL,SFTP",
-            "type:Output Type:DataFileType:out|refreshProperties();",
+            "--: Output File Properties :--",
+            "type:Type:DataFileType:out|refreshProperties();",
+            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            "--: SQL Properties :--",
             "name:File Name:String:1000",
-            "path:File Path:String",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset",
             ".:propertyMap:eol:EOL:String",
@@ -411,34 +425,53 @@ public enum Properties {
             ".:propertyMap:insert:Generate SQL Insert:Boolean",
             ".:propertyMap:update:Generate SQL Update:Boolean",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
-            ".:propertyMap:postSQL:Post-SQL:StringArray"
-    ),
-    OUTPUT_DBINSERT(
-            "==: Output File (DB-Insert) : insert each row into specified table using SQL Insert Statement :==",
-            "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE:DATABASE",
-            "type:Output Type:DataFileType:out|refreshProperties();",
-            ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
-            ".:propertyMap:columnList:Column List:ColumnList",
-            ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
-            ".:propertyMap:quotesOfValue:Quotes for Value:String",
-            ".:propertyMap:preSQL:Pre-SQL:StringArray",
-            ".:propertyMap:postSQL:Post-SQL:StringArray"
-    ),
-    OUTPUT_DBUPDATE(
-            "==: Output File (DB-Update) : update each row into specified table using SQL Update Statement :==",
-            "--: File Properties :--",
-            "dataSourceId:Data Source:DATASOURCE:DATABASE",
-            "type:Output Type:DataFileType:out:refreshProperties();",
-            ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
-            ".:propertyMap:columnList:Column List:ColumnList",
-            ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
-            ".:propertyMap:quotesOfValue:Quotes for Value:String",
-            ".:propertyMap:preSQL:Pre-SQL:StringArray",
-            ".:propertyMap:postSQL:Post-SQL:StringArray"
+            ".:propertyMap:postSQL:Post-SQL:StringArray",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString"
     ),
 
-    /*Notice: all below will include into TRANSFORM_COLUMN by flag useFunction and the selected function*/
+    OUTPUT_DBINSERT(
+            "==: Output File (DB-Insert) : insert each row into specified table using SQL Insert Statement :==",
+            "--: Output File Properties :--",
+            "type:Type:DataFileType:out|refreshProperties();",
+            "dataSourceIdentifier:Source:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            "--: SQL Properties :--",
+            ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
+            ".:propertyMap:columnList:Column List:ColumnList",
+            ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
+            ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            ".:propertyMap:preSQL:Pre-SQL:StringArray",
+            ".:propertyMap:postSQL:Post-SQL:StringArray",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString"
+    ),
+
+    OUTPUT_DBUPDATE(
+            "==: Output File (DB-Update) : update each row into specified table using SQL Update Statement :==",
+            "--: Output File Properties :--",
+            "type:Type:DataFileType:out|refreshProperties();",
+            "dataSourceIdentifier:Source:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            "--: SQL Properties :--",
+            ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
+            ".:propertyMap:columnList:Column List:ColumnList",
+            ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
+            ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            ".:propertyMap:preSQL:Pre-SQL:StringArray",
+            ".:propertyMap:postSQL:Post-SQL:StringArray",
+            "--: Technical Support :--",
+            "id:Column ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "this:-- This as Json --:toString"
+    ),
+
+    /*Notice: all below for SINGLE FUNCTION HELPER included in TRANSFORM_COLUMN, its enable by flag 'useFunction' and identified by selectedFunction*/
 
     CFX_LOOKUP_FIRST_EDITOR(
             "name:Title:String",
@@ -587,6 +620,7 @@ public enum Properties {
             ""
     ),
 
+    /*Transformations*/
 
     TFX_FILTER(
             "name:Name:String:1000",
