@@ -5,13 +5,14 @@ package com.tflow.model.editor;
  */
 public enum PropertyVar {
 
-    name,
+    columnList,
     dataSourceId,
-    function,
-    quickColumnList,
     fixedLengthFormatList,
     format,
-    ;
+    function,
+    name,
+    quickColumnList,
+    columns;
 
     public boolean equals(String varName) {
         return varName.compareTo(name()) == 0;

@@ -4,6 +4,7 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.SourceType;
 import com.tflow.model.editor.datasource.NameValue;
 import com.tflow.model.editor.room.RoomType;
+import com.tflow.model.editor.view.PropertyView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +39,19 @@ public class TransformTable extends DataTable implements HasEvent, HasSelected {
         fxList = new ArrayList<>();
         columnFxTable = new ColumnFxTable(this);
         eventManager = new EventManager(this);
+        createEventHandlers();
+    }
+
+    private void createEventHandlers() {
+        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                PropertyView property = (PropertyView) event.getData();
+                if (PropertyVar.columnList.equals(property.getVar())) {
+                    eventManager.fireEvent(EventName.COLUMN_LIST_CHANGED, property);
+                }
+            }
+        });
     }
 
     public SourceType getSourceType() {
@@ -80,7 +94,6 @@ public class TransformTable extends DataTable implements HasEvent, HasSelected {
     public List<NameValue> getQuickColumnList() {
         return quickColumnList;
     }
-
 
 
     public void setQuickColumnList(List<NameValue> quickColumnList) {

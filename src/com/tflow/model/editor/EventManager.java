@@ -61,4 +61,9 @@ public class EventManager {
         return this;
     }
 
+    public int countEventHandler(EventName event) {
+        List<EventHandler> eventHandlerList = eventHandlerMap.get(event);
+        if (eventHandlerList == null) return 0;
+        return eventHandlerList.size();
+    }
 }

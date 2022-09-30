@@ -28,6 +28,8 @@ public class RemoveTransformColumn extends Command {
 
         step.getSelectableMap().remove(transformColumn.getSelectableId());
 
+        transformTable.getEventManager().fireEvent(EventName.COLUMN_LIST_CHANGED, transformTable.getProperties().getPropertyView(PropertyVar.columnList.name()));
+
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.TRANSFORM_COLUMN, transformColumn);
 

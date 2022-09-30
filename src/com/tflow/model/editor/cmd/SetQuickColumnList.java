@@ -81,6 +81,10 @@ public class SetQuickColumnList extends Command {
             throw ex;
         }
 
+        if (Operation.APPEND == operation || Operation.REMOVE == operation) {
+            transformTable.getEventManager().fireEvent(EventName.COLUMN_LIST_CHANGED, transformTable.getProperties().getPropertyView(PropertyVar.columnList.name()));
+        }
+
         // for Action.executeUndo /*nothing*/
 
         // result map /*nothing*/

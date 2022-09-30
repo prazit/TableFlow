@@ -594,6 +594,7 @@ public class ProjectManager {
                 data = dataManager.getData(ProjectFileType.TRANSFORM_OUTPUT, projectUser, outputId, stepId, 0, transformTableId);
                 outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
                 outputFile.setOwner(transformTable);
+                outputFile.createOwnerEventHandlers();
                 outputList.add(outputFile);
             }
 

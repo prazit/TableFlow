@@ -337,7 +337,7 @@ public enum Properties {
             ".:propertyMap:fillString:String Filler:String",
             ".:propertyMap:fillNumber:Number Filler:String",
             ".:propertyMap:fillDate:Date Filler:String",
-            "fixedLengthFormatList:Fixed Length Formatter:Properties:Column:Type & Length:false|updateProperty('fixedLengthFormatList');",
+            "fixedLengthFormatList:Fixed Length Formatter:Properties:Column:Type & Length:false|updateProperty('format');updateProperty('fixedLengthFormatList');",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
@@ -397,7 +397,6 @@ public enum Properties {
             "--: tested :--"
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     OUTPUT_SQL(
             "==: Output File (SQL) : contains list of insert/update/delete statement that can use by another process later :==",
             "--: Output File Properties :--",
@@ -424,6 +423,7 @@ public enum Properties {
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
+            ".:propertyMap:columns:Columns:ReadOnly",
             "--: tested :--"
     ),
 
@@ -434,7 +434,7 @@ public enum Properties {
             "dataSourceIdentifier:Database:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "--: Database Insertion Properties :--",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
-            /*TODO: ColumnArray*/ ".:propertyMap:columnList:Column List:ColumnList",
+            ".:propertyMap:columns:Included Column:ColumnList|refreshProperties();",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             "--: Direct SQL Properties :--",
@@ -445,7 +445,8 @@ public enum Properties {
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString"
+            ".:propertyMap:columns:Columns:ReadOnly",
+            "--: tested :--"
     ),
 
     OUTPUT_DBUPDATE(
@@ -455,7 +456,7 @@ public enum Properties {
             "dataSourceIdentifier:Database:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "--: SQL Properties :--",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
-            /*TODO: ColumnArray*/ ".:propertyMap:columnList:Column List:ColumnList",
+            ".:propertyMap:columns:Included Column:ColumnList|refreshProperties();",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             "--: Direct SQL Properties :--",
@@ -466,11 +467,13 @@ public enum Properties {
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString"
+            ".:propertyMap:columns:Columns:ReadOnly",
+            "--: tested :--"
     ),
 
     /*Notice: all below for SINGLE FUNCTION HELPER included in TRANSFORM_COLUMN, its enable by flag 'useFunction' and identified by selectedFunction*/
 
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     CFX_LOOKUP_FIRST_EDITOR(
             "name:Title:String",
             "function:Function:ColumnFunction",
@@ -825,7 +828,7 @@ public enum Properties {
         if (property.hasParent()) {
             /*by getParent().getValue() method, the parent always be the PropertyMap*/
             value = selectable.getPropertyMap().get(property.getVar());
-            if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:propertyMap['{}'], value:({}){}", selectable.getSelectableId(), property.getVar(), value.getClass().getSimpleName(), value);
+            if (log.isDebugEnabled()) log.debug("getPropertyValue: selectable:{}, propertyName:propertyMap['{}'], value:({}){}", selectable.getSelectableId(), property.getVar(), value == null ? "Object" : value.getClass().getSimpleName(), value);
         } else
             try {
                 /*by getValue() method without parent*/

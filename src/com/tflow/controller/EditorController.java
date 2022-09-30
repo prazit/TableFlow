@@ -872,6 +872,26 @@ public class EditorController extends Controller {
         });
     }
 
+    private void createOutputFileEventHandlers(TransformTable transformTable) {
+        List<OutputFile> outputList = transformTable.getOutputList();
+        for (OutputFile outputFile : outputList) {
+            EventManager eventManager = outputFile.getEventManager();
+            if (eventManager.countEventHandler(EventName.COLUMN_LIST_CHANGED) == 0) {
+                log.debug("createOutputFileEventHandlers: addHandler on outputFile:{}", outputFile);
+                eventManager.addHandler(EventName.COLUMN_LIST_CHANGED, new EventHandler() {
+                    @Override
+                    public void handle(Event event) {
+                        OutputFile target = (OutputFile) event.getTarget();
+                        PropertyView property = (PropertyView) event.getData();
+                        propertyChanged(target.getProjectFileType(), target, property);
+                    }
+                });
+            }else{
+                log.debug("createOutputFileEventHandlers: skip on outputFile:{}", outputFile);
+            }
+        }
+    }
+
     public void submitZoom() {
         /*TODO: need to call StepSetting command to save settings to server*/
 
@@ -1163,6 +1183,11 @@ public class EditorController extends Controller {
             ((HasSelected) activeObject).selected();
         }
         setPropertySheet(activeObject);
+
+        /*OutputFile of TransformTable need some action*/
+        if (activeObject instanceof TransformTable) {
+            createOutputFileEventHandlers((TransformTable) activeObject);
+        }
     }
 
     private void setPropertySheet(Selectable activeObject) {
@@ -1244,6 +1269,24 @@ public class EditorController extends Controller {
         return new String(new char[value.length()]).replaceAll("\0", "*");
     }
 
+    public Boolean isEmpty(Object object) {
+        if (object == null) return true;
+        if (object instanceof String) {
+            String string = (String) object;
+            if (string.contains(":")) {
+                // itemList.DATASOURCE = "DataSourceType:dataSourceId"
+                String[] parts = string.split("[:]");
+                if (parts[0].isEmpty()) return true;
+                return Integer.parseInt(parts[1]) == 0;
+            } else {
+                return string.isEmpty();
+            }
+        } else if (object instanceof Integer) {
+            return ((Integer) object) == 0;
+        }
+        return false;
+    }
+
     /**
      * for PropertyType.PROPERTIES
      */
@@ -1320,6 +1363,9 @@ public class EditorController extends Controller {
         propertyChanged(property);
     }
 
+    /**
+     * for PropertyType.UPLOAD
+     */
     public void uploadBinaryFile(FileUploadEvent event) {
         UploadedFile file = event.getFile();
         String fileName = file.getFileName();
@@ -1355,24 +1401,6 @@ public class EditorController extends Controller {
             jsBuilder.pre(JavaScript.notiError, "Uploaded File Failed with Internal Command Error!");
             return;
         }
-    }
-
-    public Boolean isEmpty(Object object) {
-        if (object == null) return true;
-        if (object instanceof String) {
-            String string = (String) object;
-            if (string.contains(":")) {
-                // itemList.DATASOURCE = "DataSourceType:dataSourceId"
-                String[] parts = string.split("[:]");
-                if (parts[0].isEmpty()) return true;
-                return Integer.parseInt(parts[1]) == 0;
-            } else {
-                return string.isEmpty();
-            }
-        } else if (object instanceof Integer) {
-            return ((Integer) object) == 0;
-        }
-        return false;
     }
 
     /**

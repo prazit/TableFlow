@@ -24,7 +24,7 @@ public class AddTransformColumn extends Command {
 
         List<DataColumn> columnList = transformTable.getColumnList();
         TransformColumn transformColumn = (TransformColumn) paramMap.get(CommandParamKey.TRANSFORM_COLUMN);
-        if(transformColumn == null) {
+        if (transformColumn == null) {
             // for AddTransformColumn
             transformColumn = new TransformColumn(columnList.size(), DataType.STRING, "Untitled", ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), transformTable);
             transformColumn.setId(ProjectUtil.newUniqueId(project));
@@ -35,6 +35,8 @@ public class AddTransformColumn extends Command {
         columnList.add(transformColumn);
 
         step.getSelectableMap().put(transformColumn.getSelectableId(), transformColumn);
+
+        transformTable.getEventManager().fireEvent(EventName.COLUMN_LIST_CHANGED, transformTable.getProperties().getPropertyView(PropertyVar.columnList.name()));
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.TRANSFORM_COLUMN, transformColumn);

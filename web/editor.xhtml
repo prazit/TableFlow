@@ -113,6 +113,8 @@
                                             <span>#{prop.label}</span>
                                         </p:divider>
 
+                                        <!--TODO: all p:inputText need key-filter by PropertyType.parameter-->
+
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.READONLY==prop.type}">
                                             <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}" rendered="#{prop.label != null}">#{prop.label}</p:outputLabel>
                                             <p:outputLabel class="#{prop.label != null?'ui-g-8':'fit-width'} property-label#{editorCtl.disabledClass(prop)}">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</p:outputLabel>
