@@ -60,8 +60,9 @@ public class Workspace implements Serializable {
 
     @PostConstruct
     public void onCreation() {
-        Logger log = LoggerFactory.getLogger(Workspace.class);
-        log.trace("Session started.");
+        state = WorkspaceState.STARTING;
+        log = LoggerFactory.getLogger(Workspace.class);
+        log.debug("Session started.");
 
         environment = app.getEnvironment();
         projectManager = new ProjectManager(environment);

@@ -9,6 +9,8 @@ public enum PropertyVar {
     dataSourceId,
     function,
     quickColumnList,
+    fixedLengthFormatList,
+    format,
     ;
 
     public boolean equals(String varName) {

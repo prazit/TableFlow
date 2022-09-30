@@ -45,7 +45,7 @@ public enum PropertyType {
     COLUMN(/*column-selectable-id*/"", true),
     SFTP(/*sftp-id*/0, true),
 
-    COLUMNARRAY(/*column-ids(names)*/new ArrayList<Integer>()),
+    COLUMNLIST(/*column-ids(names)*/new ArrayList<Integer>()),
 
     UPLOAD(""),
     FTPFILE(""),

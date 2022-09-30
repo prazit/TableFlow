@@ -91,7 +91,8 @@ public class ReadProjectCommand extends IOCommand {
                     sendObject(key, headerData);
                     sendObject(key, returnValue);
                 } catch (Exception ex) {
-                    log.error("INVALID_DATA_FILE: ", ex);
+                    log.error("INVALID_DATA_FILE: " + ex.getMessage());
+                    log.trace("", ex);
                     headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
                     sendObject(key, headerData);
                 }
@@ -111,7 +112,8 @@ public class ReadProjectCommand extends IOCommand {
                     sendObject(key, headerData);
                     sendObject(key, returnValue);
                 } catch (Exception ex) {
-                    log.error("INVALID_DATA_FILE: ", ex);
+                    log.error("INVALID_DATA_FILE: " + ex.getMessage());
+                    log.trace("", ex);
                     headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
                     sendObject(key, headerData);
                 }

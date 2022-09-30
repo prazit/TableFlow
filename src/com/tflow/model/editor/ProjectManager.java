@@ -524,6 +524,7 @@ public class ProjectManager {
                 data = dataManager.getData(ProjectFileType.DATA_OUTPUT, projectUser, outputId, stepId, dataTableId);
                 outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
                 outputFile.setOwner(dataTable);
+                outputFile.selected();
                 outputList.add(outputFile);
             }
 
@@ -675,7 +676,7 @@ public class ProjectManager {
         kafkaRecordAttributes.setUserId(workspace.getUser().getId());
         kafkaRecordAttributes.setClientId(workspace.getClient().getId());
         kafkaRecordAttributes.setModifiedDate(buildDate);
-        log.trace("Outgoing message: build(attributes:{})", kafkaRecordAttributes);
+        log.debug("Outgoing message: build(attributes:{})", kafkaRecordAttributes);
 
         /*send message*/
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>(buildPackageTopic, "build", kafkaRecordAttributes));

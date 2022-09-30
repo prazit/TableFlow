@@ -14,6 +14,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @ViewScoped
 @Named("playCtl")
@@ -31,9 +33,10 @@ public class PlayGroundController extends Controller {
     private BinaryFile binaryFile;
     private DataFileType dataFileType;
 
+    private ArrayList<String> inputChips;
 
     @Override
-    protected Page getPage() {
+    public Page getPage() {
         return Page.PLAYGROUND;
     }
 
@@ -81,6 +84,14 @@ public class PlayGroundController extends Controller {
         this.binaryFile = binaryFile;
     }
 
+    public ArrayList<String> getInputChips() {
+        return inputChips;
+    }
+
+    public void setInputChips(ArrayList<String> inputChips) {
+        this.inputChips = inputChips;
+    }
+
     @Override
     void onCreation() {
         Environment currentEnvironment = workspace.getEnvironment();
@@ -106,6 +117,9 @@ public class PlayGroundController extends Controller {
         binaryFile = new BinaryFile();
         binaryFile.setName(dataFileType.getName());
         binaryFile.setContent(new byte[]{});
+
+        /*inputs*/
+        initInputChips();
     }
 
     public void notiInfo() {
@@ -175,6 +189,16 @@ public class PlayGroundController extends Controller {
     public void unknownArg(Object arg) {
         if (arg == null) log.debug("unknownArg: arg: null");
         else log.debug("unknownArg: arg:{}:{}", arg.getClass().getName(), arg);
+    }
+
+    public void submitInputs() {
+        jsBuilder.pre(JavaScript.notiInfo, "Inputs Submitted");
+        jsBuilder.pre(JavaScript.notiInfo, "DEBUG: Chips Value = '{}'", inputChips);
+        log.debug("DEBUG: Chips Values = '{}'", inputChips);
+    }
+
+    public void initInputChips() {
+        inputChips = new ArrayList<String>(Arrays.asList("One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"));
     }
 
 }

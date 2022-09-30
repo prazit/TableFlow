@@ -68,18 +68,20 @@ public class DataManager {
         kafkaTimeout = 5000;
 
         try {
-            log.trace("connecting to zookeeper");
+            log.debug("connecting to zookeeper");
             if (!globalConfigs.isConnected()) globalConfigs.connect();
-            log.trace("connected to zookeeper");
+            log.debug("connected to zookeeper");
         } catch (Exception ex) {
-            log.error("connect to zookeeper failed!", ex);
+            log.error("connect to zookeeper failed!" + ex.getMessage());
+            log.trace("", ex);
             return;
         }
 
         try {
             maximumTransactionId = globalConfigs.getLong(ZKConfigNode.MAXIMUM_TRANSACTION_ID);
         } catch (InterruptedException ex) {
-            log.error("loadConfigs failed! ", ex);
+            log.error("loadConfigs failed! " + ex.getMessage());
+            log.trace("", ex);
         }
     }
 
@@ -239,7 +241,8 @@ public class DataManager {
         try {
             deserializer = SerializeUtil.getDeserializer(environmentConfigs.getKafkaDeserializer());
         } catch (Exception ex) {
-            log.error("Deserializer creation failed: ", ex);
+            log.error("Deserializer creation failed: " + ex.getMessage());
+            log.trace("", ex);
             return false;
         }
 
@@ -247,14 +250,14 @@ public class DataManager {
     }
 
     private void subscribeTo(String topic, Consumer consumer) {
-        log.trace("subscribeTo(topic:{}).", topic);
+        log.debug("subscribeTo(topic:{}).", topic);
         List<PartitionInfo> topicPartitionList = consumer.partitionsFor(topic);
         topicPartitionArrayList = new ArrayList<>();
 
         for (PartitionInfo partitionInfo : topicPartitionList) {
             topicPartitionArrayList.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
         }
-        log.trace("ready to assign/subscribe.");
+        log.debug("ready to assign/subscribe.");
 
         //need to use assign instead of subscribe: consumer.subscribe(Collections.singletonList(topic));
         consumer.assign(topicPartitionArrayList);
@@ -266,7 +269,7 @@ public class DataManager {
         for (TopicPartition topicPartition : topicPartitionArrayList) {
             log.info("partition:{}, position:{}", topicPartition, consumer.position(topicPartition) - 1);
         }
-        log.trace("offset moved to last message.");
+        log.debug("offset moved to last message.");
     }
 
     private boolean ready(Producer<String, Object> producer) {
@@ -367,7 +370,8 @@ public class DataManager {
         try {
             transactionId = newTransactionId(commitList.size());
         } catch (InterruptedException ex) {
-            log.error("newTransactionId failed!", ex);
+            log.error("newTransactionId failed!" + ex.getMessage());
+            log.trace("", ex);
             return false;
         }
 
@@ -403,7 +407,8 @@ public class DataManager {
             scheduled.get();
             log.info("waitAllTasks: commit task completed.");
         } catch (Exception ex) {
-            log.error("waitAllTasks: got exception during wait commit task.", ex);
+            log.error("waitAllTasks: got exception during wait commit task." + ex.getMessage());
+            log.trace("", ex);
         }
     }
 
@@ -602,7 +607,7 @@ public class DataManager {
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
 
-        log.trace("Outgoing message: read(fileType:{}, additional:{}", fileType, additional);
+        log.debug("Outgoing message: read(fileType:{}, additional:{}", fileType, additional);
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>(readTopic, fileType.name(), additional));
         if (isSuccess(future)) {
             return 1L;
@@ -611,7 +616,7 @@ public class DataManager {
     }
 
     private Object captureData(ProjectFileType fileType, HeaderData headerData) {
-        log.trace("captureData(fileType:{}, header:{})", fileType, headerData);
+        log.debug("captureData(fileType:{}, header:{})", fileType, headerData);
 
         /*TODO: timeout and maxTry need to load from configuration*/
         Object capturedData = null;
@@ -645,7 +650,8 @@ public class DataManager {
                 try {
                     captured = deserializer.deserialize("", value);
                 } catch (Exception ex) {
-                    log.error("Error when deserializing byte[] to object: ", ex);
+                    log.error("Error when deserializing byte[] to object: " + ex.getMessage());
+                    log.trace("", ex);
                     polling = false;
                     break;
                 }
@@ -656,7 +662,8 @@ public class DataManager {
                     try {
                         capturedData = (KafkaRecord) captured;
                     } catch (ClassCastException ex) {
-                        log.error("Error when cast captured-data to KafkaRecord: ", ex);
+                        log.error("Error when cast captured-data to KafkaRecord: " + ex.getMessage());
+                        log.trace("", ex);
                         polling = false;
                         break;
                     }
@@ -669,7 +676,8 @@ public class DataManager {
                 try {
                     capturedHeader = (HeaderData) captured;
                 } catch (ClassCastException ex) {
-                    log.error("Error when cast captured-data to HeaderData: ", ex);
+                    log.error("Error when cast captured-data to HeaderData: " + ex.getMessage());
+                    log.trace("", ex);
                     continue;
                 }
 
@@ -720,10 +728,12 @@ public class DataManager {
             RecordMetadata recordMetadata = future.get();
             result = true;
         } catch (InterruptedException ex) {
-            log.error("InterruptedException: ", ex);
+            log.error("InterruptedException: " + ex.getMessage());
+            log.trace("", ex);
             result = false;
         } catch (ExecutionException ex) {
-            log.error("ExecutionException: ", ex);
+            log.error("ExecutionException: " + ex.getMessage());
+            log.trace("", ex);
             result = false;
         }
 

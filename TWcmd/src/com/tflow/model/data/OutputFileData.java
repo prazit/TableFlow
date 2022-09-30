@@ -14,7 +14,6 @@ public class OutputFileData extends DataFileData {
                 "id:" + id +
                 ", type:" + type +
                 ", name:'" + name + '\'' +
-                ", path:'" + path + '\'' +
                 ", uploadedId:" + uploadedId +
                 ", endPlug:" + endPlug +
                 ", startPlug:" + startPlug +

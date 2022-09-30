@@ -34,7 +34,7 @@ public class FlowchartController extends Controller {
 
 
     @Override
-    protected Page getPage() {
+    public Page getPage() {
         return Page.EDITOR;
     }
 
@@ -88,7 +88,8 @@ public class FlowchartController extends Controller {
                 } catch (Exception ex) {
                     String msg = "Project Name '" + target.getName() + "' is changed, but the name in group still unchanged by Internal Error!";
                     jsBuilder.pre(JavaScript.notiError, msg);
-                    log.error(msg, ex);
+                    log.error(msg + ex.getMessage());
+                    log.trace("", ex);
                     return;
                 }
 

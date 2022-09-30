@@ -54,7 +54,8 @@ public class Application {
             //configs.load(new FileReader(configFileName));
             configStream.close();
         } catch (Exception ex) {
-            log.error("Load configurations file:" + configFileName + " failed! ", ex);
+            log.error("Load configurations file:" + configFileName + " failed! ");
+            log.trace("", ex);
             throw ex;
         }
         log.info("{} loaded", configFileName);
@@ -85,7 +86,8 @@ public class Application {
             log.info("{} heartbeat started", AppName.TABLE_FLOW);
 
         } catch (Exception ex) {
-            log.error("Load configurations failed! ", ex);
+            log.error("Load configurations failed! " + ex.getMessage());
+            log.trace("", ex);
             throw ex;
         }
     }

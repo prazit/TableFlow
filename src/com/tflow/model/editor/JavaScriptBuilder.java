@@ -4,6 +4,8 @@ import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.util.*;
 
@@ -79,11 +81,11 @@ public class JavaScriptBuilder {
         String script = javaScript.getScript();
         if (script == null) {
             /*notification*/
-            String message = javaScript.name() + notiSeparator + (String) params[0] + notiSeparator + DateTimeUtil.now().getTime();
-            notiList.add(0, message);
-
-            /*Notice: want duplicated filter when the first case occurred*/
-
+            StringBuilder stringBuilder = new StringBuilder(javaScript.name() + notiSeparator + (String) params[0] + notiSeparator + DateTimeUtil.now().getTime());
+            for (int index = 1; index < params.length; index++) {
+                stringBuilder.append(notiSeparator).append(params[index] == null ? "null" : params[index].toString());
+            }
+            notiList.add(0, stringBuilder.toString());
             FacesUtil.runClientScript(JavaScript.noti.getScript());
             return;
         }
@@ -208,7 +210,14 @@ public class JavaScriptBuilder {
                 continue;
             }
 
-            String message = parts[1].replaceAll("\n", "<br/>");
+            /*format message*/
+            String message = parts[1];
+            if (message.contains("{}")) {
+                FormattingTuple formattingTuple = MessageFormatter.arrayFormat(message, Arrays.copyOfRange(parts, 3, parts.length));
+                message = formattingTuple.getMessage();
+            }
+
+            message = message.replaceAll("\n", "<br/>");
             switch (JavaScript.valueOf(parts[0])) {
                 case notiInfo:
                     FacesUtil.addInfo(message);

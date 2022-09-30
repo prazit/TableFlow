@@ -53,7 +53,7 @@ public abstract class Controller implements Serializable {
         return timestamp;
     }
 
-    protected abstract Page getPage();
+    public abstract Page getPage();
 
     public Page getCurrentPage() {
         return workspace.getCurrentPage();
@@ -127,7 +127,7 @@ public abstract class Controller implements Serializable {
         } catch (Exception ex) {
             jsBuilder.pre(JavaScript.notiError, "Change property value failed by SetQuickColumnList command!");
             log.error("Change Property Value Failed!, type:QuickColumnList, table:{}, property:{}", transformTable.getSelectableId(), property);
-            log.error("", ex);
+            log.trace("", ex);
         }
     }
 
@@ -150,7 +150,7 @@ public abstract class Controller implements Serializable {
         } catch (Exception ex) {
             jsBuilder.pre(JavaScript.notiError, "Change property value failed by ChangePropertyValue command!");
             log.error("Change Property Value Failed!, type:{}, data:{}, property:{}", projectFileType, data.getClass().getSimpleName(), property);
-            log.error("", ex);
+            log.trace("", ex);
         }
     }
 

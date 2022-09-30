@@ -123,6 +123,38 @@
                             </div>
                         </p:outputPanel>
                     </p:tab>
+                    <p:tab title="Inputs">
+                        <h:form>
+                            <p:outputPanel styleClass="ui-g" id="inputPanel">
+                                <h3>Inputs</h3>
+
+                                <p:tooltip position="top"/>
+                                <p:divider align="left">
+                                    <div class="inline-flex align-items-center">
+                                        <i class="pi pi-info-circle"/>
+                                        <b>Inputs:</b>
+                                    </div>
+                                </p:divider>
+
+                                <div class="ui-g-6" style="background-color: var(--surface-d)">
+                                    <p:outputPanel styleClass="ui-g">
+                                        <p:outputLabel styleClass="ui-g-4" value="Chips: "/>
+                                        <p:outputPanel styleClass="ui-g-8">
+                                            <p:chips value="#{playCtl.inputChips}" readonly="true" title="Use X button to remove unwanted columns"/>
+                                            <p:commandLink value="Add all again" actionListener="#{playCtl.initInputChips}" update="@form"/>
+                                        </p:outputPanel>
+                                    </p:outputPanel>
+                                </div>
+
+                                <div class="ui-g-6"></div>
+
+                                <div class="ui-g ui-g-6" style="background-color: var(--surface-d)">
+                                    <p:commandButton value="Submit" actionListener="#{playCtl.submitInputs}" update="@form"/>
+                                </div>
+
+                            </p:outputPanel>
+                        </h:form>
+                    </p:tab>
                 </p:tabView>
 
             </p:panel>

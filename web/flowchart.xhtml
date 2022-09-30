@@ -262,7 +262,7 @@
                                                     <input name="selectableId" type="hidden" value="#{toutput.selectableId}"/>
                                                     <p:remoteCommand name="update#{toutput.selectableId}" update="@parent" oncomplete="updateComplete('#{toutput.selectableId}')"/>
                                                     <p:graphicImage library="images" name="#{toutput.type.image}"/>
-                                                    <label>#{toutput.dataSourceType.name()} - (#{toutput.name})</label>
+                                                    <label>#{toutput.type.name().replace("OUT_","")} : #{toutput.name}</label>
                                                     <div class="#{toutput.startPlug.styleClass}" id="#{toutput.startPlug}"></div>
                                                 </p:outputPanel>
 

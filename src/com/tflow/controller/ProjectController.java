@@ -36,13 +36,13 @@ public class ProjectController extends Controller {
     private boolean pleaseSelectPackage;
 
     @Override
-    protected Page getPage() {
+    public Page getPage() {
         return Page.EDITOR;
     }
 
     @Override
     public void onCreation() {
-        log.trace("onCreation.");
+        log.debug("onCreation.");
         project = workspace.getProject();
         createEventHandlers();
     }
@@ -63,7 +63,8 @@ public class ProjectController extends Controller {
                 } catch (ProjectDataException ex) {
                     String msg = "Project Name '" + target.getName() + "' is changed, but the name in group still unchanged by Internal Error!";
                     jsBuilder.pre(JavaScript.notiError, msg);
-                    log.error(msg, ex);
+                    log.error(msg + ex.getMessage());
+                    log.trace("", ex);
                     return;
                 }
 
@@ -99,7 +100,7 @@ public class ProjectController extends Controller {
     }
 
     public void openPackage() {
-        log.trace("openPackage.");
+        log.debug("openPackage.");
         reloadPackageList();
         selectPackage(packageList.size() - 1);
     }
@@ -120,7 +121,8 @@ public class ProjectController extends Controller {
             packageList = new ArrayList<>();
 
             String msg = "Load package list failed: ";
-            log.error(msg, ex);
+            log.error(msg + ex.getMessage());
+            log.trace("", ex);
             jsBuilder.pre(JavaScript.notiError,msg + ex.getMessage());
         }
     }
@@ -142,7 +144,7 @@ public class ProjectController extends Controller {
     }
 
     private void reloadPackage() {
-        log.trace("reloadPackage.");
+        log.debug("reloadPackage.");
         try {
             ProjectManager manager = project.getManager();
             activePackage = manager.loadPackage(selectedPackageId, project);
@@ -150,13 +152,14 @@ public class ProjectController extends Controller {
             manager.addSeletable(activePackage, project);
         } catch (ProjectDataException ex) {
             String msg = "Reload package " + selectedPackageId + " failed: ";
-            log.error(msg, ex);
+            log.error(msg + ex.getMessage());
+            log.trace("", ex);
             jsBuilder.pre(JavaScript.notiError,msg + ex.getMessage());
         }
     }
 
     public void buildPackage() {
-        log.trace("buildPackage.");
+        log.debug("buildPackage.");
         Package buildPackage = project.getManager().buildPackage(workspace.getProject());
         if (buildPackage == null) {
             String msg = "Unexpected Error Occurred, try to build-package few minutes later";

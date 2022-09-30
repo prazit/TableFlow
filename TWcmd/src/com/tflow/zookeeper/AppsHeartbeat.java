@@ -151,7 +151,8 @@ public class AppsHeartbeat {
                     if (count >= maxCount) break;
                 }
             } catch (Exception ex) {
-                log.error("createScheduleJob: createScheduler error: ", ex);
+                log.error("createScheduleJob: createScheduler error: " + ex.getMessage());
+                log.trace("", ex);
                 return;
             }
         }

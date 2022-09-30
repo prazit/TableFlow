@@ -18,7 +18,7 @@ public class UnexpectedExceptionController extends Controller {
     }
 
     @Override
-    protected Page getPage() {
+    public Page getPage() {
         return workspace.getCurrentPage();
     }
 

@@ -64,21 +64,24 @@ public abstract class CLIbase {
             configStream.close();
             appVersion = configs.getProperty("version");
         } catch (Exception ex) {
-            log.error("Load configurations failed! ", ex);
+            log.error("Load configurations failed! " + ex.getMessage());
+            log.trace("", ex);
             System.exit(-1);
         }
 
         try {
             zkConfiguration = createZK(configs);
         } catch (Exception ex) {
-            log.error("Zookeeper is required to run " + getClass().getSimpleName() + ", ", ex);
+            log.error("Zookeeper is required to run " + getClass().getSimpleName() + ", ");
+            log.trace("", ex);
             System.exit(-1);
         }
 
         try {
             loadConfigs();
         } catch (Exception ex) {
-            log.error("Load configs failed! ", ex);
+            log.error("Load configs failed! " + ex.getMessage());
+            log.trace("", ex);
             System.exit(-1);
         }
 
@@ -88,7 +91,8 @@ public abstract class CLIbase {
             appsHeartbeat.startAutoHeartbeat(appName);
             appsHeartbeat.setAppVersion(appName, appVersion);
         } catch (Exception ex) {
-            log.error("Cannot start AppsHeartbeat, it is required to run " + getClass().getSimpleName() + ", ", ex);
+            log.error("Cannot start AppsHeartbeat, it is required to run " + getClass().getSimpleName() + ", ");
+            log.trace("", ex);
             System.exit(-1);
         }
 

@@ -1,28 +1,33 @@
 package com.tflow.controller;
 
-import com.tflow.kafka.*;
+import com.tflow.kafka.KafkaRecord;
+import com.tflow.kafka.KafkaRecordAttributes;
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.FileNameExtension;
-import com.tflow.model.editor.*;
 import com.tflow.model.editor.Properties;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
-import com.tflow.model.mapper.RecordMapper;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.ProjectUtil;
+import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.FacesUtil;
+import com.tflow.util.ProjectUtil;
 import com.tflow.util.SerializeUtil;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.apache.tika.Tika;
 import org.mapstruct.factory.Mappers;
+import org.primefaces.component.chips.Chips;
 import org.primefaces.component.fileupload.FileUpload;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.event.UnselectEvent;
 import org.primefaces.model.file.UploadedFile;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
@@ -63,7 +68,7 @@ public class EditorController extends Controller {
     private boolean focusOnLastProperties;
 
     @Override
-    protected Page getPage() {
+    public Page getPage() {
         return Page.EDITOR;
     }
 
@@ -536,7 +541,8 @@ public class EditorController extends Controller {
             ProjectManager projectManager = new ProjectManager(workspace.getEnvironment());
             projectManager.loadProject(workspace, projectId);
         } catch (Exception ex) {
-            log.error("openProject: error from server(" + ex.getMessage() + ")", ex);
+            log.error("openProject: error from server(" + ex.getMessage() + ")");
+            log.trace("", ex);
             return false;
         }
 
@@ -568,7 +574,8 @@ public class EditorController extends Controller {
             log.warn("testConvertByteArrayAndString: #2 deserilizedKafkaRecordValue: {}", deserilizedKafkaRecord);
 
         } catch (Exception ex) {
-            log.error("testConvertByteArrayAndString: ", ex);
+            log.error("testConvertByteArrayAndString: " + ex.getMessage());
+            log.trace("", ex);
         }
     }
 
@@ -622,7 +629,8 @@ public class EditorController extends Controller {
             value = stringBuilder.toString();
 
         } catch (Exception ex) {
-            log.error("testReadFromFile: ", ex);
+            log.error("testReadFromFile: " + ex.getMessage());
+            log.trace("", ex);
         }
 
         return value;
@@ -768,7 +776,8 @@ public class EditorController extends Controller {
             object = SerializeUtil.fromTJson(json.getBytes(StandardCharsets.ISO_8859_1));
             log.warn("testFromJson: object = \n{}", object);
         } catch (Error | Exception ex) {
-            log.error("testFromJson: object = null with error: ", ex);
+            log.error("testFromJson: object = null with error: " + ex.getMessage());
+            log.trace("", ex);
         }
     }
 
@@ -900,7 +909,8 @@ public class EditorController extends Controller {
             action.execute();
             return (String) action.getResultMap().get(ActionResultKey.PROJECT_ID);
         } catch (Exception ex) {
-            log.error("Create New Project Failed!", ex);
+            log.error("Create New Project Failed!" + ex.getMessage());
+            log.trace("", ex);
             jsBuilder.pre(JavaScript.notiError, "Create New Project with Internal Command Error!");
             return null;
         }
@@ -1149,14 +1159,14 @@ public class EditorController extends Controller {
             return;
         }
 
-        if (activeObject instanceof TransformTable) {
-            ((TransformTable) activeObject).refreshQuickColumnList();
+        if (activeObject instanceof HasSelected) {
+            ((HasSelected) activeObject).selected();
         }
         setPropertySheet(activeObject);
     }
 
     private void setPropertySheet(Selectable activeObject) {
-        log.trace("setPropertySheet(selectable:{})", (activeObject != null ? activeObject.getSelectableId() : "null"));
+        log.debug("setPropertySheet(selectable:{})", (activeObject != null ? activeObject.getSelectableId() : "null"));
         if (activeObject == null) {
             this.activeObject = null;
             propertyList = new ArrayList<>();
@@ -1266,7 +1276,8 @@ public class EditorController extends Controller {
         } catch (Exception ex) {
             String msg = "propertiesAppend(propertyVar:" + propertyVar + ") found error";
             jsBuilder.pre(JavaScript.notiError, msg);
-            log.error(msg, ex);
+            log.error(msg + ex.getMessage());
+            log.trace("", ex);
             return;
         }
 
@@ -1296,7 +1307,8 @@ public class EditorController extends Controller {
         } catch (Exception ex) {
             String msg = "propertiesRemove(propertyVar:" + property.getVar() + ") found error";
             jsBuilder.pre(JavaScript.notiError, msg);
-            log.error(msg, ex);
+            log.error(msg + ex.getMessage());
+            log.trace("", ex);
             return;
         }
 
@@ -1338,7 +1350,8 @@ public class EditorController extends Controller {
         try {
             new AddUploaded(paramMap).execute();
         } catch (Exception ex) {
-            log.error("Uploaded File Failed!", ex);
+            log.error("Uploaded File Failed!" + ex.getMessage());
+            log.trace("", ex);
             jsBuilder.pre(JavaScript.notiError, "Uploaded File Failed with Internal Command Error!");
             return;
         }
@@ -1360,5 +1373,64 @@ public class EditorController extends Controller {
             return ((Integer) object) == 0;
         }
         return false;
+    }
+
+    /**
+     * for PropertyType.COLUMNLIST
+     */
+    public void initColumnList(PropertyView property) {
+        /*Notice: used in OutputFile only*/
+        OutputFile outputFile = (OutputFile) this.activeObject;
+
+        List<String> columnList = new ArrayList<>();
+        DataTable sourceTable = (DataTable) outputFile.getOwner();
+        for (DataColumn column : sourceTable.getColumnList()) {
+            columnList.add(column.getName());
+        }
+
+        try {
+            property.setNewValue(columnList);
+            activeObject.getProperties().setPropertyValue(activeObject, property, log);
+        } catch (Exception ex) {
+            String msg = "Init ColumnList Property Failed! {}";
+            jsBuilder.pre(JavaScript.notiError, msg, ex.getMessage());
+            log.error(msg, ex.getMessage());
+            log.trace(FacesUtil.getFormattedStackTrace(ex, "com.tflow", "\n"));
+            return;
+        }
+
+        propertyChanged(activeObject.getProjectFileType(), activeObject, property);
+    }
+
+    /**
+     * for PropertyType.COLUMNLIST
+     */
+    public void columnListSelect(SelectEvent<String> event) {
+        /*Cancel added item by remove it from the list*/
+
+        Properties properties = activeObject.getProperties();
+        Chips chips = (Chips) event.getComponent();
+        PropertyView property = properties.getPropertyView(chips.getStyleClass());
+        String item = event.getObject();
+
+        try {
+            List<String> columnList = (List<String>) properties.getPropertyValue(activeObject, property, log);
+            columnList.remove(item);
+        } catch (Exception ex) {
+            String msg = "{}";
+            jsBuilder.pre(JavaScript.notiError, msg, ex.getMessage());
+            log.error(msg, ex.getMessage());
+            log.trace(FacesUtil.getFormattedStackTrace(ex, "com.tflow", "\n"));
+        }
+    }
+
+    /**
+     * for PropertyType.COLUMNLIST
+     */
+    public void columnListUnselect(UnselectEvent<String> event) {
+        Properties properties = activeObject.getProperties();
+        Chips chips = (Chips) event.getComponent();
+        PropertyView property = properties.getPropertyView(chips.getStyleClass());
+        propertyChanged(activeObject.getProjectFileType(), activeObject, property);
     }
 }

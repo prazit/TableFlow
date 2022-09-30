@@ -103,10 +103,6 @@
 
                                     <p:repeat value="#{editorCtl.propertyList}" var="prop">
 
-                                        <p:divider rendered="#{PropertyType.TITLE==prop.type}" align="left">
-                                            <span>description</span>
-                                        </p:divider>
-
                                         <p:outputPanel rendered="#{PropertyType.TITLE==prop.type}">
                                             <b class="title">#{prop.var}</b><br/>
                                             <sub class="description">#{prop.label}</sub>
@@ -133,7 +129,6 @@
                                             <p:inputText maxlength="#{prop.params[0]==null?1024:prop.params[0]}" value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="#{prop.label != null?'ui-g-8':'fit-width'}">
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputText>
-                                            <div class="debug" style="font-size:8px !important;color:gray;">#{prop}</div>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.PASSWORD==prop.type}">
@@ -150,14 +145,6 @@
                                                 <!--TODO: need button to open Dynamic Value Expression Editor(Helper like PowerScript)-->
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputText>
-                                        </p:outputPanel>
-
-                                        <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.STRINGARRAY==prop.type}">
-                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
-                                            <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
-                                            <p:inputTextarea value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" converter="StringArray" converterParam="#{prop.params[0]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
-                                                <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                            </p:inputTextarea>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.BOOLEAN==prop.type}">
@@ -189,13 +176,24 @@
                                             </div>
                                         </p:outputPanel>
 
-                                        <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.COLUMNARRAY==prop.type}">
+                                        <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.STRINGARRAY==prop.type}">
                                             <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
-                                            <p:selectCheckboxMenu immediate="true" value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
-                                                <f:selectItems value="#{editorCtl.getColumnList((prop.paramCount() > 1)?editorCtl.activeObject[prop.params[0]][prop.params[1]]:editorCtl.activeObject[prop.params[0]])}" var="column" itemLabel="#{column.label}" itemValue="#{column.value}"/>
+                                            <p:inputTextarea value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" converter="StringArray" converterParam="#{prop.params[0]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8">
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                            </p:selectCheckboxMenu>
+                                            </p:inputTextarea>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.COLUMNLIST==prop.type}">
+                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
+                                            <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
+                                            <p:outputPanel styleClass="ui-g-8 ui-nopad">
+                                                <p:chips value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" addOnBlur="true" disabled="#{editorCtl.disabled(prop)}" title="Use X button to remove unwanted columns" styleClass="#{prop.var}">
+                                                    <p:ajax event="itemUnselect" listener="#{editorCtl.columnListUnselect}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                    <p:ajax event="itemSelect" listener="#{editorCtl.columnListSelect}" process="@this" update="@this"/>
+                                                </p:chips>
+                                                <p:commandLink value="Add all again" actionListener="#{editorCtl.initColumnList(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" disabled="#{editorCtl.disabled(prop)}" process="@this" update="#{prop.update}" styleClass="fit-width"/>
+                                            </p:outputPanel>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{prop.type.isItemList()}">
@@ -227,26 +225,26 @@
                                             </p:divider>
                                             <p:dataTable value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" var="property" disabled="#{editorCtl.disabled(prop)}">
                                                 <p:column headerText="#{prop.params[0]}">
-                                                    <p:inputText title="press Enter to add new row below" maxlength="80" value="#{property.name}" styleClass="fit-width#{property.last and editorCtl.focusOnLastProperties?' focus':''}" rendered="#{property.last}">
+                                                    <p:inputText title="press Enter to add new #{prop.params[0]} below" maxlength="80" value="#{property.name}" styleClass="fit-width#{property.last and editorCtl.focusOnLastProperties?' focus':''}" rendered="#{property.last and prop.params[2]}">
                                                         <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                         <p:ajax event="keypress" onstart="propAppend(cfg,event,'#{prop.var}');"/>
                                                     </p:inputText>
-                                                    <p:inputText maxlength="80" value="#{property.name}" styleClass="fit-width#{property.last and editorCtl.focusOnLastProperties?' focus':''}" rendered="#{not property.last}">
+                                                    <p:inputText maxlength="80" value="#{property.name}" styleClass="fit-width#{property.last and editorCtl.focusOnLastProperties?' focus':''}" disabled="#{not prop.params[2]}" rendered="#{not property.last or not prop.params[2]}">
                                                         <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                     </p:inputText>
                                                 </p:column>
 
                                                 <p:column headerText="#{prop.params[1]}">
-                                                    <p:inputText title="press Enter to add new row below" maxlength="120" value="#{property.value}" styleClass="fit-width" rendered="#{property.last}" onfocus="PF('propertiesToolTip').show();">
+                                                    <p:inputText title="press Enter to add new #{prop.params[0]} below" maxlength="120" value="#{property.value}" styleClass="fit-width" rendered="#{property.last and prop.params[2]}" onfocus="PF('propertiesToolTip').show();">
                                                         <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                         <p:ajax event="keypress" onstart="propAppend(cfg,event,'#{prop.var}');"/>
                                                     </p:inputText>
-                                                    <p:inputText maxlength="120" value="#{property.value}" styleClass="fit-width" rendered="#{not property.last}">
+                                                    <p:inputText maxlength="120" value="#{property.value}" styleClass="fit-width" rendered="#{not property.last or not prop.params[2]}">
                                                         <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                     </p:inputText>
                                                 </p:column>
 
-                                                <p:column width="1em">
+                                                <p:column width="1em" rendered="#{prop.params[2]}">
                                                     <p:commandLink rendered="#{property.last and (prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var].size():editorCtl.activeObject[prop.var].size()) gt 1}">
                                                         <span class="ui-icon pi pi-minus-circle"/>
                                                         <p:ajax event="click" listener="#{editorCtl.propertiesRemove(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>

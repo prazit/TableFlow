@@ -5,6 +5,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @FacesConverter(value = "StringArray")
 public class StringArrayConverter implements Converter {
@@ -13,7 +15,14 @@ public class StringArrayConverter implements Converter {
     public String getAsString(FacesContext context, UIComponent component, Object object) {
         String separator = getSeparator(context, component);
 
-        String[] strings = (String[]) object;
+        String[] strings;
+        if (object instanceof ArrayList) {
+            ArrayList<Object> arrayList = (ArrayList<Object>) object;
+            strings = Arrays.copyOf(arrayList.toArray(), arrayList.size(), String[].class);
+        } else {
+            strings = (String[]) object;
+        }
+
         StringBuilder joined = new StringBuilder();
         for (String string : strings) {
             joined.append(separator).append(string);

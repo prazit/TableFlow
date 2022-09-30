@@ -3,9 +3,7 @@ package com.tflow.controller;
 import com.tflow.model.PageParameter;
 import com.tflow.system.Environment;
 import com.tflow.system.constant.Theme;
-import com.tflow.util.FacesUtil;
 
-import javax.faces.event.ActionListener;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
@@ -14,10 +12,9 @@ import javax.inject.Named;
 public class TopMenuController extends Controller {
 
     private boolean inDevelopment;
-    private Page currentPage;
 
     @Override
-    protected Page getPage() {
+    public Page getPage() {
         return workspace.getCurrentPage();
     }
 
@@ -29,7 +26,6 @@ public class TopMenuController extends Controller {
     void onCreation() {
         Environment currentEnvironment = workspace.getEnvironment();
         inDevelopment = Environment.DEVELOPMENT == currentEnvironment;
-        currentPage = workspace.getCurrentPage();
     }
 
     public void openPlayground(int sectionIndex) {

@@ -4,17 +4,12 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.SourceType;
 import com.tflow.model.editor.datasource.NameValue;
 import com.tflow.model.editor.room.RoomType;
-import com.tflow.model.editor.view.PropertyView;
-import com.tflow.util.ProjectUtil;
-import org.jboss.weld.manager.Transform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TransformTable extends DataTable implements HasEvent {
+public class TransformTable extends DataTable implements HasEvent, HasSelected {
 
     private SourceType sourceType;
     private int sourceId;
@@ -83,10 +78,13 @@ public class TransformTable extends DataTable implements HasEvent {
     }
 
     public List<NameValue> getQuickColumnList() {
-        if (quickColumnList == null) {
-            refreshQuickColumnList();
-        }
         return quickColumnList;
+    }
+
+
+
+    public void setQuickColumnList(List<NameValue> quickColumnList) {
+        this.quickColumnList = quickColumnList;
     }
 
     public void refreshQuickColumnList() {
@@ -97,10 +95,6 @@ public class TransformTable extends DataTable implements HasEvent {
             quickColumnList.add(new NameValue(column.getName(), column.getValue()));
         }
         quickColumnList.get(columnList.size() - 1).setLast(true);
-    }
-
-    public void setQuickColumnList(List<NameValue> quickColumnList) {
-        this.quickColumnList = quickColumnList;
     }
 
     @Override
@@ -116,6 +110,11 @@ public class TransformTable extends DataTable implements HasEvent {
     @Override
     public EventManager getEventManager() {
         return eventManager;
+    }
+
+    @Override
+    public void selected() {
+        refreshQuickColumnList();
     }
 
     @Override

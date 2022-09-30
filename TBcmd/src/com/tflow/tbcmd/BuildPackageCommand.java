@@ -323,7 +323,8 @@ public class BuildPackageCommand extends IOCommand {
 
             log.info("generate dconvers-config-files success.\n");
         } catch (Exception ex) {
-            log.error("generate dconvers-config-files error: ", ex);
+            log.error("generate dconvers-config-files error: " + ex.getMessage());
+            log.trace("", ex);
             throw new IOException("generate file failed: ", ex);
         }
     }
@@ -341,7 +342,8 @@ public class BuildPackageCommand extends IOCommand {
             fileWriter.write("# empty file");
             fileWriter.close();
         } catch (IOException ex) {
-            log.error("createEmptyFile(" + fileName + ") failed, ", ex);
+            log.error("createEmptyFile(" + fileName + ") failed, ");
+            log.trace("", ex);
         }
     }
 
@@ -685,7 +687,7 @@ public class BuildPackageCommand extends IOCommand {
     private void setOutputMD(OutputConfig outputConfig, OutputFileData outputFileData) {
         Map<String, Object> propertyMap = outputFileData.getPropertyMap();
         outputConfig.setMarkdown(true);
-        outputConfig.setMarkdownOutput(normalizeOutputFilePath(outputFileData.getPath()) + normalizeOutputFileName(outputFileData.getName()));
+        outputConfig.setMarkdownOutput(normalizeOutputFilePath(/*TODO: get path from datasource(FTP/LOCAL)*/"") + normalizeOutputFileName(outputFileData.getName()));
         outputConfig.setMarkdownOutputAppend((Boolean) propertyMap.get("append"));
         outputConfig.setMarkdownOutputCharset((String) propertyMap.get("charset"));
         outputConfig.setMarkdownOutputEOL((String) propertyMap.get("eol"));

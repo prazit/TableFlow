@@ -17,7 +17,6 @@ public class DataFileData extends RoomData implements Serializable {
     protected int id;
     protected String type;
     protected String name;
-    protected String path;
 
     protected int uploadedId;
 

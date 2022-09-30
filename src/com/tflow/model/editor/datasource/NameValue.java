@@ -1,8 +1,5 @@
 package com.tflow.model.editor.datasource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class NameValue {
     private String name;
     private String value;

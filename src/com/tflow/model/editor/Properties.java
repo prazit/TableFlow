@@ -72,7 +72,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties:Parameter:Value",
+            "propList:Connection Parameters:Properties:Parameter:Value:true",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "--: tested :--"
@@ -92,7 +92,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties:Parameter:Value",
+            "propList:Connection Parameters:Properties:Parameter:Value:true",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -113,7 +113,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties:Parameter:Value",
+            "propList:Connection Parameters:Properties:Parameter:Value:true",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -134,7 +134,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties:Parameter:Value",
+            "propList:Connection Parameters:Properties:Parameter:Value:true",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -155,7 +155,7 @@ public enum Properties {
             "user:User:Password:40",
             "password:Password:Password:40",
             "retry:Attemp:Int:9:0",
-            "propList:Connection Parameters:Properties:Parameter:Value",
+            "propList:Connection Parameters:Properties:Parameter:Value:true",
             "--: Technical Support :--",
             "url:URL:ReadOnly",
             "id:ID:ReadOnly",
@@ -220,7 +220,6 @@ public enum Properties {
             "connectionCount:Connection Count:ReadOnly",
             "endPlug:End Plug:ReadOnly",
             "startPlug:Start Plug:ReadOnly",
-            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -242,7 +241,6 @@ public enum Properties {
             "name:Name:System|[]nameDisabled",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
-            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -257,7 +255,6 @@ public enum Properties {
             ".:propertyMap:fileOnly:File only (exclude directory):Boolean",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
-            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -272,7 +269,6 @@ public enum Properties {
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -289,7 +285,6 @@ public enum Properties {
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -298,12 +293,11 @@ public enum Properties {
             "--: Transformation Table Properties :--",
             "name:Table Name:String:1000",
             "idColName:Key Column:Column:id:NAME",
-            "quickColumnList:Quick Column Editor:Properties:Column Name:Dynamic Value|updateProperty('quickColumnList');updateProperty('idColName');",
+            "quickColumnList:Quick Column Editor:Properties:Column:Dynamic Value:true|updateProperty('quickColumnList');updateProperty('idColName');",
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
             "sourceType:SourceTable Type:ReadOnly",
             "sourceId:SourceTable ID:ReadOnly",
-            "this:-- This as Json --:toString",
             "--: tested :--"
     ),
 
@@ -318,7 +312,6 @@ public enum Properties {
             "dynamicExpression::DynamicValue|[x]useDynamic:[]useFunction",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
-            "this:-- This as Json --:toString",
             "--: tested :--"
             /* TODO: future feature: need to choose between Single Function Helper here or Dynamic Value Expression Bar (like PowerBuilder helper dialogs)
                 single function helper : useDynamic = true, useFunction = true, value = generated dynamic value
@@ -326,9 +319,6 @@ public enum Properties {
             // need to include properties from specified property name (for selected function) */
     ),
 
-    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
-    /*LOCAL(ALL-FILE-TYPES,CUSTOM-NAME), SFTP(ALL-FILE-TYPES,CUSTOM-NAME), DATABASE(SQL,FIXED-NAME)*/
-    /*RESPONSE(JSON,XML,FIXED-NAME), KAFKAPRODUCER(JSON,XML,JAVASERIAL,FIXED-NAME)*/
     OUTPUT_TXT(
             "==: Output File (TXT) : Text File in Fixed Length Formatted :==",
             "--: Output File Properties :--",
@@ -341,18 +331,19 @@ public enum Properties {
             ".:propertyMap:eol:EOL:String",
             ".:propertyMap:eof:EOF:String",
             ".:propertyMap:separator:Separator:String",
-            ".:propertyMap:lengthMode:Length Mode:TxtLengthMode",
+            ".:propertyMap:lengthMode:Length Mode:TxtLengthMode|updateProperty('lengthMode');",
             ".:propertyMap:dateFormat:Date Format:String",
             ".:propertyMap:dateTimeFormat:DateTime Format:String",
             ".:propertyMap:fillString:String Filler:String",
             ".:propertyMap:fillNumber:Number Filler:String",
             ".:propertyMap:fillDate:Date Filler:String",
-            ".:propertyMap:format:Format:Properties:Data Type:Length|updateProperty('format');",
+            "fixedLengthFormatList:Fixed Length Formatter:Properties:Column:Type & Length:false|updateProperty('fixedLengthFormatList');",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString"
+            ".:propertyMap:format:Format:ReadOnly",
+            "--: tested :--"
     ),
 
     OUTPUT_CSV(
@@ -378,7 +369,7 @@ public enum Properties {
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString"
+            "--: tested :--"
     ),
 
     OUTPUT_MARKDOWN(
@@ -403,46 +394,51 @@ public enum Properties {
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString"
+            "--: tested :--"
     ),
 
+    /*TODO: TEST & COMPLETE ALL PROPERTY ONE BY ONE, after tested need to mark TESTED in comment within the property function*/
     OUTPUT_SQL(
             "==: Output File (SQL) : contains list of insert/update/delete statement that can use by another process later :==",
             "--: Output File Properties :--",
             "type:Type:DataFileType:out|refreshProperties();",
-            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
-            "--: SQL Properties :--",
+            "dataSourceIdentifier:File Path:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "name:File Name:String:1000",
             ".:propertyMap:append:Append:Boolean",
             ".:propertyMap:charset:Charset:Charset|updateProperty('charset');",
             ".:propertyMap:eol:EOL:String",
             ".:propertyMap:eof:EOF:String",
+            "--: SQL Properties :--",
+            ".:propertyMap:columns:Included Column:ColumnList|updateProperty('columns');",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
             ".:propertyMap:tableName:Table Name:String:1000",
-            ".:propertyMap:columnArray:Columns:ColumnArray",
             ".:propertyMap:create:Generate Table Creation Script:Boolean",
             ".:propertyMap:insert:Generate SQL Insert:Boolean",
             ".:propertyMap:update:Generate SQL Update:Boolean",
+            "--: Direct SQL Properties :--",
+            "==: Direct SQL : sql statements that need to run before/after the insert statements :==",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray",
             "--: Technical Support :--",
             "id:Column ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
-            "this:-- This as Json --:toString"
+            "--: tested :--"
     ),
 
     OUTPUT_DBINSERT(
             "==: Output File (DB-Insert) : insert each row into specified table using SQL Insert Statement :==",
             "--: Output File Properties :--",
             "type:Type:DataFileType:out|refreshProperties();",
-            "dataSourceIdentifier:Source:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
-            "--: SQL Properties :--",
+            "dataSourceIdentifier:Database:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
+            "--: Database Insertion Properties :--",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
-            ".:propertyMap:columnList:Column List:ColumnList",
+            /*TODO: ColumnArray*/ ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            "--: Direct SQL Properties :--",
+            "==: Direct SQL : sql statements that need to run before/after the insert statements :==",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray",
             "--: Technical Support :--",
@@ -456,12 +452,14 @@ public enum Properties {
             "==: Output File (DB-Update) : update each row into specified table using SQL Update Statement :==",
             "--: Output File Properties :--",
             "type:Type:DataFileType:out|refreshProperties();",
-            "dataSourceIdentifier:Source:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
+            "dataSourceIdentifier:Database:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "--: SQL Properties :--",
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
-            ".:propertyMap:columnList:Column List:ColumnList",
+            /*TODO: ColumnArray*/ ".:propertyMap:columnList:Column List:ColumnList",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
             ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            "--: Direct SQL Properties :--",
+            "==: Direct SQL : sql statements that need to run before/after the insert statements :==",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray",
             "--: Technical Support :--",
@@ -862,9 +860,10 @@ public enum Properties {
 
     public void setPropertyValue(Selectable selectable, PropertyView property, Logger log) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassCastException {
         Object value = property.getNewValue();
-        Map<String, Object> propertyMap = selectable.getPropertyMap();
         String propertyName = property.getVar();
-        if (propertyMap != null && propertyMap.containsKey(propertyName)) {
+        if (property.hasParent()) {
+            Map<String, Object> propertyMap = selectable.getPropertyMap();
+            if (propertyMap == null) throw new IllegalAccessException("selectable(" + selectable.getSelectableId() + ").propertyMap is not initialized! can't set the property " + property);
             propertyMap.put(propertyName, value);
             return;
         }

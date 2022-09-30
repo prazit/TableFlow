@@ -44,13 +44,13 @@ public class GroupController extends Controller {
     private boolean groupEditable;
 
     @Override
-    protected Page getPage() {
+    public Page getPage() {
         return Page.GROUP;
     }
 
     @Override
     void onCreation() {
-        log.trace("onCreation.");
+        log.debug("onCreation.");
 
         /*Open Group Cases.
          * 1. hasParameter(SectionIndex): switch to SECTION by index
@@ -82,7 +82,8 @@ public class GroupController extends Controller {
         try {
             openProjectSection();
         } catch (ProjectDataException ex) {
-            log.error("onCreation.openProjectSection", ex);
+            log.error("onCreation.openProjectSection" + ex.getMessage());
+            log.trace("", ex);
         }
 
     }
@@ -200,11 +201,11 @@ public class GroupController extends Controller {
 
     private String openProjectSection() throws ProjectDataException {
         if (groupList != null) {
-            log.trace("openProjectSection Again.");
+            log.debug("openProjectSection Again.");
             return "";
         }
 
-        log.trace("openProjectSection.loadGroupList");
+        log.debug("openProjectSection.loadGroupList");
         groupList = workspace.getProjectManager().loadGroupList(workspace);
 
         selectedGroup = null;
@@ -212,6 +213,11 @@ public class GroupController extends Controller {
         projectList = new ProjectGroup();
         projectList.setId(-1);
         projectList.setProjectList(new ArrayList<>());
+
+        /*simulate for the first group selection*/
+        selectedGroup = groupList.getGroupList().get(0);
+        projectList = workspace.getProjectManager().loadProjectGroup(workspace, selectedGroup.getId());
+        selectedProject = null;
 
         return GroupSection.EXISTING_PROJECT.getUpdate();
     }
@@ -239,7 +245,8 @@ public class GroupController extends Controller {
             propertyChanged(ProjectFileType.GROUP, projectGroup, Properties.PROJECT.getPropertyView(PropertyVar.name.name()));
         } catch (ProjectDataException ex) {
             String msg = "Load group data failed\n" + ex.getMessage();
-            log.error(msg, ex);
+            log.error(msg + ex.getMessage());
+            log.trace("", ex);
             jsBuilder.pre(JavaScript.notiError, msg);
         }
     }
@@ -260,7 +267,7 @@ public class GroupController extends Controller {
 
     private String openTemplateSection() throws ProjectDataException {
         if (templateList != null) {
-            log.trace("openTemplateSection Again.");
+            log.debug("openTemplateSection Again.");
             return "";
         }
 

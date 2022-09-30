@@ -76,7 +76,8 @@ public class SetQuickColumnList extends Command {
 
         if (transformColumn == null) {
             UnsupportedOperationException ex = new UnsupportedOperationException("Unexpected error occurred! no column are changed");
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage() + ex.getMessage());
+            log.trace("", ex);
             throw ex;
         }
 

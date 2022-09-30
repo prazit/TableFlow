@@ -56,7 +56,8 @@ public class TRcmd extends CLIbase {
         try {
             deserializer = SerializeUtil.getDeserializer(environmentConfigs.getKafkaDeserializer());
         } catch (Exception ex) {
-            log.error("Deserializer creation error: ", ex);
+            log.error("Deserializer creation error: " + ex.getMessage());
+            log.trace("", ex);
             return;
         }
 
@@ -98,7 +99,8 @@ public class TRcmd extends CLIbase {
                     log.error("Invalid parameter: {}", inex.getMessage());
                     log.warn("Message rejected: {}", readProjectCommand.toString());
                 } catch (Exception ex) {
-                    log.error("Hard error: ", ex);
+                    log.error("Hard error: " + ex.getMessage());
+                    log.trace("", ex);
                     log.warn("Message rejected: {}", readProjectCommand.toString());
                 } finally {
                     dataManager.waitAllTasks();

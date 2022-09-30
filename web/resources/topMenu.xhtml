@@ -10,10 +10,12 @@
         <div class="top-menu">
             <h:form id="topForm">
                 <p:growl id="notiMsg" showSummary="true" showDetail="true" escape="false"/>
-                <p:remoteCommand name="noti" actionListener="#{playCtl.showNoti}" update="notiMsg"/>
+                <p:remoteCommand name="noti" actionListener="#{topMenuCtl.showNoti}" update="notiMsg"/>
                 <p:menubar>
 
-                    <p:outputLabel value="#{topMenuCtl.page.name}"/>
+                    <p:menuitem>
+                        <p:outputLabel value="Page: #{topMenuCtl.page.title}"/>
+                    </p:menuitem>
 
                     <p:divider layout="vertical"/>
 
@@ -37,8 +39,9 @@
                     <p:divider layout="vertical"/>
 
                     <p:submenu label="Administrator" icon="pi pi-fw pi-user">
-                        <p:menuitem value="Playground:messages" rendered="#{topMenuCtl.inDevelopment}" icon="pi pi-fw pi-play" actionListener="#{topMenuCtl.openPlayground(0)}"/>
-                        <p:menuitem value="Playground:fileupload" rendered="#{topMenuCtl.inDevelopment}" icon="pi pi-fw pi-play" actionListener="#{topMenuCtl.openPlayground(1)}"/>
+                        <p:menuitem value="Play:messages" rendered="#{topMenuCtl.inDevelopment}" icon="pi pi-fw pi-play" actionListener="#{topMenuCtl.openPlayground(0)}"/>
+                        <p:menuitem value="Play:fileupload" rendered="#{topMenuCtl.inDevelopment}" icon="pi pi-fw pi-play" actionListener="#{topMenuCtl.openPlayground(1)}"/>
+                        <p:menuitem value="Play:inputs" rendered="#{topMenuCtl.inDevelopment}" icon="pi pi-fw pi-play" actionListener="#{topMenuCtl.openPlayground(2)}"/>
                         <p:divider rendered="#{topMenuCtl.inDevelopment}"/>
                         <p:menuitem value="Activities" icon="pi pi-fw pi-user-plus"/>
                         <p:divider/>

@@ -44,7 +44,8 @@ public class TBcmd extends CLIbase {
         try {
             deserializer = SerializeUtil.getDeserializer(environmentConfigs.getKafkaDeserializer());
         } catch (Exception ex) {
-            log.error("Deserializer creation error: ", ex);
+            log.error("Deserializer creation error: " + ex.getMessage());
+            log.trace("", ex);
             return;
         }
 
@@ -89,7 +90,8 @@ public class TBcmd extends CLIbase {
                     log.error("UnsupportedOperationException: {}", ex.getMessage());
                     log.warn("Message rejected: {}", buildPackageCommand.toString());
                 } catch (Exception ex) {
-                    log.error("Unexpected error occur: ", ex);
+                    log.error("Unexpected error occur: " + ex.getMessage());
+                    log.trace("", ex);
                     log.warn("Message rejected: {}", buildPackageCommand.toString());
                 } finally {
                     dataManager.waitAllTasks();
