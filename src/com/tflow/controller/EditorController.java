@@ -886,7 +886,7 @@ public class EditorController extends Controller {
                         propertyChanged(target.getProjectFileType(), target, property);
                     }
                 });
-            }else{
+            } else {
                 log.debug("createOutputFileEventHandlers: skip on outputFile:{}", outputFile);
             }
         }
@@ -1187,6 +1187,8 @@ public class EditorController extends Controller {
         /*OutputFile of TransformTable need some action*/
         if (activeObject instanceof TransformTable) {
             createOutputFileEventHandlers((TransformTable) activeObject);
+        } else if (activeObject instanceof TransformColumn) {
+            createOutputFileEventHandlers((TransformTable) ((TransformColumn) activeObject).getOwner());
         }
     }
 

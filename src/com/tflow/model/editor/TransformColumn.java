@@ -2,12 +2,13 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.SourceType;
+import com.tflow.model.editor.view.PropertyView;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /* Notice: value of TransformColumn has many cases please find Properties.TRANSFORM_COLUMN for more detailed */
-public class TransformColumn extends DataColumn implements HasEndPlug {
+public class TransformColumn extends DataColumn implements HasEndPlug, HasEvent {
 
     private int sourceColumnId;
     private String dynamicExpression;
@@ -24,6 +25,8 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
 
     @Deprecated
     private LinePlug endPlug;
+
+    private EventManager eventManager;
 
     /*for projectMapper*/
     public TransformColumn() {
@@ -47,6 +50,8 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
         createEndPlug(endPlug);
         propertyMap = new HashMap<>();
         propertyOrder = getProperties().initPropertyMap(propertyMap);
+        eventManager = new EventManager(this);
+        createEventHandlers();
     }
 
     private void createEndPlug(String endPlugId) {
@@ -79,6 +84,19 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
         super.createPlugListeners();
         createEndPlugListener();
     }
+
+    private void createEventHandlers() {
+        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                PropertyView property = (PropertyView) event.getData();
+                if (PropertyVar.name.equals(property.getVar())) {
+                    eventManager.fireEvent(EventName.NAME_CHANGED, property);
+                }
+            }
+        });
+    }
+
 
     public int getSourceColumnId() {
         return sourceColumnId;
@@ -163,6 +181,11 @@ public class TransformColumn extends DataColumn implements HasEndPlug {
     @Override
     public Properties getProperties() {
         return Properties.TRANSFORM_COLUMN;
+    }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     @Override

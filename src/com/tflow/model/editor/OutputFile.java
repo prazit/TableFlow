@@ -3,7 +3,8 @@ package com.tflow.model.editor;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.datasource.NameValue;
 import com.tflow.model.editor.view.PropertyView;
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.List;
 public class OutputFile extends DataFile implements HasEvent, HasSelected {
 
     private EventManager eventManager;
+    private List<EventHandler> columnNameHandlerList;
 
     /*view only*/
     private List<NameValue> fixedLengthFormatList;
@@ -24,14 +26,28 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         this.fixedLengthFormatList = fixedLengthFormatList;
     }
 
-    private void refreshColumns() {
+    /**
+     * @param property not null only when column-name has changed.
+     */
+    private void refreshColumns(PropertyView property) {
         if (DataFileType.OUT_SQL != type) return;
 
         Object properti = propertyMap.get(PropertyVar.columns.name());
         if (properti == null) return;
-
-        /*incase: column removed*/
         List<String> columnList = (List<String>) properti;
+
+        /*case: column name changed*/
+        if (property != null) {
+            String oldName = (String) property.getOldValue();
+            int index = columnList.indexOf(oldName);
+            if (index > 0) {
+                columnList.remove(oldName);
+                columnList.add(index, (String) property.getNewValue());
+            }
+            return;
+        }
+
+        /*case: column removed*/
         TransformTable transformTable = (TransformTable) owner;
         StringBuilder stringBuilder = new StringBuilder();
         for (DataColumn dataColumn : transformTable.getColumnList()) {
@@ -49,11 +65,14 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         }
     }
 
-    public void refreshFixedLengthFormatList() {
+    /**
+     * @param property not null only when column-name has changed.
+     */
+    public void refreshFixedLengthFormatList(PropertyView property) {
         if (DataFileType.OUT_TXT != type) return;
 
         if (fixedLengthFormatList != null) {
-            correctFixedLengthFormatList();
+            correctFixedLengthFormatList(property);
             return;
         }
 
@@ -78,15 +97,29 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         fixedLengthFormatList.get(fixedLengthFormatList.size() - 1).setLast(true);
     }
 
-    private void correctFixedLengthFormatList() {
-        List<DataColumn> columnList = ((DataTable) owner).getColumnList();
+    private void correctFixedLengthFormatList(PropertyView property) {
+
+        String oldName = null;
+        String newName = null;
+        if (property != null) {
+            oldName = (String) property.getOldValue();
+            newName = (String) property.getNewValue();
+        }
+
+        /*collect existing-values to map*/
         HashMap<String, String> hashMap = new HashMap<>();
+        String name;
         for (NameValue fixed : fixedLengthFormatList) {
-            hashMap.put(fixed.getName(), fixed.getValue());
+            name = fixed.getName().equals(oldName) ? newName : fixed.getName();
+            hashMap.put(name, fixed.getValue());
         }
         fixedLengthFormatList.clear();
+
+        /*recreate value list with existing-values and default-value for new-column*/
+        List<DataColumn> columnList = ((DataTable) owner).getColumnList();
+        String formatted;
         for (DataColumn column : columnList) {
-            String formatted = hashMap.get(column.getName());
+            formatted = hashMap.get(column.getName());
             fixedLengthFormatList.add(new NameValue(column.getName(), formatted == null ? "STR:1" : formatted));
         }
         fixedLengthFormatList.get(columnList.size() - 1).setLast(true);
@@ -128,9 +161,6 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         });
     }
 
-    /**
-     * TODO: need to capture event NAMED_CHANGED of column and table.
-     */
     public void createOwnerEventHandlers() {
         if (!(owner instanceof TransformTable)) return;
 
@@ -138,20 +168,63 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         transformTable.getEventManager().addHandler(EventName.COLUMN_LIST_CHANGED, new EventHandler() {
             @Override
             public void handle(Event event) {
-                /*OUTPUT_TXT.format*/
-                if (DataFileType.OUT_TXT == type) {
-                    refreshFixedLengthFormatList();
-                    propertyMap.put(PropertyVar.format.name(), getFixedLengthFormat());
-                }
-
-                /*OUTPUT_SQL.columns*/
-                else if (DataFileType.OUT_SQL == type) {
-                    refreshColumns();
-                }
-
-                eventManager.fireEvent(EventName.COLUMN_LIST_CHANGED, getProperties().getPropertyView(PropertyVar.format.name()));
+                columnChanged(null);
             }
         });
+        createColumnNameHandlers();
+    }
+
+    private void createColumnNameHandlers() {
+        /*clear all handlers*/
+        if (columnNameHandlerList == null) {
+            columnNameHandlerList = new ArrayList<>();
+        } else {
+            for (EventHandler handler : columnNameHandlerList) {
+                handler.remove();
+            }
+            columnNameHandlerList.clear();
+        }
+
+        /*recreate handler for all columns*/
+        TransformTable transformTable = (TransformTable) owner;
+        for (DataColumn column : transformTable.getColumnList()) {
+            TransformColumn transformColumn = (TransformColumn) column;
+            EventHandler columnNameHandler = new EventHandler() {
+                @Override
+                public void handle(Event event) {
+                    columnChanged((PropertyView) event.getData());
+                }
+            };
+            transformColumn.getEventManager().addHandler(EventName.NAME_CHANGED, columnNameHandler);
+        }
+    }
+
+    /**
+     * @param property not null only when column-name has changed.
+     */
+    private void columnChanged(PropertyView property) {
+        boolean hasChanges = false;
+        String propertyVar = null;
+
+        /*OUTPUT_TXT.format*/
+        if (DataFileType.OUT_TXT == type) {
+            hasChanges = true;
+            propertyVar = PropertyVar.format.name();
+            refreshFixedLengthFormatList(property);
+            propertyMap.put(PropertyVar.format.name(), getFixedLengthFormat());
+        }
+
+        /*OUTPUT_SQL.columns*/
+        else if (DataFileType.OUT_SQL == type) {
+            hasChanges = true;
+            propertyVar = PropertyVar.columns.name();
+            refreshColumns(property);
+        }
+
+        if (hasChanges) {
+            eventManager.fireEvent(EventName.COLUMN_LIST_CHANGED, getProperties().getPropertyView(propertyVar));
+            if (property == null) createColumnNameHandlers();
+        }
     }
 
     @Override
@@ -174,6 +247,6 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
 
     @Override
     public void selected() {
-        refreshFixedLengthFormatList();
+        refreshFixedLengthFormatList(null);
     }
 }
