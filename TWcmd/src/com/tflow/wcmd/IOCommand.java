@@ -5,12 +5,18 @@ import com.tflow.file.SerializeWriter;
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.record.RecordAttributesData;
+import com.tflow.model.data.record.RecordData;
+import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
 import org.apache.kafka.common.errors.SerializationException;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class IOCommand extends KafkaCommand {
 
@@ -40,6 +46,13 @@ public abstract class IOCommand extends KafkaCommand {
     }
 
 
+    protected File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {
+        String fileName = getFileName(projectFileType.getPrefix(), additional.getRecordId());
+        File file = getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath(), "/" + fileName + DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS") + environmentConfigs.getDataFileExt());
+        info("DEBUG: historyFile:{} returned from getHistoryFile(projectFileType:{}, additional:{})", file, projectFileType, additional);
+        return file;
+    }
+
     protected File getFile(ProjectFileType projectFileType, RecordAttributesData additional) {
         return getFile(projectFileType, additional, environmentConfigs.getProjectRootPath(), environmentConfigs.getDataFileExt());
     }
@@ -61,7 +74,7 @@ public abstract class IOCommand extends KafkaCommand {
                 break;
 
             case 9:
-                path = additional.getProjectId() + "/" +projectFileType.name().split("[_]")[0].toLowerCase() + "/";
+                path = additional.getProjectId() + "/" + projectFileType.name().split("[_]")[0].toLowerCase() + "/";
                 break;
 
             case 0:
@@ -81,14 +94,81 @@ public abstract class IOCommand extends KafkaCommand {
         return prefix + recordId;
     }
 
-
     protected void remove(File file) throws IOException {
         info("remove(file: {})", file);
         try {
+            boolean needHouseKeeper = file.getName().split("[.]")[0].equals(file.getParentFile().getName());
             if (!file.delete()) throw new IOException("remove( file: " + file + " ) failed! file.delete() return false.");
-            /*TODO: if the file is parent folder (id == parentFolder.name) need to delete child automatic (move to history)*/
+
+            /*if the file is parent folder (id == parentFolder.name) need to delete child automatic (move to history)*/
+            if (needHouseKeeper) removeChilds(file.getParentFile());
         } catch (Exception ex) {
             throw new IOException("remove( file: " + file + " ) failed!", ex);
+        }
+    }
+
+    protected void removeChilds(File file) throws IOException {
+        info("removeChilds(file: {})", file);
+        StringBuilder errorMessage = new StringBuilder("");
+
+        List<File> dirList = new ArrayList<>(Collections.singleton(file));
+        File[] files;
+        File dir;
+        boolean noChild;
+        while (dirList.size() > 0) {
+            dir = dirList.remove(0);
+            noChild = true;
+
+            files = dir.listFiles();
+            if (files != null) for (File child : files) {
+
+                if (child.isDirectory()) {
+                    dirList.add(child);
+                    continue;
+                }
+
+                /*auto save history before remove*/
+                RecordData historyRecord = null;
+                try {
+                    historyRecord = (RecordData) readFrom(child);
+                } catch (Exception ex) {
+                    noChild = false;
+                    errorMessage.append(MessageFormatter.format("remove(child:{}) : read failed! {}\n", child, ex.getMessage()));
+                    continue;
+                }
+
+                RecordAttributesData additional = historyRecord.getAdditional();
+                File historyFile = getHistoryFile(additional.getFileType(), additional);
+                try {
+                    writeTo(historyFile, historyRecord);
+                } catch (Exception ex) {
+                    noChild = false;
+                    errorMessage.append(MessageFormatter.format("remove(child:{}) : write failed! {}\n", child, ex.getMessage()));
+                    continue;
+                }
+
+                try {
+                    remove(child);
+                } catch (Exception ex) {
+                    noChild = false;
+                    errorMessage.append(MessageFormatter.format("remove(child:{}) failed! {}\n", child, ex.getMessage()));
+                    continue;
+                }
+
+            } // end for
+
+            if (noChild) {
+                try {
+                    remove(dir);
+                } catch (Exception ex) {
+                    errorMessage.append(MessageFormatter.format("remove(dir:{}) failed! {}\n", dir, ex.getMessage()));
+                }
+            }
+
+        } // end while
+
+        if (errorMessage.length() != 0) {
+            throw new IOException(errorMessage.toString());
         }
     }
 

@@ -91,6 +91,7 @@ public class SelectStep extends Command {
                     line.setEndPlug(endPlug);
                     endPlug.getLineList().add(line);
                 } catch (NullPointerException ex) {
+                    /*TODO: try to open P10 and find 'ERROR | endSelectableId:' in logs*/
                     log.error("endSelectableId:{} not found", line.getEndSelectableId());
                 }
             }

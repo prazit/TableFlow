@@ -72,10 +72,6 @@ public class UpdateProjectCommand extends IOCommand {
             writeTo(file, recordData);
         }
     }
-    
-    private File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {
-        return getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath() + getFileName(projectFileType.getPrefix(), additional.getRecordId()) + "/", DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS") + environmentConfigs.getDataFileExt());
-    }
 
     /**
      * validate Additional Data and KafkaKey
