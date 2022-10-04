@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class ColumnFxTable extends Room {
 
     private TransformTable ownerTable;

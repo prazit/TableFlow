@@ -217,4 +217,36 @@ public class Tower {
         Floor floor = floorList.get(floorIndex);
         floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, ProjectUtil.newElementId(owner.getOwner())));
     }
+
+    public void cleanup() {
+        /*remove empty floor from the last*/
+        if (!isEmpty()) for (int index = floorList.size() - 1; index > 0; index--) {
+            if (floorList.get(index).isEmpty()) {
+                floorList.remove(index);
+            } else {
+                break;
+            }
+        }
+
+        /*remove empty room-stack*/
+        boolean isEmpty;
+        if (!isEmpty()) for (int index = roomsOnAFloor - 1; index > 0; index--) {
+            isEmpty = true;
+            for (Room room : getStack(index)) {
+                if (room.getRoomType() != RoomType.EMPTY) {
+                    isEmpty = false;
+                    break;
+                }
+            }
+            if (isEmpty) {
+                for (Floor floor : floorList) {
+                    floor.getRoomList().remove(index);
+                }
+                roomsOnAFloor--;
+            } else {
+                break;
+            }
+        }
+
+    }
 }

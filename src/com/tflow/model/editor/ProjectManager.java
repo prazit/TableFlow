@@ -57,13 +57,14 @@ public class ProjectManager {
 
                 if (selectable instanceof TransformTable) {
                     TransformTable tt = (TransformTable) selectable;
+                    /*TODO: remove deprecated object
                     for (ColumnFx columnFx : tt.getColumnFxTable().getColumnFxList()) {
                         map.put(columnFx.getSelectableId(), columnFx);
 
                         for (ColumnFxPlug columnFxPlug : columnFx.getEndPlugList()) {
                             map.put(columnFxPlug.getSelectableId(), columnFxPlug);
                         }
-                    }
+                    }*/
 
                     for (TableFx tableFx : tt.getFxList()) {
                         map.put(tableFx.getSelectableId(), tableFx);
@@ -254,9 +255,10 @@ public class ProjectManager {
             }
 
             /*add each transform-columnfx in transform-table(columnFxTable)*/
+            /*TODO: remove deprecated object
             for (ColumnFx columnFx : transformTable.getColumnFxTable().getColumnFxList()) {
                 dataManager.addData(ProjectFileType.TRANSFORM_COLUMNFX, mapper.map(columnFx), projectUser, columnFx.getId(), stepId, 0, transformTableId);
-            }
+            }*/
 
             /*add transform-output-list*/
             List<OutputFile> outputList = transformTable.getOutputList();
@@ -545,10 +547,11 @@ public class ProjectManager {
             step.getTransformTower().setRoom(transformTable.getFloorIndex(), transformTable.getRoomIndex(), transformTable);
             transformTable.createPlugListeners();
 
+            /*TODO: remove deprecated object
             ColumnFxTable columnFxTable = transformTable.getColumnFxTable();
             columnFxTable.setFloorIndex(transformTable.getFloorIndex());
             columnFxTable.setRoomIndex(transformTable.getRoomIndex() - 1);
-            step.getTransformTower().setRoom(columnFxTable.getFloorIndex(), columnFxTable.getRoomIndex(), columnFxTable);
+            step.getTransformTower().setRoom(columnFxTable.getFloorIndex(), columnFxTable.getRoomIndex(), columnFxTable);*/
 
             /*get transform-column-list*/
             data = dataManager.getData(ProjectFileType.TRANSFORM_COLUMN_LIST, projectUser, 1, stepId, 0, transformTableId);
@@ -557,7 +560,8 @@ public class ProjectManager {
             transformTable.setColumnList(columnList);
 
             /*get each transform-column in transform-column-list*/
-            List<ColumnFx> columnFxList = columnFxTable.getColumnFxList();
+            /*TODO: remove deprecated object
+               List<ColumnFx> columnFxList = columnFxTable.getColumnFxList();*/
             TransformColumn transformColumn;
             ColumnFx columnFx;
             for (Integer columnId : columnIdList) {
@@ -568,6 +572,7 @@ public class ProjectManager {
                 transformColumn.createPlugListeners();
 
                 /*get each transform-columnfx in transform-table(columnFxTable)*/
+                /*TODO: remove deprecated object
                 ColumnFx fx = transformColumn.getFx();
                 if (fx != null) {
                     data = dataManager.getData(ProjectFileType.TRANSFORM_COLUMNFX, projectUser, fx.getId(), stepId, 0, transformTableId);
@@ -579,7 +584,7 @@ public class ProjectManager {
                         columnFxPlug.setOwner(columnFx);
                     }
                     columnFx.createPlugListeners();
-                }
+                }*/
             }
 
             /*get transform-output-list*/

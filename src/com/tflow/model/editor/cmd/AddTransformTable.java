@@ -14,6 +14,8 @@ import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -46,11 +48,28 @@ public class AddTransformTable extends Command {
             /*TODO: in the future need explicitly relation, need to add line between columns as DirectTransferFx*/
         }
 
-        /*need to add ColumnFxTable to the room before Transform Table*/
+        /*add to Tower*/
         EmptyRoom emptyRoom = findEmptyRoom(tower, sourceTable, step.getSelectableMap(), step);
-        tower.setRoom(emptyRoom.getFloorIndex(), emptyRoom.getRoomIndex() - 1, transformTable.getColumnFxTable());
+        /*TODO: remove deprecated object
+        tower.setRoom(emptyRoom.getFloorIndex(), emptyRoom.getRoomIndex() - 1, transformTable.getColumnFxTable());*/
         tower.setRoom(emptyRoom.getFloorIndex(), emptyRoom.getRoomIndex(), transformTable);
 
+        /*collect all tables after floorIndex*/
+        List<TransformTable> updatedTableList = new ArrayList<>();
+        List<Floor> floorList = tower.getFloorList();
+        int floorCount = floorList.size();
+        if (emptyRoom.getFloorIndex() != floorCount - 1) {
+            for (int fl = emptyRoom.getFloorIndex() + 1; fl < floorCount; fl++) {
+                for (Room room : floorList.get(fl).getRoomList()) {
+                    if (room.getRoomType() == RoomType.TRANSFORM_TABLE) {
+                        updatedTableList.add((TransformTable) room);
+                    }
+                }
+            }
+        }
+        updatedTableList.add(transformTable);
+
+        /*Add to selectableMap*/
         ProjectUtil.generateId(step.getSelectableMap(), transformTable, project);
         ProjectUtil.addTo(step.getSelectableMap(), transformTable, project);
 
@@ -69,13 +88,16 @@ public class AddTransformTable extends Command {
         /*Action Result*/
         action.getResultMap().put(ActionResultKey.TRANSFORM_TABLE, transformTable);
 
-        // save TransformTable data including ColumnFxTable
         DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
         int stepId = step.getId();
         int transformTableId = transformTable.getId();
-        dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(transformTable), projectUser, transformTableId, stepId, 0, transformTableId);
+
+        // save TransformTable data
+        for (TransformTable table : updatedTableList) {
+            dataManager.addData(ProjectFileType.TRANSFORM_TABLE, mapper.map(table), projectUser, table.getId(), stepId, 0, table.getId());
+        }
 
         // save TransformTable list
         dataManager.addData(ProjectFileType.TRANSFORM_TABLE_LIST, mapper.fromTransformTableList(transformList), projectUser, 1, stepId);
@@ -141,10 +163,12 @@ public class AddTransformTable extends Command {
      * Find empty room for TransformTable only.
      */
     private EmptyRoom findEmptyRoom(Tower transformTower, DataTable sourceDataTable, Map<String, Selectable> selectableMap, Step step) throws UnsupportedOperationException {
+        int roomsPerTable = 1;
+
         boolean sameTower = sourceDataTable.getFloor().getTower().getId() == transformTower.getId();
         int sourceDataTableId = sourceDataTable.getId();
         int sourceDataTableFloorIndex = sourceDataTable.getFloorIndex();
-        int targetRoomIndex = sameTower ? sourceDataTable.getRoomIndex() + 2 : 1;
+        int targetRoomIndex = sameTower ? sourceDataTable.getRoomIndex() + roomsPerTable : roomsPerTable - 1;
         int targetFloorIndex = sameTower ? sourceDataTableFloorIndex : 0;
 
         Logger log = LoggerFactory.getLogger(AddTransformTable.class);
@@ -162,28 +186,30 @@ public class AddTransformTable extends Command {
             room = transformTower.getRoom(targetFloorIndex, targetRoomIndex);
             if (room == null) {
                 if (directBrother || !sameTower || (!directBrother && sameTower && brotherChecked)) transformTower.addFloor(targetFloorIndex, 1);
-                else transformTower.addRoom(2);
+                else transformTower.addRoom(roomsPerTable);
                 emptyRoom = (EmptyRoom) transformTower.getRoom(targetFloorIndex, targetRoomIndex);
-                log.warn("foundEmptyRoom({}): at the ground, targetFloorIndex:{}, roomIndex:{}", emptyRoom, targetFloorIndex, targetRoomIndex);
+                log.debug("foundEmptyRoom({}): at the ground, targetFloorIndex:{}, roomIndex:{}", emptyRoom, targetFloorIndex, targetRoomIndex);
                 continue;
             } else if (RoomType.EMPTY == room.getRoomType()) {
                 emptyRoom = (EmptyRoom) room;
-                log.warn("foundEmptyRoom({}): at the same floor, targetFloorIndex:{}, roomIndex:{}", emptyRoom, targetFloorIndex, targetRoomIndex);
+                log.debug("foundEmptyRoom({}): at the same floor, targetFloorIndex:{}, roomIndex:{}", emptyRoom, targetFloorIndex, targetRoomIndex);
                 continue;
             }
 
             int sourceId = ((TransformTable) room).getSourceId();
             DataTable sourceTable = step.getDataTable(sourceId);
+            if (sourceTable == null) sourceTable = step.getTransformTable(sourceId);
+
             if (/*not empty and */sourceTable.getFloorIndex() <= sourceDataTableFloorIndex) {
                 directBrother = sourceId == sourceDataTableId;
                 brotherChecked = true;
                 targetFloorIndex++;
-                log.warn("findEmptyRoom: found brother go next floor, targetFloorIndex:{}, roomIndex:{}", targetFloorIndex, targetRoomIndex);
+                log.debug("findEmptyRoom: found brother go next floor, targetFloorIndex:{}, roomIndex:{}", targetFloorIndex, targetRoomIndex);
             } else /*not empty and not brothers */ {
                 if (directBrother || !sameTower || (!directBrother && sameTower && brotherChecked)) transformTower.addFloor(targetFloorIndex, 1);
-                else transformTower.addRoom(2);
+                else transformTower.addRoom(roomsPerTable);
                 emptyRoom = (EmptyRoom) transformTower.getRoom(targetFloorIndex, targetRoomIndex);
-                log.warn("foundEmptyRoom({}): under last brother at targetFloorIndex:{}, roomIndex:{}, move dataFile to same floor", emptyRoom, targetFloorIndex, targetRoomIndex);
+                log.debug("foundEmptyRoom({}): under last brother at targetFloorIndex:{}, roomIndex:{}, move dataFile to same floor", emptyRoom, targetFloorIndex, targetRoomIndex);
             }
 
         }//end for(;emptyRoom == null)

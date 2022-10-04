@@ -78,12 +78,13 @@ public class SelectStep extends Command {
         for (Line line : step.getLineList()) {
             line.setClientIndex(clientIndex++);
             if (loadStepData) {
-                log.warn("line={}", line);
+                log.debug("line={}", line);
                 try {
                     line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
                     /*TODO: LinePlug.lineList need this line too*/
                 } catch (NullPointerException ex) {
                     log.error("startSelectableId:{} not found", line.getStartSelectableId());
+                    log.trace("", ex);
                 }
 
                 try {
@@ -93,6 +94,7 @@ public class SelectStep extends Command {
                 } catch (NullPointerException ex) {
                     /*TODO: try to open P10 and find 'ERROR | endSelectableId:' in logs*/
                     log.error("endSelectableId:{} not found", line.getEndSelectableId());
+                    log.trace("", ex);
                 }
             }
         }

@@ -15,6 +15,8 @@ public class TransformTable extends DataTable implements HasEvent, HasSelected {
     private SourceType sourceType;
     private int sourceId;
     private List<TableFx> fxList;
+
+    @Deprecated
     private ColumnFxTable columnFxTable;
 
     /*view only*/

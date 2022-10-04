@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 import java.util.List;
 
+@Deprecated
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class ColumnFxTableData extends RoomData implements Serializable {

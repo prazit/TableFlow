@@ -4,6 +4,7 @@ import com.tflow.kafka.ProjectFileType;
 
 import java.util.*;
 
+@Deprecated
 public class ColumnFx implements Selectable, HasEndPlug {
 
     private int id;

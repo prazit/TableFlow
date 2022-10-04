@@ -44,6 +44,7 @@ public class RemoveTransformTable extends Command {
         Floor floor = transformTable.getFloor();
         int roomIndex = transformTable.getRoomIndex();
         floor.setRoom(roomIndex, new EmptyRoom(roomIndex, floor, ProjectUtil.newElementId(project)));
+        floor.getTower().cleanup();
 
         /*remove from TransformTable List*/
         List<TransformTable> transformList = step.getTransformList();
