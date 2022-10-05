@@ -50,8 +50,6 @@ public class AddTransformTable extends Command {
 
         /*add to Tower*/
         EmptyRoom emptyRoom = findEmptyRoom(tower, sourceTable, step.getSelectableMap(), step);
-        /*TODO: remove deprecated object
-        tower.setRoom(emptyRoom.getFloorIndex(), emptyRoom.getRoomIndex() - 1, transformTable.getColumnFxTable());*/
         tower.setRoom(emptyRoom.getFloorIndex(), emptyRoom.getRoomIndex(), transformTable);
 
         /*collect all tables after floorIndex*/
