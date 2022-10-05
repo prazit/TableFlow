@@ -103,6 +103,8 @@ public class TransformTable extends DataTable implements HasEvent, HasSelected {
     }
 
     public void refreshQuickColumnList() {
+        if (columnList.size() == 0) return;
+
         quickColumnList = new ArrayList<>();
         TransformColumn column;
         for (DataColumn dataColumn : columnList) {

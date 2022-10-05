@@ -560,7 +560,7 @@ public class BuildPackageCommand extends IOCommand {
 
     @SuppressWarnings("unchecked")
     private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList) throws IOException, InstantiationException, ClassNotFoundException {
-        SourceConfig sourceConfig = new SourceConfig(dconvers, IDPrefix.DATA_TABLE.getPrefix() + dataTableData.getId(), converterConfigFile);
+        SourceConfig sourceConfig = new SourceConfig(dconvers, IDPrefix.DATA_TABLE.getPrefix() + dataTableData.getId(), converterConfigFile.getProperties());
 
         sourceConfig.setIndex(dataTableData.getIndex());
         sourceConfig.setId(dataTableData.getIdColName());
@@ -726,7 +726,7 @@ public class BuildPackageCommand extends IOCommand {
 
     @SuppressWarnings("unchecked")
     private TargetConfig getTargetConfig(TransformTableData transformTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId) throws IOException, InstantiationException, ClassNotFoundException {
-        TargetConfig targetConfig = new TargetConfig(dconvers, IDPrefix.TRANSFORM_TABLE.getPrefix() + transformTableData.getId(), converterConfigFile);
+        TargetConfig targetConfig = new TargetConfig(dconvers, IDPrefix.TRANSFORM_TABLE.getPrefix() + transformTableData.getId(), converterConfigFile.getProperties());
 
         /*TODO: future feature: merge 2 or more sourceTables to a targetTable*/
         SourceType sourceType = SourceType.valueOf(transformTableData.getSourceType());

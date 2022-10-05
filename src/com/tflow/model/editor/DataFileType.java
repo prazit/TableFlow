@@ -14,7 +14,6 @@ public enum DataFileType {
     IN_DIR("Directory List", "dir.png", Properties.INPUT_DIRECTORY, "/", null, ExtractSystemEnvironment.class),
     IN_ENVIRONMENT("System Environment", "system.png", Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment", null, ExtractSystemEnvironment.class),
 
-
     OUT_MD("Markdown File", "markdown.png", Properties.OUTPUT_MARKDOWN, "output.md"),
     OUT_CSV("CSV File", "csv.png", Properties.OUTPUT_CSV, "output.csv"),
     OUT_TXT("Fixed Length File", "txt.png", Properties.OUTPUT_TXT, "output.txt"),
