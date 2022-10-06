@@ -229,7 +229,7 @@ public enum Properties {
             "type:Data Type:ReadOnly",
             "name:Column Name:ReadOnly",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "--: tested :--"
     ),
 
@@ -240,21 +240,21 @@ public enum Properties {
             "--: System Environment Properties :--",
             "name:Name:System|[]nameDisabled",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "--: tested :--"
     ),
-
+    
     INPUT_DIRECTORY(
             "==: Input File (DIR) : List all file within specified directory with some attributes (depends on version of DConvers) :==",
             "--: Input File Properties :--",
             "name:Name:String:40|updateProperty('type');",
-            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "type:Type:DataFileType:in|[]typeDisabled:refreshProperties();",
             "--: Directory List Properties :--",
-            "path:Directory:String",
+            ".:propertyMap:dir:Directory:String:1024",
             ".:propertyMap:sub:Dive into sub-directory:Boolean",
             ".:propertyMap:fileOnly:File only (exclude directory):Boolean",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "--: tested :--"
     ),
 
@@ -266,7 +266,7 @@ public enum Properties {
             "--: Markdown Properties :--",
             "name:File Name:Upload:type:uploadedId:Invalid markdown file!|updateProperty('name');",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             "--: tested :--"
@@ -282,7 +282,7 @@ public enum Properties {
             ".:propertyMap:quotesName:Quotes for name:String:1000",
             ".:propertyMap:quotesValue:Quotes for value:String:1000",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             "--: tested :--"
@@ -339,7 +339,7 @@ public enum Properties {
             ".:propertyMap:fillDate:Date Filler:String",
             "fixedLengthFormatList:Fixed Length Formatter:Properties:Column:Type & Length:false|updateProperty('format');updateProperty('fixedLengthFormatList');",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             ".:propertyMap:format:Format:ReadOnly",
@@ -366,7 +366,7 @@ public enum Properties {
             ".:propertyMap:dateFormat:Date Format:String",
             ".:propertyMap:dateTimeFormat:DateTime Format:String",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             "--: tested :--"
@@ -391,7 +391,7 @@ public enum Properties {
             ".:propertyMap:showFlowChart:Show Flowchart:Boolean",
             ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             "--: tested :--"
@@ -420,7 +420,7 @@ public enum Properties {
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             ".:propertyMap:columns:Columns:ReadOnly",
@@ -442,7 +442,7 @@ public enum Properties {
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             ".:propertyMap:columns:Columns:ReadOnly",
@@ -464,7 +464,7 @@ public enum Properties {
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
             ".:propertyMap:postSQL:Post-SQL:StringArray",
             "--: Technical Support :--",
-            "id:Column ID:ReadOnly",
+            "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
             "dataSourceId:Datasource ID:ReadOnly",
             ".:propertyMap:columns:Columns:ReadOnly",

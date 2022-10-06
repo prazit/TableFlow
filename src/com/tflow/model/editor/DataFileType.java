@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.model.editor.cmd.ExtractDirList;
 import com.tflow.model.editor.cmd.ExtractSystemEnvironment;
 
 /**
@@ -11,7 +12,8 @@ public enum DataFileType {
     /*TODO: create real Extractor class for each INPUT types*/
     IN_MARKDOWN("Markdown File", "markdown.png", Properties.INPUT_MARKDOWN, "", "/(\\.|\\/)(md|markdown)$/", ExtractSystemEnvironment.class),
     IN_SQL("SQL File", "sql.png", Properties.INPUT_SQL, "", "/(\\.|\\/)(sql)$/", ExtractSystemEnvironment.class),
-    IN_DIR("Directory List", "dir.png", Properties.INPUT_DIRECTORY, "/", null, ExtractSystemEnvironment.class),
+
+    IN_DIR("Directory List", "dir.png", Properties.INPUT_DIRECTORY, "/", null, ExtractDirList.class),
     IN_ENVIRONMENT("System Environment", "system.png", Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment", null, ExtractSystemEnvironment.class),
 
     OUT_MD("Markdown File", "markdown.png", Properties.OUTPUT_MARKDOWN, "output.md"),

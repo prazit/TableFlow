@@ -12,7 +12,7 @@ public enum PropertyVar {
     function,
     name,
     quickColumnList,
-    columns;
+    columns, dir;
 
     public boolean equals(String varName) {
         return varName.compareTo(name()) == 0;

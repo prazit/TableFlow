@@ -20,6 +20,8 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
 
     protected int id;
     protected String name;
+
+    @Deprecated
     protected String path;
 
     protected int uploadedId;
@@ -133,10 +135,12 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         this.name = name;
     }
 
+    @Deprecated
     public String getPath() {
         return path;
     }
 
+    @Deprecated
     public void setPath(String path) {
         this.path = path;
     }
@@ -197,7 +201,7 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
     }
 
     public boolean getNameDisabled() {
-        return type == DataFileType.IN_ENVIRONMENT && startPlug.isPlugged();
+        return startPlug.isPlugged();
     }
 
     public String getDataSourceIdentifier() {
