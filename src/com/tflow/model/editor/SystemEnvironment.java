@@ -8,14 +8,13 @@ public enum SystemEnvironment {
     /*TODO: Pair from jfxrt.jar need to change to another Pair class*/
     MEMORY_INFORMATION(13, "memory", "memory"),
 
-    /*TODO: Extracted Table has no column, need to specific one output before start DConvers*/
-    OUTPUT_LIST(2, "output_summary", "index"),
+    VARIABLE_LIST(0, "variable", "var"),
 
     JVM_ENVIRONMENT(12, "environment", "property"),
     OS_ENVIRONMENT(14, "os_variable", "variable"),
 
-    VARIABLE_LIST(0, "variable", "var"),
     TABLE_LIST(1, "table_summary", "index"),
+    OUTPUT_LIST(2, "output_summary", "id"),
     ;
 
     private int id;

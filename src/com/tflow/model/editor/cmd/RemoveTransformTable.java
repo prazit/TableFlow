@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/* TODO: found error when remove Table from DataFile(Environment.OUTPUT_SUMMARY).
+    caused by Old Property Retrieval (activeObject has changed to DataFile but client still request(getItemList) for TransformTable(removed))
+ **/
 /**
  * Remove TransformTable only.<br/>
  * Notice: the TransformTable need to remove all related objects before.

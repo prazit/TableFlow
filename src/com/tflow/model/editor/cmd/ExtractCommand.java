@@ -41,6 +41,14 @@ public abstract class ExtractCommand extends Command {
         String dConversTableId = properties.getString("source");
         String idColName = properties.getString("source." + dConversTableId + ".id");
         initLogOutput(properties, dConversTableId);
+
+        String dConversFirstTableId = "first";
+        String query = properties.getString("source.table.query");
+        boolean isOutputSummary = query != null && query.toUpperCase().equals("OUTPUT_SUMMARY");
+        if (isOutputSummary) {
+            initFirstTable(properties, dConversFirstTableId);
+            initLogOutput(properties, dConversFirstTableId);
+        }
         if (log.isDebugEnabled()) printProperties(properties);
 
         /*start DConvers to create source table by configs above*/
@@ -85,12 +93,23 @@ public abstract class ExtractCommand extends Command {
         resultMap.put(ActionResultKey.DATA_TABLE, dataTable);
     }
 
+    private void initFirstTable(Configuration properties, String dConversTableId) {
+        String dConversSourceKey = "source." + dConversTableId;
+        properties.addProperty("source", dConversTableId);
+        properties.addProperty(dConversSourceKey + ".index", "0");
+        properties.addProperty(dConversSourceKey + ".datasource", "system");
+        properties.addProperty(dConversSourceKey + ".query", "output_summary");
+        properties.addProperty(dConversSourceKey + ".id", "id");
+    }
+
     protected void initLogOutput(Configuration properties, String dConversTableId) {
         String prefix = "source." + dConversTableId + ".markdown";
         properties.addProperty(prefix, "true");
         properties.addProperty(prefix + ".output", "console");
         properties.addProperty(prefix + ".mermaid", "false");
         properties.addProperty(prefix + ".comment", "false");
+        properties.addProperty(prefix + ".comment.datasource", "false");
+        properties.addProperty(prefix + ".comment.query", "false");
         properties.addProperty(prefix + ".title", "false");
     }
 
@@ -99,7 +118,13 @@ public abstract class ExtractCommand extends Command {
         StringBuilder msg = new StringBuilder();
         while (keyList.hasNext()) {
             String key = keyList.next();
-            msg.append(",'").append(key).append("':'").append(properties.getString(key)).append("'");
+            if (key.equals("source")) {
+                for (Object source : properties.getList(key)) {
+                    msg.append(",'source':'").append(source).append("'");
+                }
+            } else {
+                msg.append(",'").append(key).append("':'").append(properties.getString(key)).append("'");
+            }
         }
         msg.setCharAt(0, '{');
         msg.append("}");
