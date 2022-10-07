@@ -2,9 +2,6 @@ package com.tflow.model.editor;
 
 public enum SystemEnvironment {
 
-    /*TODO: bugs in DConvers need to be fixed*/
-    APPLICATION_ARGUMENT(11, "arg", "index"),
-
     /*TODO: Pair from jfxrt.jar need to change to another Pair class*/
     MEMORY_INFORMATION(13, "memory", "memory"),
 
@@ -12,6 +9,7 @@ public enum SystemEnvironment {
 
     JVM_ENVIRONMENT(12, "environment", "property"),
     OS_ENVIRONMENT(14, "os_variable", "variable"),
+    APPLICATION_ARGUMENT(11, "arg", "index"),
 
     TABLE_LIST(1, "table_summary", "index"),
     OUTPUT_LIST(2, "output_summary", "id"),

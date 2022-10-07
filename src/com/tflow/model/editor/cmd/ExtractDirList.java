@@ -13,12 +13,8 @@ public class ExtractDirList extends ExtractCommand {
         String dir = System.getProperty("java.home");
         String idColName = "Name";
         String dConversTableId = "table";
-        String dConversSourceKey = "source." + dConversTableId;
 
-        properties.addProperty("source", dConversTableId);
-        properties.addProperty(dConversSourceKey + ".index", "1");
-        properties.addProperty(dConversSourceKey + ".datasource", datasource);
-        properties.addProperty(dConversSourceKey + ".query", dir);
-        properties.addProperty(dConversSourceKey + ".id", idColName);
+        addTableProperties(properties, dConversTableId, 1, datasource, dir, idColName);
+        addOutputProperties(properties, dConversTableId);
     }
 }

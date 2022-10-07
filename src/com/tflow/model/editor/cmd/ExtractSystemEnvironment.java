@@ -22,26 +22,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-/**
- * TODO: Need to support all possible queries in SystemEnvironment.java
- */
 public class ExtractSystemEnvironment extends ExtractCommand {
     @Override
     protected void initProperties(Configuration properties, DConvers dConvers, DataFile dataFile, Step step, Project project) {
-        String datasource = "system";
-        DataFileType type = dataFile.getType();
-        String dConversTableId = "table";
-        String dConversSourceKey = "source." + dConversTableId;
         SystemEnvironment systemEnvironment = SystemEnvironment.parse(dataFile.getName());
-        if (systemEnvironment == null) {
-            throw new UnsupportedOperationException("Unknown SystemEnvironment '" + dataFile.getName() + "'!");
-        }
+        if (systemEnvironment == null) throw new UnsupportedOperationException("Unknown SystemEnvironment '" + dataFile.getName() + "'!");
+        DataFileType type = dataFile.getType();
         log.debug("ExtractSystemEnvironment: type({}), systemEnvironment({})", type, systemEnvironment);
 
-        properties.addProperty("source", dConversTableId);
-        properties.addProperty(dConversSourceKey + ".index", "1");
-        properties.addProperty(dConversSourceKey + ".datasource", datasource);
-        properties.addProperty(dConversSourceKey + ".query", systemEnvironment.getQuery());
-        properties.addProperty(dConversSourceKey + ".id", systemEnvironment.getIdColName());
+        String dConversTableId = "table";
+        String datasource = "system";
+        String query = systemEnvironment.getQuery();
+        String idColName = systemEnvironment.getIdColName();
+
+        addTableProperties(properties, dConversTableId, 1, datasource, query, idColName);
+        addOutputProperties(properties, dConversTableId);
+
+        if (query.toUpperCase().equals("OUTPUT_SUMMARY")) {
+            String dConversFirstTableId = "first";
+            addTableProperties(properties, dConversFirstTableId, 0, datasource, query, idColName);
+            addOutputProperties(properties, dConversFirstTableId);
+        }
     }
 }

@@ -37,18 +37,6 @@ public abstract class ExtractCommand extends Command {
 
         Configuration properties = dConvers.dataConversionConfigFile.getProperties();
         initProperties(properties, dConvers, dataFile, step, project);
-
-        String dConversTableId = properties.getString("source");
-        String idColName = properties.getString("source." + dConversTableId + ".id");
-        initLogOutput(properties, dConversTableId);
-
-        String dConversFirstTableId = "first";
-        String query = properties.getString("source.table.query");
-        boolean isOutputSummary = query != null && query.toUpperCase().equals("OUTPUT_SUMMARY");
-        if (isOutputSummary) {
-            initFirstTable(properties, dConversFirstTableId);
-            initLogOutput(properties, dConversFirstTableId);
-        }
         if (log.isDebugEnabled()) printProperties(properties);
 
         /*start DConvers to create source table by configs above*/
@@ -60,29 +48,28 @@ public abstract class ExtractCommand extends Command {
         }
 
         /*got extracted table, get source table by id*/
+        String dConversTableId = properties.getString("source");
+        String idColName = properties.getString("source." + dConversTableId + ".id");
+
         Converter converter = dConvers.converterList.get(0);
         com.clevel.dconvers.data.DataTable extractedTable = converter.getDataTable("SRC:" + dConversTableId);
+
+        DataRow firstRow = extractedTable.getRow(0);
+        if (idColName == null && firstRow != null) {
+            idColName = firstRow.getColumn(0).getName();
+        }
 
         /*create data-table*/
         String name = dataFile.getName().split("[.]")[0];
         DataTable dataTable = new DataTable(name, dataFile, idColName, ProjectUtil.newElementId(project), ProjectUtil.newElementId(project), step);
 
         /*copy column from extracted-table*/
-        List<DataColumn> columnList = dataTable.getColumnList();
-        DataRow firstRow = extractedTable.getRow(0);
-        for (com.clevel.dconvers.data.DataColumn extractedColumn : firstRow.getColumnList()) {
-            columnList.add(new DataColumn(extractedColumn.getIndex(), DataType.parse(extractedColumn.getType()), extractedColumn.getName(), ProjectUtil.newElementId(project), dataTable));
+        if (firstRow != null) {
+            List<DataColumn> columnList = dataTable.getColumnList();
+            for (com.clevel.dconvers.data.DataColumn extractedColumn : firstRow.getColumnList()) {
+                columnList.add(new DataColumn(extractedColumn.getIndex(), DataType.parse(extractedColumn.getType()), extractedColumn.getName(), ProjectUtil.newElementId(project), dataTable));
+            }
         }
-
-        /*create Default Output as Markdown*/
-        OutputFile outputMD = new OutputFile(
-                DataFileType.OUT_MD,
-                "",
-                ProjectUtil.newElementId(project),
-                ProjectUtil.newElementId(project)
-        );
-        List<OutputFile> outputList = dataTable.getOutputList();
-        outputList.add(outputMD);
 
         /*Add to selectableMap*/
         ProjectUtil.generateId(step.getSelectableMap(), dataTable, project);
@@ -93,16 +80,16 @@ public abstract class ExtractCommand extends Command {
         resultMap.put(ActionResultKey.DATA_TABLE, dataTable);
     }
 
-    private void initFirstTable(Configuration properties, String dConversTableId) {
-        String dConversSourceKey = "source." + dConversTableId;
-        properties.addProperty("source", dConversTableId);
-        properties.addProperty(dConversSourceKey + ".index", "0");
-        properties.addProperty(dConversSourceKey + ".datasource", "system");
-        properties.addProperty(dConversSourceKey + ".query", "output_summary");
-        properties.addProperty(dConversSourceKey + ".id", "id");
+    protected void addTableProperties(Configuration properties, String tableName, int tableIndex, String datasource, String query, String idColumnName) {
+        properties.addProperty("source", tableName);
+        String dConversSourceKey = "source." + tableName;
+        properties.addProperty(dConversSourceKey + ".index", String.valueOf(tableIndex));
+        properties.addProperty(dConversSourceKey + ".datasource", datasource);
+        properties.addProperty(dConversSourceKey + ".query", query);
+        properties.addProperty(dConversSourceKey + ".id", idColumnName);
     }
 
-    protected void initLogOutput(Configuration properties, String dConversTableId) {
+    protected void addOutputProperties(Configuration properties, String dConversTableId) {
         String prefix = "source." + dConversTableId + ".markdown";
         properties.addProperty(prefix, "true");
         properties.addProperty(prefix + ".output", "console");

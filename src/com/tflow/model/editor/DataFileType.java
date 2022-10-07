@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.model.editor.cmd.ExtractDirList;
+import com.tflow.model.editor.cmd.ExtractMarkdown;
 import com.tflow.model.editor.cmd.ExtractSystemEnvironment;
 
 /**
@@ -10,9 +11,9 @@ public enum DataFileType {
 
     /*TODO: Future feature 'DataSourceType.KAFKAPRODUCER' is added also need to remove dataSourceType from this enum*/
     /*TODO: create real Extractor class for each INPUT types*/
-    IN_MARKDOWN("Markdown File", "markdown.png", Properties.INPUT_MARKDOWN, "", "/(\\.|\\/)(md|markdown)$/", ExtractSystemEnvironment.class),
     IN_SQL("SQL File", "sql.png", Properties.INPUT_SQL, "", "/(\\.|\\/)(sql)$/", ExtractSystemEnvironment.class),
 
+    IN_MARKDOWN("Markdown File", "markdown.png", Properties.INPUT_MARKDOWN, "", "/(\\.|\\/)(md|markdown)$/", ExtractMarkdown.class),
     IN_DIR("Directory List", "dir.png", Properties.INPUT_DIRECTORY, "/", null, ExtractDirList.class),
     IN_ENVIRONMENT("System Environment", "system.png", Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment", null, ExtractSystemEnvironment.class),
 
