@@ -238,7 +238,7 @@ public enum Properties {
             "--: Input File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "--: System Environment Properties :--",
-            "name:Name:System|[]nameDisabled",
+            "name:Name:System|[]nameDisabled:updateProperty('type');updateProperty('name');",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "--: tested :--"

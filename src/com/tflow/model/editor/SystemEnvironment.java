@@ -2,17 +2,14 @@ package com.tflow.model.editor;
 
 public enum SystemEnvironment {
 
-    /*TODO: Pair from jfxrt.jar need to change to another Pair class*/
-    MEMORY_INFORMATION(13, "memory", "memory"),
-
     VARIABLE_LIST(0, "variable", "var"),
-
-    JVM_ENVIRONMENT(12, "environment", "property"),
-    OS_ENVIRONMENT(14, "os_variable", "variable"),
-    APPLICATION_ARGUMENT(11, "arg", "index"),
-
     TABLE_LIST(1, "table_summary", "index"),
     OUTPUT_LIST(2, "output_summary", "id"),
+
+    APPLICATION_ARGUMENT(11, "arg", "index"),
+    JVM_ENVIRONMENT(12, "environment", "property"),
+    OS_ENVIRONMENT(14, "os_variable", "variable"),
+    MEMORY_INFORMATION(13, "memory", "memory"),
     ;
 
     private int id;
