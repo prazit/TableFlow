@@ -60,6 +60,7 @@ public class EditorController extends Controller {
     private boolean showStepList;
     private boolean showPropertyList;
     private boolean showActionButtons;
+    private boolean showColumnNumbers;
     private int stepListActiveTab;
 
     private Map<String, Integer> actionPriorityMap;
@@ -295,6 +296,14 @@ public class EditorController extends Controller {
 
     public void setShowActionButtons(boolean showActionButtons) {
         this.showActionButtons = showActionButtons;
+    }
+
+    public boolean isShowColumnNumbers() {
+        return showColumnNumbers;
+    }
+
+    public void setShowColumnNumbers(boolean showColumnNumbers) {
+        this.showColumnNumbers = showColumnNumbers;
     }
 
     public String getLeftPanelTitle() {
@@ -842,6 +851,7 @@ public class EditorController extends Controller {
         showStepList = step.isShowStepList();
         showPropertyList = step.isShowPropertyList();
         showActionButtons = step.isShowActionButtons();
+        showColumnNumbers = step.isShowColumnNumbers();
         stepListActiveTab = step.getStepListActiveTab();
 
         Selectable activeObject = step.getActiveObject();
@@ -1211,14 +1221,19 @@ public class EditorController extends Controller {
         if (refresh != null) {
             String javascript = "showStepList(" + showStepList + ");"
                     + "showPropertyList(" + showPropertyList + ");"
-                    + "showActionButtons(" + showActionButtons + ");";
+                    + "showActionButtons(" + showActionButtons + ");"
+                    + "showColumnNumbers(" + showColumnNumbers + ");";
             FacesUtil.runClientScript(javascript);
         }
 
+        boolean propertyChanged = false;
+        PropertyVar propertyVar = null;
         String stepList = FacesUtil.getRequestParam("stepList");
         if (stepList != null) {
             showStepList = Boolean.parseBoolean(stepList);
             step.setShowStepList(showStepList);
+            propertyChanged = true;
+            propertyVar = PropertyVar.showStepList;
             refreshStepList(project.getStepList());
             refreshActionList(project);
         }
@@ -1227,13 +1242,31 @@ public class EditorController extends Controller {
         if (propertyList != null) {
             showPropertyList = Boolean.parseBoolean(propertyList);
             step.setShowPropertyList(showPropertyList);
+            propertyChanged = true;
+            propertyVar = PropertyVar.showPropertyList;
         }
 
         String actionButtons = FacesUtil.getRequestParam("actionButtons");
         if (actionButtons != null) {
             showActionButtons = Boolean.parseBoolean(actionButtons);
             step.setShowActionButtons(showActionButtons);
+            propertyChanged = true;
+            propertyVar = PropertyVar.showActionButtons;
             log.warn("setToolPanel:fromClient(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
+        }
+
+        String columnNumbers = FacesUtil.getRequestParam("columnNumbers");
+        if (columnNumbers != null) {
+            showColumnNumbers = Boolean.parseBoolean(columnNumbers);
+            step.setShowColumnNumbers(showColumnNumbers);
+            propertyChanged = true;
+            propertyVar = PropertyVar.showColumnNumbers;
+            log.warn("setToolPanel:fromClient(showColumnNumbers:{}, passedParameter:{})", showColumnNumbers, columnNumbers);
+        }
+
+        if (propertyChanged) {
+            PropertyView property = step.getProperties().getPropertyView(propertyVar.name());
+            propertyChanged(ProjectFileType.STEP, step, property);
         }
     }
 

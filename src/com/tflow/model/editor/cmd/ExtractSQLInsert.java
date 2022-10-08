@@ -2,28 +2,26 @@ package com.tflow.model.editor.cmd;
 
 import com.clevel.dconvers.DConvers;
 import com.clevel.dconvers.conf.Property;
-import com.drew.lang.ByteArrayReader;
 import com.tflow.model.data.ProjectDataException;
-import com.tflow.model.editor.BinaryFile;
-import com.tflow.model.editor.DataFile;
-import com.tflow.model.editor.Project;
-import com.tflow.model.editor.Step;
+import com.tflow.model.editor.*;
 import org.apache.commons.configuration2.Configuration;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 
-public class ExtractMarkdown extends ExtractCommand {
+public class ExtractSQLInsert extends ExtractCommand {
     @Override
     protected void initProperties(Configuration properties, DConvers dConvers, DataFile dataFile, Step step, Project project) {
-        String datasource = "markdown";
+        String datasource = "sql";
         String readerName = dataFile.getName();
         String query = Property.READER.key() + readerName;
-        String dConversTableId = "markdown";
+        String dConversTableId = "sql_insert";
 
         addTableProperties(properties, dConversTableId, 1, datasource, query, "");
         addOutputProperties(properties, dConversTableId);
+
+        properties.addProperty("source." + dConversTableId + ".query.quotes.name", dataFile.getPropertyMap().get(PropertyVar.quotesName.name()));
+        properties.addProperty("source." + dConversTableId + ".query.quotes.value", dataFile.getPropertyMap().get(PropertyVar.quotesValue.name()));
 
         try {
             BinaryFile binaryFile = project.getManager().loadUploaded(dataFile.getUploadedId(), project);

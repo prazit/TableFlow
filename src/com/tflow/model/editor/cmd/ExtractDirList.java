@@ -12,7 +12,7 @@ public class ExtractDirList extends ExtractCommand {
         String datasource = "dir";
         String dir = System.getProperty("java.home");
         String idColName = "Name";
-        String dConversTableId = "table";
+        String dConversTableId = "dir_list";
 
         addTableProperties(properties, dConversTableId, 1, datasource, dir, idColName);
         addOutputProperties(properties, dConversTableId);

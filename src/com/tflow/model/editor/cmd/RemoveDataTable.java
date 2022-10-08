@@ -6,6 +6,7 @@ import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Tower;
@@ -28,7 +29,8 @@ public class RemoveDataTable extends Command {
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
 
-        /*TODO: need to create actions to remove all child at first, history will change between this process (keep no chain no effect)*/
+        /* cancelled by TWcmd already support this case:
+        need to create actions to remove all child at first, history will change between this process (keep no chain no effect)*/
 
         /*remove line between dataFile and dataTable*/
         LinePlug endPlug = dataTable.getEndPlug();
@@ -54,7 +56,10 @@ public class RemoveDataTable extends Command {
 
         /*for Action.executeUndo()*/
         paramMap.put(CommandParamKey.DATA_TABLE, dataTable);
-        paramMap.put(CommandParamKey.DATA_FILE, dataTable.getDataFile());
+        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+
+        /*Action Result*/
+        action.getResultMap().put(ActionResultKey.DATA_FILE, dataFile);
 
         // save DataTable data
         DataManager dataManager = project.getDataManager();

@@ -127,8 +127,6 @@ public interface ProjectMapper {
 
     TransformColumn map(TransformColumnData transformColumnData);
 
-    ColumnFx map(ColumnFxData columnFxData);
-
     @Mapping(target = "startPlug", ignore = true)
     ColumnFxPlug map(ColumnFxPlugData columnFxPlugData);
 

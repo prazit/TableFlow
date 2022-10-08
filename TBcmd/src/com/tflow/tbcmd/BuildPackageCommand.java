@@ -16,7 +16,7 @@ import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
 import com.tflow.wcmd.IOCommand;
-import javafx.util.Pair;
+import com.clevel.dconvers.ngin.Pair;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.mapstruct.factory.Mappers;

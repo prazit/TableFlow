@@ -15,6 +15,7 @@ import com.tflow.util.DateTimeUtil;
 import com.tflow.util.SerializeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -83,6 +84,23 @@ public class GsonUT {
         fileList.add(newPackageFileData(3, "build/images/", "test.png"));
 
         return packageData;
+    }
+
+    @Test
+    public void searchReplaceRegex() {
+        String testcase = "This;is/name after+-=replaced_with-very-long-name";
+        String search = "[\\p{Punct}\\s]";
+        String replace = "_";
+        String replaced = testcase.replaceAll(search, replace);
+        String improved = replaced.replaceAll("_+", replace).toLowerCase();
+
+        println(MessageFormatter.format("search: '{}'", search).getMessage());
+        println("replace: ''");
+        indent();
+
+        println(MessageFormatter.format("source: '{}'", testcase).getMessage());
+        println(MessageFormatter.format("replaced: '{}'", replaced).getMessage());
+        println(MessageFormatter.format("improved: '{}'", improved).getMessage());
     }
 
     @Test

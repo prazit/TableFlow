@@ -31,7 +31,7 @@
         <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
         <p:importEnum type="com.tflow.model.editor.datasource.DataSourceType" var="DataSourceType"/>
 
-        <div class="flow-chart" style="visibility: hidden">
+        <div class="flow-chart #{flowchartCtl.styleClass}" style="visibility: hidden">
             <h:form id="editorForm">
                 <p:growl id="growl" showDetail="true" escape="false"/>
                 <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true"/>
@@ -128,6 +128,7 @@
                                                 <input name="selectableId" type="hidden" value="#{column.selectableId}"/>
                                                 <p:remoteCommand name="update#{column.selectableId}" update="@parent" oncomplete="updateComplete('#{column.selectableId}')"/>
                                                 <p:graphicImage library="images" name="#{column.type.image}"/>
+                                                <label class="number">#{column.index}</label>
                                                 <label>#{column.name}</label>
                                                 <div class="#{column.startPlug.styleClass}" id="#{column.startPlug}"></div>
                                             </p:outputPanel>

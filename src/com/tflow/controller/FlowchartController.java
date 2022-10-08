@@ -468,7 +468,7 @@ public class FlowchartController extends Controller {
 
         step.setActiveObject(dataTable);
 
-        jsBuilder.post(JavaScript.notiInfo, "Table[" + dataTable.getName() + "] added.");
+        if (log.isDebugEnabled()) log.debug("DataTable added, id:{}, name:'{}'", dataTable.getId(), dataTable.getName());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList)
@@ -698,8 +698,9 @@ public class FlowchartController extends Controller {
         paramMap.put(CommandParamKey.DATA_TABLE, target);
         paramMap.put(CommandParamKey.STEP, step);
 
+        Action action;
         try {
-            Action action = new RemoveDataTable(paramMap);
+            action = new RemoveDataTable(paramMap);
             action.execute(false);
         } catch (RequiredParamException e) {
             log.error("Remove DataTable Failed!", e);
@@ -707,15 +708,31 @@ public class FlowchartController extends Controller {
             return;
         }
 
-        if (step.getActiveObject().getSelectableId().equals(target.getSelectableId())) {
-            step.setActiveObject(target.getDataFile());
+        DataFile dataFile = (DataFile) action.getResultMap().get(ActionResultKey.DATA_FILE);
+        if (dataFile != null) {
+            step.setActiveObject(dataFile);
         }
 
-        jsBuilder.post(JavaScript.notiInfo, "Table[" + target.getName() + "] is removed.");
+        if (log.isDebugEnabled()) log.debug("DataTable removed: id:{}, name:{}, related-dataFile({}:{})", target.getId(), target.getName(), dataFile.getId(), dataFile.getName());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.refreshFlowChart);
     }
 
+    /**
+     * Style Classes for flowchart container element
+     */
+    public String getStyleClass() {
+        String styleClass = "";
+        Step step = getStep();
+
+        /*Table: Action Buttons: hide-actions */
+        if (!step.isShowActionButtons()) styleClass += "hide-actions ";
+
+        /*Table: Column Numbers: hide-numbers */
+        if (!step.isShowColumnNumbers()) styleClass += "hide-numbers ";
+
+        return styleClass;
+    }
 }

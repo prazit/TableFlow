@@ -317,6 +317,7 @@ body .ui-panel.function.active .ui-panel-titlebar,
     border-color: var(--surface-e);
 }
 
+.hide-numbers .data-table .number,
 .hide-actions .data-table .column.action,
 .server button {
     display: none;

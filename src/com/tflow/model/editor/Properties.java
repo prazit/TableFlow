@@ -213,7 +213,7 @@ public enum Properties {
             "==: Data Table : Data Table contains extracted columns from the data-file, not allow to make change to the column list :==",
             "--: Data Table Properties :--",
             "name:Table Name:String:1000",
-            "idColName:Key Column:Column:id:NAME",
+            "idColName:Key Column:Column:id:NAME|updateProperty('idColName');",
             "--: Technical Support :--",
             "id:Table ID:ReadOnly",
             "level:Table Level:ReadOnly",
@@ -238,7 +238,7 @@ public enum Properties {
             "--: Input File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "--: System Environment Properties :--",
-            "name:Name:System|[]nameDisabled:updateProperty('type');updateProperty('name');",
+            "name:Name:System|updateProperty('type');updateProperty('name');:[]nameDisabled",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "--: tested :--"
@@ -247,9 +247,9 @@ public enum Properties {
     INPUT_DIRECTORY(
             "==: Input File (DIR) : List all file within specified directory with some attributes (depends on version of DConvers) :==",
             "--: Input File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "name:Name:String:40|updateProperty('type');",
-            "type:Type:DataFileType:in|[]typeDisabled:refreshProperties();",
-            "--: Directory List Properties :--",
+            "--: Runtime Properties :--",
             ".:propertyMap:dir:Directory:String:1024",
             ".:propertyMap:sub:Dive into sub-directory:Boolean",
             ".:propertyMap:fileOnly:File only (exclude directory):Boolean",
@@ -262,9 +262,25 @@ public enum Properties {
             "==: Input File (MD) : Text File contains one or more tables in Markdown Formatted :==",
             "--: Input File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
-            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
-            "--: Markdown Properties :--",
             "name:File Name:Upload:type:uploadedId:Invalid markdown file!|updateProperty('name');",
+            "--: Runtime Properties :--",
+            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            "--: Technical Support :--",
+            "id:ID:ReadOnly",
+            "dataSourceType:Datasource Type:ReadOnly",
+            "dataSourceId:Datasource ID:ReadOnly",
+            "--: tested :--"
+    ),
+
+    INPUT_SQLI(
+            "==: Input File (SQL Insert) : Text File contains SQL insert statements that will extract and transform to data-table instead :==",
+            "--: Input File Properties :--",
+            "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
+            "name:File Name:Upload:type:uploadedId:Invalid SQL file!|updateProperty('name');",
+            "--: Runtime Properties :--",
+            "dataSourceIdentifier:File Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');",
+            ".:propertyMap:quotesName:Quote Symbol for name:String:1",
+            ".:propertyMap:quotesValue:Quote Symbol for value:String:1",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
@@ -273,12 +289,12 @@ public enum Properties {
     ),
 
     INPUT_SQL(
-            "==: Input File (SQL) : Text File contains one SQL statement that will sent to Linked Database Connection to create the real Input File back :==",
-            "--: File Properties :--",
+            "==: Input File (SQL Select) : Text File contains single SQL select statement that will sent to Linked Database Connection (required) to create the real Input File back :==",
+            "--: Input File Properties :--",
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
-            "dataSourceIdentifier:Source:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
-            "--: SQL Properties :--",
             "name:File Name:Upload:type:uploadedId:Invalid SQL file!|updateProperty('name');",
+            "--: Runtime Properties :--",
+            "dataSourceIdentifier:Source:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
             ".:propertyMap:quotesName:Quotes for name:String:1000",
             ".:propertyMap:quotesValue:Quotes for value:String:1000",
             "--: Technical Support :--",
@@ -666,7 +682,6 @@ public enum Properties {
         int id = 0;
         for (String prototypeString : prototypeList) {
             property = toPropertyView(id++, prototypeString);
-            /*TODO: remove this comment when all properties are completed // if (property == null) continue;*/
             propertyList.add(property);
         }
 

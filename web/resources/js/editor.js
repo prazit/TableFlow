@@ -67,6 +67,12 @@ function toggleActionButtons() {
     }, 'toggleActionButtons');
 }
 
+function toggleColumnNumbers() {
+    contentReady(function () {
+        showColumnNumbers(contentWindow.$('.flow-chart').hasClass('hide-numbers'));
+    }, 'toggleColumnNumbers');
+}
+
 function showStepList(show) {
     var display = show ? 'block' : 'none';
     leftGutter.css('display', display);
@@ -93,9 +99,9 @@ function showActionButtons(show) {
 
         contentWindow.lineStart();
         if (show) {
-            contentWindow.$('.flow-chart').removeClass('hide-actions');
+            contentWindow.$('.flow-chart').removeClass(display);
         } else {
-            contentWindow.$('.flow-chart').addClass('hide-actions');
+            contentWindow.$('.flow-chart').addClass(display);
         }
         contentWindow.lineEnd();
 
@@ -103,6 +109,24 @@ function showActionButtons(show) {
             {name: 'actionButtons', value: '' + show}
         ]);
     }, 'showActionButtons');
+}
+
+function showColumnNumbers(show) {
+    contentReady(function () {
+        var display = 'hide-numbers';
+
+        contentWindow.lineStart();
+        if (show) {
+            contentWindow.$('.flow-chart').removeClass(display);
+        } else {
+            contentWindow.$('.flow-chart').addClass(display);
+        }
+        contentWindow.lineEnd();
+
+        setToolPanel([
+            {name: 'columnNumbers', value: '' + show}
+        ]);
+    }, 'showColumnNumbers');
 }
 
 function zoomStart() {
@@ -330,14 +354,11 @@ function refreshTabIndex() {
 }
 
 function setFocus(millis) {
-    console.debug('TRACE: setFocus.');
     if (tflow.setFocus == null) {
-        console.debug('DEBUG: setTimeout ' + (millis === undefined ? tflow.setFocusTimeout : millis) + 'millis');
         tflow.setFocus = setTimeout(setFocus, (millis === undefined ? tflow.setFocusTimeout : millis));
         return;
     }
 
-    console.debug('DEBUG: clearTimeout');
     clearTimeout(tflow.setFocus);
     tflow.setFocus = null;
 
@@ -367,8 +388,6 @@ function setFocus(millis) {
             console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
         });
     }
-
-    console.debug('DEBUG: setFocus completed');
 }
 
 function contentReady(func, label) {

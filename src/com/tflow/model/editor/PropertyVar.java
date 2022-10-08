@@ -12,7 +12,12 @@ public enum PropertyVar {
     function,
     name,
     quickColumnList,
-    columns, dir;
+    columns,
+    dir,
+    quotesName,
+    quotesValue,
+    activeObject,
+    showPropertyList, showActionButtons, showColumnNumbers, showStepList;
 
     public boolean equals(String varName) {
         return varName.compareTo(name()) == 0;

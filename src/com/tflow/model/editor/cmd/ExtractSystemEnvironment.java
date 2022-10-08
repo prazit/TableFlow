@@ -30,7 +30,7 @@ public class ExtractSystemEnvironment extends ExtractCommand {
         DataFileType type = dataFile.getType();
         log.debug("ExtractSystemEnvironment: type({}), systemEnvironment({})", type, systemEnvironment);
 
-        String dConversTableId = "table";
+        String dConversTableId = systemEnvironment.name().toLowerCase();
         String datasource = "system";
         String query = systemEnvironment.getQuery();
         String idColName = systemEnvironment.getIdColName();

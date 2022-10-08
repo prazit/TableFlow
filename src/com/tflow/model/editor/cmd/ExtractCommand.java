@@ -49,7 +49,7 @@ public abstract class ExtractCommand extends Command {
 
         /*got extracted table, get source table by id*/
         String dConversTableId = properties.getString("source");
-        String idColName = properties.getString("source." + dConversTableId + ".id");
+        String idColName = properties.getString("source." + dConversTableId + ".id", null);
 
         Converter converter = dConvers.converterList.get(0);
         com.clevel.dconvers.data.DataTable extractedTable = converter.getDataTable("SRC:" + dConversTableId);
@@ -58,6 +58,7 @@ public abstract class ExtractCommand extends Command {
         if (idColName == null && firstRow != null) {
             idColName = firstRow.getColumn(0).getName();
         }
+        log.debug("idColName = '{}'", idColName);
 
         /*create data-table*/
         String name = dataFile.getName().split("[.]")[0];
@@ -95,8 +96,8 @@ public abstract class ExtractCommand extends Command {
         properties.addProperty(prefix + ".output", "console");
         properties.addProperty(prefix + ".mermaid", "false");
         properties.addProperty(prefix + ".comment", "false");
-        properties.addProperty(prefix + ".comment.datasource", "false");
-        properties.addProperty(prefix + ".comment.query", "false");
+        properties.addProperty(prefix + ".comment.datasource", "true");
+        properties.addProperty(prefix + ".comment.query", "true");
         properties.addProperty(prefix + ".title", "false");
     }
 

@@ -25,5 +25,6 @@ public class StepData extends TWData implements Serializable {
     private boolean showStepList;
     private boolean showPropertyList;
     private boolean showActionButtons;
+    private boolean showColumnNumbers;
     private int stepListActiveTab;
 }

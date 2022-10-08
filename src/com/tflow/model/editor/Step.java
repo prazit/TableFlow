@@ -47,6 +47,7 @@ public class Step implements Selectable, HasEvent {
     private boolean showStepList;
     private boolean showPropertyList;
     private boolean showActionButtons;
+    private boolean showColumnNumbers;
     private int stepListActiveTab;
 
     private Map<String, Selectable> selectableMap;
@@ -84,6 +85,7 @@ public class Step implements Selectable, HasEvent {
         showStepList = true;
         showPropertyList = true;
         showActionButtons = true;
+        showColumnNumbers = true;
         eventManager = new EventManager(this);
         createEventHandlers();
     }
@@ -299,6 +301,14 @@ public class Step implements Selectable, HasEvent {
         this.stepListActiveTab = stepListActiveTab;
     }
 
+    public boolean isShowColumnNumbers() {
+        return showColumnNumbers;
+    }
+
+    public void setShowColumnNumbers(boolean showColumnNumbers) {
+        this.showColumnNumbers = showColumnNumbers;
+    }
+
     @Override
     public Properties getProperties() {
         return Properties.STEP;
@@ -363,6 +373,7 @@ public class Step implements Selectable, HasEvent {
                 ", showStepList:" + showStepList +
                 ", showPropertyList:" + showPropertyList +
                 ", showActionButtons:" + showActionButtons +
+                ", showColumnNumbers:" + showColumnNumbers +
                 ", stepListActiveTab:" + stepListActiveTab +
                 '}';
     }
