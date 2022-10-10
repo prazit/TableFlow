@@ -6,6 +6,7 @@ import com.tflow.model.editor.BinaryFile;
 import com.tflow.model.editor.DataFileType;
 import com.tflow.model.editor.JavaScript;
 import com.tflow.system.Environment;
+import com.tflow.util.MetaDiffUtil;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -16,6 +17,7 @@ import javax.inject.Named;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @ViewScoped
 @Named("playCtl")
@@ -34,6 +36,11 @@ public class PlayGroundController extends Controller {
     private DataFileType dataFileType;
 
     private ArrayList<String> inputChips;
+
+    private String transactionData;
+    private ArrayList<String> collectionData;
+    private String metaDiffData;
+    private List<List<MetaDiffUtil.MetaDiff>> metaDiffCollection;
 
     @Override
     public Page getPage() {
@@ -92,6 +99,38 @@ public class PlayGroundController extends Controller {
         this.inputChips = inputChips;
     }
 
+    public String getTransactionData() {
+        return transactionData;
+    }
+
+    public void setTransactionData(String transactionData) {
+        this.transactionData = transactionData;
+    }
+
+    public String getMetaDiffData() {
+        return metaDiffData;
+    }
+
+    public void setMetaDiffData(String metaDiffData) {
+        this.metaDiffData = metaDiffData;
+    }
+
+    public ArrayList getCollectionData() {
+        return collectionData;
+    }
+
+    public void setCollectionData(ArrayList collectionData) {
+        this.collectionData = collectionData;
+    }
+
+    public List<List<MetaDiffUtil.MetaDiff>> getMetaDiffCollection() {
+        return metaDiffCollection;
+    }
+
+    public void setMetaDiffCollection(List<List<MetaDiffUtil.MetaDiff>> metaDiffCollection) {
+        this.metaDiffCollection = metaDiffCollection;
+    }
+
     @Override
     void onCreation() {
         Environment currentEnvironment = workspace.getEnvironment();
@@ -120,6 +159,12 @@ public class PlayGroundController extends Controller {
 
         /*inputs*/
         initInputChips();
+
+        /*Meta Diff Data*/
+        metaDiffCollection = new ArrayList<>();
+        transactionData = defaultTransactionData();
+        collectionData = new ArrayList<>(Arrays.asList("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""));
+        metaDiffData = "";
     }
 
     public void notiInfo() {
@@ -201,4 +246,132 @@ public class PlayGroundController extends Controller {
         inputChips = new ArrayList<String>(Arrays.asList("One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"));
     }
 
+    private String defaultTransactionData() {
+        return "1,2,4,5,7,8,10\n" +
+                "10,20,30,40,50\n" +
+                "5,50,500,5000,50000";
+    }
+
+    public void createMetaDiffData() {
+        log.debug("createMetaDiffData:fromClient");
+        log.debug("transactionData='{}'", transactionData);
+        MetaDiffUtil util = new MetaDiffUtil();
+
+        /*parse transactionData to TransactionObject*/
+        StringBuilder metaDiffDataBuilder = new StringBuilder();
+        String[] lines = transactionData.split("\\n");
+        metaDiffCollection = new ArrayList<>();
+        List<MetaDiffUtil.MetaDiff> metaDiffList;
+        int count = 0;
+        for (String line : lines) {
+            if (line.isEmpty()) continue;
+
+            String[] trans = line.split("[,]");
+            List<Integer> intList = new ArrayList<>();
+            for (String digit : trans) {
+                intList.add(Integer.valueOf(digit));
+            }
+
+            try {
+                metaDiffList = util.createMetaDiff(intList);
+                metaDiffDataBuilder
+                        .append("---- Line #").append(++count).append(" ----\n")
+                        .append(toString(metaDiffList));
+                metaDiffCollection.add(metaDiffList);
+            } catch (Exception ex) {
+                String msg = "createMetaDiff failed!\n{}:{}";
+                Object[] objects = new Object[]{ex.getClass().getSimpleName(), ex.getMessage()};
+                jsBuilder.pre(JavaScript.notiError, msg, objects);
+                log.error(msg, objects);
+                log.trace("", ex);
+            }
+        }
+
+        metaDiffData = metaDiffDataBuilder.toString();
+    }
+
+    private String toString(List<MetaDiffUtil.MetaDiff> metaDiffList) {
+        StringBuilder builder = new StringBuilder();
+        for (MetaDiffUtil.MetaDiff diff : metaDiffList) {
+            builder.append(diff).append("\n");
+        }
+        return builder.toString();
+    }
+
+    public void collectSameOperand() {
+        log.debug("collectOperands:fromClient");
+
+        collectionData.remove(0);
+        collectionData.remove(0);
+        collectionData.remove(0);
+        collectionData.add(0, collectSameOperandString(true, true));
+        collectionData.add(1, collectSameOperandString(true, false));
+        collectionData.add(2, collectSameOperandString(false, true));
+    }
+
+    private String collectSameOperandString(boolean compareOperator, boolean compareOperand) {
+        if (metaDiffCollection.size() == 0) {
+            jsBuilder.pre(JavaScript.notiWarn, "Create Meta Diff First!");
+            return "";
+        }
+
+        StringBuilder collectionDataBuilder = new StringBuilder();
+        List<MetaDiffUtil.MetaDiff> newMetaDiffList;
+        int count = 0;
+        for (List<MetaDiffUtil.MetaDiff> metaDiffList : metaDiffCollection) {
+            newMetaDiffList = collectSameOperand(metaDiffList, compareOperator, compareOperand);
+            collectionDataBuilder
+                    .append("---- Line #").append(++count).append(" ----\n")
+                    .append(toString(newMetaDiffList));
+        }
+
+        return collectionDataBuilder.toString();
+    }
+
+    private List<MetaDiffUtil.MetaDiff> collectSameOperand(List<MetaDiffUtil.MetaDiff> metaDiffList, boolean compareOperator, boolean compareOperand) {
+        MetaDiffUtil util = new MetaDiffUtil();
+        List<MetaDiffUtil.MetaDiff> newMetaDiffList = new ArrayList<>();
+
+        MetaDiffUtil.MetaDiff previous = null;
+        MetaDiffUtil.MetaDiff collect = null;
+        for (MetaDiffUtil.MetaDiff current : metaDiffList) {
+            collect = util.newMetaDiff();
+            collect.current = current.current;
+            collect.next = current.next;
+            newMetaDiffList.add(collect);
+
+            if (previous != null) {
+                collectSameOperand(collect.operandList, previous, current, compareOperator, compareOperand);
+                if (previous.operandList.size() == 0) {
+                    previous.operandList.addAll(collect.operandList);
+                }
+            }
+
+            previous = current;
+        }
+
+        return newMetaDiffList;
+    }
+
+    private void collectSameOperand(List<MetaDiffUtil.Operand> operandList, MetaDiffUtil.MetaDiff previous, MetaDiffUtil.MetaDiff current, boolean compareOperator, boolean compareOperand) {
+        List<MetaDiffUtil.Operand> currentOperandList = current.operandList;
+        for (MetaDiffUtil.Operand operand : previous.operandList) {
+            if (containsOperand(operand, currentOperandList, compareOperator, compareOperand)) {
+                operandList.add(operand);
+            }
+        }
+    }
+
+    private boolean containsOperand(MetaDiffUtil.Operand operand, List<MetaDiffUtil.Operand> operandList, boolean compareOperator, boolean compareOperand) {
+        if (compareOperator && compareOperand) for (MetaDiffUtil.Operand compare : operandList) {
+            if (compare.isSame(operand)) return true;
+        }
+        else if (compareOperator) for (MetaDiffUtil.Operand compare : operandList) {
+            if (compare.isSameOperator(operand)) return true;
+        }
+        else for (MetaDiffUtil.Operand compare : operandList) {
+                if (compare.isSameOperand(operand)) return true;
+            }
+        return false;
+    }
 }

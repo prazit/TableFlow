@@ -19,7 +19,7 @@
         <div class="container">
             <ui:include src="resources/topMenu.xhtml"/>
 
-            <p:panel styleClass="screen-area error-panel vertical-scroll-panel" style="overflow:hidden">
+            <p:panel styleClass="screen-area error-panel vertical-scroll-panel">
                 <h1>#{playCtl.currentPage.title}</h1>
                 <h3>#{playCtl.currentPage.description}</h3>
 
@@ -151,6 +151,67 @@
                                 <div class="ui-g ui-g-6" style="background-color: var(--surface-d)">
                                     <p:commandButton value="Submit" actionListener="#{playCtl.submitInputs}" update="@form"/>
                                 </div>
+
+                            </p:outputPanel>
+                        </h:form>
+                    </p:tab>
+                    <p:tab title="Meta Diff Data">
+                        <h:form>
+                            <p:outputPanel styleClass="ui-g" id="inputPanel">
+                                <h3>Meta Diff Data created from the Transaction Data in the past that will used to estimate the next Transaction Data</h3>
+                                <p:tooltip position="top"/>
+
+                                <p:divider align="left">
+                                    <div class="inline-flex align-items-center">
+                                        <i class="pi pi-info-circle"/>
+                                        <b>Transaction Data:</b>
+                                    </div>
+                                </p:divider>
+
+                                <p:outputPanel styleClass="ui-g-12 ui-g">
+                                    <p:inputTextarea value="#{playCtl.transactionData}" rows="7" styleClass="fit-width"/>
+                                </p:outputPanel>
+
+                                <div class="ui-g-12">
+                                    <p:commandButton icon="pi pi-angle-double-down" value="Create Meta Diff Data" actionListener="#{playCtl.createMetaDiffData}" update="@form"/>
+                                </div>
+
+                                <p:divider align="left">
+                                    <div class="inline-flex align-items-center">
+                                        <i class="pi pi-info-circle"/>
+                                        <b>Meta Diff Data:</b>
+                                    </div>
+                                </p:divider>
+
+                                <p:outputPanel styleClass="ui-g-12">
+                                    <p:inputTextarea value="#{playCtl.metaDiffData}" rows="7" styleClass="fit-width"/>
+                                </p:outputPanel>
+
+                                <div class="ui-g-12">
+                                    <p:commandButton icon="pi pi-angle-double-down" value="Same Operator and Operands" actionListener="#{playCtl.collectSameOperand}" update="@form"/>
+                                </div>
+
+                                <p:divider align="left">
+                                    <div class="inline-flex align-items-center">
+                                        <i class="pi pi-info-circle"/>
+                                        <b>Collection can use to estimate next:</b>
+                                    </div>
+                                </p:divider>
+
+                                <p:outputPanel styleClass="ui-g-4">
+                                    <p:outputLabel value="Same Operator and Operand"/>
+                                    <p:inputTextarea value="#{playCtl.collectionData[0]}" rows="7" styleClass="fit-width"/>
+                                </p:outputPanel>
+                                <p:outputPanel styleClass="ui-g-4">
+                                    <p:outputLabel value="Same Operator"/>
+                                    <p:inputTextarea value="#{playCtl.collectionData[1]}" rows="7" styleClass="fit-width"/>
+                                </p:outputPanel>
+                                <p:outputPanel styleClass="ui-g-4">
+                                    <p:outputLabel value="Same Operand"/>
+                                    <p:inputTextarea value="#{playCtl.collectionData[2]}" rows="7" styleClass="fit-width"/>
+                                </p:outputPanel>
+
+                                <p:divider/>
 
                             </p:outputPanel>
                         </h:form>
