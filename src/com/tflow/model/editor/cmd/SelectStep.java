@@ -80,7 +80,9 @@ public class SelectStep extends Command {
             if (loadStepData) {
                 log.debug("line={}", line);
                 try {
-                    line.setStartPlug(selectableMap.get(line.getStartSelectableId()).getStartPlug());
+                    LinePlug startPlug = selectableMap.get(line.getStartSelectableId()).getStartPlug();
+                    line.setStartPlug(startPlug);
+                    startPlug.getLineList().add(line);
                 } catch (NullPointerException ex) {
                     log.error("startSelectableId:{} not found", line.getStartSelectableId());
                     log.trace("", ex);

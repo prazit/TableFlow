@@ -47,13 +47,13 @@ public class EventManager {
 
         for (EventHandler handler : eventHandlerList) {
             if (handler.isHandling()) {
-                LoggerFactory.getLogger(getClass()).warn("dead loop event occurred in fireEvent(event:{}, target:{})", event, target);
+                LoggerFactory.getLogger(getClass()).debug("dead loop event occurred in fireEvent(event:{}, target:{})", event, target);
                 continue;
             }
 
             handler.setHandling(true);
             Event ev = new Event(event, target, data);
-            LoggerFactory.getLogger(getClass()).warn("fireEvent(event:{}, target:{}, data:{})", event, target, data);
+            LoggerFactory.getLogger(getClass()).debug("fireEvent(event:{}, target:{}, data:{})", event, target, data);
             handler.handle(ev);
             handler.setHandling(false);
         }

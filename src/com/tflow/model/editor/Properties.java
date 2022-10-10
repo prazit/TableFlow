@@ -243,7 +243,7 @@ public enum Properties {
             "id:ID:ReadOnly",
             "--: tested :--"
     ),
-    
+
     INPUT_DIRECTORY(
             "==: Input File (DIR) : List all file within specified directory with some attributes (depends on version of DConvers) :==",
             "--: Input File Properties :--",
@@ -696,7 +696,7 @@ public enum Properties {
                 return propertyView;
         }
 
-        LoggerFactory.getLogger(Properties.class).warn(this.name() + ".getPropertyView(propertyVar:" + propertyVar + ") property not found!", new Exception(""));
+        LoggerFactory.getLogger(Properties.class).warn(this.name() + ".getPropertyView(propertyVar:" + propertyVar + ") property not found!");
         return new PropertyView(propertyVar);
     }
 

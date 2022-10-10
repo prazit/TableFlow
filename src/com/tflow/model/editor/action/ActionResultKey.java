@@ -3,16 +3,21 @@ package com.tflow.model.editor.action;
 public enum ActionResultKey {
 
     PROJECT,
+    PROJECT_ID,
+
     STEP,
-    DATA_TABLE,
-    LINE_LIST,
-    TABLE_FX,
-    TRANSFORM_COLUMN,
-    TRANSFORM_TABLE,
     DATA_FILE,
+    DATA_TABLE,
+    TRANSFORM_TABLE,
+    TRANSFORM_COLUMN,
     OUTPUT_FILE,
+
+    LINE_LIST,
+
+    TABLE_FX,
     COLUMN_FX,
 
-    PROJECT_ID
+    SELECTABLE_LIST,
+    ;
 
 }

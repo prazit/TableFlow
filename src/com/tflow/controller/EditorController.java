@@ -1252,7 +1252,7 @@ public class EditorController extends Controller {
             step.setShowActionButtons(showActionButtons);
             propertyChanged = true;
             propertyVar = PropertyVar.showActionButtons;
-            log.warn("setToolPanel:fromClient(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
+            log.debug("setToolPanel:fromClient(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
         }
 
         String columnNumbers = FacesUtil.getRequestParam("columnNumbers");
@@ -1261,7 +1261,7 @@ public class EditorController extends Controller {
             step.setShowColumnNumbers(showColumnNumbers);
             propertyChanged = true;
             propertyVar = PropertyVar.showColumnNumbers;
-            log.warn("setToolPanel:fromClient(showColumnNumbers:{}, passedParameter:{})", showColumnNumbers, columnNumbers);
+            log.debug("setToolPanel:fromClient(showColumnNumbers:{}, passedParameter:{})", showColumnNumbers, columnNumbers);
         }
 
         if (propertyChanged) {
@@ -1423,19 +1423,30 @@ public class EditorController extends Controller {
         }
 
         /*send binaryFile to Action AddUploaded*/
+        Action action;
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
         paramMap.put(CommandParamKey.WORKSPACE, workspace);
         paramMap.put(CommandParamKey.BINARY_FILE, binaryFile);
         paramMap.put(CommandParamKey.PROPERTY, property);
         paramMap.put(CommandParamKey.SELECTABLE, activeObject);
         try {
-            new AddUploaded(paramMap).execute();
+            action = new AddUploaded(paramMap);
+            action.execute();
         } catch (Exception ex) {
-            log.error("Uploaded File Failed!" + ex.getMessage());
+            log.error("Uploaded File Failed! {}:{}", ex.getClass().getSimpleName(), ex.getMessage());
             log.trace("", ex);
             jsBuilder.pre(JavaScript.notiError, "Uploaded File Failed with Internal Command Error!");
             return;
         }
+
+        List<Selectable> selectableList = (List) action.getResultMap().get(ActionResultKey.SELECTABLE_LIST);
+        if (selectableList != null) {
+            for (Selectable selectable : selectableList) {
+                jsBuilder.pre(JavaScript.updateEm, selectable.getSelectableId());
+            }
+            jsBuilder.runOnClient();
+        }
+
     }
 
     /**

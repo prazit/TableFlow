@@ -71,10 +71,13 @@ public class AddUploaded extends Command {
         // set name to selectable by next command
         property.setNewValue(binaryFile.getName());
 
-        // for next command
+        // for next command (ChangePropertyValue)
         paramMap.put(CommandParamKey.PROJECT_FILE_TYPE, selectable.getProjectFileType());
         paramMap.put(CommandParamKey.DATA, selectable);
         paramMap.put(CommandParamKey.SWITCH_ON, true);
+
+        // for next command (UpdateDataTable)
+        paramMap.put(CommandParamKey.DATA_FILE, selectable);
 
     }
 

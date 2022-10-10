@@ -174,24 +174,4 @@ public class AddDataTable extends Command {
         }
     }
 
-    private DataTable extractData(DataFileType type, Map<CommandParamKey, Object> paramMap) {
-        Command extractor = null;
-        try {
-            Class extractorClass = type.getExtractorClass();
-            Constructor constructor = extractorClass.getConstructor();
-            extractor = (Command) constructor.newInstance();
-        } catch (Exception ex) {
-            throw new UnsupportedOperationException("create data extractor failure", ex);
-        }
-
-        try {
-            extractor.execute(paramMap);
-        } catch (Exception ex) {
-            throw new UnsupportedOperationException("extract data failure", ex);
-        }
-
-        Action action = (Action) paramMap.get(CommandParamKey.ACTION);
-        return (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
-    }
-
 }

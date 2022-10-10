@@ -28,8 +28,8 @@ public class AddUploaded extends Action {
         );
         setCommands(
                 new com.tflow.model.editor.cmd.AddUploaded(),
-                new com.tflow.model.editor.cmd.ChangePropertyValue()
-                /*TODO: new com.tflow.model.editor.cmd.UpdateDataTable() // do this after AddDataTable already extract real data from file*/
+                new com.tflow.model.editor.cmd.ChangePropertyValue(),
+                new com.tflow.model.editor.cmd.UpdateDataTable()
         );
     }
 

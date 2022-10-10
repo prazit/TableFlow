@@ -5,6 +5,8 @@ import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -14,6 +16,7 @@ import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
 import org.mapstruct.factory.Mappers;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -301,5 +304,24 @@ public abstract class Command {
         return true;
     }
 
+    protected DataTable extractData(DataFileType type, Map<CommandParamKey, Object> paramMap) {
+        Command extractor = null;
+        try {
+            Class extractorClass = type.getExtractorClass();
+            Constructor constructor = extractorClass.getConstructor();
+            extractor = (Command) constructor.newInstance();
+        } catch (Exception ex) {
+            throw new UnsupportedOperationException("create data extractor failure", ex);
+        }
+
+        try {
+            extractor.execute(paramMap);
+        } catch (Exception ex) {
+            throw new UnsupportedOperationException("extract data failure", ex);
+        }
+
+        Action action = (Action) paramMap.get(CommandParamKey.ACTION);
+        return (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
+    }
 
 }
