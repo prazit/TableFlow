@@ -42,8 +42,11 @@ public abstract class ExtractCommand extends Command {
         /*start DConvers to create source table by configs above*/
         try {
             dConvers.start();
+            int exitCode = dConvers.currentState.getLongValue().intValue();
+            if (exitCode == dConvers.dataConversionConfigFile.getErrorCode()) {
+                throw new Exception("DConvers exit with some error, exit code = " + exitCode);
+            }
         } catch (Exception ex) {
-            log.debug("dConvers.dataConversionConfigFile={}", dConvers.dataConversionConfigFile);
             throw new UnsupportedOperationException("Unexpected exception from DConvers: ", ex);
         }
 

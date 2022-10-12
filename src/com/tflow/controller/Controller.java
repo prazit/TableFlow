@@ -185,9 +185,10 @@ public abstract class Controller implements Serializable {
             action = new AddDataTable(paramMap);
             action.execute();
             dataTable = (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
-        } catch (Exception e) {
-            log.error("Extract Data Failed!", e);
-            jsBuilder.pre(JavaScript.notiError, "Extract Data Failed with Internal Command Error!");
+        } catch (Exception ex) {
+            log.error("Extract Data Failed!");
+            log.trace("", ex);
+            jsBuilder.pre(JavaScript.notiError, "Extract Data Failed: Internal Command Error!");
             return;
         }
 
