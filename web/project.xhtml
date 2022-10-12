@@ -34,9 +34,8 @@
                 </p:outputPanel>
 
                 <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);">
-                    <!-- p:accordionPanel id="tabview" style="padding: var(- -padding);margin: var(- -margin);" -->
                     <p:importEnum type="com.tflow.controller.ProjectSection" var="ProjectSection"/>
-                    <p:ajax event="tabChange" listener="#{projectCtl.openSection}" update="packageTab"/>
+                    <p:ajax event="tabChange" listener="#{projectCtl.openSection}" update="@parent"/>
 
                     <p:tab title="#{ProjectSection.DATA_SOURCE.getTitle()}">
 
@@ -53,8 +52,8 @@
                                 <p:repeat value="#{projectCtl.databaseList}" var="database">
                                     <p:outputPanel styleClass="data-source flex selectable#{projectCtl.active(database)}">
                                         <input name="selectableId" type="hidden" value="#{database.selectableId}"/>
-                                        <b>#{database.name}</b><br/>
                                         <p:remoteCommand name="update#{database.selectableId}" update="@parent" oncomplete="updateComplete('#{database.selectableId}')"/>
+                                        <b>#{database.name}</b><br/>
                                         <p:graphicImage library="images" name="#{database.dbms.image}"/><br/>
                                         <span>#{database.dbms}</span>
                                     </p:outputPanel>
@@ -131,6 +130,64 @@
 
                     <p:tab title="#{ProjectSection.VARIABLE.getTitle()}" styleClass="variable tab">
                         <h2 style="color: var(--surface-c);">Variable Section</h2>
+                    </p:tab>
+
+                    <p:tab title="#{ProjectSection.UPLOADED.getTitle()}" styleClass="uploaded tab">
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-upload"/>
+                                <b>Uploaded Files (Read Only)</b>
+                            </div>
+                        </p:divider>
+                        <p:outputPanel id="uploadedTab" styleClass="ui-g">
+                            <p:dataList value="#{projectCtl.uploadedList}" var="uploaded" type="none" styleClass="fit-width">
+                                <f:facet name="header">
+                                    <div class="ui-g">
+                                        <div class="ui-g-1" style="text-align: center">No.</div>
+                                        <div class="ui-g-3" style="text-align: left">Step</div>
+                                        <div class="ui-g-3" style="text-align: center">Type</div>
+                                        <div class="ui-g-5" style="text-align: left">Name</div>
+                                    </div>
+                                </f:facet>
+                                <div class="ui-g">
+                                    <div class="ui-g-1" style="text-align: center">#{uploaded.index}</div>
+                                    <div class="ui-g-3" style="text-align: left">#{uploaded.stepName}</div>
+                                    <div class="ui-g-3" style="text-align: center">#{uploaded.dataFileType.getName()}</div>
+                                    <p:outputPanel styleClass="ui-g-5" style="text-align: left" rendered="#{not uploaded.fileName.isEmpty()}">#{uploaded.fileName}</p:outputPanel>
+                                    <p:outputPanel styleClass="ui-g-5 error-panel" style="text-align: center" rendered="#{uploaded.fileName.isEmpty()}">REQUIRED</p:outputPanel>
+                                </div>
+                            </p:dataList>
+                        </p:outputPanel>
+                    </p:tab>
+
+                    <p:tab title="#{ProjectSection.VERSIONED.getTitle()}" styleClass="versioned tab">
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-upload"/>
+                                <b>Library Files</b>
+                            </div>
+                        </p:divider>
+                        <p:outputPanel id="versionedTab" styleClass="ui-g">
+                            <p:dataList value="#{projectCtl.uploadedList}" var="versioned" type="none" styleClass="fit-width">
+                                <f:facet name="header">
+                                    <div class="ui-g">
+                                        <div class="ui-g-1" style="text-align: center">No.</div>
+                                        <div class="ui-g-3" style="text-align: left">Step</div>
+                                        <div class="ui-g-3" style="text-align: center">Type</div>
+                                        <div class="ui-g-5" style="text-align: left">Name</div>
+                                    </div>
+                                </f:facet>
+                                <p:outputPanel styleClass="ui-g versioned selectable#{projectCtl.active(versioned)}">
+                                    <input name="selectableId" type="hidden" value="#{versioned.selectableId}"/>
+                                    <p:remoteCommand name="update#{versioned.selectableId}" update="@parent" oncomplete="updateComplete('#{versioned.selectableId}')"/>
+                                    <div class="ui-g-1" style="text-align: center">#{versioned.index}</div>
+                                    <div class="ui-g-3" style="text-align: left">#{versioned.stepName}</div>
+                                    <div class="ui-g-3" style="text-align: center">#{versioned.dataFileType.getName()}</div>
+                                    <p:outputPanel styleClass="ui-g-5" style="text-align: left" rendered="#{not versioned.fileName.isEmpty()}">#{versioned.fileName}</p:outputPanel>
+                                    <p:outputPanel styleClass="ui-g-5 error-panel" style="text-align: center" rendered="#{versioned.fileName.isEmpty()}">REQUIRED</p:outputPanel>
+                                </p:outputPanel>
+                            </p:dataList>
+                        </p:outputPanel>
                     </p:tab>
 
                     <p:tab title="#{ProjectSection.PACKAGE.getTitle()}" styleClass="package tab">
@@ -217,11 +274,6 @@
                             });</script>
                         </p:outputPanel>
                     </p:tab>
-
-                    <p:tab title="#{ProjectSection.UPLOADED.getTitle()}" styleClass="uploaded tab">
-                        <h2 style="color: var(--surface-c);">Uploaded Section</h2>
-                    </p:tab>
-                    <!--/p:accordionPanel-->
                 </p:tabView>
 
             </h:form>

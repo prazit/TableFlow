@@ -73,7 +73,11 @@ public class UpdateDataTable extends Command {
         List<DataColumn> columnList;
         DataColumn copiedColumn;
         int columnIndex;
+        int number = 1;
+        boolean needNumber = dataTableList.size() > 1;
         for (DataTable dataTable : dataTableList) {
+            dataTable.setName(updatedTable.getName() + (needNumber ? number++ : ""));
+
             columnList = dataTable.getColumnList();
 
             if (remove) for (int rIndex = removeList.size() - 1; rIndex >= 0; rIndex--) {
@@ -93,6 +97,7 @@ public class UpdateDataTable extends Command {
             if (change) for (DataColumn changedColumn : changeList) {
                 copiedColumn = columnList.get(changedColumn.getIndex());
                 copiedColumn.setName(changedColumn.getName());
+                copiedColumn.setType(changedColumn.getType());
                 changedList.add(copiedColumn);
             }
 

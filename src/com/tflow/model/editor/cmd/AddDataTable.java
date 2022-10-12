@@ -38,6 +38,8 @@ public class AddDataTable extends Command {
             /*execute*/
             dataTable = extractData(dataFile.getType(), paramMap);
             dataTable.setLevel(0);
+            int number = dataFile.getStartPlug().getLineList().size();
+            if (number > 0) dataTable.setName(dataTable.getName() + (number + 1));
         }
 
         /*add to Tower*/

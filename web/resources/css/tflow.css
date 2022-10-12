@@ -210,3 +210,8 @@ body .tool-panel .ui-tabs .ui-menu {
     display: block;
     width: 100%;
 }
+
+.error-panel {
+    background-color: orangered;
+    color: yellow;
+}

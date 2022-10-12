@@ -1445,7 +1445,10 @@ public class EditorController extends Controller {
                 jsBuilder.pre(JavaScript.updateEm, selectable.getSelectableId());
             }
             jsBuilder.runOnClient();
-        }
+        } /*else {
+            *//*auto extract*//*
+            extractData(activeObject.getSelectableId());
+        }*/
 
     }
 

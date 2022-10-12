@@ -1,11 +1,9 @@
 package com.tflow.model.editor.cmd;
 
-import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.BinaryFileItemData;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
-import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
@@ -79,13 +77,6 @@ public class AddUploaded extends Command {
         // for next command (UpdateDataTable)
         paramMap.put(CommandParamKey.DATA_FILE, selectable);
 
-    }
-
-    private Object throwExceptionOnError(Object data) throws UnsupportedOperationException {
-        if (data instanceof Long) {
-            throw new UnsupportedOperationException(KafkaErrorCode.parse((Long) data).name());
-        }
-        return data;
     }
 
 }

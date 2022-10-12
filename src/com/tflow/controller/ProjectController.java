@@ -1,21 +1,23 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.ProjectFileType;
-import com.tflow.model.data.*;
-import com.tflow.model.editor.*;
+import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.editor.Package;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
-import com.tflow.util.FacesUtil;
+import com.tflow.model.editor.view.UploadedFileView;
 import org.primefaces.event.TabChangeEvent;
 
-import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @ViewScoped
@@ -28,7 +30,7 @@ public class ProjectController extends Controller {
     private List<Local> localList;
     private List<SFTP> sftpList;
 
-    /*TODO: Uploaded File List here*/
+    private List<UploadedFileView> uploadedList;
 
     private List<Item> packageList;
     private int selectedPackageId;
@@ -93,9 +95,43 @@ public class ProjectController extends Controller {
 
     public void openSection(TabChangeEvent event) {
         String title = event.getTab().getTitle();
-        //log.debug("openSection: selectedTitle={}, event={}", title, event);
-        if (title.compareTo(ProjectSection.PACKAGE.getTitle()) == 0) {
-            openPackage();
+        ProjectSection section = ProjectSection.parse(title);
+        if (section == null) {
+            String message = "Unknown section with title: {}";
+            jsBuilder.pre(JavaScript.notiError, message, title);
+            log.error(message, title);
+            return;
+        }
+
+        switch (section) {
+            case UPLOADED:
+                openUploaded();
+                break;
+            case PACKAGE:
+                openPackage();
+                break;
+            /*case DATA_SOURCE:
+                break;
+            case VARIABLE:
+                break;
+            case VERSIONED:
+                openVersioned();
+                break;*/
+        }
+    }
+
+    private void openUploaded() {
+        log.debug("openPackage.");
+        if (uploadedList != null) return;
+
+        try {
+            uploadedList = project.getManager().loadUploadedList(project);
+            jsBuilder.pre(JavaScript.notiInfo, "Uploaded File List contains {} items", uploadedList.size());
+        } catch (ProjectDataException ex) {
+            String message = "Load uploaded list failed! " + ex.getMessage();
+            jsBuilder.pre(JavaScript.notiError, message);
+            log.error(message);
+            log.trace("", ex);
         }
     }
 
@@ -123,7 +159,7 @@ public class ProjectController extends Controller {
             String msg = "Load package list failed: ";
             log.error(msg + ex.getMessage());
             log.trace("", ex);
-            jsBuilder.pre(JavaScript.notiError,msg + ex.getMessage());
+            jsBuilder.pre(JavaScript.notiError, msg + ex.getMessage());
         }
     }
 
@@ -154,7 +190,7 @@ public class ProjectController extends Controller {
             String msg = "Reload package " + selectedPackageId + " failed: ";
             log.error(msg + ex.getMessage());
             log.trace("", ex);
-            jsBuilder.pre(JavaScript.notiError,msg + ex.getMessage());
+            jsBuilder.pre(JavaScript.notiError, msg + ex.getMessage());
         }
     }
 
@@ -163,7 +199,7 @@ public class ProjectController extends Controller {
         Package buildPackage = project.getManager().buildPackage(workspace.getProject());
         if (buildPackage == null) {
             String msg = "Unexpected Error Occurred, try to build-package few minutes later";
-            jsBuilder.pre(JavaScript.notiError,msg);
+            jsBuilder.pre(JavaScript.notiError, msg);
             log.error(msg);
             return;
         }
@@ -260,4 +296,11 @@ public class ProjectController extends Controller {
         this.pleaseSelectPackage = pleaseSelectPackage;
     }
 
+    public List<UploadedFileView> getUploadedList() {
+        return uploadedList;
+    }
+
+    public void setUploadedList(List<UploadedFileView> uploadedList) {
+        this.uploadedList = uploadedList;
+    }
 }

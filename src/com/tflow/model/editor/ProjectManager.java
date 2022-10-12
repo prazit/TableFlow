@@ -11,6 +11,7 @@ import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.editor.view.UploadedFileView;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.Environment;
 import com.tflow.util.DateTimeUtil;
@@ -659,15 +660,35 @@ public class ProjectManager {
         return activePackage;
     }
 
-    public List<BinaryFileItem> loadUploadedList(Project project) throws ProjectDataException {
+    public List<UploadedFileView> loadUploadedList(Project project) throws ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         DataManager dataManager = project.getDataManager();
 
+        List<UploadedFileView> uploadedFileList = new ArrayList<>();
+        UploadedFileView uploadedFile;
+        int index = 1;
         ProjectUser projectUser = mapper.toProjectUser(project);
-        Object data = dataManager.getData(ProjectFileType.UPLOADED_LIST, projectUser);
-        List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
 
-        return mapper.toBinaryFileItemList(binaryFileItemDataList);
+        for (Step step : project.getStepList()) {
+            Object data = dataManager.getData(ProjectFileType.DATA_FILE_LIST, projectUser, 0, step.getId());
+            List<Integer> dataFileIdList = (List<Integer>) throwExceptionOnError(data);
+
+            for (Integer dataFileId : dataFileIdList) {
+                data = dataManager.getData(ProjectFileType.DATA_FILE, projectUser, dataFileId, step.getId());
+                DataFileData dataFileData = (DataFileData) throwExceptionOnError(data);
+                DataFileType dataFileType = DataFileType.valueOf(dataFileData.getType());
+                if(dataFileType.getAllowTypes()==null) continue;
+
+                uploadedFile = new UploadedFileView();
+                uploadedFile.setIndex(index++);
+                uploadedFile.setStepName(step.getName());
+                uploadedFile.setDataFileType(dataFileType);
+                uploadedFile.setFileName(dataFileData.getName());
+                uploadedFileList.add(uploadedFile);
+            }
+        }
+
+        return uploadedFileList;
     }
 
     public BinaryFile loadUploaded(int fileId, Project project) throws ProjectDataException {

@@ -2,8 +2,7 @@ package com.tflow.controller;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.action.ChangePropertyValue;
-import com.tflow.model.editor.action.SetQuickColumnList;
+import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.DateTimeUtil;
@@ -159,6 +158,47 @@ public abstract class Controller implements Serializable {
         log.debug("updateComponent:fromClient(id:{})", id);
 
         FacesUtil.updateComponent(id);
+    }
+
+    protected void extractData(String selectableId) {
+        Step step = getStep();
+        Selectable selectable = step.getSelectableMap().get(selectableId);
+        if (selectable == null) {
+            log.error("selectableId({}) not found in current step", selectableId);
+            return;
+        }
+
+        if (!(selectable instanceof DataFile)) {
+            log.error("extractData only work on DataFile, {} is not allowed", selectable.getClass().getName());
+            return;
+        }
+
+        DataFile dataFile = (DataFile) selectable;
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        Action action;
+        DataTable dataTable;
+        try {
+            action = new AddDataTable(paramMap);
+            action.execute();
+            dataTable = (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
+        } catch (Exception e) {
+            log.error("Extract Data Failed!", e);
+            jsBuilder.pre(JavaScript.notiError, "Extract Data Failed with Internal Command Error!");
+            return;
+        }
+
+        step.setActiveObject(dataTable);
+
+        if (log.isDebugEnabled()) log.debug("DataTable added, id:{}, name:'{}'", dataTable.getId(), dataTable.getName());
+
+        /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
+        jsBuilder.pre(JavaScript.refreshStepList)
+                .post(JavaScript.refreshFlowChart)
+                .runOnClient();
     }
 
 }

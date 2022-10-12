@@ -49,13 +49,13 @@ public abstract class ExtractCommand extends Command {
 
         /*got extracted table, get source table by id*/
         String dConversTableId = properties.getString("source");
-        String idColName = properties.getString("source." + dConversTableId + ".id", null);
+        String idColName = properties.getString("source." + dConversTableId + ".id");
 
         Converter converter = dConvers.converterList.get(0);
         com.clevel.dconvers.data.DataTable extractedTable = converter.getDataTable("SRC:" + dConversTableId);
 
         DataRow firstRow = extractedTable.getRow(0);
-        if (idColName == null && firstRow != null) {
+        if ((idColName == null || idColName.isEmpty()) && firstRow != null) {
             idColName = firstRow.getColumn(0).getName();
         }
         log.debug("idColName = '{}'", idColName);

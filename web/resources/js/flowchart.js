@@ -316,16 +316,6 @@ function startup() {
     parentWindow.zoomStart();
     parentWindow.zoomEnd();
 
-    /*Notice: support for first load with zooming factor to show lines again after 1 second*/
-    /*if (parentWindow.tflow.isFirstFlow) {
-        parentWindow.tflow.isFirstFlow = false;
-        tflow.postStartUp = setTimeout(function () {
-            clearTimeout(tflow.postStartUp);
-            lineStart();
-            lineEnd();
-        }, 1000);
-    }*/
-
     draggableStartup();
 
     /*need to show after all works*/

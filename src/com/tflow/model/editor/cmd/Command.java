@@ -1,5 +1,6 @@
 package com.tflow.model.editor.cmd;
 
+import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
@@ -322,6 +323,13 @@ public abstract class Command {
 
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         return (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
+    }
+
+    protected Object throwExceptionOnError(Object data) throws UnsupportedOperationException {
+        if (data instanceof Long) {
+            throw new UnsupportedOperationException(KafkaErrorCode.parse((Long) data).name());
+        }
+        return data;
     }
 
 }
