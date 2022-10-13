@@ -22,15 +22,33 @@ public enum FileNameExtension {
     JAVA("src/"),
     CLASS("web/META-INF/classes/"),
 
-    JAR("lib/"),
-    WAR("archive/"),
-    ZIP("archive/"),
+    JAR("lib/", "(\\/)(java-archive|zip)", "/(\\.|\\/)(jar)$/"),
+    WAR("archive/", "(\\/)(web-archive|zip)", "/(\\.|\\/)(war)$/"),
+    ZIP("archive/", "(\\/)(x-zip)", "/(\\.|\\/)(zip)$/"),
     ;
 
     String buildPath;
+    String allowMimeTypes;
+    String allowTypes;
+
+    FileNameExtension(String buildPath, String allowMimeTypes, String allowTypes) {
+        this.buildPath = buildPath;
+        this.allowMimeTypes = allowMimeTypes;
+        this.allowTypes = allowTypes;
+    }
 
     FileNameExtension(String buildPath) {
         this.buildPath = buildPath;
+        this.allowMimeTypes = "";
+        this.allowTypes = "";
+    }
+
+    public String getAllowMimeTypes() {
+        return allowMimeTypes;
+    }
+
+    public String getAllowTypes() {
+        return allowTypes;
     }
 
     public static FileNameExtension forName(String name) {

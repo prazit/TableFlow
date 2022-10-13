@@ -1,5 +1,6 @@
 package com.tflow.controller;
 
+import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaRecord;
 import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.kafka.ProjectFileType;
@@ -13,6 +14,7 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.FacesUtil;
@@ -40,6 +42,7 @@ import javax.inject.Named;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @ViewScoped
 @Named("editorCtl")
@@ -1414,11 +1417,9 @@ public class EditorController extends Controller {
         binaryFile.setExt(FileNameExtension.forName(fileName));
         log.debug("uploadBinaryFile: property: {}, uploadedFile: {}", property, binaryFile);
 
-        // Notice: OWASP: need mime-type from Apache-Tika, don't use file.getContentType() it always return 'application/octet-stream'.
-        Tika tika = new Tika();
-        String mimeType = tika.detect(binaryFile.getContent());
-        if (mimeType.compareTo("text/plain") != 0) {
-            jsBuilder.pre(JavaScript.notiWarn, property.getParams()[2]);
+        boolean isVersionedFile = activeObject instanceof VersionedFile;
+        if (!acceptFile(binaryFile, activeObject, property, isVersionedFile)) {
+            /*notify message and log are in acceptFile function*/
             return;
         }
 
@@ -1430,7 +1431,11 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.PROPERTY, property);
         paramMap.put(CommandParamKey.SELECTABLE, activeObject);
         try {
-            action = new AddUploaded(paramMap);
+            if (isVersionedFile) {
+                action = new AddVersioned(paramMap);
+            } else {
+                action = new AddUploaded(paramMap);
+            }
             action.execute();
         } catch (Exception ex) {
             log.error("Uploaded File Failed! {}:{}", ex.getClass().getSimpleName(), ex.getMessage());
@@ -1450,6 +1455,25 @@ public class EditorController extends Controller {
             extractData(activeObject.getSelectableId());
         }
 
+    }
+
+    private boolean acceptFile(BinaryFile binaryFile, Selectable selectable, PropertyView property, boolean isVersionedFile) {
+
+        // Notice: OWASP: need mime-type from Apache-Tika, don't use file.getContentType() it always return 'application/octet-stream'.
+        String allowMimeTypes = isVersionedFile ? ((VersionedFile) activeObject).getId().getAllowMimeType() : "text/plain";
+        Tika tika = new Tika();
+        String mimeType = tika.detect(binaryFile.getContent());
+        log.debug("mimetype:{}, allowMimeTypes:{}", mimeType, allowMimeTypes);
+        if (!Pattern.compile(allowMimeTypes).matcher(mimeType).find()) {
+            jsBuilder.pre(JavaScript.notiWarn, property.getParams()[2]);
+            return false;
+        }
+
+        /*TODO: need max.uploaded.bytes and max.versioned.bytes */
+        EnvironmentConfigs configs = EnvironmentConfigs.valueOf(workspace.getEnvironment().name());
+
+
+        return true;
     }
 
     /**

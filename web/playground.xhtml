@@ -19,7 +19,7 @@
         <div class="container">
             <ui:include src="resources/topMenu.xhtml"/>
 
-            <p:panel styleClass="screen-area error-panel vertical-scroll-panel">
+            <p:panel styleClass="screen-area vertical-scroll-panel">
                 <h1>#{playCtl.currentPage.title}</h1>
                 <h3>#{playCtl.currentPage.description}</h3>
 
@@ -34,18 +34,23 @@
                     <p:tab title="Primeface Messages / Notifaction">
 
                         <h:form id="notiForm">
-                            <div class="ui-g">
-                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                            <div class="ui-g-6">
+                                <div class="ui-g-12" style="display:flex;justify-content: center;">
                                     <p:commandButton actionListener="#{playCtl.notiInfo}" value="Info Message" update="messagePanel"/><br/>
                                 </div>
-                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                                <div class="ui-g-12" style="display:flex;justify-content: center;">
                                     <p:commandButton actionListener="#{playCtl.notiWarn}" value="Warning Message" update="messagePanel"/>
                                 </div>
-                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                                <div class="ui-g-12" style="display:flex;justify-content: center;">
                                     <p:commandButton actionListener="#{playCtl.notiError}" value="Error Message" update="messagePanel"/>
                                 </div>
-                                <div class="ui-g-3" style="display:flex;justify-content: center;">
+                                <div class="ui-g-12" style="display:flex;justify-content: center;">
                                     <p:commandButton actionListener="#{playCtl.multiple}" value="Multiple Messages" update="messagePanel"/>
+                                </div>
+                            </div>
+                            <div class="ui-g-6">
+                                <div class="ui-g-12" style="display:flex;justify-content: center;">
+                                    <p:commandButton actionListener="#{playCtl.throwException}" value="Throw Exception" update="messagePanel"/><br/>
                                 </div>
                             </div>
 

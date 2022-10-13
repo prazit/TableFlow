@@ -24,8 +24,4 @@ $(function () {
     window.parent.refreshProperties();
 
     tflow.ready = true;
-
-    updatePanelComplete('.database-panel');
-    updatePanelComplete('.sftp-panel');
-    updatePanelComplete('.local-panel');
 });

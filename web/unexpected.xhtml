@@ -31,7 +31,7 @@
 
             #{unexpectedCtl.handledException(pfExceptionHandler.timestamp)}
 
-            <p:panel styleClass="screen-area error-panel vertical-scroll-panel" rendered="#{pfExceptionHandler.type != 'javax.faces.application.ViewExpiredException'}">
+            <p:panel styleClass="screen-area vertical-scroll-panel" rendered="#{pfExceptionHandler.type != 'javax.faces.application.ViewExpiredException'}">
                 <h1>UNEXPECTED</h1>
                 <h3>You can try to open <a href="#{unexpectedCtl.currentPage.name}">[#{unexpectedCtl.currentPage.title}]</a> again or contact your administrator with this information:</h3>
 

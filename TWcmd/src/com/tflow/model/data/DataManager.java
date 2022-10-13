@@ -205,7 +205,8 @@ public class DataManager {
         props.put("retries", 0);
         props.put("batch.size", 16384);
         props.put("linger.ms", 1);
-        props.put("buffer.memory", 33554432);
+        props.put("buffer.memory", 33554422);
+        props.put("max.request.size", 33554422);
         props.put("request.timeout.ms", kafkaTimeout);
         props.put("transaction.timeout.ms", kafkaTimeout);
         props.put("default.api.timeout.ms", kafkaTimeout);
@@ -564,14 +565,14 @@ public class DataManager {
         /*headerData used instead of TransactionID (uniqueKeys: time, userId, clientId, projectId)*/
         Object data = captureData(fileType, getHeaderData(additional));
         if (data == null) {
-            log.error("getData.return null record, no response from read-service!");
+            log.debug("getData.return null record, no response from read-service!");
             return KafkaErrorCode.READ_SERVICE_NO_RESPONSE.getCode();
         }
 
         if (data instanceof Long) {
             long errorCode = (Long) data;
             KafkaErrorCode kafkaErrorCode = KafkaErrorCode.parse(errorCode);
-            log.error("getData.return error({})", kafkaErrorCode);
+            log.debug("getData.return error({})", kafkaErrorCode);
             return errorCode;
         }
 
@@ -579,7 +580,7 @@ public class DataManager {
         Object object = kafkaRecord.getData();
 
         if (object == null) {
-            log.error("getData.return null object");
+            log.debug("getData.return null object");
             return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
         }
         return object;

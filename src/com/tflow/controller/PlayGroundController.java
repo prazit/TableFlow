@@ -167,6 +167,10 @@ public class PlayGroundController extends Controller {
         metaDiffData = "";
     }
 
+    public void throwException() throws Exception {
+        throw new Exception("Testing Throw Exception from Action Listener");
+    }
+
     public void notiInfo() {
         //addMessage(FacesMessage.SEVERITY_INFO, "Info Message #" + (++message), "Message Content #" + (++message));
         messageTitle = ":: Information ::";

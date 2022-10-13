@@ -1,12 +1,15 @@
 package com.tflow.kafka;
 
 import com.google.gson.Gson;
+import com.tflow.model.data.BinaryFileData;
+import com.tflow.model.data.BinaryFileDataDev;
 import com.tflow.model.mapper.RecordMapper;
 import com.tflow.util.SerializeUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.mapstruct.factory.Mappers;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +83,17 @@ public class JSONDeserializer implements Deserializer<Object> {
             } else {
                 String dataJson = gson.toJson(dataObject);
                 dataObject = gson.fromJson(dataJson, dataClass);
+            }
+
+            if (dataObject instanceof BinaryFileDataDev) {
+                /*in development mode need to turn BinaryFileData back, binary-file will up size to 10X by JSON syntax, serializer will change bytes to String using StandardCharsets.ISO_8859_1 before*/
+                BinaryFileDataDev binaryFileDataDev = (BinaryFileDataDev) dataObject;
+                BinaryFileData binaryFileData = new BinaryFileData();
+                binaryFileData.setId(binaryFileDataDev.getId());
+                binaryFileData.setName(binaryFileDataDev.getName());
+                binaryFileData.setExt(binaryFileDataDev.getExt());
+                binaryFileData.setContent(binaryFileDataDev.getContent().getBytes(StandardCharsets.ISO_8859_1));
+                dataObject = binaryFileData;
             }
 
             return new KafkaRecord(dataObject, jsonRecordData.getAdditional());

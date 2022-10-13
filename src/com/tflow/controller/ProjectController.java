@@ -10,6 +10,8 @@ import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.UploadedFileView;
+import com.tflow.model.editor.view.VersionedFile;
+import com.tflow.util.DateTimeUtil;
 import org.primefaces.event.TabChangeEvent;
 
 import javax.faces.view.ViewScoped;
@@ -31,6 +33,7 @@ public class ProjectController extends Controller {
     private List<SFTP> sftpList;
 
     private List<UploadedFileView> uploadedList;
+    private List<VersionedFile> versionedList;
 
     private List<Item> packageList;
     private int selectedPackageId;
@@ -110,23 +113,59 @@ public class ProjectController extends Controller {
             case PACKAGE:
                 openPackage();
                 break;
+            case VERSIONED:
+                openVersioned();
+                break;
             /*case DATA_SOURCE:
                 break;
             case VARIABLE:
                 break;
-            case VERSIONED:
-                openVersioned();
-                break;*/
+            */
         }
     }
 
+    private void openVersioned() {
+        log.debug("openVersioned.");
+        if (versionedList != null) return;
+
+        try {
+            versionedList = project.getManager().loadVersionedList(project);
+        } catch (ProjectDataException ex) {
+            String message = "Load Library list failed! " + ex.getMessage();
+            jsBuilder.pre(JavaScript.notiError, message);
+            log.error(message);
+            log.trace("", ex);
+            return;
+        }
+
+        /*need selectable and eventHandler*/
+        Map<String, Selectable> selectableMap = project.getActiveStep().getSelectableMap();
+        for (VersionedFile versionedFile : versionedList) {
+            selectableMap.put(versionedFile.getSelectableId(), versionedFile);
+            createVersionedFileEventHandlers(versionedFile);
+        }
+    }
+
+    private void createVersionedFileEventHandlers(VersionedFile versionedFile) {
+        versionedFile.getEventManager().removeHandlers(EventName.NAME_CHANGED)
+                .addHandler(EventName.NAME_CHANGED, new EventHandler() {
+                    @Override
+                    public void handle(Event event) {
+                        PropertyView property = (PropertyView) event.getData();
+                        VersionedFile target = (VersionedFile) event.getTarget();
+                        target.setUploadedDate(DateTimeUtil.now());
+                        //versionedList.stream().filter(item -> item.getId() == target.getId()).collect(Collectors.toList()).get(0).setName(target.getName());
+                        propertyChanged(ProjectFileType.VERSIONED_LIST, versionedList, property);
+                    }
+                });
+    }
+
     private void openUploaded() {
-        log.debug("openPackage.");
+        log.debug("openUploaded.");
         if (uploadedList != null) return;
 
         try {
             uploadedList = project.getManager().loadUploadedList(project);
-            jsBuilder.pre(JavaScript.notiInfo, "Uploaded File List contains {} items", uploadedList.size());
         } catch (ProjectDataException ex) {
             String message = "Load uploaded list failed! " + ex.getMessage();
             jsBuilder.pre(JavaScript.notiError, message);
@@ -302,5 +341,13 @@ public class ProjectController extends Controller {
 
     public void setUploadedList(List<UploadedFileView> uploadedList) {
         this.uploadedList = uploadedList;
+    }
+
+    public List<VersionedFile> getVersionedList() {
+        return versionedList;
+    }
+
+    public void setVersionedList(List<VersionedFile> versionedList) {
+        this.versionedList = versionedList;
     }
 }

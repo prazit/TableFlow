@@ -58,6 +58,15 @@ public enum Properties {
             "--: tested :--"
     ),
 
+    VERSIONED (
+            "==: Library ::==",
+            "--: Library File Properties :--",
+            "id:ID:ReadOnly",
+            "name:File Name:Upload:id::Invalid Library file!|updateProperty('name');",
+            "uploadedDate:Uploaded:ReadOnly",
+            "--: Technical Support :--"
+    ),
+
     ORACLE_SID(
             "==: Data Source : Database connection (JDBC) :==",
             "--: Data Source Properties :--",
@@ -922,6 +931,5 @@ public enum Properties {
 
         throw new NoSuchMethodException("No method " + methodName + "(Object) in " + selectable.getClass().getName() + "[" + selectable.getSelectableId() + "]");
     }
-
 
 }

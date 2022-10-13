@@ -12,6 +12,7 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.view.UploadedFileView;
+import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.Environment;
 import com.tflow.util.DateTimeUtil;
@@ -660,6 +661,55 @@ public class ProjectManager {
         return activePackage;
     }
 
+    public List<VersionedFile> loadVersionedList(Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        DataManager dataManager = project.getDataManager();
+
+        List<VersionedFile> versionedFileList = new ArrayList<>();
+        VersionedFile versionedFile;
+        int index = 1;
+        ProjectUser projectUser = mapper.toProjectUser(project);
+
+        Object data = dataManager.getData(ProjectFileType.VERSIONED_LIST, projectUser);
+        List<VersionedFileData> versionedList;
+        try {
+            versionedList = (List<VersionedFileData>) throwExceptionOnError(data);
+        } catch (ProjectDataException ex) {
+            if (ex.getMessage().contains(KafkaErrorCode.DATA_FILE_NOT_FOUND.name())) {
+                versionedList = new ArrayList<>();
+            } else {
+                throw ex;
+            }
+        }
+
+        fullVersionedList(project.getType(), versionedList);
+        for (VersionedFileData versioned : versionedList) {
+            versionedFile = mapper.map(versioned);
+            versionedFile.setIndex(index++);
+            versionedFileList.add(versionedFile);
+        }
+
+        return versionedFileList;
+    }
+
+    private void fullVersionedList(ProjectType projectType, List<VersionedFileData> versionedList) {
+        StringBuilder existingBuilder = new StringBuilder();
+        for (VersionedFileData item : versionedList) existingBuilder.append(",").append(item.getId());
+        String existing = existingBuilder.append(",").toString();
+
+        /*create full list*/
+        for (Versioned versioned : Versioned.getVersionedList(projectType)) {
+            if (!existing.contains("," + versioned.name() + ",")) {
+                VersionedFileData versionedFileData = new VersionedFileData();
+                versionedFileData.setId(versioned.name());
+                versionedFileData.setName("");
+                versionedList.add(versionedFileData);
+            }
+        }
+
+        versionedList.sort(Comparator.comparing(VersionedFileData::getId));
+    }
+
     public List<UploadedFileView> loadUploadedList(Project project) throws ProjectDataException {
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         DataManager dataManager = project.getDataManager();
@@ -677,7 +727,7 @@ public class ProjectManager {
                 data = dataManager.getData(ProjectFileType.DATA_FILE, projectUser, dataFileId, step.getId());
                 DataFileData dataFileData = (DataFileData) throwExceptionOnError(data);
                 DataFileType dataFileType = DataFileType.valueOf(dataFileData.getType());
-                if(dataFileType.getAllowTypes()==null) continue;
+                if (dataFileType.getAllowTypes() == null) continue;
 
                 uploadedFile = new UploadedFileView();
                 uploadedFile.setIndex(index++);
@@ -732,4 +782,5 @@ public class ProjectManager {
         }
         return data;
     }
+
 }

@@ -204,17 +204,23 @@ public class BuildPackageCommand extends IOCommand {
 
     @SuppressWarnings("unchecked")
     private void addVersionedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, ClassNotFoundException, InstantiationException {
-        /*TODO: future feature: need to filter by ProjectType on next ProjectType*/
+        /*TODO: future feature: need real filter from Project.Type*/
         String filter = ProjectType.BATCH.getCode();
         Object data = getData(ProjectFileType.VERSIONED_LIST);
-        List<StringItemData> binaryFileItemDataList = (List<StringItemData>) throwExceptionOnError(data);
-        for (StringItemData binaryFileItemData : binaryFileItemDataList) {
-            String projectTypeCodes = Versioned.valueOf(binaryFileItemData.getId()).getProjectTypeCodes();
-            if (projectTypeCodes.contains(filter)) {
-                PackageFileData packageFileData = mapper.map(binaryFileItemData);
-                packageFileData.setId(newPackageFileId(packageData));
+        List<VersionedFileData> versionedFileDataList = (List<VersionedFileData>) throwExceptionOnError(data);
+        Versioned versioned;
+        for (VersionedFileData versionedFileData : versionedFileDataList) {
+            versioned = Versioned.valueOf(versionedFileData.getId());
+            if (versioned.getProjectTypeCodes().contains(filter)) {
+                PackageFileData packageFileData = new PackageFileData();
                 packageFileData.setType(FileType.VERSIONED);
+                packageFileData.setId(newPackageFileId(packageData));
+                packageFileData.setFileId(versioned.getFileId());
+                packageFileData.setName(versionedFileData.getName());
                 packageFileData.setBuildDate(packageData.getBuildDate());
+                FileNameExtension fileNameExtension = FileNameExtension.forName(versionedFileData.getName());
+                packageFileData.setExt(fileNameExtension);
+                packageFileData.setBuildPath(fileNameExtension.getBuildPath());
                 fileList.add(packageFileData);
             }
         }
@@ -225,11 +231,15 @@ public class BuildPackageCommand extends IOCommand {
         Object data = getData(ProjectFileType.UPLOADED_LIST);
         List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
         for (BinaryFileItemData binaryFileItemData : binaryFileItemDataList) {
-            PackageFileData packageFileData = mapper.map(binaryFileItemData);
-            packageFileData.setId(newPackageFileId(packageData));
+            PackageFileData packageFileData = new PackageFileData();
             packageFileData.setType(FileType.UPLOADED);
+            packageFileData.setId(newPackageFileId(packageData));
+            packageFileData.setFileId(binaryFileItemData.getId());
+            packageFileData.setName(binaryFileItemData.getName());
             packageFileData.setBuildDate(packageData.getBuildDate());
-            packageFileData.setBuildPath(FileNameExtension.forName(binaryFileItemData.getName()).getBuildPath());
+            FileNameExtension fileNameExtension = FileNameExtension.forName(binaryFileItemData.getName());
+            packageFileData.setExt(fileNameExtension);
+            packageFileData.setBuildPath(fileNameExtension.getBuildPath());
             fileList.add(packageFileData);
         }
     }

@@ -126,6 +126,13 @@
                             </p:outputPanel>
                         </p:outputPanel>
 
+                        <script>$(new function () {
+                            updatePanelComplete('.database-panel');
+                            updatePanelComplete('.sftp-panel');
+                            updatePanelComplete('.local-panel');
+                        });
+                        </script>
+
                     </p:tab>
 
                     <p:tab title="#{ProjectSection.VARIABLE.getTitle()}" styleClass="variable tab">
@@ -167,26 +174,30 @@
                                 <b>Library Files</b>
                             </div>
                         </p:divider>
-                        <p:outputPanel id="versionedTab" styleClass="ui-g">
-                            <p:dataList value="#{projectCtl.uploadedList}" var="versioned" type="none" styleClass="fit-width">
+                        <p:outputPanel id="versionedTab" styleClass="ui-g versioned-panel">
+                            <p:dataList value="#{projectCtl.versionedList}" var="versioned" type="none" styleClass="fit-width">
                                 <f:facet name="header">
                                     <div class="ui-g">
                                         <div class="ui-g-1" style="text-align: center">No.</div>
-                                        <div class="ui-g-3" style="text-align: left">Step</div>
-                                        <div class="ui-g-3" style="text-align: center">Type</div>
-                                        <div class="ui-g-5" style="text-align: left">Name</div>
+                                        <div class="ui-g-5" style="text-align: left">Id</div>
+                                        <div class="ui-g-6" style="text-align: left">Name</div>
                                     </div>
                                 </f:facet>
                                 <p:outputPanel styleClass="ui-g versioned selectable#{projectCtl.active(versioned)}">
                                     <input name="selectableId" type="hidden" value="#{versioned.selectableId}"/>
                                     <p:remoteCommand name="update#{versioned.selectableId}" update="@parent" oncomplete="updateComplete('#{versioned.selectableId}')"/>
                                     <div class="ui-g-1" style="text-align: center">#{versioned.index}</div>
-                                    <div class="ui-g-3" style="text-align: left">#{versioned.stepName}</div>
-                                    <div class="ui-g-3" style="text-align: center">#{versioned.dataFileType.getName()}</div>
-                                    <p:outputPanel styleClass="ui-g-5" style="text-align: left" rendered="#{not versioned.fileName.isEmpty()}">#{versioned.fileName}</p:outputPanel>
-                                    <p:outputPanel styleClass="ui-g-5 error-panel" style="text-align: center" rendered="#{versioned.fileName.isEmpty()}">REQUIRED</p:outputPanel>
+                                    <div class="ui-g-5" style="text-align: left">#{versioned.id.name()}</div>
+                                    <p:outputPanel styleClass="ui-g-6" style="text-align: left" rendered="#{not versioned.name.isEmpty()}">#{versioned.name}</p:outputPanel>
+                                    <p:outputPanel styleClass="ui-g-6 error-panel" style="text-align: center" rendered="#{versioned.name.isEmpty()}">REQUIRED</p:outputPanel>
                                 </p:outputPanel>
                             </p:dataList>
+                        </p:outputPanel>
+                        <p:outputPanel rendered="#{projectCtl.versionedList.size() > 0}">
+                            <script>$(new function () {
+                                updatePanelComplete('.versioned-panel');
+                            });
+                            </script>
                         </p:outputPanel>
                     </p:tab>
 

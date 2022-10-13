@@ -13,6 +13,7 @@ import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
 import org.mapstruct.factory.Mappers;
@@ -232,6 +233,13 @@ public abstract class Command {
             case PACKAGE:
                 dataManager.addData(ProjectFileType.PACKAGE, mapper.map((Package) dataObject), projectUser, ((Package) dataObject).getId());
                 break;
+            case VERSIONED_LIST:
+                dataManager.addData(ProjectFileType.VERSIONED_LIST, mapper.fromVersionedFileList((List<VersionedFile>)dataObject), projectUser);
+                break;
+            case VERSIONED:
+                /*nothing*/
+                break;
+
 
             /*Notice: need to find Changeable List and do the same way of STEP_LIST
              * Changeable List are ItemData familiar.
@@ -244,10 +252,6 @@ public abstract class Command {
             /*case CLIENT_LIST:
                 break;
             case CLIENT:
-                break;
-            case VERSIONED_LIST:
-                break;
-            case VERSIONED:
                 break;
             case UPLOADED_LIST:
                 break;

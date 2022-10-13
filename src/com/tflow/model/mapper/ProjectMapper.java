@@ -7,6 +7,7 @@ import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.editor.view.VersionedFile;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -43,6 +44,8 @@ public interface ProjectMapper {
     GroupListData map(ProjectGroupList projectGroupList);
 
     GroupData map(ProjectGroup dataObject);
+
+    VersionedFileData map(VersionedFile versionedFile);
 
     ProjectData map(Project project);
 
@@ -147,6 +150,8 @@ public interface ProjectMapper {
     BinaryFile map(BinaryFileData binaryFileData);
 
     BinaryFileItem map(BinaryFileItemData binaryFileItemData);
+
+    VersionedFile map(VersionedFileData versionedFileData);
 
     /*---- ALL ABOUT ID ----*/
 
@@ -276,4 +281,5 @@ public interface ProjectMapper {
 
     List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
 
+    List<VersionedFileData> fromVersionedFileList(List<VersionedFile> versionedFileList);
 }
