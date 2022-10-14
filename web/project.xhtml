@@ -126,11 +126,11 @@
                             </p:outputPanel>
                         </p:outputPanel>
 
-                        <script>$(new function () {
+                        <script>window.parent.contentReady(function () {
                             updatePanelComplete('.database-panel');
                             updatePanelComplete('.sftp-panel');
                             updatePanelComplete('.local-panel');
-                        });
+                        },"updateDataSourcePanels");
                         </script>
 
                     </p:tab>

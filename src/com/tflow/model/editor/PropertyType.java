@@ -49,6 +49,7 @@ public enum PropertyType {
 
     UPLOAD(""),
     FTPFILE(""),
+    BUTTON(""),
     ;
 
     private Object initial;

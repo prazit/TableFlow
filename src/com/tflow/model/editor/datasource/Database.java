@@ -4,10 +4,12 @@ import com.clevel.dconvers.ngin.Crypto;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.verify.Verifiers;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.room.RoomType;
-import com.tflow.model.editor.view.PropertyView;
+import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 
 import java.util.*;
 
@@ -212,6 +214,10 @@ public class Database extends DataSource implements Selectable, HasEvent {
         this.schema = schema;
     }
 
+    public boolean isTestConnectionEnabled() {
+        return Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify();
+    }
+
     @Override
     public EventManager getEventManager() {
         return eventManager;
@@ -241,4 +247,5 @@ public class Database extends DataSource implements Selectable, HasEvent {
     public String getSelectableId() {
         return IDPrefix.DB.getPrefix() + id;
     }
+
 }

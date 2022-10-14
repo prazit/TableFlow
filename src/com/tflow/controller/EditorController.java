@@ -17,6 +17,7 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.model.mapper.RecordMapper;
+import com.tflow.util.DConversHelper;
 import com.tflow.util.FacesUtil;
 import com.tflow.util.ProjectUtil;
 import com.tflow.util.SerializeUtil;
@@ -1469,7 +1470,7 @@ public class EditorController extends Controller {
             return false;
         }
 
-        /*TODO: need max.uploaded.bytes and max.versioned.bytes */
+        /*TODO: need configs: max.uploaded.bytes and max.versioned.bytes */
         EnvironmentConfigs configs = EnvironmentConfigs.valueOf(workspace.getEnvironment().name());
 
 
@@ -1533,5 +1534,33 @@ public class EditorController extends Controller {
         Chips chips = (Chips) event.getComponent();
         PropertyView property = properties.getPropertyView(chips.getStyleClass());
         propertyChanged(activeObject.getProjectFileType(), activeObject, property);
+    }
+
+    public void testDatabaseConnection(PropertyView property) {
+        /*test database connection using DConvers*/
+        DConversHelper dconvers = new DConversHelper(true);
+        Database database = (Database) activeObject;
+        int dataSourceId = database.getId();
+        dconvers.addDatabase(dataSourceId, workspace.getProject());
+        if (!dconvers.run()) {
+            jsBuilder.pre(JavaScript.notiWarn, "Connect failed!");
+            return;
+        }
+
+        jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
+    }
+
+    public void testSFTPConnection(PropertyView property) {
+        /*test sftp connection using DConvers*/
+        DConversHelper dconvers = new DConversHelper(true);
+        SFTP sftp = (SFTP) activeObject;
+        int sftpId = sftp.getId();
+        dconvers.addSFTP(sftpId, workspace.getProject());
+        if (!dconvers.run()) {
+            jsBuilder.pre(JavaScript.notiWarn, "Connect failed!");
+            return;
+        }
+
+        jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
     }
 }

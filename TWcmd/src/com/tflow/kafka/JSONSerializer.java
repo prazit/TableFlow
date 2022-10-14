@@ -21,7 +21,7 @@ public class JSONSerializer implements Serializer<Object> {
         }
 
 
-        /*TODO: try to con figs like this:> https://stackoverflow.com/questions/55152219/handling-large-messages-with-kafka*/
+        /*TODO: try to configs like this:> https://stackoverflow.com/questions/55152219/handling-large-messages-with-kafka*/
         /*TODO: remove messageBuilder for debug info*/
         StringBuilder messageBuilder = new StringBuilder();
 
@@ -67,7 +67,7 @@ public class JSONSerializer implements Serializer<Object> {
                     binaryFileDataDev.setName(binaryFileData.getName());
                     binaryFileDataDev.setExt(binaryFileData.getExt());
                     binaryFileDataDev.setContent(new String(binaryFileData.getContent(), StandardCharsets.ISO_8859_1));
-                    jsonData.setDataClass(binaryFileDataDev.getName());
+                    jsonData.setDataClass(binaryFileDataDev.getClass().getName());
                     jsonData.setData(binaryFileDataDev);
 
                 } else {

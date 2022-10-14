@@ -2,10 +2,13 @@ package com.tflow.model.editor.datasource;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.verify.Verifiers;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.room.RoomType;
+import com.tflow.model.mapper.ProjectMapper;
+import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,6 +132,10 @@ public class SFTP extends DataSource implements Selectable {
 
     public void setTmp(String tmp) {
         this.tmp = tmp;
+    }
+
+    public boolean isTestConnectionEnabled() {
+        return Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify();
     }
 
     @Override

@@ -31,7 +31,7 @@
                 <ui:param name="controller" value="#{editorCtl}"/>
             </ui:include>
             <ui:include src="resources/topMenu.xhtml"/>
-            <div class="screen-area">
+            <p:outputPanel id="screen-area" class="screen-area">
                 <p:splitter styleClass="p-mb-3" gutterSize="5">
                     <p:splitterPanel styleClass="left-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="15">
                         <p:panel header="Step List" styleClass="tool-panel">
@@ -263,6 +263,16 @@
                                             </p:outputPanel>
                                         </p:outputPanel>
 
+                                        <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.BUTTON==prop.type}" style="padding:var(--padding)">
+                                            <p:commandButton id="propButton" value="#{prop.label}" disabled="#{editorCtl.disabled(prop)}" actionListener="#{editorCtl[prop.params[0]](prop)}" oncomplete="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                            <p:blockUI trigger="propButton" block="screen-area">
+                                                <div style="font-size:var(--font-size-1);color:var(--surface-c)">
+                                                    <i class="pi pi-spinner pi-spin"></i>
+                                                    <span>#{prop.label} ...</span>
+                                                </div>
+                                            </p:blockUI>
+                                        </p:outputPanel>
+
                                     </p:repeat>
 
                                     <input value="" class="ui-g-8 next-input"/>
@@ -272,7 +282,7 @@
                         </p:panel>
                     </p:splitterPanel>
                 </p:splitter>
-            </div>
+            </p:outputPanel>
         </div>
         <input name="page" value="#{editorCtl.editorType.page}" class="hidden-input"/>
         <script>console.log('-- last-line of editor --');</script>

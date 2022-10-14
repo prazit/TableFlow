@@ -9,6 +9,7 @@ import com.clevel.dconvers.ngin.Source;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
+import com.tflow.util.DConversHelper;
 import com.tflow.util.ProjectUtil;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 public class ExtractSystemEnvironment extends ExtractCommand {
     @Override
-    protected void initProperties(Configuration properties, DConvers dConvers, DataFile dataFile, Step step, Project project) {
+    protected void initProperties(DConversHelper dConvers, DataFile dataFile, Step step, Project project) {
         SystemEnvironment systemEnvironment = SystemEnvironment.parse(dataFile.getName());
         if (systemEnvironment == null) throw new UnsupportedOperationException("Unknown SystemEnvironment '" + dataFile.getName() + "'!");
         DataFileType type = dataFile.getType();
@@ -35,13 +36,13 @@ public class ExtractSystemEnvironment extends ExtractCommand {
         String query = systemEnvironment.getQuery();
         String idColName = systemEnvironment.getIdColName();
 
-        addTableProperties(properties, dConversTableId, 1, datasource, query, idColName);
-        addOutputProperties(properties, dConversTableId);
+        dConvers.addSourceTable(dConversTableId, 1, datasource, query, idColName);
+        dConvers.addConsoleOutput(dConversTableId);
 
         if (query.toUpperCase().equals("OUTPUT_SUMMARY")) {
             String dConversFirstTableId = "first";
-            addTableProperties(properties, dConversFirstTableId, 0, datasource, query, idColName);
-            addOutputProperties(properties, dConversFirstTableId);
+            dConvers.addSourceTable(dConversFirstTableId, 0, datasource, query, idColName);
+            dConvers.addConsoleOutput(dConversFirstTableId);
         }
     }
 }
