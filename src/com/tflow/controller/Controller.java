@@ -4,7 +4,9 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
+import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.view.PropertyView;
+import com.tflow.util.DConversHelper;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FacesUtil;
 import org.slf4j.Logger;
@@ -13,7 +15,6 @@ import com.tflow.system.Application;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -161,45 +162,72 @@ public abstract class Controller implements Serializable {
     }
 
     protected void extractData(String selectableId) {
+        boolean isReady = true;
         Step step = getStep();
         Selectable selectable = step.getSelectableMap().get(selectableId);
+        DataFile dataFile = null;
+
         if (selectable == null) {
             log.error("selectableId({}) not found in current step", selectableId);
-            return;
-        }
+            isReady = false;
 
-        if (!(selectable instanceof DataFile)) {
+        } else if (!(selectable instanceof DataFile)) {
             log.error("extractData only work on DataFile, {} is not allowed", selectable.getClass().getName());
-            return;
+            isReady = false;
+
+        } else {
+            dataFile = (DataFile) selectable;
+            if (dataFile.getType().isRequireDatabase()) {
+
+                /*isDatabaseSelected*/
+                if (DataSourceType.DATABASE != dataFile.getDataSourceType() || dataFile.getDataSourceId() <= 0) {
+                    log.error("extractData: database is not selected");
+                    jsBuilder.pre(JavaScript.notiWarn, "Please select database!");
+                    isReady = false;
+                }
+
+                if (!isDatabaseReady(dataFile.getDataSourceId())) {
+                    log.error("extractData: Cannot connect to database!");
+                    jsBuilder.pre(JavaScript.notiWarn, "Cannot connect to database!");
+                    isReady = false;
+                }
+
+            }// end of requireDatabase
         }
 
-        DataFile dataFile = (DataFile) selectable;
+        if (isReady) {
+            Map<CommandParamKey, Object> paramMap = new HashMap<>();
+            paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+            paramMap.put(CommandParamKey.STEP, step);
 
-        Map<CommandParamKey, Object> paramMap = new HashMap<>();
-        paramMap.put(CommandParamKey.DATA_FILE, dataFile);
-        paramMap.put(CommandParamKey.STEP, step);
+            Action action;
+            DataTable dataTable;
+            try {
+                action = new AddDataTable(paramMap);
+                action.execute();
+                dataTable = (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
+            } catch (Exception ex) {
+                log.error("Extract Data Failed!");
+                log.trace("", ex);
+                jsBuilder.pre(JavaScript.notiError, "Extract Data Failed: Internal Command Error!");
+                return;
+            }
 
-        Action action;
-        DataTable dataTable;
-        try {
-            action = new AddDataTable(paramMap);
-            action.execute();
-            dataTable = (DataTable) action.getResultMap().get(ActionResultKey.DATA_TABLE);
-        } catch (Exception ex) {
-            log.error("Extract Data Failed!");
-            log.trace("", ex);
-            jsBuilder.pre(JavaScript.notiError, "Extract Data Failed: Internal Command Error!");
-            return;
+            step.setActiveObject(dataTable);
+
+            if (log.isDebugEnabled()) log.debug("DataTable added, id:{}, name:'{}'", dataTable.getId(), dataTable.getName());
         }
-
-        step.setActiveObject(dataTable);
-
-        if (log.isDebugEnabled()) log.debug("DataTable added, id:{}, name:'{}'", dataTable.getId(), dataTable.getName());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList)
                 .post(JavaScript.refreshFlowChart)
                 .runOnClient();
+    }
+
+    protected boolean isDatabaseReady(int dataSourceId) {
+        DConversHelper dconvers = new DConversHelper(true);
+        dconvers.addDatabase(dataSourceId, workspace.getProject());
+        return dconvers.run();
     }
 
 }

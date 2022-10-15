@@ -178,7 +178,8 @@
                                 </p:outputPanel>
 
                                 <div class="ui-g-12">
-                                    <p:commandButton icon="pi pi-angle-double-down" value="Create Meta Diff Data" actionListener="#{playCtl.createMetaDiffData}" update="@form"/>
+                                    <p:commandButton styleClass="float-left" icon="pi pi-angle-double-down" value="Create Meta Diff Data" actionListener="#{playCtl.createMetaDiffData}" update="@form"/>
+                                    <p:commandButton styleClass="float-right" icon="pi pi-angle-double-up" value="Estimate Next Value" actionListener="#{playCtl.estimateNextValue}" update="@form" rendered="#{playCtl.metaDiffCollection.size() > 0}"/>
                                 </div>
 
                                 <p:divider align="left">

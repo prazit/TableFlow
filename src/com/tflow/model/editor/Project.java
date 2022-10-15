@@ -21,7 +21,7 @@ public class Project implements Selectable, HasEvent {
     private ProjectType type;
     private int activeStepIndex;
 
-    private List<Step> stepList;
+    private StepList<Step> stepList;
 
     private Map<Integer, Database> databaseMap;
     private Map<Integer, SFTP> sftpMap;
@@ -58,7 +58,7 @@ public class Project implements Selectable, HasEvent {
     }
 
     private void init() {
-        stepList = new ArrayList<>();
+        stepList = new StepList<>();
         propertyMap = new HashMap<>();
         eventManager = new EventManager(this);
         createEventHandlers();
@@ -121,11 +121,11 @@ public class Project implements Selectable, HasEvent {
         this.activeStepIndex = activeStepIndex;
     }
 
-    public List<Step> getStepList() {
+    public StepList<Step> getStepList() {
         return stepList;
     }
 
-    public void setStepList(List<Step> stepList) {
+    public void setStepList(StepList<Step> stepList) {
         this.stepList = stepList;
     }
 
@@ -234,9 +234,8 @@ public class Project implements Selectable, HasEvent {
         return propertyMap;
     }
 
-
     public Step getActiveStep() {
-        if (activeStepIndex < 0 || activeStepIndex >= stepList.size()) return null;
+        if (activeStepIndex >= stepList.size()) return null;
         return stepList.get(activeStepIndex);
     }
 

@@ -153,3 +153,20 @@ function showLines() {
         }
     });
 }
+
+function lineStart() {
+    /*start of line creation*/
+    lines.lineScroll = {
+        enabled: tflow.ready,
+        left: window.scrollX,
+        top: window.scrollY
+    };
+    window.scrollTo(0, 0);
+    hideLines();
+}
+
+function lineEnd() {
+    /*end of line creation*/
+    showLines();
+    if (lines.lineScroll.enabled) window.scrollTo(lines.lineScroll);
+}

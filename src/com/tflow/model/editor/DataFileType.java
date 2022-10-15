@@ -84,4 +84,8 @@ public enum DataFileType {
     public Class getExtractorClass() {
         return extractorClass;
     }
+
+    public boolean isRequireDatabase() {
+        return DataFileType.IN_SQL == this;
+    }
 }

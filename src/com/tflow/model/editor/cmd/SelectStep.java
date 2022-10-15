@@ -22,22 +22,18 @@ public class SelectStep extends Command {
         Action action = (Action) paramMap.get(CommandParamKey.ACTION);
         Logger log = LoggerFactory.getLogger(SelectStep.class);
         int oldStepIndex = project.getActiveStepIndex();
+        boolean isSelectProject = stepIndex < 0;
 
-        List<Step> stepList = project.getStepList();
+        /*move stepIndex into the list*/
+        StepList<Step> stepList = project.getStepList();
         int size = stepList.size();
-        if (stepIndex < 0) {
-            stepIndex = 0;
-        } else if (stepIndex >= size) {
+        if (stepIndex >= size) {
             stepIndex = size - 1;
         }
-
         Step step = stepList.get(stepIndex);
-        if (step == null) {
-            throw new UnsupportedOperationException("SelectStep with invalid index(" + stepIndex + "), Project(" + project.getSelectableId() + ") has " + size + " step(s)");
-        }
 
         ProjectManager manager = project.getManager();
-        boolean loadStepData = step.getIndex() < 0;
+        boolean loadStepData = !isSelectProject && step.getIndex() < 0;
         if (loadStepData) {
             log.warn("selectStep({}): load step data...", stepIndex);
             try {
@@ -59,10 +55,12 @@ public class SelectStep extends Command {
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         selectableMap.clear();
         selectableMap.put(project.getSelectableId(), project);
-        selectableMap.put(step.getSelectableId(), step);
-        manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getDataTower().getFloorList()));
-        manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getTransformTower().getFloorList()));
-        manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getOutputTower().getFloorList()));
+        if (!isSelectProject) {
+            selectableMap.put(step.getSelectableId(), step);
+            manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getDataTower().getFloorList()));
+            manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getTransformTower().getFloorList()));
+            manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getOutputTower().getFloorList()));
+        }
         manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getDatabaseMap().values()));
         manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getSftpMap().values()));
         manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getLocalMap().values()));
@@ -75,7 +73,7 @@ public class SelectStep extends Command {
 
         // need to correct line index, need real plug by selectableId.
         int clientIndex = 0;
-        for (Line line : step.getLineList()) {
+        if (!isSelectProject) for (Line line : step.getLineList()) {
             line.setClientIndex(clientIndex++);
             if (loadStepData) {
                 log.debug("line={}", line);
@@ -110,8 +108,10 @@ public class SelectStep extends Command {
         DataManager dataManager = project.getDataManager();
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         ProjectUser projectUser = mapper.toProjectUser(project);
-        int stepId = step.getId();
-        dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
+        if (!isSelectProject) {
+            int stepId = step.getId();
+            dataManager.addData(ProjectFileType.STEP, mapper.map(step), projectUser, stepId, stepId);
+        }
 
         // save Project data
         dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());

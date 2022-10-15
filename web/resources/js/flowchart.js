@@ -12,6 +12,9 @@ function addLink($startSelectable, $endSelectable, $activeObject) {
 }
 
 function buttonPerform(remoteFunction) {
+
+    window.parent.PF('screenBlock').show();
+
     var dragTarget = $draggable.dragging.dragTarget,
         selectable = getSelectable(dragTarget),
         id = getSelectableId(selectable),
@@ -73,23 +76,6 @@ function noActiveScrollTo($activeObject) {
     } else {
         scrollToObj($active);
     }
-}
-
-function lineStart() {
-    /*start of line creation*/
-    lines.lineScroll = {
-        enabled: tflow.ready,
-        left: window.scrollX,
-        top: window.scrollY
-    };
-    window.scrollTo(0, 0);
-    hideLines();
-}
-
-function lineEnd() {
-    /*end of line creation*/
-    showLines();
-    if (lines.lineScroll.enabled) window.scrollTo(lines.lineScroll);
 }
 
 function draggableEnter($dragTarget, $droppable) {
@@ -215,6 +201,7 @@ function draggableEnter($dragTarget, $droppable) {
 }
 
 function draggableHandle() {
+    window.parent.PF('screenBlock').hide();
     if (!tflow.ready) return;
 
     $draggable.draggableList.each(function (i, e) {

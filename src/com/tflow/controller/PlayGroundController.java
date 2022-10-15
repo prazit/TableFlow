@@ -41,6 +41,8 @@ public class PlayGroundController extends Controller {
     private ArrayList<String> collectionData;
     private String metaDiffData;
     private List<List<MetaDiffUtil.MetaDiff>> metaDiffCollection;
+    private List<List<MetaDiffUtil.MetaDiff>> operandCollection;
+    private List<List<MetaDiffUtil.MetaDiff>> operatorCollection;
 
     @Override
     public Page getPage() {
@@ -162,6 +164,8 @@ public class PlayGroundController extends Controller {
 
         /*Meta Diff Data*/
         metaDiffCollection = new ArrayList<>();
+        operandCollection = new ArrayList<>();
+        operatorCollection = new ArrayList<>();
         transactionData = defaultTransactionData();
         collectionData = new ArrayList<>(Arrays.asList("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""));
         metaDiffData = "";
@@ -273,7 +277,7 @@ public class PlayGroundController extends Controller {
             String[] trans = line.split("[,]");
             List<Integer> intList = new ArrayList<>();
             for (String digit : trans) {
-                intList.add(Integer.valueOf(digit));
+                intList.add(Double.valueOf(digit).intValue());
             }
 
             try {
@@ -292,6 +296,9 @@ public class PlayGroundController extends Controller {
         }
 
         metaDiffData = metaDiffDataBuilder.toString();
+
+        /*auto push next button*/
+        collectSameOperand();
     }
 
     private String toString(List<MetaDiffUtil.MetaDiff> metaDiffList) {
@@ -307,17 +314,22 @@ public class PlayGroundController extends Controller {
 
         collectionData.remove(0);
         collectionData.remove(0);
-        collectionData.remove(0);
-        collectionData.add(0, collectSameOperandString(true, true));
-        collectionData.add(1, collectSameOperandString(true, false));
-        collectionData.add(2, collectSameOperandString(false, true));
+        /*collectionData.remove(0);*/
+
+        collectionData.add(0, collectSameOperandString(true, true, operandCollection));
+        collectionData.add(1, collectSameOperandString(true, false, operatorCollection));
+        /*collectionData.add(2, collectSameOperandString(false, true));*/
+
+        /*auto push next button*/
+        estimateNextValue();
     }
 
-    private String collectSameOperandString(boolean compareOperator, boolean compareOperand) {
+    private String collectSameOperandString(boolean compareOperator, boolean compareOperand, List<List<MetaDiffUtil.MetaDiff>> operandCollection) {
         if (metaDiffCollection.size() == 0) {
             jsBuilder.pre(JavaScript.notiWarn, "Create Meta Diff First!");
             return "";
         }
+        operandCollection.clear();
 
         StringBuilder collectionDataBuilder = new StringBuilder();
         List<MetaDiffUtil.MetaDiff> newMetaDiffList;
@@ -327,6 +339,7 @@ public class PlayGroundController extends Controller {
             collectionDataBuilder
                     .append("---- Line #").append(++count).append(" ----\n")
                     .append(toString(newMetaDiffList));
+            operandCollection.add(newMetaDiffList);
         }
 
         return collectionDataBuilder.toString();
@@ -377,5 +390,54 @@ public class PlayGroundController extends Controller {
                 if (compare.isSameOperand(operand)) return true;
             }
         return false;
+    }
+
+    public void estimateNextValue() {
+        log.debug("estimateNextValue:fromClient");
+        MetaDiffUtil util = new MetaDiffUtil();
+        List<MetaDiffUtil.MetaDiff> metaDiffList;
+
+        /*parse transactionData to TransactionObject*/
+        StringBuilder metaDiffDataBuilder = new StringBuilder();
+        String[] lines = transactionData.split("\\n");
+        for (int lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            String[] cols = lines[lineIndex].split("[,]");
+            metaDiffList = getMaxWeightList(operandCollection.get(lineIndex), operatorCollection.get(lineIndex));
+            double value = util.estimate(Double.valueOf(cols[cols.length - 1]).intValue(), metaDiffList.get(metaDiffList.size() - 1));
+            lines[lineIndex] += "," + Double.toString(value);
+        }
+
+        transactionData = String.join("\n", lines);
+    }
+
+    private List<MetaDiffUtil.MetaDiff> getMaxWeightList(List<MetaDiffUtil.MetaDiff> operandList, List<MetaDiffUtil.MetaDiff> operatorList) {
+        List<MetaDiffUtil.MetaDiff> maxList;
+
+        /*First Step: count not empty for weight*/
+        int operandWeight = countNotEmpty(operandList);
+        int operatorWeight = countNotEmpty(operatorList);
+        maxList = (operandWeight == Math.max(operandWeight, operatorWeight)) ? operandList : operatorList;
+        return maxList;
+
+        /*Second Step: remove operands and keep max-weight only*/
+        //return maxWeightOnly(maxList);
+    }
+
+    private List<MetaDiffUtil.MetaDiff> maxWeightOnly(List<MetaDiffUtil.MetaDiff> metaDiffList) {
+        /*TODO: remove operands and keep max-weight only*/
+
+        for (MetaDiffUtil.MetaDiff metaDiff : metaDiffList) {
+
+        }
+
+        return null;
+    }
+
+    private int countNotEmpty(List<MetaDiffUtil.MetaDiff> operandList) {
+        int weight = 0;
+        for (MetaDiffUtil.MetaDiff metaDiff : operandList) {
+            if (metaDiff.operandList.size() > 0) weight++;
+        }
+        return weight;
     }
 }

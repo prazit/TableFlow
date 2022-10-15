@@ -372,7 +372,6 @@ public class FlowchartController extends Controller {
         ColumnFx columnFx = (ColumnFx) action.getResultMap().get(ActionResultKey.COLUMN_FX);
         if (columnFx != null) {
             step.setActiveObject(columnFx);
-            jsBuilder.post(JavaScript.notiInfo, "ColumnFx[" + columnFx.getName() + "] added.");
         }
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
@@ -422,8 +421,6 @@ public class FlowchartController extends Controller {
         }
 
         step.setActiveObject(targetColumn);
-
-        jsBuilder.post(JavaScript.notiInfo, "ColumnFx[" + columnFx.getName() + "] removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.post(JavaScript.refreshFlowChart);
@@ -476,8 +473,6 @@ public class FlowchartController extends Controller {
 
         step.setActiveObject(transformTable);
 
-        jsBuilder.post(JavaScript.notiInfo, "Table[" + transformTable.getName() + "] added.");
-
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList).post(JavaScript.refreshFlowChart).runOnClient();
     }
@@ -521,7 +516,6 @@ public class FlowchartController extends Controller {
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, transformColumn.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, transformTable.getSelectableId());
-        jsBuilder.post(JavaScript.notiInfo, "Column[" + transformColumn.getSelectableId() + "] added.");
         jsBuilder.runOnClient();
     }
 
@@ -560,8 +554,6 @@ public class FlowchartController extends Controller {
         }
 
         step.setActiveObject(tableFx);
-
-        jsBuilder.post(JavaScript.notiInfo, "TableFx[" + tableFx.getSelectableId() + "] added.");
 
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, tableFx.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
@@ -605,8 +597,6 @@ public class FlowchartController extends Controller {
 
         step.setActiveObject(outputFile);
 
-        jsBuilder.post(JavaScript.notiInfo, "OutputFile[" + outputFile.getSelectableId() + "] added.");
-
         jsBuilder.pre(JavaScript.selectAfterUpdateEm, outputFile.getSelectableId());
         jsBuilder.pre(JavaScript.refreshStepList);
         jsBuilder.post(JavaScript.updateEm, dataTable.getSelectableId());
@@ -641,8 +631,6 @@ public class FlowchartController extends Controller {
         } else {
             log.warn("removeTransformTable: successful with warning! transformTable({}) contains invalid sourceId({})", selectableId, sourceId);
         }
-
-        jsBuilder.post(JavaScript.notiInfo, "Table[" + target.getName() + "] is removed.");
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
         jsBuilder.pre(JavaScript.refreshStepList);

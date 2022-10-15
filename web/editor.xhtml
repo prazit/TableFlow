@@ -32,6 +32,12 @@
             </ui:include>
             <ui:include src="resources/topMenu.xhtml"/>
             <p:outputPanel id="screen-area" class="screen-area">
+                <p:blockUI widgetVar="screenBlock" block="screen-area">
+                    <div style="font-size:var(--font-size-1);color:var(--surface-c)">
+                        <i class="pi pi-spinner pi-spin"></i>
+                        <span>please wait ...</span>
+                    </div>
+                </p:blockUI>
                 <p:splitter styleClass="p-mb-3" gutterSize="5">
                     <p:splitterPanel styleClass="left-panel p-d-flex p-ai-center p-jc-center" minSize="15" size="15">
                         <p:panel header="Step List" styleClass="tool-panel">
@@ -43,7 +49,9 @@
                             <h:form id="stepForm">
                                 <p:tabView id="leftPanel" activeIndex="#{editorCtl.stepListActiveTab}">
                                     <p:tab title="Step" id="stepList">
-                                        <p:menu model="#{editorCtl.stepMenu}"/>
+                                        <p:outputPanel styleClass="vertical-scroll-panel">
+                                            <p:menu model="#{editorCtl.stepMenu}"/>
+                                        </p:outputPanel>
                                     </p:tab>
                                     <p:tab title="History" id="actionList">
                                         <p:scrollPanel style="height: 100%;">
@@ -258,14 +266,14 @@
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.UPLOAD==prop.type}">
                                             <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
                                             <p:outputPanel styleClass="ui-g-8 fileupload ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-filled">
-                                                <p:outputLabel id="uploadName" title="click button to upload file" value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}"/>
+                                                <p:outputLabel title="click button to upload file" value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}"/>
                                                 <p:fileUpload styleClass="#{prop.var}" listener="#{editorCtl.uploadBinaryFile}" allowTypes="#{editorCtl.activeObject[prop.params[0]].allowTypes}" validateContentType="true" performVirusScan="true" mode="simple" skinSimple="true" chooseIcon="pi pi-ellipsis-h" label="" title="" auto="true" update="@parent topForm:notiMsg" onvalidationfailure="warning('#{prop.params[2]}');" onerror="warning('#{prop.params[2]}');" oncomplete="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this"/>
-                                            </p:outputPanel>
+\                                            </p:outputPanel>
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.BUTTON==prop.type}" style="padding:var(--padding)">
                                             <p:commandButton id="propButton" value="#{prop.label}" disabled="#{editorCtl.disabled(prop)}" actionListener="#{editorCtl[prop.params[0]](prop)}" oncomplete="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                            <p:blockUI trigger="propButton" block="screen-area">
+                                            <p:blockUI id="propButtonBUI" trigger="propButton" block="screen-area">
                                                 <div style="font-size:var(--font-size-1);color:var(--surface-c)">
                                                     <i class="pi pi-spinner pi-spin"></i>
                                                     <span>#{prop.label} ...</span>

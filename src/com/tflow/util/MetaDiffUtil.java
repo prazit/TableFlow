@@ -20,20 +20,22 @@ public class MetaDiffUtil {
      * ordered by Priority, high ordinal() high priority
      */
     public enum Operator {
-        DIV("/", "*", true),
-        SUB("-", "+", true),
-        MUL("*", "/", false),
-        ADD("+", "-", false) /*ADD is highest priority*/,
+        MUL("*", "/", false, 4),
+        DIV("/", "*", true, 3),
+        ADD("+", "-", false, 2) /*ADD is highest priority*/,
+        SUB("-", "+", true, 1),
         ;
 
         public String symbol;
         public String opposite;
         public boolean negative;
+        public int weight;
 
-        Operator(String symbol, String opposite, boolean negative) {
+        Operator(String symbol, String opposite, boolean negative, int weight) {
             this.symbol = symbol;
             this.opposite = opposite;
             this.negative = negative;
+            this.weight = weight;
         }
 
         public static Operator parse(String symbol) {
@@ -212,6 +214,72 @@ public class MetaDiffUtil {
         double calculated = expression.calculate();
         log.debug("calculate:{}:'{}' = {}", label, expressionString, calculated);
         return calculated;
+    }
+
+    public double estimate(int currentValue, MetaDiff metaDiff) {
+        //estimateByMaxWeight(currentValue,metaDiff);
+
+        /*use current-operator as finder and use other-operators as checker for diff-value*/
+        List<Double> nextList = new ArrayList<>();
+        List<Double> diffList = new ArrayList<>();
+        String expression;
+        double nextValue;
+        for (Operand operand : metaDiff.operandList) {
+            expression = currentValue + operand.operator.symbol + operand.operand;
+            nextValue = calculate(expression, "estimate:finder");
+            nextList.add(nextValue);
+            diffList.add(findDiff(currentValue, nextValue, diffList.size(), metaDiff.operandList));
+        }
+
+        /*find min diff*/
+        int minIndex = 0;
+        Double minDiff = Double.MAX_VALUE;
+        Double aDouble;
+        int size = diffList.size();
+        for (int index = 0; index < size; index++) {
+            aDouble = diffList.get(index);
+            if (aDouble.compareTo(minDiff) < 0) {
+                minIndex = index;
+                minDiff = aDouble;
+            }
+        }
+
+        return nextList.get(minIndex);
+    }
+
+    private Double findDiff(double currentValue, double nextValue, int skipIndex, List<Operand> operandList) {
+        String expression;
+        Operand operand;
+        double diff = 0;
+        int size = operandList.size();
+        for (int index = 0; index < size; index++) {
+            if (index == skipIndex) continue;
+
+            operand = operandList.get(index);
+            expression = nextValue + operand.operator.opposite + currentValue;
+            diff += Math.abs(calculate(expression, "findDiff"));
+        }
+        return diff;
+    }
+
+    public double estimateByMaxWeight(int currentValue, MetaDiff metaDiff) {
+        Operand operand = getMaxWeight(metaDiff.operandList);
+        String expression = currentValue + operand.operator.symbol + operand.operand;
+        return calculate(expression, "estimate");
+    }
+
+    private Operand getMaxWeight(List<Operand> operandList) {
+        if (operandList.size() == 0) return null;
+
+        Operand max = null;
+        for (Operand operand : operandList) {
+            int weight = operand.operator.weight;
+            if (max == null || Math.max(max.operator.weight, weight) == weight) {
+                max = operand;
+            }
+        }
+
+        return max;
     }
 
 }

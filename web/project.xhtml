@@ -130,7 +130,7 @@
                             updatePanelComplete('.database-panel');
                             updatePanelComplete('.sftp-panel');
                             updatePanelComplete('.local-panel');
-                        },"updateDataSourcePanels");
+                        }, "updateDataSourcePanels");
                         </script>
 
                     </p:tab>
@@ -147,7 +147,13 @@
                             </div>
                         </p:divider>
                         <p:outputPanel id="uploadedTab" styleClass="ui-g">
-                            <p:dataList value="#{projectCtl.uploadedList}" var="uploaded" type="none" styleClass="fit-width">
+                            <p:outputPanel styleClass="fit-width" style="display:flex;align-content:center;justify-content:center;" rendered="#{projectCtl.uploadedList == null}">
+                                <span style="font-size:var(--font-size-1);color:var(--surface-c);">
+                                    <i class="pi pi-spinner pi-spin"/>
+                                    <span>Loading ...</span>
+                                </span>
+                            </p:outputPanel>
+                            <p:dataList value="#{projectCtl.uploadedList}" var="uploaded" type="none" styleClass="fit-width" rendered="#{projectCtl.uploadedList.size()>0}">
                                 <f:facet name="header">
                                     <div class="ui-g">
                                         <div class="ui-g-1" style="text-align: center">No.</div>
@@ -156,13 +162,13 @@
                                         <div class="ui-g-5" style="text-align: left">Name</div>
                                     </div>
                                 </f:facet>
-                                <div class="ui-g">
+                                <p:outputPanel styleClass="ui-g">
                                     <div class="ui-g-1" style="text-align: center">#{uploaded.index}</div>
                                     <div class="ui-g-3" style="text-align: left">#{uploaded.stepName}</div>
                                     <div class="ui-g-3" style="text-align: center">#{uploaded.dataFileType.getName()}</div>
                                     <p:outputPanel styleClass="ui-g-5" style="text-align: left" rendered="#{not uploaded.fileName.isEmpty()}">#{uploaded.fileName}</p:outputPanel>
                                     <p:outputPanel styleClass="ui-g-5 error-panel" style="text-align: center" rendered="#{uploaded.fileName.isEmpty()}">REQUIRED</p:outputPanel>
-                                </div>
+                                </p:outputPanel>
                             </p:dataList>
                         </p:outputPanel>
                     </p:tab>

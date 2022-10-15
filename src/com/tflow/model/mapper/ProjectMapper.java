@@ -210,7 +210,7 @@ public interface ProjectMapper {
 
     BinaryFileItemData toBinaryFileItemData(BinaryFile binaryFile);
 
-    List<Step> toStepList(List<ItemData> itemDataList);
+    StepList<Step> toStepList(List<ItemData> itemDataList);
 
     List<Item> toItemList(List<ItemData> itemDataList);
 

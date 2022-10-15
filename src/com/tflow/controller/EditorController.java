@@ -213,7 +213,7 @@ public class EditorController extends Controller {
         menuItemList.add(DefaultMenuItem.builder()
                 .value("Project: " + projectName)
                 .icon("pi pi-home")
-                .command("${editorCtl.selectProject()}")
+                .command("${editorCtl.selectStep(-1)}")
                 .update("actionForm,propertyForm")
                 .build()
         );
@@ -794,45 +794,42 @@ public class EditorController extends Controller {
         }
     }
 
-    public void selectProject() {
-        setEditorType(EditorType.PROJECT);
-        /**
-         * TODO: need empty step when selectProject to avoid unexpected change of activeObject in first-step.
-         * selectStep( ??? );
-         */
-        selectObject(workspace.getProject().getSelectableId());
-
-        jsBuilder.pre(JavaScript.setFlowChart, editorType.getPage())
-                .post(JavaScript.refreshFlowChart)
-                .runOnClient(true);
-    }
-
     public void selectStep(int stepIndex) {
         log.warn("selectStep:fromClient(stepIndex:{})", stepIndex);
         selectStep(stepIndex, true);
     }
 
+    /**
+     * @param stepIndex -1 = selectProject, 0,1,2,.. = selectStep
+     * @param refresh   true will call refreshFlowchart
+     */
     private void selectStep(int stepIndex, boolean refresh) {
-
-        setEditorType(EditorType.STEP);
+        boolean isSelectProject = stepIndex < 0;
+        setEditorType(isSelectProject ? EditorType.PROJECT : EditorType.STEP);
 
         Project project = workspace.getProject();
-        int size = project.getStepList().size();
-        if (stepIndex < 0 || stepIndex >= size) {
+        StepList<Step> stepList = project.getStepList();
+        int size = stepList.size();
+        if (stepIndex >= size) {
             log.warn("selectStep({}) invalid stepIndex, stepList.size={}, reset stepIndex to 0", stepIndex, size);
             stepIndex = 0;
         }
 
+        /*Auto Add First Step*/
         Step step = null;
         try {
-            step = project.getStepList().get(stepIndex);
+            step = stepList.get(stepIndex);
         } catch (IndexOutOfBoundsException ex) {
             if (stepIndex == 0) {
                 log.warn("selectStep(0) on new project, then call addStep().");
                 step = addStep();
+            } else if (isSelectProject) {
+                step = new Step("for SelectProject from StepList", project);
+                step.setIndex(-1);
+                stepList.addNegativeItem(step);
             }
         }
-        boolean needEventHandler = step.getIndex() < 0;
+        boolean needEventHandler = !isSelectProject && step.getIndex() < 0;
 
         /*call action SelectStep*/
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
@@ -849,7 +846,7 @@ public class EditorController extends Controller {
             return;
         }
 
-        createStepEventHandlers(step);
+        if (needEventHandler) createStepEventHandlers(step);
 
         zoom = step.getZoom();
         showStepList = step.isShowStepList();
@@ -859,7 +856,9 @@ public class EditorController extends Controller {
         stepListActiveTab = step.getStepListActiveTab();
 
         Selectable activeObject = step.getActiveObject();
-        if (activeObject == null || activeObject instanceof DataSource /*|| activeObject instanceof PackageFile*/) {
+        if (isSelectProject) {
+            selectObject(project.getSelectableId());
+        } else if (activeObject == null || activeObject instanceof DataSource /*|| activeObject instanceof PackageFile*/) {
             selectObject(step.getSelectableId());
         } else {
             selectObject(activeObject.getSelectableId());
@@ -919,12 +918,16 @@ public class EditorController extends Controller {
 
     public void requestAddStep() {
         Project project = workspace.getProject();
+
         Step step = addStep();
-        selectStep(step.getIndex());
+        if (step == null) {
+            jsBuilder.pre(JavaScript.notiInfo, "Add step failed!");
+            return;
+        }
 
         refreshStepList(project.getStepList());
+        selectStep(step.getIndex());
 
-        jsBuilder.post(JavaScript.notiInfo, "Step[" + step.getName() + "] added.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
@@ -995,7 +998,6 @@ public class EditorController extends Controller {
         selectObject(dataSourceSelector.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        jsBuilder.post(JavaScript.notiInfo, "DataSourceSelector[" + dataSourceSelector.getName() + "] added.");
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
 
@@ -1022,7 +1024,6 @@ public class EditorController extends Controller {
         selectObject(local.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        jsBuilder.post(JavaScript.notiInfo, "Local[" + local.getName() + "] added.");
         jsBuilder.post(JavaScript.refreshLocalList).runOnClient();
     }
 
@@ -1048,7 +1049,6 @@ public class EditorController extends Controller {
 
         selectObject(database.getSelectableId());
 
-        jsBuilder.post(JavaScript.notiInfo, "Database[" + database.getName() + "] added.");
         jsBuilder.post(JavaScript.refreshDatabaseList).runOnClient();
     }
 
@@ -1075,7 +1075,6 @@ public class EditorController extends Controller {
         selectObject(sftp.getSelectableId());
 
         /*TODO: need to change refreshFlowChart to updateAFloorInATower*/
-        jsBuilder.post(JavaScript.notiInfo, "SFTP[" + sftp.getName() + "] added.");
         jsBuilder.post(JavaScript.refreshSFTPList).runOnClient();
     }
 
@@ -1187,7 +1186,7 @@ public class EditorController extends Controller {
         paramMap.put(CommandParamKey.STEP, step);
         try {
             new SelectObject(paramMap).execute();
-        } catch (RequiredParamException e) {
+        } catch (Exception e) {
             log.error("Select Object Failed!", e);
             jsBuilder.pre(JavaScript.notiError, "Select Object Failed with Internal Command Error!");
             return;
@@ -1537,16 +1536,12 @@ public class EditorController extends Controller {
     }
 
     public void testDatabaseConnection(PropertyView property) {
-        /*test database connection using DConvers*/
-        DConversHelper dconvers = new DConversHelper(true);
         Database database = (Database) activeObject;
         int dataSourceId = database.getId();
-        dconvers.addDatabase(dataSourceId, workspace.getProject());
-        if (!dconvers.run()) {
+        if (!isDatabaseReady(dataSourceId)) {
             jsBuilder.pre(JavaScript.notiWarn, "Connect failed!");
             return;
         }
-
         jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
     }
 
