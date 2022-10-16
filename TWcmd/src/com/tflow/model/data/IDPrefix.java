@@ -14,7 +14,7 @@ public enum IDPrefix {
     SFTP("ftp"),
     LOCAL(""),
     DS(""),
-    VARIABLE(""),
+    VARIABLE("var"),
     DATA_SOURCE_SELECTOR(""),
     DATA_FILE(""),
     DATA_TABLE("dt"),

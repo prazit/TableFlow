@@ -20,8 +20,10 @@ import org.mapstruct.factory.Mappers;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class Command {
 
@@ -234,10 +236,17 @@ public abstract class Command {
                 dataManager.addData(ProjectFileType.PACKAGE, mapper.map((Package) dataObject), projectUser, ((Package) dataObject).getId());
                 break;
             case VERSIONED_LIST:
-                dataManager.addData(ProjectFileType.VERSIONED_LIST, mapper.fromVersionedFileList((List<VersionedFile>)dataObject), projectUser);
+                dataManager.addData(ProjectFileType.VERSIONED_LIST, mapper.fromVersionedFileList((List<VersionedFile>) dataObject), projectUser);
                 break;
             case VERSIONED:
                 /*nothing*/
+                break;
+            case VARIABLE_LIST:
+                dataManager.addData(ProjectFileType.VARIABLE_LIST, mapper.fromVariableList(getUserVariableList((Map<String, Variable>) dataObject)), projectUser);
+                break;
+            case VARIABLE:
+                Variable variable = (Variable) dataObject;
+                dataManager.addData(ProjectFileType.VARIABLE, mapper.map(variable), projectUser, variable.getId());
                 break;
 
 
@@ -271,10 +280,6 @@ public abstract class Command {
                 break;
             case DS:
                 break;
-            case VARIABLE_LIST:
-                break;
-            case VARIABLE:
-                break;
             case DATA_SOURCE_SELECTOR_LIST:
                 break;
             case DATA_FILE_LIST:
@@ -307,6 +312,11 @@ public abstract class Command {
         }
 
         return true;
+    }
+
+    protected List<Variable> getUserVariableList(Map<String, Variable> variableMap) {
+        List<Variable> variableList = new ArrayList<>(variableMap.values());
+        return variableList.stream().filter(item -> VariableType.USER == item.getType()).collect(Collectors.toList());
     }
 
     protected DataTable extractData(DataFileType type, Map<CommandParamKey, Object> paramMap) {

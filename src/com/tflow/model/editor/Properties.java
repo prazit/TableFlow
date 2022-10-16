@@ -45,6 +45,26 @@ public enum Properties {
             "--: tested :--"
     ),
 
+    SYSTEM_VARIABLE(
+            "==: System Variable : Read only variable from DConvers System :==",
+            "--: Variable :--",
+            "index:No.:ReadOnly",
+            "name:Variable:ReadOnly",
+            "value:Value:ReadOnly",
+            "description:Description:ReadOnly",
+            "--: tested :--"
+    ),
+
+    USER_VARIABLE(
+            "==: User Variable : Create variable to use in Dynamic Value Expression, compute-variables will calculated at runtime on first use of it but some function can be re-calculate every call please see DConvers Document :==",
+            "--: Variable :--",
+            "index:No.:ReadOnly",
+            "name:Variable:String:120|updateProperty('name');",
+            "value:Value:DynamicValue",
+            "description:Description:String:500",
+            "--: tested :--"
+    ),
+
     PACKAGE(
             "==: Package : Built package or deployment package used to create new version of project and can download package to deploy on server you want :==",
             "--: Package Properties :--",
@@ -682,7 +702,8 @@ public enum Properties {
             "]: Specific Function :",
             "]: Dynamic Value Expression :",
             "useFunction:useFunction:ReadOnly"
-    );
+    )
+    ;
 
     private List<String> prototypeList;
     private List<PropertyView> propertyList;

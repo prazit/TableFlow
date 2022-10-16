@@ -1,7 +1,5 @@
 package com.tflow.model.editor;
 
-import com.clevel.dconvers.data.DataString;
-
 import java.sql.Types;
 
 public enum DataType {

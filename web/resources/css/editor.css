@@ -281,12 +281,13 @@ body .ui-panel.function .ui-panel-content {
     margin: var(--margin);
 }
 
+.variable.active, .versioned.active,
 .data-source.active, .data-source.selectable.active:hover,
 .data-file.active, .data-file.selectable.active:hover,
 .step-output.active, .step-output.selectable.active:hover,
-body .ui-panel.data-table.active .ui-panel-titlebar,
+.ui-panel.data-table.active .ui-panel-titlebar,
 .data-table.selectable.active .ui-panel-titlebar:hover,
-body .ui-panel.function.active .ui-panel-titlebar,
+.ui-panel.function.active .ui-panel-titlebar,
 .function.selectable.active .ui-panel-titlebar:hover,
 .column.active, .column.selectable.active:hover {
     background-color: var(--surface-c);
@@ -294,6 +295,8 @@ body .ui-panel.function.active .ui-panel-titlebar,
 
 .button:hover,
 .step.selectable:hover,
+.variable.selectable:hover,
+.versioned.selectable:hover,
 .data-source.selectable:hover,
 .data-file.selectable:hover,
 .step-output.selectable:hover,

@@ -30,4 +30,11 @@ public enum GroupSection {
     public String getUpdate() {
         return update;
     }
+
+    public static GroupSection parse(String title) {
+        for (GroupSection section : values()) {
+            if (title.contains(section.getTitle())) return section;
+        }
+        return null;
+    }
 }

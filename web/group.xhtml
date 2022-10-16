@@ -35,7 +35,7 @@
                         <p:importEnum type="com.tflow.controller.GroupSection" var="GroupSection"/>
                         <p:tabView style="width: 100%" activeIndex="#{groupCtl.sectionIndex}">
                             <p:ajax event="tabChange" listener="#{groupCtl.openSection}" update="#{groupCtl.openSectionUpdate}"/>
-                            <p:tab>
+                            <p:tab title="#{GroupSection.EXISTING_PROJECT.title}">
                                 <f:facet name="title">
                                     <i class="pi #{GroupSection.EXISTING_PROJECT.icon}"/>
                                     <p:outputLabel value=" #{GroupSection.EXISTING_PROJECT.title}"/>
@@ -81,7 +81,7 @@
                                     </p:outputPanel>
                                 </p:panelGrid>
                             </p:tab>
-                            <p:tab>
+                            <p:tab title="#{GroupSection.PROJECT_TEMPLATE.title}">
                                 <f:facet name="title">
                                     <i class="pi #{GroupSection.PROJECT_TEMPLATE.icon}"/>
                                     <p:outputLabel value=" #{GroupSection.PROJECT_TEMPLATE.title}"/>

@@ -37,11 +37,15 @@
                     <p:importEnum type="com.tflow.controller.ProjectSection" var="ProjectSection"/>
                     <p:ajax event="tabChange" listener="#{projectCtl.openSection}" update="@parent"/>
 
-                    <p:tab title="#{ProjectSection.DATA_SOURCE.getTitle()}">
+                    <p:tab title="#{ProjectSection.DATA_SOURCE.title}">
+                        <f:facet name="title">
+                            <i class="pi #{ProjectSection.DATA_SOURCE.icon}"/>
+                            <p:outputLabel value=" #{ProjectSection.DATA_SOURCE.title}"/>
+                        </f:facet>
 
                         <p:divider align="left">
                             <div class="inline-flex align-items-center">
-                                <i class="pi pi-user mr-2"/>
+                                <i class="pi pi-database"/>
                                 <b>Database Connection</b>
                             </div>
                         </p:divider>
@@ -70,7 +74,7 @@
 
                         <p:divider align="left">
                             <div class="inline-flex align-items-center">
-                                <i class="pi pi-user mr-2"/>
+                                <i class="pi pi-file"/>
                                 <b>Local Root Directory</b>
                             </div>
                         </p:divider>
@@ -99,7 +103,7 @@
 
                         <p:divider align="left">
                             <div class="inline-flex align-items-center">
-                                <i class="pi pi-user mr-2"/>
+                                <i class="pi pi-folder"/>
                                 <b>Remote Root Directory</b>
                             </div>
                         </p:divider>
@@ -135,11 +139,82 @@
 
                     </p:tab>
 
-                    <p:tab title="#{ProjectSection.VARIABLE.getTitle()}" styleClass="variable tab">
-                        <h2 style="color: var(--surface-c);">Variable Section</h2>
+                    <p:tab title="#{ProjectSection.VARIABLE.title}">
+                        <f:facet name="title">
+                            <i class="pi #{ProjectSection.VARIABLE.icon}"/>
+                            <p:outputLabel value=" #{ProjectSection.VARIABLE.title}"/>
+                        </f:facet>
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-code"/>
+                                <b>Variables</b>
+                            </div>
+                        </p:divider>
+                        <p:tabView styleClass="variable-panel">
+                            <p:tab>
+                                <f:facet name="title">
+                                    <i class="pi pi-code"/>
+                                    <p:outputLabel value=" User Variables"/>
+                                </f:facet>
+                                <p:outputPanel styleClass="ui-g">
+                                    <p:dataList value="#{projectCtl.variableList}" var="variable" type="none" styleClass="fit-width">
+                                        <f:facet name="header">
+                                            <div class="ui-g">
+                                                <div class="ui-g-1" style="text-align: center">No.</div>
+                                                <div class="ui-g-3" style="text-align: left">Variable</div>
+                                                <div class="ui-g-4" style="text-align: left">Value</div>
+                                                <div class="ui-g-4" style="text-align: left">Description</div>
+                                            </div>
+                                        </f:facet>
+                                        <p:outputPanel styleClass="ui-g variable selectable#{projectCtl.active(variable)}">
+                                            <input name="selectableId" type="hidden" value="#{variable.selectableId}"/>
+                                            <p:remoteCommand name="update#{variable.selectableId}" update="@parent" oncomplete="updateComplete('#{variable.selectableId}')"/>
+                                            <div class="ui-g-1" style="text-align: center">#{variable.index}</div>
+                                            <div class="ui-g-3" style="text-align: left">#{variable.name}</div>
+                                            <div class="ui-g-4" style="text-align: left">#{variable.value}</div>
+                                            <div class="ui-g-4" style="text-align: left">#{variable.description}</div>
+                                        </p:outputPanel>
+                                    </p:dataList>
+                                    <p:spacer/>
+                                    <p:commandButton icon="pi pi-plus" value="Add Variable" actionListener="#{projectCtl.addVariable}" oncomplete="updatePanelComplete('.variable-panel');" update="@parent"/>
+                                </p:outputPanel>
+                            </p:tab>
+                            <p:tab>
+                                <f:facet name="title">
+                                    <i class="pi pi-code"/>
+                                    <p:outputLabel value=" System Variables"/>
+                                </f:facet>
+                                <p:outputPanel styleClass="ui-g">
+                                    <p:dataList value="#{projectCtl.systemVariableList}" var="sysvar" type="none" styleClass="fit-width">
+                                        <f:facet name="header">
+                                            <div class="ui-g">
+                                                <div class="ui-g-1" style="text-align: center">No.</div>
+                                                <div class="ui-g-5" style="text-align: left">Variable</div>
+                                                <div class="ui-g-6" style="text-align: left">Description</div>
+                                            </div>
+                                        </f:facet>
+                                        <p:outputPanel styleClass="ui-g variable selectable#{projectCtl.active(sysvar)}">
+                                            <input name="selectableId" type="hidden" value="#{sysvar.selectableId}"/>
+                                            <p:remoteCommand name="update#{sysvar.selectableId}" update="@parent" oncomplete="updateComplete('#{sysvar.selectableId}')"/>
+                                            <div class="ui-g-1" style="text-align: center">#{sysvar.index}</div>
+                                            <div class="ui-g-5" style="text-align: left">#{sysvar.name}</div>
+                                            <div class="ui-g-6" style="text-align: left">#{sysvar.description}</div>
+                                        </p:outputPanel>
+                                    </p:dataList>
+                                </p:outputPanel>
+                                <script>$(new function () {
+                                    updatePanelComplete('.variable-panel');
+                                });
+                                </script>
+                            </p:tab>
+                        </p:tabView>
                     </p:tab>
 
-                    <p:tab title="#{ProjectSection.UPLOADED.getTitle()}" styleClass="uploaded tab">
+                    <p:tab title="#{ProjectSection.UPLOADED.title}">
+                        <f:facet name="title">
+                            <i class="pi #{ProjectSection.UPLOADED.icon}"/>
+                            <p:outputLabel value=" #{ProjectSection.UPLOADED.title}"/>
+                        </f:facet>
                         <p:divider align="left">
                             <div class="inline-flex align-items-center">
                                 <i class="pi pi-upload"/>
@@ -173,7 +248,11 @@
                         </p:outputPanel>
                     </p:tab>
 
-                    <p:tab title="#{ProjectSection.VERSIONED.getTitle()}" styleClass="versioned tab">
+                    <p:tab title="#{ProjectSection.VERSIONED.title}">
+                        <f:facet name="title">
+                            <i class="pi #{ProjectSection.VERSIONED.icon}"/>
+                            <p:outputLabel value=" #{ProjectSection.VERSIONED.title}"/>
+                        </f:facet>
                         <p:divider align="left">
                             <div class="inline-flex align-items-center">
                                 <i class="pi pi-upload"/>
@@ -198,8 +277,6 @@
                                     <p:outputPanel styleClass="ui-g-6 error-panel" style="text-align: center" rendered="#{versioned.name.isEmpty()}">REQUIRED</p:outputPanel>
                                 </p:outputPanel>
                             </p:dataList>
-                        </p:outputPanel>
-                        <p:outputPanel rendered="#{projectCtl.versionedList.size() > 0}">
                             <script>$(new function () {
                                 updatePanelComplete('.versioned-panel');
                             });
@@ -207,7 +284,11 @@
                         </p:outputPanel>
                     </p:tab>
 
-                    <p:tab title="#{ProjectSection.PACKAGE.getTitle()}" styleClass="package tab">
+                    <p:tab title="#{ProjectSection.PACKAGE.title}">
+                        <f:facet name="title">
+                            <i class="pi #{ProjectSection.PACKAGE.icon}"/>
+                            <p:outputLabel value=" #{ProjectSection.PACKAGE.title}"/>
+                        </f:facet>
                         <p:outputPanel id="packageTab" styleClass="package-panel">
                             <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent" oncomplete="console.log('updatePackageTab complated.')"/>
                             <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent" oncomplete="console.log('buildPackage complated.')"/>

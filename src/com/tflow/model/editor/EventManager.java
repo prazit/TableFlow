@@ -12,6 +12,8 @@ public class EventManager {
     private Object target;
     private Map<EventName, List<EventHandler>> eventHandlerMap;
 
+    private Exception lastEventException;
+
     public EventManager(Object target) {
         eventHandlerMap = new HashMap<>();
         this.target = target;
@@ -45,6 +47,7 @@ public class EventManager {
         List<EventHandler> eventHandlerList = eventHandlerMap.get(event);
         if (eventHandlerList == null || eventHandlerList.size() == 0) return this;
 
+        lastEventException = null;
         for (EventHandler handler : eventHandlerList) {
             if (handler.isHandling()) {
                 LoggerFactory.getLogger(getClass()).debug("dead loop event occurred in fireEvent(event:{}, target:{})", event, target);
@@ -54,7 +57,11 @@ public class EventManager {
             handler.setHandling(true);
             Event ev = new Event(event, target, data);
             LoggerFactory.getLogger(getClass()).debug("fireEvent(event:{}, target:{}, data:{})", event, target, data);
-            handler.handle(ev);
+            try {
+                handler.handle(ev);
+            } catch (Exception ex) {
+                lastEventException = ex;
+            }
             handler.setHandling(false);
         }
 
@@ -65,5 +72,9 @@ public class EventManager {
         List<EventHandler> eventHandlerList = eventHandlerMap.get(event);
         if (eventHandlerList == null) return 0;
         return eventHandlerList.size();
+    }
+
+    public Exception getLastEventException() {
+        return lastEventException;
     }
 }

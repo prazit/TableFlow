@@ -195,6 +195,10 @@ public interface ProjectMapper {
         return line.getId();
     }
 
+    default Integer id(Variable variable) {
+        return variable.getId();
+    }
+
     default String selectableId(Selectable selectable) {
         return selectable.getSelectableId();
     }
@@ -282,4 +286,6 @@ public interface ProjectMapper {
     List<Integer> fromDataSourceSelectorList(List<DataSourceSelector> dataSourceSelectorList);
 
     List<VersionedFileData> fromVersionedFileList(List<VersionedFile> versionedFileList);
+
+    List<Integer> fromVariableList(List<Variable> variableList);
 }

@@ -8,7 +8,6 @@ import com.tflow.model.data.FileNameExtension;
 import com.tflow.model.data.FileType;
 import com.tflow.model.data.PackageData;
 import com.tflow.model.data.PackageFileData;
-import com.tflow.model.data.record.JSONRecordData;
 import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
 import com.tflow.util.DateTimeUtil;

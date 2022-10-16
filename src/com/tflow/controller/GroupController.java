@@ -187,15 +187,25 @@ public class GroupController extends Controller {
     }
 
     public void openSection(TabChangeEvent event) throws ProjectDataException {
-        String title = event.getTab().getFacet("title").toString();
-        log.debug("openSection: selectedTitle={}, event={}", title, event);
-        if (title.contains(GroupSection.EXISTING_PROJECT.getTitle())) {
-            openSectionUpdate = openProjectSection();
-        } else if (title.contains(GroupSection.PROJECT_TEMPLATE.getTitle())) {
-            openSectionUpdate = openTemplateSection();
-        } else {
-            openSectionUpdate = "";
-            log.warn("openSection() with Unknown Section:{}", title);
+        String title = event.getTab().getTitle();
+        GroupSection section = GroupSection.parse(title);
+        if (section == null) {
+            String message = "Unknown section with title: {}";
+            jsBuilder.pre(JavaScript.notiError, message, title);
+            log.error(message, title);
+            return;
+        }
+
+        switch (section) {
+            case EXISTING_PROJECT:
+                openSectionUpdate = openProjectSection();
+                break;
+            case PROJECT_TEMPLATE:
+                openSectionUpdate = openTemplateSection();
+                break;
+            default:
+                openSectionUpdate = "";
+                log.warn("openSection() with Unknown Section:{}", title);
         }
     }
 

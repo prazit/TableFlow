@@ -55,15 +55,17 @@ public class SelectStep extends Command {
         Map<String, Selectable> selectableMap = step.getSelectableMap();
         selectableMap.clear();
         selectableMap.put(project.getSelectableId(), project);
-        if (!isSelectProject) {
+        if (isSelectProject) {
+            manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getVariableMap().values()));
+            manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getDatabaseMap().values()));
+            manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getSftpMap().values()));
+            manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getLocalMap().values()));
+        } else {
             selectableMap.put(step.getSelectableId(), step);
             manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getDataTower().getFloorList()));
             manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getTransformTower().getFloorList()));
             manager.collectSelectableTo(selectableMap, manager.getSelectableList(step.getOutputTower().getFloorList()));
         }
-        manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getDatabaseMap().values()));
-        manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getSftpMap().values()));
-        manager.collectSelectableTo(selectableMap, new ArrayList<Selectable>(project.getLocalMap().values()));
 
         // need activeObject by selectableId.
         if (loadStepData) {

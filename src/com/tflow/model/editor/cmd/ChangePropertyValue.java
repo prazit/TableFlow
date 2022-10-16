@@ -36,6 +36,23 @@ public class ChangePropertyValue extends Command {
         if (hasEvent) {
             EventManager eventManager = ((HasEvent) dataObject).getEventManager();
             eventManager.fireEvent(EventName.PROPERTY_CHANGED, property);
+
+            Exception lastEventException = eventManager.getLastEventException();
+            if (lastEventException != null) {
+                /*Action cancelled by eventHandlers need to restore old-value*/
+                if (switchOn && dataObject instanceof Selectable) {
+                    Selectable selectable = (Selectable) dataObject;
+                    try {
+                        Object newValue = property.getNewValue();
+                        property.setNewValue(property.getOldValue());
+                        property.setOldValue(newValue);
+                        selectable.getProperties().setPropertyValue(selectable, property, log);
+                    } catch (Exception ex) {
+                        throw new UnsupportedOperationException("Cannot set property(" + property + ") to selectable(" + selectable.getSelectableId() + ")", ex);
+                    }
+                }
+                throw new UnsupportedOperationException(lastEventException.getMessage(), lastEventException);
+            }
         }
 
         // for Action.executeUndo

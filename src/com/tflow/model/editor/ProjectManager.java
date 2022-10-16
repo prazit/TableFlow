@@ -365,16 +365,29 @@ public class ProjectManager {
             localMap.put(id, mapper.map((LocalData) throwExceptionOnError(data)));
         }
 
-        /*get variable-list*/
-        data = dataManager.getData(ProjectFileType.VARIABLE_LIST, projectUser, "4");
-        List<String> varIdList = (List<String>) throwExceptionOnError(data);
+        /*get system-variables before user-variables*/
         Map<String, Variable> varMap = new HashMap<>();
+        Variable variable;
+        int vIndex = 1;
+        List<SystemVariable> systemVariableList = Arrays.asList(SystemVariable.values());
+        systemVariableList.sort(Comparator.comparing(SystemVariable::name));
+        for (SystemVariable systemVariable : systemVariableList) {
+            variable = new Variable(vIndex++, VariableType.SYSTEM, systemVariable.name(), systemVariable.getDescription());
+            varMap.put(systemVariable.name(), variable);
+        }
+
+        /*get variable-list (user-variable)*/
+        data = dataManager.getData(ProjectFileType.VARIABLE_LIST, projectUser, "4");
+        List<Integer> varIdList = (List<Integer>) throwExceptionOnError(data);
         project.setVariableMap(varMap);
 
         /*get each variable in variable-list*/
-        for (String id : varIdList) {
+        for (Integer id : varIdList) {
             data = dataManager.getData(ProjectFileType.VARIABLE, projectUser, id);
-            varMap.put(id, mapper.map((VariableData) throwExceptionOnError(data)));
+            variable = mapper.map((VariableData) throwExceptionOnError(data));
+            variable.setType(VariableType.USER);
+            variable.setIndex(vIndex++);
+            varMap.put(variable.getName(), variable);
         }
 
         /*get step-list*/
@@ -782,5 +795,4 @@ public class ProjectManager {
         }
         return data;
     }
-
 }

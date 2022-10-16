@@ -18,6 +18,6 @@ public enum ActionResultKey {
     COLUMN_FX,
 
     SELECTABLE_LIST,
-    ;
+    VARIABLE;
 
 }

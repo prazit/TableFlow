@@ -4,17 +4,17 @@ import com.tflow.model.editor.cmd.CommandParamKey;
 
 import java.util.Map;
 
-public class AddStep extends Action {
+public class AddVariable extends Action {
 
-    public AddStep(Map<CommandParamKey, Object> paramMap) {
+    public AddVariable(Map<CommandParamKey, Object> paramMap) {
         setActionParameters(paramMap);
     }
 
     @Override
     protected void initAction() {
-        this.name = "Add Step";
-        this.description = "add step to current project";
-        this.code = "AST";
+        this.name = "Add Variable";
+        this.description = "add user variable to current project";
+        this.code = "AVR";
         this.image = "action.png";
     }
 
@@ -23,7 +23,7 @@ public class AddStep extends Action {
         setParams(
                 CommandParamKey.PROJECT
         );
-        setCommands(new com.tflow.model.editor.cmd.AddStep());
+        setCommands(new com.tflow.model.editor.cmd.AddVariable());
     }
 
     @Override

@@ -4,6 +4,10 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.ActionResultKey;
+import com.tflow.model.editor.action.AddVariable;
+import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
@@ -16,11 +20,9 @@ import org.primefaces.event.TabChangeEvent;
 
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @ViewScoped
 @Named("projectCtl")
@@ -32,6 +34,8 @@ public class ProjectController extends Controller {
     private List<Local> localList;
     private List<SFTP> sftpList;
 
+    private List<Variable> variableList;
+    private List<Variable> systemVariableList;
     private List<UploadedFileView> uploadedList;
     private List<VersionedFile> versionedList;
 
@@ -116,11 +120,58 @@ public class ProjectController extends Controller {
             case VERSIONED:
                 openVersioned();
                 break;
+            case VARIABLE:
+                openVariable();
+                break;
             /*case DATA_SOURCE:
                 break;
-            case VARIABLE:
-                break;
             */
+        }
+    }
+
+    private void openVariable() {
+        log.debug("openVariable.");
+        if (variableList != null) return;
+
+        Map<String, Variable> variableMap = project.getVariableMap();
+        log.debug("openVariable: variableMap = {}", variableMap);
+
+        variableList = new ArrayList<>(variableMap.values());
+        variableList.sort(Comparator.comparing(Variable::getIndex));
+
+        systemVariableList = variableList.stream().filter(item -> VariableType.SYSTEM == item.getType()).collect(Collectors.toList());
+        variableList = variableList.stream().filter(item -> VariableType.USER == item.getType()).collect(Collectors.toList());
+
+        createVariableEventHandlers();
+    }
+
+    private void createVariableEventHandlers() {
+        for (Variable variable : variableList) {
+            if (variable.getType() == VariableType.SYSTEM) continue;
+
+            variable.getEventManager()
+                    .removeHandlers(EventName.NAME_CHANGED)
+                    .addHandler(EventName.NAME_CHANGED, new EventHandler() {
+                        @Override
+                        public void handle(Event event) throws Exception {
+                            PropertyView property = (PropertyView) event.getData();
+                            Variable target = (Variable) event.getTarget();
+                            String oldName = (String) property.getOldValue();
+                            String newName = target.getName();
+
+                            /*cancel change when new name is duplicate*/
+                            Map<String, Variable> variableMap = project.getVariableMap();
+                            if (variableMap.containsKey(newName)) {
+                                log.debug("variable({}) NAME_CHANGED is cancelled by duplicated name '{}'", target.getSelectableId(), newName);
+                                throw new Exception("Duplicate Variable Name '" + newName + "'");
+                            }
+
+                            /*update view only: variable map is needed by Dynamic Value Expression*/
+                            log.debug("variable({}) NAME_CHANGED from '{}' to '{}'", target.getSelectableId(), oldName, newName);
+                            variableMap.remove(oldName);
+                            variableMap.put(target.getName(), target);
+                        }
+                    });
         }
     }
 
@@ -349,5 +400,34 @@ public class ProjectController extends Controller {
 
     public void setVersionedList(List<VersionedFile> versionedList) {
         this.versionedList = versionedList;
+    }
+
+    public List<Variable> getVariableList() {
+        return variableList;
+    }
+
+    public List<Variable> getSystemVariableList() {
+        return systemVariableList;
+    }
+
+    public void addVariable() {
+        HashMap<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.PROJECT, project);
+
+        Action action = null;
+        try {
+            action = new AddVariable(paramMap);
+            action.execute();
+        } catch (Exception ex) {
+            jsBuilder.pre(JavaScript.notiError, "Add variable failed by internal command!");
+            log.error("Add variable Failed!, {}", ex.getMessage());
+            log.trace("", ex);
+            return;
+        }
+
+        Variable newVariable = (Variable) action.getResultMap().get(ActionResultKey.VARIABLE);
+        variableList.add(newVariable);
+
+        jsBuilder.pre(JavaScript.selectAfterUpdateEm, newVariable.getSelectableId());
     }
 }

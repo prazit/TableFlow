@@ -38,5 +38,5 @@ public abstract class EventHandler {
         manager.removeHandler(this);
     }
 
-    public abstract void handle(Event event);
+    public abstract void handle(Event event) throws Exception;
 }
