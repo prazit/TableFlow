@@ -35,7 +35,7 @@
                 <p:blockUI widgetVar="screenBlock" block="screen-area">
                     <div style="font-size:var(--font-size-1);color:var(--surface-c)">
                         <i class="pi pi-spinner pi-spin"></i>
-                        <span>please wait ...</span>
+                        <span class="screen-block-text">please wait ...</span>
                     </div>
                 </p:blockUI>
                 <p:splitter styleClass="p-mb-3" gutterSize="5">
@@ -276,7 +276,7 @@
                                             <p:blockUI id="propButtonBUI" trigger="propButton" block="screen-area">
                                                 <div style="font-size:var(--font-size-1);color:var(--surface-c)">
                                                     <i class="pi pi-spinner pi-spin"></i>
-                                                    <span>#{prop.label} ...</span>
+                                                    <span style="text-transform:uppercase">#{prop.label} ...</span>
                                                 </div>
                                             </p:blockUI>
                                         </p:outputPanel>

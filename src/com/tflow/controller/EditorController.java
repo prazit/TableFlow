@@ -215,6 +215,8 @@ public class EditorController extends Controller {
                 .icon("pi pi-home")
                 .command("${editorCtl.selectStep(-1)}")
                 .update("actionForm,propertyForm")
+                .onclick("blockScreen('PROJECT PAGE LOADING');")
+                .oncomplete("unblockScreen();")
                 .build()
         );
 
@@ -225,6 +227,7 @@ public class EditorController extends Controller {
                     .icon("pi pi-play")
                     .command("${editorCtl.selectStep(" + (index++) + ")}")
                     .update("actionForm,propertyForm")
+                    .onclick("blockScreen('" + step.getName().toUpperCase() + " STEP LOADING');")
                     .build()
             );
         }
@@ -1220,13 +1223,18 @@ public class EditorController extends Controller {
     public void setToolPanel() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
+        boolean fromClientMenu = Boolean.parseBoolean(FacesUtil.getRequestParam("fromMenu"));
+        log.debug("setToolPanel:fromClient(fromMenu:{})", fromClientMenu);
+
         String refresh = FacesUtil.getRequestParam("refresh");
         if (refresh != null) {
-            String javascript = "showStepList(" + showStepList + ");"
-                    + "showPropertyList(" + showPropertyList + ");"
-                    + "showActionButtons(" + showActionButtons + ");"
-                    + "showColumnNumbers(" + showColumnNumbers + ");";
-            FacesUtil.runClientScript(javascript);
+            jsBuilder.pre(JavaScript.showStepList, showStepList, true)
+                    .pre(JavaScript.showPropertyList, showPropertyList, true)
+                    .pre(JavaScript.showActionButtons, showActionButtons, true)
+                    .pre(JavaScript.showColumnNumbers, showColumnNumbers, true)
+                    .runOnClient();
+            log.debug(":checker(refresh)");
+            return;
         }
 
         boolean propertyChanged = false;
@@ -1235,36 +1243,38 @@ public class EditorController extends Controller {
         if (stepList != null) {
             showStepList = Boolean.parseBoolean(stepList);
             step.setShowStepList(showStepList);
-            propertyChanged = true;
+            propertyChanged = fromClientMenu;
             propertyVar = PropertyVar.showStepList;
             refreshStepList(project.getStepList());
             refreshActionList(project);
+            log.debug(":checker(showStepList:{}, passedParameter:{})", showStepList, stepList);
         }
 
         String propertyList = FacesUtil.getRequestParam("propertyList");
         if (propertyList != null) {
             showPropertyList = Boolean.parseBoolean(propertyList);
             step.setShowPropertyList(showPropertyList);
-            propertyChanged = true;
+            propertyChanged = fromClientMenu;
             propertyVar = PropertyVar.showPropertyList;
+            log.debug(":checker(showPropertyList:{}, passedParameter:{})", showPropertyList, propertyList);
         }
 
         String actionButtons = FacesUtil.getRequestParam("actionButtons");
         if (actionButtons != null) {
             showActionButtons = Boolean.parseBoolean(actionButtons);
             step.setShowActionButtons(showActionButtons);
-            propertyChanged = true;
+            propertyChanged = fromClientMenu;
             propertyVar = PropertyVar.showActionButtons;
-            log.debug("setToolPanel:fromClient(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
+            log.debug(":checker(showActionButtons:{}, passedParameter:{})", showActionButtons, actionButtons);
         }
 
         String columnNumbers = FacesUtil.getRequestParam("columnNumbers");
         if (columnNumbers != null) {
             showColumnNumbers = Boolean.parseBoolean(columnNumbers);
             step.setShowColumnNumbers(showColumnNumbers);
-            propertyChanged = true;
+            propertyChanged = fromClientMenu;
             propertyVar = PropertyVar.showColumnNumbers;
-            log.debug("setToolPanel:fromClient(showColumnNumbers:{}, passedParameter:{})", showColumnNumbers, columnNumbers);
+            log.debug(":checker(showColumnNumbers:{}, passedParameter:{})", showColumnNumbers, columnNumbers);
         }
 
         if (propertyChanged) {
@@ -1364,7 +1374,7 @@ public class EditorController extends Controller {
 
         focusOnLastProperties = true;
         jsBuilder.pre(JavaScript.updateProperty, propertyVar)
-                .post(JavaScript.setFocus, 1000);
+                .post(JavaScript.focusProperty, 1000);
 
         if (invalid) {
             String msg = "Please correct empty value before append!";
@@ -1395,7 +1405,7 @@ public class EditorController extends Controller {
 
         focusOnLastProperties = true;
         jsBuilder.pre(JavaScript.updateProperty, property.getVar())
-                .post(JavaScript.setFocus, 1000)
+                .post(JavaScript.focusProperty, 1000)
                 .runOnClient(true);
 
         propertyChanged(property);

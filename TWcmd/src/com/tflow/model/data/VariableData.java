@@ -13,4 +13,5 @@ public class VariableData extends TWData implements Serializable {
     private int id;
     private String name;
     private String value;
+    private String description;
 }

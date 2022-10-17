@@ -13,7 +13,7 @@ function addLink($startSelectable, $endSelectable, $activeObject) {
 
 function buttonPerform(remoteFunction) {
 
-    window.parent.PF('screenBlock').show();
+    window.parent.blockScreen();
 
     var dragTarget = $draggable.dragging.dragTarget,
         selectable = getSelectable(dragTarget),
@@ -201,7 +201,7 @@ function draggableEnter($dragTarget, $droppable) {
 }
 
 function draggableHandle() {
-    window.parent.PF('screenBlock').hide();
+    window.parent.unblockScreen();
     if (!tflow.ready) return;
 
     $draggable.draggableList.each(function (i, e) {

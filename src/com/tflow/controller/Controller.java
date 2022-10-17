@@ -148,7 +148,7 @@ public abstract class Controller implements Serializable {
         try {
             new ChangePropertyValue(paramMap).execute();
         } catch (Exception ex) {
-            jsBuilder.pre(JavaScript.notiError, "Change property value failed! {}", ex.getMessage());
+            jsBuilder.pre(JavaScript.notiWarn, "Change property value failed! {}", ex.getMessage());
             log.error("Change Property Value Failed! {}, type:{}, data:{}, property:{}", ex.getMessage(), projectFileType, data.getClass().getSimpleName(), property);
             log.trace("", ex);
             return;

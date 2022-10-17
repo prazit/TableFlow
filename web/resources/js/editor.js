@@ -5,6 +5,17 @@ function warning(msg) {
     ]);
 }
 
+function blockScreen(text) {
+    if (tflow.blockScreenText === undefined) tflow.blockScreenText = $('.screen-block-text');
+    if (text === undefined) text = "PLEASE WAIT";
+    tflow.blockScreenText[0].innerText = text;
+    PF('screenBlock').show();
+}
+
+function unblockScreen() {
+    PF('screenBlock').hide();
+}
+
 function updateProperty(className) {
     var $properties = $('.properties');
     var $property = $properties.find('.' + className);
@@ -15,6 +26,53 @@ function updateProperty(className) {
     refreshElement([
         {name: 'componentId', value: id}
     ]);
+}
+
+function focusProperty(millis, className) {
+    if (tflow.setFocus == null) {
+        tflow.setFocus = setTimeout(focusProperty, (millis === undefined ? tflow.setFocusTimeout : millis));
+        return;
+    }
+
+    clearTimeout(tflow.setFocus);
+    tflow.setFocus = null;
+
+    var $properties = $('.properties'),
+        $property, inputs,
+        input = undefined;
+    if (className !== undefined) {
+        $property = $properties.find('.' + className);
+        $properties.find('input').each(function (i, e) {
+            $(e).removeClass('focus');
+        });
+        inputs = $property.find('input').addClass('focus');
+    } else {
+        $property = $properties;
+        inputs = $property.find('input.focus');
+    }
+
+    if (inputs.length === 0) {
+        inputs = $property.find('input');
+        if (inputs.length > tflow.propertyFirstIndex) {
+            var index = tflow.propertyFirstIndex;
+            while (input === undefined && index < inputs.length) {
+                if (!inputs[index].disabled) {
+                    input = inputs[index];
+                    continue;
+                }
+                index++;
+            }
+        }
+    } else {
+        input = inputs[0];
+    }
+
+    /* ignore next-input */
+    if (input !== undefined && !$(input).hasClass('next-input')) {
+        input.focus(function (ev) {
+            console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
+        });
+    }
 }
 
 function setFlowchart(page) {
@@ -73,27 +131,29 @@ function toggleColumnNumbers() {
     }, 'toggleColumnNumbers');
 }
 
-function showStepList(show) {
+function showStepList(show, fromServer) {
     var display = show ? 'block' : 'none';
     leftGutter.css('display', display);
     leftPanel.css('display', display);
     /*leftToggle.removeClass('pi-angle-right').addClass('pi-angle-left');*/
     setToolPanel([
-        {name: 'stepList', value: '' + show}
+        {name: 'stepList', value: '' + show},
+        {name: 'fromMenu', value: '' + (fromServer === undefined)}
     ]);
 }
 
-function showPropertyList(show) {
+function showPropertyList(show, fromServer) {
     var display = show ? 'block' : 'none';
     rightGutter.css('display', display);
     rightPanel.css('display', display);
     /*rightToggle.removeClass('pi-angle-left').addClass('pi-angle-right');*/
     setToolPanel([
-        {name: 'propertyList', value: '' + show}
+        {name: 'propertyList', value: '' + show},
+        {name: 'fromMenu', value: '' + (fromServer === undefined)}
     ]);
 }
 
-function showActionButtons(show) {
+function showActionButtons(show, fromServer) {
     contentReady(function () {
         var display = 'hide-actions';
 
@@ -106,12 +166,13 @@ function showActionButtons(show) {
         contentWindow.lineEnd();
 
         setToolPanel([
-            {name: 'actionButtons', value: '' + show}
+            {name: 'actionButtons', value: '' + show},
+            {name: 'fromMenu', value: '' + (fromServer === undefined)}
         ]);
     }, 'showActionButtons');
 }
 
-function showColumnNumbers(show) {
+function showColumnNumbers(show, fromServer) {
     contentReady(function () {
         var display = 'hide-numbers';
 
@@ -124,7 +185,8 @@ function showColumnNumbers(show) {
         contentWindow.lineEnd();
 
         setToolPanel([
-            {name: 'columnNumbers', value: '' + show}
+            {name: 'columnNumbers', value: '' + show},
+            {name: 'fromMenu', value: '' + (fromServer === undefined)}
         ]);
     }, 'showColumnNumbers');
 }
@@ -291,7 +353,7 @@ function propertyCreated() {
     });
 
     /*setFocus to the default field or first field*/
-    setFocus();
+    focusProperty();
 
     /*Tab index system*/
     refreshTabIndex();
@@ -353,43 +415,6 @@ function refreshTabIndex() {
     });
 }
 
-function setFocus(millis) {
-    if (tflow.setFocus == null) {
-        tflow.setFocus = setTimeout(setFocus, (millis === undefined ? tflow.setFocusTimeout : millis));
-        return;
-    }
-
-    clearTimeout(tflow.setFocus);
-    tflow.setFocus = null;
-
-    var $properties = $('.properties'),
-        inputs = $properties.find('input.focus'),
-        input = undefined;
-
-    if (inputs.length === 0) {
-        inputs = $properties.find('input');
-        if (inputs.length > tflow.propertyFirstIndex) {
-            var index = tflow.propertyFirstIndex;
-            while (input === undefined && index < inputs.length) {
-                if (!inputs[index].disabled) {
-                    input = inputs[index];
-                    continue;
-                }
-                index++;
-            }
-        }
-    } else {
-        input = inputs[0];
-    }
-
-    /* ignore next-input */
-    if (input !== undefined && !$(input).hasClass('next-input')) {
-        input.focus(function (ev) {
-            console.log('"' + $(ev.currentTarget).attr('class') + '" got the focus.');
-        });
-    }
-}
-
 function contentReady(func, label) {
     if (contentWindow !== undefined && contentWindow.tflow !== undefined && contentWindow.tflow.ready) {
         func();
@@ -438,5 +463,4 @@ $(function () {
     rightToggle = $('.right-panel-toggle').click(toggleRight).children('.ui-button-icon-left');
     tflow.page = $('input[name=page]').attr('value');
     contentWindow = document.getElementById('flowchart').contentWindow;
-    refreshToolbars();
 });

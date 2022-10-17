@@ -33,9 +33,22 @@ public enum JavaScript {
     notiWarn(null),
     noti("noti();"),
 
-    setFocus("setFocus(%s);"),
+    /**
+     * <b>Parameters:</b><br/>
+     * <ol>
+     * <li>millis - wait before setFocus in milliseconds</li>
+     * <li>propertyVar - specified property to got the focus</li>
+     * </ol>
+     */
+    focusProperty("focusProperty(%s,'%s');"),
     updateProperty("updateProperty('%s');"),
-    refreshProperties("refreshProperties();");
+    refreshProperties("refreshProperties();"),
+
+    showStepList("showStepList(%s,%s);"),
+    showPropertyList("showPropertyList(%s,%s);"),
+    showActionButtons("showActionButtons(%s,%s);"),
+    showColumnNumbers("showColumnNumbers(%s,%s);"),
+    ;
 
     private String javascript;
 

@@ -22,7 +22,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @ViewScoped
 @Named("projectCtl")
@@ -163,6 +162,8 @@ public class ProjectController extends Controller {
                             Map<String, Variable> variableMap = project.getVariableMap();
                             if (variableMap.containsKey(newName)) {
                                 log.debug("variable({}) NAME_CHANGED is cancelled by duplicated name '{}'", target.getSelectableId(), newName);
+                                target.setName(oldName);
+                                jsBuilder.pre(JavaScript.focusProperty, 100, property.getVar()).runOnClient();
                                 throw new Exception("Duplicate Variable Name '" + newName + "'");
                             }
 

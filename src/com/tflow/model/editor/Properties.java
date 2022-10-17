@@ -62,6 +62,8 @@ public enum Properties {
             "name:Variable:String:120|updateProperty('name');",
             "value:Value:DynamicValue",
             "description:Description:String:500",
+            "--: Technical Support :--",
+            "id:ID:ReadOnly",
             "--: tested :--"
     ),
 
