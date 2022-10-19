@@ -70,7 +70,7 @@ public enum Properties {
     PACKAGE(
             "==: Package : Built package or deployment package used to create new version of project and can download package to deploy on server you want :==",
             "--: Package Properties :--",
-            "name:Name:String:1000|contentWindow.updatePackageList();",
+            "name:Name:String:1000|contentWindow.updatePackageList();:[]nameDisabled",
             "buildDate:Build:ReadOnly",
             "builtDate:Built:ReadOnly",
             "--: Technical Support :--",

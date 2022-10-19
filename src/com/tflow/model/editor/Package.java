@@ -112,6 +112,10 @@ public class Package implements Selectable, HasEvent {
         this.lastFileId = lastFileId;
     }
 
+    public boolean isNameDisabled() {
+        return complete < 100 || !finished;
+    }
+
     @Override
     public String toString() {
         return "{" +

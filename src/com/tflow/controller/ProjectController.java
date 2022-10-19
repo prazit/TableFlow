@@ -265,9 +265,7 @@ public class ProjectController extends Controller {
 
         reloadPackage();
 
-        /* TODO: need to call EditorController.setActive by javascript same as flowchart page.
-            active-object = package-view,
-            properties = changable-property of package-data */
+        jsBuilder.post(JavaScript.selectObject, activePackage.getSelectableId()).runOnClient();
     }
 
     private void reloadPackage() {
@@ -287,7 +285,19 @@ public class ProjectController extends Controller {
 
     public void buildPackage() {
         log.debug("buildPackage.");
-        Package buildPackage = project.getManager().buildPackage(workspace.getProject());
+
+        Package rebuild;
+        if (activePackage == null || activePackage.getComplete() == 100) {
+            /*build new package*/
+            rebuild = null;
+        } else {
+            /*rebuild last package*/
+            rebuild = activePackage;
+            activePackage.getEventManager().removeHandlers(EventName.NAME_CHANGED);
+            packageList.remove(getPackageListIndex(activePackage.getId()));
+        }
+
+        Package buildPackage = project.getManager().buildPackage(workspace.getProject(), rebuild);
         if (buildPackage == null) {
             String msg = "Unexpected Error Occurred, try to build-package few minutes later";
             jsBuilder.pre(JavaScript.notiError, msg);
@@ -306,21 +316,19 @@ public class ProjectController extends Controller {
      * IMPORTANT: call this function at least 2 seconds after buildPackage.
      */
     public void refreshBuildingPackage() {
-        if (activePackage == null || activePackage.getId() < 0) {
-            /*case: mockup package for building process*/
-            int countBefore = packageList == null ? 0 : packageList.size();
-            log.debug("refreshBuildingPackage:fromClient: countBefore = {}", countBefore);
+        reloadPackageList();
+        selectPackage(packageList.size() - 1);
+    }
 
-            reloadPackageList();
-            int countAfter = packageList == null ? 0 : packageList.size();
-            log.debug("refreshBuildingPackage:fromClient: countAfter = {}", countAfter);
-            if (countBefore < countAfter) {
-                selectPackage(countBefore);
+    private int getPackageListIndex(int packageId) {
+        Item item;
+        for (int pIndex = 0; pIndex < packageList.size(); pIndex++) {
+            item = packageList.get(pIndex);
+            if (item.getId() == packageId) {
+                return pIndex;
             }
-
-        } else {
-            openPackage();
         }
+        return -1;
     }
 
     public Project getProject() {
@@ -369,6 +377,11 @@ public class ProjectController extends Controller {
 
     public void setSelectedPackageId(int selectedPackageId) {
         this.selectedPackageId = selectedPackageId;
+    }
+
+    public boolean isLastPackage() {
+        if (packageList == null || activePackage == null) return false;
+        return packageList.get(packageList.size() - 1).getId() == activePackage.getId();
     }
 
     public Package getActivePackage() {

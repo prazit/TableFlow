@@ -5,7 +5,10 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import org.apache.zookeeper.data.ClientInfo;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class UTBase {
@@ -13,6 +16,11 @@ public class UTBase {
     protected String indent = "";
     protected String indentChars = "\t";
     protected boolean printThread = false;
+
+    protected void println(String message, Object... objects) {
+        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(message, objects);
+        println(formattingTuple.getMessage());
+    }
 
     protected void println(String string) {
         System.out.println(indent + string + (printThread ? " (Thread:" + Thread.currentThread().getName() + ")" : ""));

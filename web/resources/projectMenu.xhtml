@@ -24,14 +24,6 @@
 
         <p:divider layout="vertical"/>
 
-        <p:submenu label="Build">
-            <p:menuitem value="Build Package" icon="pi pi-fw pi-list" onstart="contentWindow.buildPackage()"/>
-            <p:menuitem value="Download Full Package" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
-            <p:menuitem value="Download Updated Package" icon="pi pi-fw pi-list" onclick="toggleActionButtons()"/>
-        </p:submenu>
-
-        <p:divider layout="vertical"/>
-
         <p:submenu label="Testing">
             <p:submenu label="Properties">
                 <p:menuitem value="Check Enum Update On Redeploy" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testEnumUpdateOnRedeploy}"/>

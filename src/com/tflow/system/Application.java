@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 

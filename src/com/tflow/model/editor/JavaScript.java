@@ -20,6 +20,7 @@ public enum JavaScript {
     lineStart("lineStart();"),
     lineEnd("lineEnd();"),
 
+    selectObject("selectObject('%s');"),
     selectAfterUpdateEm("postUpdate(function(){selectObject('%s');});"),
     updateEm("updateEm('%s');"),
 

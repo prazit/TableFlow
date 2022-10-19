@@ -1549,7 +1549,7 @@ public class EditorController extends Controller {
         Database database = (Database) activeObject;
         int dataSourceId = database.getId();
         if (!isDatabaseReady(dataSourceId)) {
-            jsBuilder.pre(JavaScript.notiWarn, "Connect failed!");
+            jsBuilder.pre(JavaScript.notiWarn, "Connection fail!");
             return;
         }
         jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
@@ -1562,7 +1562,7 @@ public class EditorController extends Controller {
         int sftpId = sftp.getId();
         dconvers.addSFTP(sftpId, workspace.getProject());
         if (!dconvers.run()) {
-            jsBuilder.pre(JavaScript.notiWarn, "Connect failed!");
+            jsBuilder.pre(JavaScript.notiWarn, "Connection fail!");
             return;
         }
 

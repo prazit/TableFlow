@@ -639,7 +639,7 @@ public class ProjectManager {
      *
      * @return mockup data with real-build-date to show for building...
      */
-    public Package buildPackage(Project project) {
+    public Package buildPackage(Project project, Package rebuild) {
         Date buildDate = DateTimeUtil.now();
         Producer<String, Object> producer = createProducer();
 
@@ -667,10 +667,13 @@ public class ProjectManager {
         producer.close();
         if (!success) return null;
 
-        Package activePackage = new Package();
+        Package activePackage = rebuild == null ? new Package() : rebuild;
         activePackage.setId(-1);
         activePackage.setName("building...");
         activePackage.setBuildDate(buildDate);
+        activePackage.setComplete(0);
+        activePackage.setFinished(false);
+        activePackage.setBuiltDate(null);
         return activePackage;
     }
 
