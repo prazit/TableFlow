@@ -68,26 +68,49 @@ public class BuildPackageCommand extends IOCommand {
         recordAttributes = Mappers.getMapper(RecordMapper.class).map(attributes);
 
         List<ItemData> packageList = null;
-        PackageData packageData = new PackageData();
+        PackageData packageData = null;
         List<PackageFileData> fileList = new ArrayList<>();
         ProjectUser projectUser = mapper.map(attributes);
         try {
             Object data = getData(ProjectFileType.PACKAGE_LIST);
             packageList = (List<ItemData>) throwExceptionOnError(data);
 
-            int packageId = packageList.size() + 1;
-            packageData.setId(packageId);
+            boolean isNewPackage = true;
+            int packageId;
+            if (packageList.size() == 0) {
+                packageId = 1;
+                packageData = new PackageData();
+                packageData.setId(packageId);
+            } else {
+                packageId = packageList.get(packageList.size() - 1).getId();
+                data = getData(ProjectFileType.PACKAGE, packageId);
+                packageData = (PackageData) throwExceptionOnError(data);
+                if (packageData.getComplete() == 100) {
+                    packageId++;
+                    packageData = new PackageData();
+                    packageData.setId(packageId);
+                } else {
+                    /*rebuild last error package*/
+                    isNewPackage = false;
+                    packageData.setComplete(0);
+                    packageData.setFinished(false);
+                    packageData.setFileList(null);
+                    packageData.setBuiltDate(null);
+                }
+            }
+
             packageData.setBuildDate(DateTimeUtil.now());
             packageData.setName("building...");
 
             ItemData packageItemData = mapper.map(packageData);
-            packageList.add(packageItemData);
+            if (isNewPackage) packageList.add(packageItemData);
 
             buildPackage(packageData, fileList, packageList, projectUser);
 
         } catch (Exception exception) {
             if (packageList != null) {
                 /*need to savePackage before Throw Exception for Rejected*/
+                if (packageData == null) packageData = new PackageData();
                 packageData.setName(exception.getMessage());
                 packageData.setFileList(fileList);
                 packageData.setFinished(true);
