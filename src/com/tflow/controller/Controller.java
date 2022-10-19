@@ -154,9 +154,7 @@ public abstract class Controller implements Serializable {
             return;
         }
 
-        /*TODO: remove client message below*/
-        jsBuilder.pre(JavaScript.notiInfo,"Change Property Value Successful, type:{}, data:{}, property:{}", projectFileType, data.getClass().getSimpleName(), property);
-
+        // for debug, jsBuilder.pre(JavaScript.notiInfo,"Change Property Value Successful, type:{}, data:{}, property:{}", projectFileType, data.getClass().getSimpleName(), property);
     }
 
     public void updateComponent() {

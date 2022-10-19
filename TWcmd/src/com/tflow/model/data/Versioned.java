@@ -7,9 +7,9 @@ import java.util.ArrayList;
  */
 public enum Versioned {
 
-    DRIVER_ORACLE(11, ""),
-    DRIVER_DB2(12, ""),
-    DRIVER_MYSQL(13, ""),
+    DRIVER_ORACLE(11, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    DRIVER_DB2(12, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    DRIVER_MYSQL(13, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
 
     /*TODO: need complete list for VERSIONED*/
 
@@ -19,7 +19,7 @@ public enum Versioned {
     APACHE_TEXT(23, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
 
     /*WebUI Libs*/
-    PRIMEFACES(51, "U"),
+    PRIMEFACES(51, "U", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     ;
 
     private String projectTypeCodes;
@@ -60,9 +60,12 @@ public enum Versioned {
     public static ArrayList<Versioned> getVersionedList(ProjectType projectType) {
         ArrayList<Versioned> versionedList = new ArrayList<>();
         String filter = projectType.getCode();
+        String driverCode = Versioned.DRIVER_MYSQL.getProjectTypeCodes();
 
+        String codes;
         for (Versioned versioned : values()) {
-            if (versioned.getProjectTypeCodes().contains(filter)) {
+            codes = versioned.getProjectTypeCodes();
+            if (codes.contains(filter) || codes.contains(driverCode)) {
                 versionedList.add(versioned);
             }
         }

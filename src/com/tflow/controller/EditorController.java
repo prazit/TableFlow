@@ -1460,7 +1460,7 @@ public class EditorController extends Controller {
                 jsBuilder.pre(JavaScript.updateEm, selectable.getSelectableId());
             }
             jsBuilder.runOnClient();
-        } else {
+        } else if (activeObject instanceof DataFile) {
             /*auto extract*/
             extractData(activeObject.getSelectableId());
         }

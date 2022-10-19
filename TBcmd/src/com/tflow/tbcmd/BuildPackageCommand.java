@@ -446,7 +446,7 @@ public class BuildPackageCommand extends IOCommand {
         Versioned driverFile = dbms.getDriverFile();
 
         /*add driver jar file to fileList*/
-        Object data = getData(ProjectFileType.VERSIONED, driverFile.toString());
+        Object data = getData(ProjectFileType.VERSIONED, driverFile.getFileId());
         BinaryFileData binaryFileData = (BinaryFileData) throwExceptionOnError(data);
         PackageFileData packageFileData = mapper.map(binaryFileData);
         fileList.add(packageFileData);
@@ -602,6 +602,7 @@ public class BuildPackageCommand extends IOCommand {
         Object data = getData(ProjectFileType.DATA_FILE, dataTableData.getDataFile(), stepId);
         DataFileData dataFileData = (DataFileData) throwExceptionOnError(data);
 
+        /*TODO: some DataFileTypes not have DataSourceType need to check it your self*/
         DataSourceType dataSourceType = DataSourceType.parse(dataFileData.getDataSourceType());
         if (dataSourceType == null) throw new IOException("Invalid DataSourceType: " + dataFileData.getDataSourceType());
 

@@ -12,4 +12,13 @@ public class BinaryFileData extends TWData {
     FileNameExtension ext;
     byte[] content;
 
+    @Override
+    public String toString() {
+        return "BinaryFileData(" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", ext=" + ext +
+                ", content[" + content.length + "]" +
+                ')';
+    }
 }

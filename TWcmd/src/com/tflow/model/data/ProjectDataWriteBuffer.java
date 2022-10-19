@@ -49,7 +49,8 @@ public class ProjectDataWriteBuffer {
     }
 
     public String uniqueKey() {
-        return fileType + additional.getRecordId();
+        String recordId = additional.getRecordId();
+        return fileType + (recordId == null ? "" : recordId);
     }
 
     @Override
