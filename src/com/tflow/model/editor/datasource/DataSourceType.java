@@ -12,10 +12,12 @@ public enum DataSourceType {
           KAFKAPRODUCER(JSON,XML,JAVASERIAL)
     */
 
-    DATABASE("database.png", DataFileType.OUT_SQL),
-    SFTP("sftp.png", DataFileType.OUT_CSV, DataFileType.OUT_MD, DataFileType.OUT_TXT, DataFileType.OUT_SQL),
-    LOCAL("local.png", DataFileType.OUT_CSV, DataFileType.OUT_MD, DataFileType.OUT_TXT, DataFileType.OUT_SQL),
-    SYSTEM("environment.png", DataFileType.OUT_CSV, DataFileType.OUT_MD, DataFileType.OUT_TXT, DataFileType.OUT_SQL),
+    DATABASE("database.png"),   //, DataFileType.OUT_SQL),
+    SFTP("sftp.png"),           //, DataFileType.OUT_CSV, DataFileType.OUT_MD, DataFileType.OUT_TXT, DataFileType.OUT_SQL),
+    LOCAL("local.png"),         //, DataFileType.OUT_CSV, DataFileType.OUT_MD, DataFileType.OUT_TXT, DataFileType.OUT_SQL),
+    FIXED("local.png"),         //, DataFileType.OUT_CSV, DataFileType.OUT_MD, DataFileType.OUT_TXT, DataFileType.OUT_SQL),
+    SYSTEM("environment.png"),  //, DataFileType.OUT_CSV, DataFileType.OUT_MD, DataFileType.OUT_TXT, DataFileType.OUT_SQL),
+    DIR("folder.png"),
     ;
 
     DataFileType[] outputDataFileTypes;

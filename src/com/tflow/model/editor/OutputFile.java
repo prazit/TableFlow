@@ -1,10 +1,9 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.datasource.NameValue;
 import com.tflow.model.editor.view.PropertyView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;

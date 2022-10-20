@@ -70,7 +70,7 @@ public class DConversHelper {
     }
 
     public String getSimpleName(String name) {
-        return name.replaceAll("[\\p{Punct}\\s]", "_").replaceAll("_+", "_").toLowerCase();
+        return new DConversID(name).toString();
     }
 
     public int getExitCode() {

@@ -1,4 +1,4 @@
-package com.tflow.model.editor;
+package com.tflow.model.data;
 
 /**
  * Variable name for event PROPERTY_CHANGED.
@@ -10,6 +10,7 @@ public enum PropertyVar {
     fixedLengthFormatList,
     format,
     function,
+    type,
     name,
     quickColumnList,
     columns,
@@ -17,7 +18,11 @@ public enum PropertyVar {
     quotesName,
     quotesValue,
     activeObject,
-    showPropertyList, showActionButtons, showColumnNumbers, showStepList;
+    showPropertyList,
+    showActionButtons,
+    showColumnNumbers,
+    showStepList,
+    ;
 
     public boolean equals(String varName) {
         return varName.compareTo(name()) == 0;

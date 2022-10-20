@@ -2,8 +2,8 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.view.PropertyView;
-import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.HashMap;

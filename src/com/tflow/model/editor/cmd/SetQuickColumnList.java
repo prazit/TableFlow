@@ -3,6 +3,7 @@ package com.tflow.model.editor.cmd;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.data.TWData;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.NameValue;

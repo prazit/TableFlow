@@ -306,7 +306,7 @@
                                 </p:selectOneMenu>
 
                                 <p:commandButton icon="pi pi-download" value="Download Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{projectCtl.activePackage.complete lt 100}"/>
-                                <p:commandButton icon="pi pi-building" value="Create Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{!projectCtl.activePackage.finished or !projectCtl.lastPackage}" rendered="#{!projectCtl.lastPackage or !projectCtl.activePackage.finished or projectCtl.activePackage.complete == 100}"/>
+                                <p:commandButton icon="pi pi-building" value="Create New Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{!projectCtl.activePackage.finished or !projectCtl.lastPackage}" rendered="#{!projectCtl.lastPackage or !projectCtl.activePackage.finished or projectCtl.activePackage.complete == 100}"/>
                                 <p:commandButton icon="pi pi-refresh" value="Try Again" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{!projectCtl.lastPackage}" rendered="#{projectCtl.lastPackage and projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100}"/>
                             </p:outputPanel>
 
@@ -348,12 +348,11 @@
                                     <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
                                     <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
                                     <p:dataTable value="#{projectCtl.activePackage.fileList}" var="packageFile" styleClass="ui-lg-12">
-                                        <p:column styleClass="ui-sm-3" headerText="Path">#{packageFile.buildPath}</p:column>
-                                        <p:column styleClass="ui-sm-3" headerText="Name">#{packageFile.name}</p:column>
-                                        <p:column styleClass="ui-sm-3" headerText="Type" style="text-align: center">#{packageFile.ext}</p:column>
+                                        <p:column styleClass="ui-sm-6" headerText="File Name" sortBy="#{packageFile.buildPath}#{packageFile.name}">#{packageFile.buildPath}#{packageFile.name}</p:column>
+                                        <p:column styleClass="ui-sm-3" headerText="Type" sortBy="#{packageFile.type}">#{packageFile.type}</p:column>
                                         <p:column styleClass="ui-sm-3" headerText="New" style="text-align: center">
-                                            <p:outputPanel rendered="#{packageFile.updated}"><i class="pi pi-check" style="font-size: 2em; color: var(--surface-c);"/></p:outputPanel>
-                                            <p:outputPanel rendered="#{not packageFile.updated}"><i class="pi pi-times" style="color: var(--surface-d);"/></p:outputPanel>
+                                            <p:outputPanel rendered="#{packageFile.updated}"><i class="pi pi-check-circle" style="font-size: 2em; color: var(--surface-c);"/></p:outputPanel>
+                                            <p:outputPanel rendered="#{not packageFile.updated}"><i class="pi pi-minus" style="color: var(--surface-d);"/></p:outputPanel>
                                         </p:column>
                                     </p:dataTable>
                                 </p:outputPanel>

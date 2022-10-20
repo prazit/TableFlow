@@ -3,15 +3,14 @@ package com.tflow.model.editor;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectType;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.mapper.ProjectMapper;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Project implements Selectable, HasEvent {
@@ -58,6 +57,7 @@ public class Project implements Selectable, HasEvent {
     }
 
     private void init() {
+        type = ProjectType.BATCH;
         stepList = new StepList<>();
         propertyMap = new HashMap<>();
         eventManager = new EventManager(this);

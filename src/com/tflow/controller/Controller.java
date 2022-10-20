@@ -1,6 +1,7 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;

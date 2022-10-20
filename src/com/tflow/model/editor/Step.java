@@ -2,12 +2,12 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.util.ProjectUtil;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;

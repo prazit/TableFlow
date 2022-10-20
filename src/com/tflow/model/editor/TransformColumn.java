@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.data.SourceType;
 import com.tflow.model.editor.view.PropertyView;
 

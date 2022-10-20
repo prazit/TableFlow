@@ -7,6 +7,7 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.FileNameExtension;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
@@ -452,7 +453,7 @@ public class EditorController extends Controller {
                 if (dataSourceType.contains(DataSourceType.SYSTEM.name())) for (SystemEnvironment sys : SystemEnvironment.values()) {
                     selectItemList.add(new SelectItem(DataSourceType.SYSTEM + ":" + sys.getId(), sys.name().replaceAll("[_]", " ")));
                 }
-
+                if (dataSourceType.contains(DataSourceType.FIXED.name())) selectItemList.add(new SelectItem(DataSourceType.FIXED + ":0", "Static File"));
                 break;
 
             case DATASOURCETYPE:

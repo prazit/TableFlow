@@ -24,7 +24,6 @@ public interface PackageMapper {
     PackageFileData map(BinaryFileItemData binaryFileItemData);
 
     @Mappings({
-            /*@Mapping(target = "id", source = "id"),*/
             @Mapping(target = "fileId", source = "id")
     })
     PackageFileData map(BinaryFileData conversionFileData);
@@ -34,6 +33,8 @@ public interface PackageMapper {
             @Mapping(target = "fileId", source = "id")
     })
     PackageFileData map(StringItemData binaryFileItemData);
+
+    ItemData toItemData(BinaryFileData conversionFileData);
 
     List<ItemData> fromBinaryFileList(List<BinaryFileData> generatedFileList);
 

@@ -442,6 +442,6 @@ public class ProjectController extends Controller {
         Variable newVariable = (Variable) action.getResultMap().get(ActionResultKey.VARIABLE);
         variableList.add(newVariable);
 
-        jsBuilder.pre(JavaScript.selectAfterUpdateEm, newVariable.getSelectableId());
+        jsBuilder.pre(JavaScript.selectObject, newVariable.getSelectableId()).runOnClient();
     }
 }

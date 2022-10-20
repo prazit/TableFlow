@@ -2,6 +2,7 @@ package com.tflow.model.editor.cmd;
 
 import com.clevel.dconvers.conf.Property;
 import com.tflow.model.data.ProjectDataException;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.*;
 import com.tflow.util.DConversHelper;
 import org.apache.commons.configuration2.Configuration;

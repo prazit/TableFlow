@@ -5,21 +5,17 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.PageParameter;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.ProjectDataException;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.view.PropertyView;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
-import org.primefaces.event.UnselectEvent;
 
-import javax.el.MethodExpression;
-import javax.faces.event.ActionListener;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @ViewScoped
 @Named("groupCtl")

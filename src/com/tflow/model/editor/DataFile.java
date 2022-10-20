@@ -1,16 +1,18 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
+import com.tflow.model.editor.view.PropertyView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataFile extends Room implements Selectable, HasEndPlug {
+public class DataFile extends Room implements Selectable, HasEndPlug, HasEvent {
     private transient Logger log = LoggerFactory.getLogger(DataFile.class);
 
     protected DataSourceType dataSourceType;
@@ -30,6 +32,8 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
 
     protected LinePlug endPlug;
     protected LinePlug startPlug;
+
+    protected EventManager eventManager;
 
     protected HasDataFile owner;
 
@@ -58,6 +62,21 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         this.propertyMap = new HashMap<>();
         this.setRoomType(RoomType.DATA_FILE);
         propertyMap = new HashMap<>();
+        eventManager = new EventManager(this);
+        createEventHandlers();
+    }
+
+    private void createEventHandlers() {
+        eventManager.addHandler(EventName.PROPERTY_CHANGED, new EventHandler() {
+            @Override
+            public void handle(Event event) throws Exception {
+                PropertyView property = (PropertyView) event.getData();
+                if (PropertyVar.type.equals(property.getVar())) {
+                    /*DataFileType CHANGED need to set default DataSourceType required by BuildPackageCommand*/
+                    dataSourceType = type.getDataSourceType();
+                }
+            }
+        });
     }
 
     private void createStartPlug(String plugId) {
@@ -218,6 +237,11 @@ public class DataFile extends Room implements Selectable, HasEndPlug {
         String[] parts = dataSourceIdentifier.split("[:]");
         dataSourceType = DataSourceType.valueOf(parts[0]);
         dataSourceId = Integer.parseInt(parts[1]);
+    }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     @Override

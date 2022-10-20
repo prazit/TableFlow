@@ -2,6 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.view.PropertyView;
 
 import java.util.Map;
