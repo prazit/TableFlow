@@ -11,6 +11,8 @@ public class HeaderData implements Serializable {
     private static final transient long serialVersionUID = 2022070109996660003L;
 
     private long responseCode;
+    private long more;
+
     private long transactionId;
     private long time;
     private long userId;

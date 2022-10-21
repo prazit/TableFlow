@@ -28,6 +28,7 @@ public enum ProjectFileType {
 
     PACKAGE_LIST("package-list", 9),
     PACKAGE("", 9),
+    PACKAGED("", 9),
 
     GENERATED_LIST("generated-list", 9),
     GENERATED("", 9),

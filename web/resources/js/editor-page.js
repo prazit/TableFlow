@@ -30,6 +30,16 @@ function updateEm(selectableId) {
     window.parent.updateEm(selectableId);
 }
 
+function updateEmByClass(className) {
+    var $property = $('.' + className);
+    var id = $property.attr('id');
+    tflow.postRefreshElement = function () {};
+    refreshElement([
+        {name: 'componentId', value: id}
+    ]);
+}
+
+
 function getSelectableId($selectable) {
     return $selectable.find('input[name=selectableId]').attr('value');
 }

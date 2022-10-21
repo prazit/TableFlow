@@ -20,6 +20,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.*;
@@ -337,7 +338,7 @@ public class DataManager {
             @Override
             public void run() {
                 boolean submitResult;
-                while(projectDataWriteBufferList.size() > 0) {
+                while (projectDataWriteBufferList.size() > 0) {
                     submitResult = submit();
                     if (!submitResult) {
                         commitAgain(commitAgainMilliseconds);
@@ -563,31 +564,53 @@ public class DataManager {
         }
 
         /*headerData used instead of TransactionID (uniqueKeys: time, userId, clientId, projectId)*/
-        Object data = captureData(fileType, getHeaderData(additional));
-        if (data == null) {
-            log.debug("getData.return null record, no response from read-service!");
-            return KafkaErrorCode.READ_SERVICE_NO_RESPONSE.getCode();
+        HeaderData headerData = getHeaderData(additional);
+        KafkaRecord kafkaRecord = null;
+        Object data;
+        while (headerData.getMore() > 0) {
+            data = captureData(fileType, headerData);
+            if (data == null) {
+                log.debug("getData.return null record, no response from read-service!");
+                return KafkaErrorCode.READ_SERVICE_NO_RESPONSE.getCode();
+            }
+
+            if (data instanceof Long) {
+                long errorCode = (Long) data;
+                KafkaErrorCode kafkaErrorCode = KafkaErrorCode.parse(errorCode);
+                log.debug("getData.return error({})", kafkaErrorCode);
+                return errorCode;
+            }
+
+            if (kafkaRecord == null) {
+                kafkaRecord = (KafkaRecord) data;
+            } else {
+                /*for multipart binary file*/
+                BinaryFileData targetFileData = (BinaryFileData) kafkaRecord.getData();
+                BinaryFileData capturedFileData = (BinaryFileData) ((KafkaRecord)data).getData();
+
+                byte[] targetFileContent = targetFileData.getContent();
+                byte[] capturedFileContent = capturedFileData.getContent();
+                int targetFileContentLength = targetFileContent.length;
+                int capturedFileContentLength = capturedFileContent.length;
+
+                byte[] content = new byte[targetFileContentLength + capturedFileContentLength];
+                System.arraycopy(targetFileContent, 0, content, 0, targetFileContentLength);
+                System.arraycopy(capturedFileContent, 0, content, targetFileContentLength, capturedFileContentLength);
+                targetFileData.setContent(content);
+            }
         }
 
-        if (data instanceof Long) {
-            long errorCode = (Long) data;
-            KafkaErrorCode kafkaErrorCode = KafkaErrorCode.parse(errorCode);
-            log.debug("getData.return error({})", kafkaErrorCode);
-            return errorCode;
-        }
-
-        KafkaRecord kafkaRecord = (KafkaRecord) data;
         Object object = kafkaRecord.getData();
-
         if (object == null) {
             log.debug("getData.return null object");
-            return KafkaErrorCode.INTERNAL_SERVER_ERROR.getCode();
+            return KafkaErrorCode.INVALID_DATA_RECORD.getCode();
         }
         return object;
     }
 
     private HeaderData getHeaderData(KafkaRecordAttributes additional) {
         HeaderData headerData = new HeaderData();
+        headerData.setMore(1);
         headerData.setProjectId(additional.getProjectId());
         headerData.setUserId(additional.getUserId());
         headerData.setClientId(additional.getClientId());
@@ -693,6 +716,9 @@ public class DataManager {
                     polling = false;
                     break;
                 }
+
+                /*for multiple part binary file*/
+                headerData.setMore(capturedHeader.getMore());
 
                 gotHeader = true;
             }

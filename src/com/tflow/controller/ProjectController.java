@@ -16,10 +16,18 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.UploadedFileView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.util.DateTimeUtil;
+import org.apache.tika.Tika;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.util.SerializableSupplier;
 
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -283,6 +291,40 @@ public class ProjectController extends Controller {
         }
     }
 
+    public StreamedContent downloadPackage() {
+        log.debug("downloadPackage.");
+
+        BinaryFile binaryFile = null;
+        try {
+            binaryFile = project.getManager().loadPackaged(activePackage.getId(), workspace.getProject());
+        } catch (Exception ex) {
+            String msg = "Download Error: {}";
+            jsBuilder.pre(JavaScript.notiError, msg, ex.getMessage());
+            log.error(msg, ex.getMessage());
+            return null;
+        }
+
+        if (binaryFile == null) {
+            String msg = "Unexpected Error Occurred, try to download-package few minutes later";
+            jsBuilder.pre(JavaScript.notiError, msg);
+            log.error(msg);
+            return null;
+        }
+
+        Tika tika = new Tika();
+        byte[] content = binaryFile.getContent();
+        String mimeType = tika.detect(content);
+        StreamedContent streamedContent = DefaultStreamedContent.builder()
+                .contentType(mimeType)
+                .contentLength(content.length)
+                .name(binaryFile.getName())
+                .stream(() -> new ByteArrayInputStream(content))
+                .build();
+
+        log.debug("mimetype:{}, binaryFile:{}", mimeType, binaryFile);
+        return streamedContent;
+    }
+
     public void buildPackage() {
         log.debug("buildPackage.");
 
@@ -309,7 +351,7 @@ public class ProjectController extends Controller {
         createPackageEventHandlers();
 
         pleaseSelectPackage = false;
-        jsBuilder.post(JavaScript.updateEm, "PackageTab").runOnClient();
+        jsBuilder.post(JavaScript.updateEmByClass, "package-panel").runOnClient();
     }
 
     /**

@@ -634,6 +634,17 @@ public class ProjectManager {
         return mapper.map(packageData);
     }
 
+    public BinaryFile loadPackaged(int packageId, Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        DataManager dataManager = project.getDataManager();
+
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.PACKAGED, projectUser, packageId);
+        BinaryFileData binaryFileData = (BinaryFileData) throwExceptionOnError(data);
+
+        return mapper.map(binaryFileData);
+    }
+
     /**
      * After call buildPackage at least 2 seconds you need to get PackageData for complete-status.
      *

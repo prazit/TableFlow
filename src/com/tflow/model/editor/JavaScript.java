@@ -23,6 +23,7 @@ public enum JavaScript {
     selectObject("selectObject('%s');"),
     selectAfterUpdateEm("postUpdate(function(){selectObject('%s');});"),
     updateEm("updateEm('%s');"),
+    updateEmByClass("updateEmByClass('%s');"),
 
     preStartup("LeaderLine.positionByWindowResize = false;"),
     postStartup("startup();"),

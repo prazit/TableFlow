@@ -47,6 +47,7 @@ public class BinaryFile {
                 "id:" + id +
                 ", name:'" + name + '\'' +
                 ", ext:" + ext +
+                ", content[" + content.length + "]" +
                 '}';
     }
 }

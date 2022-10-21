@@ -27,7 +27,7 @@
 
         <div class="flow-chart">
             <h:form id="editorForm">
-                <p:remoteCommand name="drawLines" action="#{flowchartCtl.drawLines}"/>
+                <p:remoteCommand name="refreshElement" action="#{projectCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
 
                 <p:outputPanel id="projectName" style="padding: var(--padding);margin: var(--margin);">
                     <h1 style="color: var(--surface-c);">Project: #{projectCtl.project.name}</h1>
@@ -290,8 +290,8 @@
                             <p:outputLabel value=" #{ProjectSection.PACKAGE.title}"/>
                         </f:facet>
                         <p:outputPanel id="packageTab" styleClass="package-panel">
-                            <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent" oncomplete="console.log('updatePackageTab complated.')"/>
-                            <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent" oncomplete="console.log('buildPackage complated.')"/>
+                            <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent"/>
+                            <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent"/>
                             <p:remoteCommand name="updatePackageList" update="selectPackage" onstart="console.log('updatePackageList start.')"/>
 
                             <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0}">
@@ -305,7 +305,9 @@
                                     <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
                                 </p:selectOneMenu>
 
-                                <p:commandButton icon="pi pi-download" value="Download Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{projectCtl.activePackage.complete lt 100}"/>
+                                <p:commandButton icon="pi pi-download" value="Download Package" ajax="false" onclick="PrimeFaces.monitorDownload(startDownload, stopDownload);" styleClass="float-right" style="margin:var(--margin)" disabled="#{projectCtl.activePackage.complete lt 100}">
+                                    <p:fileDownload value="#{projectCtl.downloadPackage()}"/>
+                                </p:commandButton>
                                 <p:commandButton icon="pi pi-building" value="Create New Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{!projectCtl.activePackage.finished or !projectCtl.lastPackage}" rendered="#{!projectCtl.lastPackage or !projectCtl.activePackage.finished or projectCtl.activePackage.complete == 100}"/>
                                 <p:commandButton icon="pi pi-refresh" value="Try Again" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{!projectCtl.lastPackage}" rendered="#{projectCtl.lastPackage and projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100}"/>
                             </p:outputPanel>
@@ -347,12 +349,11 @@
                                 <p:outputPanel styleClass="ui-g selectable">
                                     <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
                                     <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
-                                    <p:dataTable value="#{projectCtl.activePackage.fileList}" var="packageFile" styleClass="ui-lg-12">
-                                        <p:column styleClass="ui-sm-6" headerText="File Name" sortBy="#{packageFile.buildPath}#{packageFile.name}">#{packageFile.buildPath}#{packageFile.name}</p:column>
-                                        <p:column styleClass="ui-sm-3" headerText="Type" sortBy="#{packageFile.type}">#{packageFile.type}</p:column>
-                                        <p:column styleClass="ui-sm-3" headerText="New" style="text-align: center">
-                                            <p:outputPanel rendered="#{packageFile.updated}"><i class="pi pi-check-circle" style="font-size: 2em; color: var(--surface-c);"/></p:outputPanel>
-                                            <p:outputPanel rendered="#{not packageFile.updated}"><i class="pi pi-minus" style="color: var(--surface-d);"/></p:outputPanel>
+                                    <p:dataTable value="#{projectCtl.activePackage.fileList}" var="packageFile" rowIndexVar="rowIndex">
+                                        <p:column headerText="File" sortBy="#{packageFile.buildPath}#{packageFile.name}" styleClass="ui-g">
+                                            <span class="ui-g-1">#{rowIndex + 1}</span>
+                                            <span class="ui-g-10">#{packageFile.buildPath}<b>#{packageFile.name}</b></span>
+                                            <p:outputPanel styleClass="ui-g-1" rendered="#{!packageFile.updated}"><i class="pi pi-check-circle" style="font-size: 1em; color: var(--surface-c);"/></p:outputPanel>
                                         </p:column>
                                     </p:dataTable>
                                 </p:outputPanel>

@@ -12,8 +12,8 @@ public enum FileNameExtension {
     CONF("conf/"),
     PROPERTY("conf/"),
 
-    BAT("bat/"),
-    SH("bat/"),
+    BAT(""),
+    SH(""),
 
     PNG("resources/images/"),
     CSS("resources/css/"),

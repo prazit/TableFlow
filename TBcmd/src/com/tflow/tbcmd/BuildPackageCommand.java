@@ -23,6 +23,7 @@ import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -289,6 +290,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
+        /*TODO: invalid generatedFileId, please see PackageList file*/
         int generatedFileId = 0;
         int packageFileId = newPackageFileId(packageData);
         generatedPath = environmentConfigs.getBinaryRootPath() + projectUser.getId() + "/";
@@ -310,57 +312,37 @@ public class BuildPackageCommand extends IOCommand {
         initDataConversionConfigFile(dataConversionConfigFile, packageData, projectUser, fileList);
 
         try {
+            /*need first generated file id from GENERATED_LIST*/
+            data = getData(ProjectFileType.GENERATED_LIST);
+            List<ItemData> generatedFileList = (List<ItemData>) throwExceptionOnError(data);
+            generatedFileId = generatedFileList.size() + 1;
+
+            /*create Generated Conversion File*/
             log.info("dataConversionConfigFile.saveProperties...");
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             dataConversionConfigFile.saveProperties(byteArrayOutputStream);
             byte[] contentBytes = byteArrayOutputStream.toByteArray();
             log.debug("Conversion:saveProperties successful, \n{}", new String(contentBytes, StandardCharsets.ISO_8859_1));
 
-            data = getData(ProjectFileType.GENERATED_LIST);
-            List<ItemData> generatedFileList = (List<ItemData>) throwExceptionOnError(data);
+            generatedFileList.add(new ItemData(generatedFileId, name));
+            BinaryFileData conversionFileData = addGeneratedFile(generatedFileId, name, contentBytes, packageData, projectUser, fileList);
 
-            /*create Generated Conversion File*/
-            BinaryFileData conversionFileData = new BinaryFileData();
-            if (generatedFileList.size() < ++generatedFileId) generatedFileList.add(mapper.toItemData(conversionFileData));
-            conversionFileData.setId(generatedFileId);
-            conversionFileData.setName(name);
-            conversionFileData.setExt(FileNameExtension.forName(name));
-            conversionFileData.setContent(contentBytes);
-            dataManager.addData(ProjectFileType.GENERATED, conversionFileData, projectUser, conversionFileData.getId());
-
-            PackageFileData packageFileData = mapper.map(conversionFileData);
-            packageFileData.setId(newPackageFileId(packageData));
-            packageFileData.setType(FileType.GENERATED);
-            packageFileData.setBuildPath(packageFileData.getExt().getBuildPath());
-            fileList.add(packageFileData);
-
+            PackageFileData packageFileData;
             BinaryFileData converterFileData;
             for (ConverterConfigFile converterConfigFile : dataConversionConfigFile.getConverterConfigMap().values()) {
                 name = extractFileName(converterConfigFile.getName());
 
+                /*create Generated Converter File*/
                 byteArrayOutputStream = new ByteArrayOutputStream();
                 converterConfigFile.saveProperties(byteArrayOutputStream);
                 contentBytes = byteArrayOutputStream.toByteArray();
                 log.debug("Converter:saveProperties successful, {}\n{}", name, new String(byteArrayOutputStream.toByteArray(), StandardCharsets.ISO_8859_1));
 
-                /*create Generated Converter File*/
-                converterFileData = new BinaryFileData();
-                if (generatedFileList.size() < ++generatedFileId) generatedFileList.add(mapper.toItemData(converterFileData));
-                converterFileData.setId(generatedFileId);
-                converterFileData.setName(name);
-                converterFileData.setExt(FileNameExtension.forName(name));
-                converterFileData.setContent(contentBytes);
-                dataManager.addData(ProjectFileType.GENERATED, converterFileData, projectUser, converterFileData.getId());
-
-                packageFileData = mapper.map(converterFileData);
-                packageFileData.setId(newPackageFileId(packageData));
-                packageFileData.setType(FileType.GENERATED);
-                packageFileData.setBuildPath(packageFileData.getExt().getBuildPath());
-                fileList.add(packageFileData);
+                generatedFileList.add(new ItemData(generatedFileId, name));
+                addGeneratedFile(++generatedFileId, name, contentBytes, packageData, projectUser, fileList);
             }
 
-            /*TODO: addGeneratedBatch ( .bat .sh ) */
-
+            addGeneratedBatchFiles(conversionFileData, projectData, packageData, projectUser, fileList, generatedFileList, generatedFileId);
             dataManager.addData(ProjectFileType.GENERATED_LIST, generatedFileList, projectUser);
 
             log.info("generate dconvers-config-files success.\n");
@@ -369,6 +351,71 @@ public class BuildPackageCommand extends IOCommand {
             log.trace("", ex);
             throw new IOException("generate file failed: ", ex);
         }
+    }
+
+    private BinaryFileData addGeneratedFile(int fileId, String fileName, byte[] contentBytes, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList) {
+        BinaryFileData conversionFileData = new BinaryFileData();
+        conversionFileData.setId(fileId);
+        conversionFileData.setName(fileName);
+        conversionFileData.setExt(FileNameExtension.forName(fileName));
+        conversionFileData.setContent(contentBytes);
+        dataManager.addData(ProjectFileType.GENERATED, conversionFileData, projectUser, conversionFileData.getId());
+
+        PackageFileData packageFileData = mapper.map(conversionFileData);
+        packageFileData.setId(newPackageFileId(packageData));
+        packageFileData.setType(FileType.GENERATED);
+        packageFileData.setBuildPath(packageFileData.getExt().getBuildPath());
+        fileList.add(packageFileData);
+        return conversionFileData;
+    }
+
+    private void addGeneratedBatchFiles(BinaryFileData sourceFileData, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList, int generatedFileId) {
+
+        /*TODO: future feature: need Batch Option object later*/
+
+        /*generate batcch script*/
+        String batTemplate = "" +
+                "@set JAVA_BIN={}\n" +
+                "@set SOURCE={}\n" +
+                "@set LEVEL={}\n" +
+                "@set CLSPATH={}\n" +
+                "\"%JAVA_BIN%java.exe\" -Xms64m -Xmx2g -Dfile.encoding=UTF-8 -Duser.timezone=\"GMT+7\" -Duser.language=en -Duser.region=EN -Duser.country=US --class-path \"%CLSPATH%\" com.clevel.dconvers.Main --source=\"%SOURCE%\" --level=%LEVEL%\n";
+        String javaHome = "C:/Program Files/OpenJDK/jdk-8.0.262.10-hotspot/bin/";
+        String source = sourceFileData.getExt().getBuildPath() + sourceFileData.getName();
+        String level = "INFO";
+        String clsPath = getJavaClassPath(fileList);
+        String content = MessageFormatter.arrayFormat(batTemplate, new Object[]{javaHome, source, level, clsPath}).getMessage();
+        content = content.replaceAll("[/]", "\\\\");
+        byte[] contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
+
+        String name = "run-" + new DConversID(projectData.getName()) + ".bat";
+        generatedFileList.add(new ItemData(generatedFileId, name));
+        addGeneratedFile(generatedFileId, name, contentBytes, packageData, projectUser, fileList);
+
+        /*generate shell script*/
+        javaHome = "";
+        String shTemplate = "" +
+                "JAVA_BIN={}\n" +
+                "SOURCE={}\n" +
+                "LEVEL={}\n" +
+                "CLSPATH={}\n" +
+                "\"${JAVA_BIN}java\" -Xms64m -Xmx2g -Dfile.encoding=UTF-8 -Duser.timezone=\"GMT+7\" -Duser.language=en -Duser.region=EN -Duser.country=US --class-path \"${CLSPATH}\" com.clevel.dconvers.Main --source=\"${SOURCE}\" --level=${LEVEL}\n";
+        content = MessageFormatter.arrayFormat(shTemplate, new Object[]{javaHome, source, level, clsPath}).getMessage();
+        contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
+
+        name = "run-" + new DConversID(projectData.getName()) + ".sh";
+        generatedFileList.add(new ItemData(generatedFileId, name));
+        addGeneratedFile(generatedFileId, name, contentBytes, packageData, projectUser, fileList);
+
+    }
+
+    private String getJavaClassPath(List<PackageFileData> fileList) {
+        StringBuilder builder = new StringBuilder();
+        for (PackageFileData fileData : fileList) {
+            if (FileType.VERSIONED != fileData.getType()) continue;
+            builder.append(fileData.getBuildPath()).append(fileData.getName()).append(";");
+        }
+        return builder.toString();
     }
 
     private String extractFileName(String name) {

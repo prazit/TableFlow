@@ -7,6 +7,7 @@ import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
 import com.tflow.model.mapper.DataMapper;
 import com.tflow.model.mapper.RecordMapper;
+import com.tflow.util.DConversID;
 import com.tflow.wcmd.IOCommand;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -14,14 +15,20 @@ import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Kafka-Topic & Kafka-Key: spec in \TFlow\documents\Data Structure - Kafka.md
@@ -71,58 +78,15 @@ public class ReadProjectCommand extends IOCommand {
             return;
         }
 
+        boolean isPackaged = false;
         if (ProjectFileType.PROJECT.equals(projectFileType)) {
-            /* support open new project from template/existing-project.
-             * TEMPLATE_ID/PROJECT_ID:
-             * empty string = Add New Empty Project
-             * templateID = Copy Template to New Project
-             * templatePrefix + projectID = Copy Project to New Project
-             */
-            String templateId = additional.getProjectId();
-            if (templateId.isEmpty()) {
-                /*return EmptyProject with new ProjectID*/
-                log.warn("Project template not found: {}", additional.getProjectId());
-                ProjectData emptyProject = new ProjectData();
-                emptyProject.setName("Untitled");
-
-                /*send Header message and then Data message*/
-                try {
-                    RecordData returnValue = createNewProject(emptyProject, additional);
-                    sendObject(key, headerData);
-                    sendObject(key, returnValue);
-                } catch (Exception ex) {
-                    log.error("INVALID_DATA_FILE: " + ex.getMessage());
-                    log.trace("", ex);
-                    headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
-                    sendObject(key, headerData);
-                }
-                return;
-
-            } else if (templateId.startsWith(IDPrefix.TEMPLATE.getPrefix())) {
-                /*return CopiedProject with new ProjectID*/
-                try {
-                    String prototypeId = getPrototypeId(templateId);
-                    log.debug("prototypeId = {}", prototypeId);
-                    ProjectData prototypeProject = getPrototypeProject(prototypeId, additional);
-                    RecordData returnValue = createNewProject(prototypeProject, additional);
-
-                    copyProject(prototypeId, prototypeProject.getId(), additional);
-
-                    /*send Header message and then Data message*/
-                    sendObject(key, headerData);
-                    sendObject(key, returnValue);
-                } catch (Exception ex) {
-                    log.error("INVALID_DATA_FILE: " + ex.getMessage());
-                    log.trace("", ex);
-                    headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
-                    sendObject(key, headerData);
-                }
-                return;
-            }
-
-            /* otherwise load record normally */
+            if (readProject(additional)) return;
+        } else if (ProjectFileType.PACKAGED.equals(projectFileType)) {
+            projectFileType = ProjectFileType.PACKAGE;
+            isPackaged = true;
         }
 
+        /* otherwise load record normally */
         File file = getFile(projectFileType, additional);
         if (!file.exists()) {
             headerData.setResponseCode(KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
@@ -134,9 +98,165 @@ public class ReadProjectCommand extends IOCommand {
         /*create Data message*/
         RecordData recordValue = (RecordData) readFrom(file);
 
+        /*send multipart for PACKAGED only*/
+        if (isPackaged) {
+            projectFileType = additional.getFileType();
+            try {
+                readPackaged((PackageData) recordValue.getData(), additional);
+            } catch (Exception ex) {
+                headerData.setResponseCode(KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode());
+                sendObject(key, headerData);
+                if (ex instanceof FileNotFoundException) {
+                    log.error("File not found: {}", ex.getMessage());
+                } else {
+                    log.error("Unexpected error: {}", ex.getMessage());
+                }
+                log.trace("", ex);
+            }
+            return;
+        }
+
         /*send Header message and then Data message*/
         sendObject(key, headerData);
         sendObject(key, recordValue);
+    }
+
+    /**
+     * Notice: for download package only.
+     **/
+    private void readPackaged(PackageData packageData, RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
+        int packageId = packageData.getId();
+
+        /*create packaged file from package*/
+        String originalRecordId = additional.getRecordId();
+        BinaryFileData packagedFileData;
+        try {
+            packagedFileData = createPackagedFile(packageData, additional);
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            additional.setRecordId(originalRecordId);
+        }
+
+        byte[] content = packagedFileData.getContent();
+        int contentLength = content.length;
+
+        /*prepare return value for multipart*/
+        BinaryFileData recordFileData = new BinaryFileData();
+        recordFileData.setId(packageId);
+        recordFileData.setName(packagedFileData.getName());
+        recordFileData.setExt(packagedFileData.getExt());
+
+        RecordData recordValue = new RecordData();
+        recordValue.setAdditional(additional);
+        recordValue.setData(recordFileData);
+
+        /*TODO: need config for multipart binaryFile*/
+        int partSize = 1000000;
+        int from = 0;
+        int to;
+        while (from < contentLength) {
+            to = from + partSize;
+            headerData.setMore(to < contentLength ? 1 : 0);
+            recordFileData.setContent(Arrays.copyOfRange(content, from, to));
+
+            sendObject(key, headerData);
+            sendObject(key, recordValue);
+
+            from = to;
+        }
+    }
+
+    private BinaryFileData createPackagedFile(PackageData packageData, RecordAttributesData additional) throws ClassNotFoundException, IOException, InstantiationException {
+        BinaryFileData packagedFile = new BinaryFileData();
+        ByteArrayOutputStream zipByteArray = new ByteArrayOutputStream();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(zipByteArray);
+
+        String rootPath = new DConversID(packageData.getName()).toString() + "/";
+        BinaryFileData binaryFileData;
+        ZipEntry zipEntry;
+        for (PackageFileData fileData : packageData.getFileList()) {
+
+            /*load file content*/
+            additional.setRecordId(String.valueOf(fileData.getId()));
+            binaryFileData = getBinaryFile(fileData, additional);
+            byte[] binaryFileContent = binaryFileData.getContent();
+
+            /*add file to zip*/
+            zipEntry = new ZipEntry(rootPath + fileData.getBuildPath() + fileData.getName());
+            zipEntry.setSize(binaryFileContent.length);
+            zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.write(binaryFileContent);
+        }
+
+        /*Close Zip File*/
+        zipOutputStream.close();
+
+        /*put zip file into packagedFile*/
+        packagedFile.setContent(zipByteArray.toByteArray());
+        return packagedFile;
+    }
+
+    private BinaryFileData getBinaryFile(PackageFileData fileData, RecordAttributesData additional) throws InstantiationException, IOException, ClassNotFoundException {
+        File file = getFile(ProjectFileType.valueOf(fileData.getType().name()), additional);
+        if (!file.exists()) {
+            throw new FileNotFoundException(file.getAbsolutePath());
+        }
+        RecordData recordValue = (RecordData) readFrom(file);
+        return (BinaryFileData) recordValue.getData();
+    }
+
+    private boolean readProject(RecordAttributesData additional) {
+        /* support open new project from template/existing-project.
+         * TEMPLATE_ID/PROJECT_ID:
+         * empty string = Add New Empty Project
+         * templateID = Copy Template to New Project
+         * templatePrefix + projectID = Copy Project to New Project
+         */
+        String templateId = additional.getProjectId();
+        if (templateId.isEmpty()) {
+            /*return EmptyProject with new ProjectID*/
+            log.warn("Project template not found: {}", additional.getProjectId());
+            ProjectData emptyProject = new ProjectData();
+            emptyProject.setName("Untitled");
+
+            /*send Header message and then Data message*/
+            try {
+                RecordData returnValue = createNewProject(emptyProject, additional);
+                sendObject(key, headerData);
+                sendObject(key, returnValue);
+            } catch (Exception ex) {
+                log.error("INVALID_DATA_FILE: " + ex.getMessage());
+                log.trace("", ex);
+                headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
+                sendObject(key, headerData);
+            }
+            return true;
+
+        } else if (templateId.startsWith(IDPrefix.TEMPLATE.getPrefix())) {
+            /*return CopiedProject with new ProjectID*/
+            try {
+                String prototypeId = getPrototypeId(templateId);
+                log.debug("prototypeId = {}", prototypeId);
+                ProjectData prototypeProject = getPrototypeProject(prototypeId, additional);
+                RecordData returnValue = createNewProject(prototypeProject, additional);
+
+                copyProject(prototypeId, prototypeProject.getId(), additional);
+
+                /*send Header message and then Data message*/
+                sendObject(key, headerData);
+                sendObject(key, returnValue);
+            } catch (Exception ex) {
+                log.error("INVALID_DATA_FILE: " + ex.getMessage());
+                log.trace("", ex);
+                headerData.setResponseCode(KafkaErrorCode.INVALID_DATA_FILE.getCode());
+                sendObject(key, headerData);
+            }
+            return true;
+        }
+
+        /* otherwise load project record normally */
+        return false;
     }
 
     /**
@@ -225,6 +345,7 @@ public class ReadProjectCommand extends IOCommand {
 
     private HeaderData getHeaderData(RecordAttributesData additional) {
         HeaderData headerData = new HeaderData();
+        headerData.setMore(0);
         headerData.setProjectId(additional.getProjectId());
         headerData.setUserId(additional.getModifiedUserId());
         headerData.setClientId(additional.getModifiedClientId());
