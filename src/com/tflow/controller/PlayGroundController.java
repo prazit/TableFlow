@@ -260,12 +260,18 @@ public class PlayGroundController extends Controller {
                 "5,50,500,5000,50000";
     }
 
-    public void createMetaDiffData() {
+    public void prototypeCreateMetaDiffData() {
+        createMetaDiffData();
+        /*auto push next button*/
+        prototypeCollectSameOperand();
+    }
+
+    private void createMetaDiffData() {
         log.debug("createMetaDiffData:fromClient");
         log.debug("transactionData='{}'", transactionData);
         MetaDiffUtil util = new MetaDiffUtil();
 
-        /*parse transactionData to TransactionObject*/
+        /*parse transactionData to List of MetaDiff, line by line*/
         StringBuilder metaDiffDataBuilder = new StringBuilder();
         String[] lines = transactionData.split("\\n");
         metaDiffCollection = new ArrayList<>();
@@ -284,7 +290,7 @@ public class PlayGroundController extends Controller {
                 metaDiffList = util.createMetaDiff(intList);
                 metaDiffDataBuilder
                         .append("---- Line #").append(++count).append(" ----\n")
-                        .append(toString(metaDiffList));
+                        .append(util.toString(metaDiffList));
                 metaDiffCollection.add(metaDiffList);
             } catch (Exception ex) {
                 String msg = "createMetaDiff failed!\n{}:{}";
@@ -296,35 +302,25 @@ public class PlayGroundController extends Controller {
         }
 
         metaDiffData = metaDiffDataBuilder.toString();
-
-        /*auto push next button*/
-        collectSameOperand();
     }
 
-    private String toString(List<MetaDiffUtil.MetaDiff> metaDiffList) {
-        StringBuilder builder = new StringBuilder();
-        for (MetaDiffUtil.MetaDiff diff : metaDiffList) {
-            builder.append(diff).append("\n");
-        }
-        return builder.toString();
-    }
-
-    public void collectSameOperand() {
+    public void prototypeCollectSameOperand() {
         log.debug("collectOperands:fromClient");
+        MetaDiffUtil util = new MetaDiffUtil();
 
         collectionData.remove(0);
         collectionData.remove(0);
         /*collectionData.remove(0);*/
 
-        collectionData.add(0, collectSameOperandString(true, true, operandCollection));
-        collectionData.add(1, collectSameOperandString(true, false, operatorCollection));
+        collectionData.add(0, collectSameOperandString(true, true, operandCollection, util));
+        collectionData.add(1, collectSameOperandString(true, false, operatorCollection, util));
         /*collectionData.add(2, collectSameOperandString(false, true));*/
 
         /*auto push next button*/
-        estimateNextValue();
+        //estimateNextValue();
     }
 
-    private String collectSameOperandString(boolean compareOperator, boolean compareOperand, List<List<MetaDiffUtil.MetaDiff>> operandCollection) {
+    private String collectSameOperandString(boolean compareOperator, boolean compareOperand, List<List<MetaDiffUtil.MetaDiff>> operandCollection, MetaDiffUtil util) {
         if (metaDiffCollection.size() == 0) {
             jsBuilder.pre(JavaScript.notiWarn, "Create Meta Diff First!");
             return "";
@@ -335,17 +331,17 @@ public class PlayGroundController extends Controller {
         List<MetaDiffUtil.MetaDiff> newMetaDiffList;
         int count = 0;
         for (List<MetaDiffUtil.MetaDiff> metaDiffList : metaDiffCollection) {
-            newMetaDiffList = collectSameOperand(metaDiffList, compareOperator, compareOperand);
+            newMetaDiffList = prototypeCollectSameOperand(metaDiffList, compareOperator, compareOperand);
             collectionDataBuilder
                     .append("---- Line #").append(++count).append(" ----\n")
-                    .append(toString(newMetaDiffList));
+                    .append(util.toString(newMetaDiffList));
             operandCollection.add(newMetaDiffList);
         }
 
         return collectionDataBuilder.toString();
     }
 
-    private List<MetaDiffUtil.MetaDiff> collectSameOperand(List<MetaDiffUtil.MetaDiff> metaDiffList, boolean compareOperator, boolean compareOperand) {
+    private List<MetaDiffUtil.MetaDiff> prototypeCollectSameOperand(List<MetaDiffUtil.MetaDiff> metaDiffList, boolean compareOperator, boolean compareOperand) {
         MetaDiffUtil util = new MetaDiffUtil();
         List<MetaDiffUtil.MetaDiff> newMetaDiffList = new ArrayList<>();
 
@@ -358,7 +354,7 @@ public class PlayGroundController extends Controller {
             newMetaDiffList.add(collect);
 
             if (previous != null) {
-                collectSameOperand(collect.operandList, previous, current, compareOperator, compareOperand);
+                prototypeCollectSameOperand(collect.operandList, previous, current, compareOperator, compareOperand);
                 if (previous.operandList.size() == 0) {
                     previous.operandList.addAll(collect.operandList);
                 }
@@ -370,7 +366,7 @@ public class PlayGroundController extends Controller {
         return newMetaDiffList;
     }
 
-    private void collectSameOperand(List<MetaDiffUtil.Operand> operandList, MetaDiffUtil.MetaDiff previous, MetaDiffUtil.MetaDiff current, boolean compareOperator, boolean compareOperand) {
+    private void prototypeCollectSameOperand(List<MetaDiffUtil.Operand> operandList, MetaDiffUtil.MetaDiff previous, MetaDiffUtil.MetaDiff current, boolean compareOperator, boolean compareOperand) {
         List<MetaDiffUtil.Operand> currentOperandList = current.operandList;
         for (MetaDiffUtil.Operand operand : previous.operandList) {
             if (containsOperand(operand, currentOperandList, compareOperator, compareOperand)) {
@@ -392,7 +388,7 @@ public class PlayGroundController extends Controller {
         return false;
     }
 
-    public void estimateNextValue() {
+    public void prototypeEstimateNextValue() {
         log.debug("estimateNextValue:fromClient");
         MetaDiffUtil util = new MetaDiffUtil();
         List<MetaDiffUtil.MetaDiff> metaDiffList;
@@ -440,4 +436,283 @@ public class PlayGroundController extends Controller {
         }
         return weight;
     }
+
+    public void patternCreateMetaDiffData() {
+        createMetaDiffData();
+
+        /*auto push next button*/
+        patternCollectSameOperand();
+    }
+
+    public void patternCollectSameOperand() {
+        log.debug("patternCollectSameOperand:fromClient");
+        MetaDiffUtil util = new MetaDiffUtil();
+
+        collectionData.remove(0);
+        collectionData.remove(0);
+        collectionData.remove(0);
+        collectionData.remove(0);
+
+        List<List<MetaDiffUtil.MetaDiffPattern>> sameOperandFullPatternCollection = new ArrayList<>();
+        List<List<MetaDiffUtil.MetaDiffPattern>> sameOperatorFullPatternCollection = new ArrayList<>();
+
+        List<List<MetaDiffUtil.MetaDiffPattern>> sameOperandHalfPatternCollection = new ArrayList<>();
+        List<List<MetaDiffUtil.MetaDiffPattern>> sameOperatorHalfPatternCollection = new ArrayList<>();
+
+        collectionData.add(0, collectPatternTo(sameOperandFullPatternCollection, true, true, util));
+        collectionData.add(1, collectPatternTo(sameOperatorFullPatternCollection, true, false, util));
+        collectionData.add(2, collectPatternTo(sameOperandHalfPatternCollection, false, true, util));
+        collectionData.add(3, collectPatternTo(sameOperatorHalfPatternCollection, false, false, util));
+
+        /*auto push next button*/
+        //patternEstimateNextValue();
+    }
+
+    private String collectPatternTo(List<List<MetaDiffUtil.MetaDiffPattern>> patternCollection, boolean fullPattern, boolean needSameOperand, MetaDiffUtil util) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int lineIndex = 0;
+
+        List<List<MetaDiffUtil.MetaDiff>> sourceList = this.metaDiffCollection;
+        patternCollection.clear();
+
+        List<MetaDiffUtil.MetaDiffPattern> patternList;
+        for (List<MetaDiffUtil.MetaDiff> source : sourceList) {
+            patternList = new ArrayList<>();
+            patternCollection.add(patternList);
+
+            for (int patternLength = source.size() / 2; patternLength > 1; patternLength--) {
+                //if (fullPattern) {
+                patternList.addAll(collectPossiblePattern(source, patternLength, needSameOperand, util));
+                //} else {
+                /*TODO: halfPattern is in Advanced Feature*/
+                //}
+            }
+
+            stringBuilder
+                    .append("---- Line #").append(++lineIndex).append(" ----\n")
+                    .append(util.toString(patternList));
+        }
+
+        return stringBuilder.toString();
+    }
+
+    /**
+     * @return all possible patterns at index, all patterns always have the same patternLength
+     */
+    private List<MetaDiffUtil.MetaDiffPattern> collectPossiblePattern(List<MetaDiffUtil.MetaDiff> source, int patternLength, boolean needSameOperand, MetaDiffUtil util) {
+        if (log.isDebugEnabled()) log.debug("collectPossiblePattern: source[{}], patternLength:{}, needSameOperand:{}", source.size(), patternLength, needSameOperand);
+        List<MetaDiffUtil.MetaDiffPattern> possiblePatternList = new ArrayList<>();
+        List<MetaDiffUtil.MetaDiffPattern> workingPatternList;
+
+        /*------- collect source of pattern -------*/
+        List<MetaDiffUtil.MetaDiff> truncatedSource = new ArrayList<>();
+        int sourceSize = source.size();
+        int index = sourceSize - patternLength;
+        for (int srcIndex = index; srcIndex < sourceSize; srcIndex++) {
+            truncatedSource.add(source.get(srcIndex));
+        }
+
+        MetaDiffUtil.MetaDiffPattern pattern;
+        workingPatternList = new ArrayList<>();
+
+        /*INCORRECT: collect pattern by same operator only*/
+        /*{
+            boolean foundSame;
+            for (MetaDiffUtil.Operator operator : MetaDiffUtil.Operator.values()) {
+                pattern = util.newMetaDiffPattern(source);
+                foundSame = false;
+                for (MetaDiffUtil.MetaDiff metaDiff : truncatedSource) {
+                    foundSame = false;
+                    for (MetaDiffUtil.Operand operand : metaDiff.operandList) {
+                        if (operand.operator == operator) {
+                            pattern.pattern.add(operand);
+                            foundSame = true;
+                            break;
+                        }
+                    }
+                    if (!foundSame) break;
+                }
+                if (foundSame) workingPatternList.add(pattern);
+            }
+        }*/
+
+        /*------- create possible patterns from truncatedSource -------*/
+        workingPatternList.add(util.newMetaDiffPattern(source));
+        collectOperand(workingPatternList, truncatedSource, patternLength, 0, 0, util);
+        log.debug("patterns from collectOperand: {}", Arrays.toString(workingPatternList.toArray()));
+
+        /*------- find pattern appearance -------*/
+        for (MetaDiffUtil.MetaDiffPattern workingPattern : workingPatternList) {
+            int exclusiveIndex = index - 1;
+            int foundIndex = 0;
+            if (needSameOperand) {
+                while ((foundIndex = findPatternSameOperand(workingPattern, source, foundIndex, exclusiveIndex)) >= 0) {
+                    workingPattern.appearance.add(foundIndex++);
+                }
+            } else {
+                while ((foundIndex = findPatternSameOperator(workingPattern, source, foundIndex, exclusiveIndex)) >= 0) {
+                    workingPattern.appearance.add(foundIndex++);
+                }
+            }
+            workingPattern.appearance.add(index);
+
+            if (workingPattern.appearance.size() > 1) {
+                possiblePatternList.add(workingPattern);
+            }
+        }
+
+        return possiblePatternList;
+    }
+
+    /**
+     * @param fromIndex inclusive
+     * @param toIndex   exclusive
+     * @return index of first appearance of pattern, otherwise -1
+     */
+    private int findPatternSameOperand(MetaDiffUtil.MetaDiffPattern pattern, List<MetaDiffUtil.MetaDiff> source, int fromIndex, int toIndex) {
+        MetaDiffUtil.MetaDiff sourceItem;
+        int relativeIndex;
+        int foundCount = 0;
+        boolean found;
+        for (int sourceIndex = fromIndex; sourceIndex < toIndex; sourceIndex++) {
+            relativeIndex = 0;
+            for (MetaDiffUtil.Operand patternItem : pattern.pattern) {
+                sourceItem = source.get(sourceIndex + relativeIndex);
+                relativeIndex++;
+                found = false;
+                for (MetaDiffUtil.Operand sourceOperand : sourceItem.operandList) {
+                    if (patternItem.operator == sourceOperand.operator && patternItem.operand == sourceOperand.operand) {
+                        found = true;
+                        foundCount++;
+                        break;
+                    }
+                }
+                if (!found) break;
+            }
+            if (foundCount == pattern.pattern.size()) {
+                log.debug("findPatternSameOperand: found index = {}", sourceIndex);
+                return sourceIndex;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @param fromIndex inclusive
+     * @param toIndex   exclusive
+     * @return index of first appearance of pattern, otherwise -1
+     */
+    private int findPatternSameOperator(MetaDiffUtil.MetaDiffPattern pattern, List<MetaDiffUtil.MetaDiff> source, int fromIndex, int toIndex) {
+        MetaDiffUtil.MetaDiff sourceItem;
+        int relativeIndex;
+        int foundCount = 0;
+        boolean found;
+        for (int sourceIndex = fromIndex; sourceIndex < toIndex; sourceIndex++) {
+            relativeIndex = 0;
+            for (MetaDiffUtil.Operand patternItem : pattern.pattern) {
+                sourceItem = source.get(sourceIndex + relativeIndex);
+                relativeIndex++;
+                found = false;
+                for (MetaDiffUtil.Operand sourceOperand : sourceItem.operandList) {
+                    if (patternItem.operator == sourceOperand.operator) {
+                        found = true;
+                        foundCount++;
+                        break;
+                    }
+                }
+                if (!found) break;
+            }
+            if (foundCount == pattern.pattern.size()) {
+                log.debug("findPatternSameOperator: found index = {}", sourceIndex);
+                return sourceIndex;
+            }
+        }
+        return -1;
+    }
+
+    private int collectOperandCount;
+
+    /**
+     * (root)
+     * target: pattern[0]
+     * target: pattern[0,0]
+     * target: pattern[0,0,0]       // new, copy, remove last operand
+     * // increase operandIndex
+     * target: new pattern[0,0,1]   // new, copy, remove last operand
+     * <p>
+     * target: new pattern[0,1]
+     * target: pattern[0,1,0]
+     * <p>
+     * target: new pattern[0,1,1]
+     * <p>
+     * (root)
+     * target: new pattern[1]
+     * target: pattern[1,0]
+     * target: pattern[1,0,0]
+     * <p>
+     * target: new pattern[1,0,1]
+     * <p>
+     * target: new pattern[1,1]
+     * target: pattern[1,1,0]
+     * <p>
+     * target: new pattern[1,1,1]
+     */
+    private void collectOperand(List<MetaDiffUtil.MetaDiffPattern> patternList, List<MetaDiffUtil.MetaDiff> trunk, int patternLength, int patternPosition, int operandIndex, MetaDiffUtil util) {
+        if (patternPosition == 0 && operandIndex == 0) {
+            collectOperandCount = 0;
+            if (log.isDebugEnabled()) log.debug("start collectOperand: truck:{}", Arrays.toString(trunk.toArray()));
+        } else {
+            collectOperandCount++;
+        }
+        if (collectOperandCount >= 1000) {
+            /*dead loop and stack overflow protection*/
+            return;
+        }
+
+        List<MetaDiffUtil.Operand> operandList = trunk.get(patternPosition).operandList;
+        MetaDiffUtil.MetaDiffPattern pattern = patternList.get(patternList.size() - 1);
+
+        while (pattern.pattern.size() > patternPosition) {
+            pattern.pattern.remove(pattern.pattern.size() - 1);
+        }
+
+        pattern.pattern.add(operandList.get(operandIndex));
+        log.debug("collectOperand: patternPosition:{}, operandIndex:{}, pattern:{}", patternPosition, operandIndex, pattern);
+
+        if (patternPosition == patternLength - 1) {
+            // new, copy, remove last operand
+            MetaDiffUtil.MetaDiffPattern newPattern = util.newMetaDiffPattern(pattern.source);
+            for (int i = 0; i < pattern.pattern.size() - 1; i++) {
+                newPattern.pattern.add(pattern.pattern.get(i));
+            }
+            patternList.add(newPattern);
+
+            if (operandIndex == operandList.size() - 1) {
+                return;
+            }
+
+        } else {
+            collectOperand(patternList, trunk, patternLength, patternPosition + 1, 0, util);
+        }
+
+        if (operandIndex + 1 < operandList.size()) {
+            collectOperand(patternList, trunk, patternLength, patternPosition, operandIndex + 1, util);
+        }
+
+    }
+
+    /**
+     * Prediction
+     */
+    public void patternEstimateNextValue() {
+        log.debug("patternEstimateNextValue:fromClient");
+
+        /* TODO: Choose Pattern to use for estimate
+         * case1: if. fond pattern with sameOperand : use sameOperandFullPatternCollection/sameOperandHalfPatternCollection (weight by ?)
+         * case2: if. found pattern with sameOperator : use sameOperatorFullPatternCollection/sameOperatorHalfPatternCollection (weight by ?)
+         * case3: else. : use operand from first MetaDiff (weight by Operator.weight)
+         */
+
+    }
+
 }

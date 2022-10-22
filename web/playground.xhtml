@@ -162,7 +162,7 @@
                     </p:tab>
                     <p:tab title="Meta Diff Data">
                         <h:form>
-                            <p:outputPanel styleClass="ui-g" id="inputPanel">
+                            <p:outputPanel styleClass="ui-g" id="metaDiffPanel">
                                 <h3>Meta Diff Data created from the Transaction Data in the past that will used to estimate the next Transaction Data</h3>
                                 <p:tooltip position="top"/>
 
@@ -178,8 +178,11 @@
                                 </p:outputPanel>
 
                                 <div class="ui-g-12">
-                                    <p:commandButton styleClass="float-left" icon="pi pi-angle-double-down" value="Create Meta Diff Data" actionListener="#{playCtl.createMetaDiffData}" update="@form"/>
-                                    <p:commandButton styleClass="float-right" icon="pi pi-angle-double-up" value="Estimate Next Value" actionListener="#{playCtl.estimateNextValue}" update="@form" rendered="#{playCtl.metaDiffCollection.size() > 0}"/>
+                                    <p:commandButton styleClass="float-left" icon="pi pi-angle-double-down" value="Protype : 1.Create Meta Diff Data" actionListener="#{playCtl.prototypeCreateMetaDiffData}" update="@form"/>
+                                    <p:commandButton styleClass="float-left" icon="pi pi-angle-double-up" value="Protype : 3.Estimate Next Value" actionListener="#{playCtl.prototypeEstimateNextValue}" update="@form" rendered="#{playCtl.metaDiffCollection != null and playCtl.metaDiffCollection.size() > 0}"/>
+
+                                    <p:commandButton styleClass="float-right" icon="pi pi-angle-double-down" value="Pattern : 1.Create Meta Diff Data" actionListener="#{playCtl.patternCreateMetaDiffData}" update="@form"/>
+                                    <p:commandButton styleClass="float-right" icon="pi pi-angle-double-up" value="Pattern : 3.Estimate Next Value" actionListener="#{playCtl.patternEstimateNextValue}" update="@form" rendered="#{playCtl.metaDiffCollection != null and playCtl.metaDiffCollection.size() > 0}"/>
                                 </div>
 
                                 <p:divider align="left">
@@ -194,7 +197,9 @@
                                 </p:outputPanel>
 
                                 <div class="ui-g-12">
-                                    <p:commandButton icon="pi pi-angle-double-down" value="Same Operator and Operands" actionListener="#{playCtl.collectSameOperand}" update="@form"/>
+                                    <p:commandButton styleClass="float-left" icon="pi pi-angle-double-down" value="Protype : 2.Same Operator and Operands" actionListener="#{playCtl.prototypeCollectSameOperand}" update="@form"/>
+
+                                    <p:commandButton styleClass="float-right" icon="pi pi-angle-double-down" value="Pattern : 2.Same Operator and Operands" actionListener="#{playCtl.patternCollectSameOperand}" update="@form"/>
                                 </div>
 
                                 <p:divider align="left">
@@ -204,17 +209,33 @@
                                     </div>
                                 </p:divider>
 
-                                <p:outputPanel styleClass="ui-g-4">
-                                    <p:outputLabel value="Same Operator and Operand"/>
+                                <p:outputPanel styleClass="ui-g-3">
+                                    <p:outputPanel>
+                                        <p:outputLabel styleClass="float-left" value="Prototype : Same Operator and Operand"/>
+                                        <p:outputLabel styleClass="float-right" value="Pattern : Full Pattern, Same Operand"/>
+                                    </p:outputPanel>
                                     <p:inputTextarea value="#{playCtl.collectionData[0]}" rows="7" styleClass="fit-width"/>
                                 </p:outputPanel>
-                                <p:outputPanel styleClass="ui-g-4">
-                                    <p:outputLabel value="Same Operator"/>
+                                <p:outputPanel styleClass="ui-g-3">
+                                    <p:outputPanel>
+                                        <p:outputLabel styleClass="float-left" value="Prototype : Same Operator"/>
+                                        <p:outputLabel styleClass="float-right" value="Pattern : Full Pattern, Same Operator"/>
+                                    </p:outputPanel>
                                     <p:inputTextarea value="#{playCtl.collectionData[1]}" rows="7" styleClass="fit-width"/>
                                 </p:outputPanel>
-                                <p:outputPanel styleClass="ui-g-4">
-                                    <p:outputLabel value="Same Operand"/>
+                                <p:outputPanel styleClass="ui-g-3">
+                                    <p:outputPanel>
+                                        <p:outputLabel styleClass="float-left" value="Prototype : none"/>
+                                        <p:outputLabel styleClass="float-right" value="Pattern : Half Pattern, Same Opearand"/>
+                                    </p:outputPanel>
                                     <p:inputTextarea value="#{playCtl.collectionData[2]}" rows="7" styleClass="fit-width"/>
+                                </p:outputPanel>
+                                <p:outputPanel styleClass="ui-g-3">
+                                    <p:outputPanel>
+                                        <p:outputLabel styleClass="float-left" value="Prototype : none"/>
+                                        <p:outputLabel styleClass="float-right" value="Pattern : Half Pattern, Same Opearator"/>
+                                    </p:outputPanel>
+                                    <p:inputTextarea value="#{playCtl.collectionData[3]}" rows="7" styleClass="fit-width"/>
                                 </p:outputPanel>
 
                                 <p:divider/>

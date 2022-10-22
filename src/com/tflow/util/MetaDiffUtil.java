@@ -107,6 +107,42 @@ public class MetaDiffUtil {
         }
     }
 
+    public class MetaDiffPattern {
+        public List<MetaDiff> source;
+
+        /**
+         * pattern of Operand (only one operand from MetaDiff.operandList of source-item that can form the same pattern)
+         * pattern must appear more than one in the source.
+         */
+        public List<Operand> pattern;
+
+        /**
+         * Pattern appear in source at each index from this list.
+         * Appearance always contains 2 or more indexes.
+         */
+        public List<Integer> appearance;
+
+        public MetaDiffPattern(List<MetaDiff> source) {
+            this.source = source;
+            pattern = new ArrayList<>();
+            appearance = new ArrayList<>();
+        }
+
+        public int getWeight() {
+            int patternLength = pattern.size();     //2 //1
+            int appearCount = appearance.size();    //2 //4
+            return patternLength + appearCount;     //4 //4
+        }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "pattern:" + Arrays.toString(pattern.toArray()) +
+                    ", appearance:" + Arrays.toString(appearance.toArray()) +
+                    '}';
+        }
+    }
+
     private Logger log;
 
     public MetaDiffUtil() {
@@ -115,6 +151,10 @@ public class MetaDiffUtil {
 
     public MetaDiff newMetaDiff() {
         return new MetaDiff();
+    }
+
+    public MetaDiffPattern newMetaDiffPattern(List<MetaDiff> source) {
+        return new MetaDiffPattern(source);
     }
 
 
@@ -280,6 +320,12 @@ public class MetaDiffUtil {
         }
 
         return max;
+    }
+
+    public String toString(List<? extends Object> metaDiffList) {
+        StringBuilder builder = new StringBuilder();
+        for (Object diff : metaDiffList) builder.append(diff).append("\n");
+        return builder.toString();
     }
 
 }
