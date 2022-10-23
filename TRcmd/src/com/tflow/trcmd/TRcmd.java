@@ -37,6 +37,7 @@ public class TRcmd extends CLIbase {
         configs.put("producer.key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         configs.put("producer.key.serializer.encoding", StandardCharsets.UTF_8.name());
         configs.put("producer.value.serializer", environmentConfigs.getKafkaSerializer());
+        configs.put("producer.max.request.size", 671088640);
     }
 
     @SuppressWarnings("unchecked")

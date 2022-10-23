@@ -12,6 +12,7 @@ public class PackageData extends TWData {
     private static final transient long serialVersionUID = 2021121709996660061L;
 
     private int id;
+    private PackageType type;
 
     private String name;
     private Date buildDate;

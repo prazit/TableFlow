@@ -16,3 +16,7 @@ kafka-topics --bootstrap-server DESKTOP-K1PAMA3:9092 --create --topic project-wr
 kafka-topics --bootstrap-server DESKTOP-K1PAMA3:9092 --create --topic project-read --partitions 1 --replication-factor 1 %OPTIONS%
 kafka-topics --bootstrap-server DESKTOP-K1PAMA3:9092 --create --topic project-data --partitions 1 --replication-factor 1 %OPTIONS%
 kafka-topics --bootstrap-server DESKTOP-K1PAMA3:9092 --create --topic project-build --partitions 1 --replication-factor 1 %OPTIONS%
+
+@echo Consumer start at Offset
+set OPTIONS=--property value.deserializer=org.apache.kafka.common.serialization.StringDeserializer --property value.deserializer.encoding=ISO-8859-1
+kafka-console-consumer --bootstrap-server DESKTOP-K1PAMA3:9092 --topic project-data --partition 0 --offset 8012 %OPTIONS% > c:\Apps\TFlow\project-data-offset8012.json

@@ -4,19 +4,32 @@ import java.util.ArrayList;
 
 /**
  * VERSIONED IDs.
+ * Notice: all existing enum below unable to delete, they must always be exists to avoid error in Project-Page.
  */
 public enum Versioned {
 
+    /*Database Drivers*/
     DRIVER_ORACLE(11, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     DRIVER_DB2(12, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     DRIVER_MYSQL(13, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
 
-    /*TODO: need complete list for VERSIONED*/
-
     /*DConvers Libs*/
     DATA_CONVERSION(21, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
-    APACHE_CONFIGURATION(22, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
-    APACHE_TEXT(23, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    APACHE_COMMONS_BEANUTILS(22, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    APACHE_COMMONS_CLI(23, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    APACHE_COMMONS_CODEC(24, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    APACHE_COMMONS_CONFIGURATION(25, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    APACHE_COMMONS_LANG(26, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    APACHE_COMMONS_LOGGING(27, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    /*TODO: need SFTP Library*/
+
+    /*Logback*/
+    LOGBACK_CORE(28, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    LOGBACK_CLASSIC(29, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    SLF4J_API(30, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+
+    /*TODO: run downloded project to find more libs*/
+
 
     /*WebUI Libs*/
     PRIMEFACES(51, "U", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),

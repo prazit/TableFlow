@@ -11,6 +11,7 @@ import com.tflow.util.DConversID;
 import com.tflow.wcmd.IOCommand;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -157,6 +160,7 @@ public class ReadProjectCommand extends IOCommand {
         int to;
         while (from < contentLength) {
             to = from + partSize;
+            if (to >= contentLength) to = contentLength;
             headerData.setMore(to < contentLength ? 1 : 0);
             recordFileData.setContent(Arrays.copyOfRange(content, from, to));
 
@@ -178,7 +182,7 @@ public class ReadProjectCommand extends IOCommand {
         for (PackageFileData fileData : packageData.getFileList()) {
 
             /*load file content*/
-            additional.setRecordId(String.valueOf(fileData.getId()));
+            additional.setRecordId(String.valueOf(fileData.getFileId()));
             binaryFileData = getBinaryFile(fileData, additional);
             byte[] binaryFileContent = binaryFileData.getContent();
 
@@ -193,7 +197,11 @@ public class ReadProjectCommand extends IOCommand {
         zipOutputStream.close();
 
         /*put zip file into packagedFile*/
+        packagedFile.setId(packageData.getId());
+        packagedFile.setName(new DConversID(packageData.getName()).toString()+".zip");
+        packagedFile.setExt(FileNameExtension.ZIP);
         packagedFile.setContent(zipByteArray.toByteArray());
+
         return packagedFile;
     }
 
@@ -446,7 +454,37 @@ public class ReadProjectCommand extends IOCommand {
         } else {
             record = object;
         }
-        dataProducer.send(new ProducerRecord<>(topic, key, record));
+        Future<RecordMetadata> future = dataProducer.send(new ProducerRecord<>(topic, key, record));
+        waiting(future);
+    }
+
+    private boolean waiting(Future<RecordMetadata> future) {
+        while (!future.isDone()) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                /*nothing*/
+            }
+        }
+
+        boolean result;
+        if (future.isCancelled()) {
+            log.error("Record Cancelled by Kafka");
+            result = false;
+        } else try {
+            RecordMetadata recordMetadata = future.get();
+            result = true;
+        } catch (InterruptedException ex) {
+            log.error("InterruptedException: " + ex.getMessage());
+            log.trace("", ex);
+            result = false;
+        } catch (ExecutionException ex) {
+            log.error("ExecutionException: " + ex.getMessage());
+            log.trace("", ex);
+            result = false;
+        }
+
+        return result;
     }
 
     /**

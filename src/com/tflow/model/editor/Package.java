@@ -2,6 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.PackageType;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.view.PropertyView;
 
@@ -13,6 +14,7 @@ import java.util.Map;
 public class Package implements Selectable, HasEvent {
 
     private int id;
+    private PackageType type;
 
     private String name;
     private Date buildDate;
@@ -54,6 +56,14 @@ public class Package implements Selectable, HasEvent {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public PackageType getType() {
+        return type;
+    }
+
+    public void setType(PackageType type) {
+        this.type = type;
     }
 
     public String getName() {
@@ -120,6 +130,7 @@ public class Package implements Selectable, HasEvent {
     public String toString() {
         return "{" +
                 ", id:" + id +
+                ", type:" + type +
                 ", name:'" + name + '\'' +
                 ", buildDate:" + buildDate +
                 ", builtDate:" + builtDate +

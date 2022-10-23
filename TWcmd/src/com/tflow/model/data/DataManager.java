@@ -586,7 +586,7 @@ public class DataManager {
             } else {
                 /*for multipart binary file*/
                 BinaryFileData targetFileData = (BinaryFileData) kafkaRecord.getData();
-                BinaryFileData capturedFileData = (BinaryFileData) ((KafkaRecord)data).getData();
+                BinaryFileData capturedFileData = (BinaryFileData) ((KafkaRecord) data).getData();
 
                 byte[] targetFileContent = targetFileData.getContent();
                 byte[] capturedFileContent = capturedFileData.getContent();
@@ -700,8 +700,7 @@ public class DataManager {
                 try {
                     capturedHeader = (HeaderData) captured;
                 } catch (ClassCastException ex) {
-                    log.error("Error when cast captured-data to HeaderData: " + ex.getMessage());
-                    log.trace("", ex);
+                    log.warn("ignore invalid header: {}", ex.getMessage());
                     continue;
                 }
 

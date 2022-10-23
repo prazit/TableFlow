@@ -18,6 +18,7 @@ import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
 import com.tflow.wcmd.IOCommand;
 import com.clevel.dconvers.ngin.Pair;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.mapstruct.factory.Mappers;
@@ -69,12 +70,17 @@ public class BuildPackageCommand extends IOCommand {
         attributes = (KafkaRecordAttributes) value;
         recordAttributes = Mappers.getMapper(RecordMapper.class).map(attributes);
 
+        ProjectData projectData = null;
         List<ItemData> packageList = null;
         PackageData packageData = null;
         List<PackageFileData> fileList = new ArrayList<>();
         ProjectUser projectUser = mapper.map(attributes);
+
         try {
-            Object data = getData(ProjectFileType.PACKAGE_LIST);
+            Object data = getData(ProjectFileType.PROJECT, projectUser.getId());
+            projectData = (ProjectData) throwExceptionOnError(data);
+
+            data = getData(ProjectFileType.PACKAGE_LIST);
             packageList = (List<ItemData>) throwExceptionOnError(data);
 
             boolean isNewPackage = true;
@@ -101,13 +107,14 @@ public class BuildPackageCommand extends IOCommand {
                 }
             }
 
+            packageData.setType(projectData.getType().getPackageType());
             packageData.setBuildDate(DateTimeUtil.now());
             packageData.setName("building...");
 
             ItemData packageItemData = mapper.map(packageData);
             if (isNewPackage) packageList.add(packageItemData);
 
-            buildPackage(packageData, fileList, packageList, projectUser);
+            buildPackage(packageData, fileList, packageList, projectUser, projectData);
 
         } catch (Exception exception) {
             if (packageList != null) {
@@ -130,24 +137,25 @@ public class BuildPackageCommand extends IOCommand {
      * @param packageData contains percent complete for ui, this function will update them 4-5 times max
      */
     @SuppressWarnings("unchecked")
-    private void buildPackage(PackageData packageData, List<PackageFileData> fileList, List<ItemData> packageList, ProjectUser projectUser) throws InstantiationException, IOException, ClassNotFoundException {
+    private void buildPackage(PackageData packageData, List<PackageFileData> fileList, List<ItemData> packageList, ProjectUser projectUser, ProjectData projectData) throws InstantiationException, IOException, ClassNotFoundException {
         updatePackageList(packageData, packageList, projectUser);
         updatePercentComplete(packageData, projectUser, 0, estimateBuiltDate());
 
         addUploadedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 25, estimateBuiltDate());
 
-        addGeneratedFiles(fileList, packageData, projectUser);
+        addVersionedFiles(fileList, packageData, projectUser);
+        addGeneratedFiles(fileList, packageData, projectUser, projectData);
         updatePercentComplete(packageData, projectUser, 50, estimateBuiltDate());
 
-        addVersionedFiles(fileList, packageData, projectUser);
         addConfigVersionFile(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
-        String completeName = getCompleteName(packageData);
+        String completeName = getCompleteName(packageData, projectData);
         packageData.setName(completeName);
         packageData.setFileList(fileList);
         fileList.sort(Comparator.comparing(item -> (item.getBuildPath() + item.getName())));
+
         /*TODO: need to compare previous version and mark for New/Updated File*/
 
         packageData.setFinished(true);
@@ -214,8 +222,8 @@ public class BuildPackageCommand extends IOCommand {
         return getData(projectFileType, recordAttributesData);
     }
 
-    private String getCompleteName(PackageData packageData) {
-        return "Package-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-HHmmss-SSS");
+    private String getCompleteName(PackageData packageData, ProjectData projectData) {
+        return new DConversID(projectData.getName()) + "-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-HHmmss-SSS");
     }
 
     private void addConfigVersionFile(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) {
@@ -289,60 +297,63 @@ public class BuildPackageCommand extends IOCommand {
         return data;
     }
 
-    private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
-        /*TODO: invalid generatedFileId, please see PackageList file*/
-        int generatedFileId = 0;
-        int packageFileId = newPackageFileId(packageData);
+    private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser, ProjectData projectData) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
         generatedPath = environmentConfigs.getBinaryRootPath() + projectUser.getId() + "/";
 
-        Object data = getData(ProjectFileType.PROJECT, projectUser.getId());
-        ProjectData projectData = (ProjectData) throwExceptionOnError(data);
-        String name = new DConversID(projectData.getName()).toString() + Defaults.CONFIG_FILE_EXT.getStringValue();
-        name = name.toLowerCase();
-        createEmptyFile(generatedPath + name);
+        String conversionFileName = new DConversID(projectData.getName()).toString() + Defaults.CONFIG_FILE_EXT.getStringValue();
+        conversionFileName = conversionFileName.toLowerCase();
+        createEmptyFile(generatedPath + conversionFileName);
 
         dconvers = new DConvers(new String[]{
                 "--library-mode=manual"
                 /*, "--source-type=" + ConfigFileTypes.PROPERTIES.name()*/
-                , "--source=" + generatedPath + name
+                , "--source=" + generatedPath + conversionFileName
                 /*,"--save-default-value"*/
         });
-
         DataConversionConfigFile dataConversionConfigFile = dconvers.dataConversionConfigFile;
-        initDataConversionConfigFile(dataConversionConfigFile, packageData, projectUser, fileList);
 
         try {
-            /*need first generated file id from GENERATED_LIST*/
-            data = getData(ProjectFileType.GENERATED_LIST);
+            List<DatabaseData> databaseDataList = loadDatabaseDataList();
+            List<SFTPData> sftpDataList = new ArrayList<>();
+            List<LocalData> localDataList = loadLocalDataList(projectUser);
+
+            Object data = getData(ProjectFileType.GENERATED_LIST);
             List<ItemData> generatedFileList = (List<ItemData>) throwExceptionOnError(data);
-            generatedFileId = generatedFileList.size() + 1;
 
-            /*create Generated Conversion File*/
-            log.info("dataConversionConfigFile.saveProperties...");
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            dataConversionConfigFile.saveProperties(byteArrayOutputStream);
-            byte[] contentBytes = byteArrayOutputStream.toByteArray();
-            log.debug("Conversion:saveProperties successful, \n{}", new String(contentBytes, StandardCharsets.ISO_8859_1));
+            ByteArrayOutputStream byteArrayOutputStream;
+            ItemData generatedItemData;
+            byte[] contentBytes;
 
-            generatedFileList.add(new ItemData(generatedFileId, name));
-            BinaryFileData conversionFileData = addGeneratedFile(generatedFileId, name, contentBytes, packageData, projectUser, fileList);
-
-            PackageFileData packageFileData;
-            BinaryFileData converterFileData;
-            for (ConverterConfigFile converterConfigFile : dataConversionConfigFile.getConverterConfigMap().values()) {
-                name = extractFileName(converterConfigFile.getName());
+            String converterFileName;
+            List<Integer> usedDatabaseIdList = new ArrayList<>();
+            HashMap<String, ConverterConfigFile> converterConfigMap = getConverterConfigMap(projectUser, fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList);
+            for (ConverterConfigFile converterConfigFile : converterConfigMap.values()) {
+                converterFileName = extractFileName(converterConfigFile.getName());
 
                 /*create Generated Converter File*/
                 byteArrayOutputStream = new ByteArrayOutputStream();
                 converterConfigFile.saveProperties(byteArrayOutputStream);
                 contentBytes = byteArrayOutputStream.toByteArray();
-                log.debug("Converter:saveProperties successful, {}\n{}", name, new String(byteArrayOutputStream.toByteArray(), StandardCharsets.ISO_8859_1));
+                log.debug("Converter:saveProperties successful, {}\n{}", converterFileName, new String(contentBytes, StandardCharsets.ISO_8859_1));
 
-                generatedFileList.add(new ItemData(generatedFileId, name));
-                addGeneratedFile(++generatedFileId, name, contentBytes, packageData, projectUser, fileList);
+                generatedItemData = new ItemData(generatedFileList.size() + 1, converterFileName);
+                generatedFileList.add(generatedItemData);
+                addGeneratedFile(generatedItemData.getId(), converterFileName, contentBytes, packageData, projectUser, fileList);
             }
 
-            addGeneratedBatchFiles(conversionFileData, projectData, packageData, projectUser, fileList, generatedFileList, generatedFileId);
+            /*remove unused database before create ConversionConfigFile*/
+            List<DatabaseData> usedDatabaseDataList = new ArrayList<>();
+            for (Integer databaseId : usedDatabaseIdList) {
+                usedDatabaseDataList.add(findDatabaseData(databaseId, databaseDataList));
+            }
+            databaseDataList = usedDatabaseDataList;
+
+            /*TODO: need to remove unused sftp before create ConversionFile*/
+
+            addDataConversionConfigFile(conversionFileName, dataConversionConfigFile, converterConfigMap, packageData, projectUser, fileList, databaseDataList, localDataList, sftpDataList, generatedFileList);
+            addGeneratedBatchFiles(conversionFileName, projectData, packageData, projectUser, fileList, generatedFileList);
+
+            /*GENERATED_LIST need to save at the end*/
             dataManager.addData(ProjectFileType.GENERATED_LIST, generatedFileList, projectUser);
 
             log.info("generate dconvers-config-files success.\n");
@@ -369,7 +380,8 @@ public class BuildPackageCommand extends IOCommand {
         return conversionFileData;
     }
 
-    private void addGeneratedBatchFiles(BinaryFileData sourceFileData, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList, int generatedFileId) {
+    private void addGeneratedBatchFiles(String conversionFileName, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList) {
+        FileNameExtension ext = FileNameExtension.forName(conversionFileName);
 
         /*TODO: future feature: need Batch Option object later*/
 
@@ -381,7 +393,7 @@ public class BuildPackageCommand extends IOCommand {
                 "@set CLSPATH={}\n" +
                 "\"%JAVA_BIN%java.exe\" -Xms64m -Xmx2g -Dfile.encoding=UTF-8 -Duser.timezone=\"GMT+7\" -Duser.language=en -Duser.region=EN -Duser.country=US --class-path \"%CLSPATH%\" com.clevel.dconvers.Main --source=\"%SOURCE%\" --level=%LEVEL%\n";
         String javaHome = "C:/Program Files/OpenJDK/jdk-8.0.262.10-hotspot/bin/";
-        String source = sourceFileData.getExt().getBuildPath() + sourceFileData.getName();
+        String source = ext.getBuildPath() + conversionFileName;
         String level = "INFO";
         String clsPath = getJavaClassPath(fileList);
         String content = MessageFormatter.arrayFormat(batTemplate, new Object[]{javaHome, source, level, clsPath}).getMessage();
@@ -389,8 +401,9 @@ public class BuildPackageCommand extends IOCommand {
         byte[] contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
 
         String name = "run-" + new DConversID(projectData.getName()) + ".bat";
-        generatedFileList.add(new ItemData(generatedFileId, name));
-        addGeneratedFile(generatedFileId, name, contentBytes, packageData, projectUser, fileList);
+        ItemData generatedItemData = new ItemData(generatedFileList.size() + 1, name);
+        generatedFileList.add(generatedItemData);
+        addGeneratedFile(generatedItemData.getId(), name, contentBytes, packageData, projectUser, fileList);
 
         /*generate shell script*/
         javaHome = "";
@@ -404,8 +417,11 @@ public class BuildPackageCommand extends IOCommand {
         contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
 
         name = "run-" + new DConversID(projectData.getName()) + ".sh";
-        generatedFileList.add(new ItemData(generatedFileId, name));
-        addGeneratedFile(generatedFileId, name, contentBytes, packageData, projectUser, fileList);
+        generatedItemData = new ItemData(generatedFileList.size() + 1, name);
+        generatedFileList.add(generatedItemData);
+        addGeneratedFile(generatedItemData.getId(), name, contentBytes, packageData, projectUser, fileList);
+
+        /*TODO: generate simple logback.xml*/
 
     }
 
@@ -436,7 +452,7 @@ public class BuildPackageCommand extends IOCommand {
         }
     }
 
-    private void initDataConversionConfigFile(DataConversionConfigFile dataConversionConfigFile, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException {
+    private void addDataConversionConfigFile(String fileName, DataConversionConfigFile dataConversionConfigFile, HashMap<String, ConverterConfigFile> converterConfigMap, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<LocalData> localDataList, List<SFTPData> sftpDataList, List<ItemData> generatedFileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException, ConfigurationException {
         // all commented will use default values by DConvers
 
         /*dataConversionConfigFile.setPluginsCalcList();
@@ -456,14 +472,21 @@ public class BuildPackageCommand extends IOCommand {
         dataConversionConfigFile.setMappingFileNumber(101);
         dataConversionConfigFile.setTargetFileNumber(201);
 
-        List<SFTPData> sftpDataList = new ArrayList<>();
-        List<LocalData> localDataList = loadLocalDataList(projectUser);
-
-        dataConversionConfigFile.setDataSourceConfigMap(createDataSourceConfigMap(packageData, projectUser, fileList));
+        dataConversionConfigFile.setDataSourceConfigMap(createDataSourceConfigMap(packageData, projectUser, fileList, databaseDataList));
         dataConversionConfigFile.setSftpConfigMap(createSftpConfigMap(projectUser, sftpDataList));
         dataConversionConfigFile.setSmtpConfigMap(createSmtpConfigMap());
 
-        dataConversionConfigFile.setConverterConfigMap(getConverterConfigMap(projectUser, fileList, sftpDataList, localDataList));
+        dataConversionConfigFile.setConverterConfigMap(converterConfigMap);
+
+        log.info("dataConversionConfigFile.saveProperties...");
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        dataConversionConfigFile.saveProperties(byteArrayOutputStream);
+        byte[] contentBytes = byteArrayOutputStream.toByteArray();
+        log.debug("Conversion:saveProperties successful, \n{}", new String(contentBytes, StandardCharsets.ISO_8859_1));
+
+        ItemData generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
+        generatedFileList.add(generatedItemData);
+        addGeneratedFile(generatedItemData.getId(), fileName, contentBytes, packageData, projectUser, fileList);
     }
 
     private List<LocalData> loadLocalDataList(ProjectUser projectUser) throws IOException {
@@ -471,22 +494,28 @@ public class BuildPackageCommand extends IOCommand {
         return (List<LocalData>) throwExceptionOnError(data);
     }
 
-    @SuppressWarnings("unchecked")
-    private HashMap<String, DataSourceConfig> createDataSourceConfigMap(PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException {
-        HashMap<String, DataSourceConfig> dataSourceConfigHashMap = new HashMap<>();
-
+    private List<DatabaseData> loadDatabaseDataList() throws ClassNotFoundException, IOException, InstantiationException {
         Object data = getData(ProjectFileType.DB_LIST);
         List<Integer> dbIdList = (List) throwExceptionOnError(data);
 
+        List<DatabaseData> databaseDataList = new ArrayList<>();
         DatabaseData databaseData;
-        DataSourceConfig dataSourceConfig;
         for (Integer databaseId : dbIdList) {
             data = getData(ProjectFileType.DB, databaseId);
             databaseData = (DatabaseData) throwExceptionOnError(data);
+            databaseDataList.add(databaseData);
+        }
+        return databaseDataList;
+    }
+
+    @SuppressWarnings("unchecked")
+    private HashMap<String, DataSourceConfig> createDataSourceConfigMap(PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList) throws InstantiationException, IOException, ClassNotFoundException {
+        HashMap<String, DataSourceConfig> dataSourceConfigHashMap = new HashMap<>();
+        DataSourceConfig dataSourceConfig;
+        for (DatabaseData databaseData : databaseDataList) {
             dataSourceConfig = getDataSourceConfig(throwExceptionOnValidateFail(databaseData, packageData, projectUser, fileList));
             dataSourceConfigHashMap.put(dataSourceConfig.getName().toUpperCase(), dataSourceConfig);
         }
-
         return dataSourceConfigHashMap;
     }
 
@@ -621,7 +650,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private HashMap<String, ConverterConfigFile> getConverterConfigMap(ProjectUser projectUser, List<PackageFileData> fileList, List<SFTPData> sftpDataList, List<LocalData> localDataList) throws IOException, InstantiationException, ClassNotFoundException {
+    private HashMap<String, ConverterConfigFile> getConverterConfigMap(ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList) throws IOException, InstantiationException, ClassNotFoundException {
         HashMap<String, ConverterConfigFile> converterMap = new HashMap<>();
 
         Object data = getData(ProjectFileType.STEP_LIST);
@@ -632,14 +661,14 @@ public class BuildPackageCommand extends IOCommand {
         for (ItemData itemData : stepIdList) {
             data = getData(ProjectFileType.STEP, itemData.getId(), itemData.getId());
             stepData = (StepData) throwExceptionOnError(data);
-            converterConfigFile = getConverterConfigFile(stepData, projectUser, fileList, sftpDataList, localDataList);
+            converterConfigFile = getConverterConfigFile(stepData, projectUser, fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList);
             converterMap.put(converterConfigFile.getName().toUpperCase(), converterConfigFile);
         }
 
         return converterMap;
     }
 
-    private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList, List<SFTPData> sftpDataList, List<LocalData> localDataList) throws IOException, InstantiationException, ClassNotFoundException {
+    private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList) throws IOException, InstantiationException, ClassNotFoundException {
         String fileExt = Defaults.CONFIG_FILE_EXT.getStringValue();
         String fileName = new DConversID(stepData.getName()) + fileExt;
         String loadName = generatedPath + fileName;
@@ -656,7 +685,7 @@ public class BuildPackageCommand extends IOCommand {
         for (Integer dataTableId : dataTableIdList) {
             data = getData(ProjectFileType.DATA_TABLE, dataTableId, stepData.getId(), dataTableId);
             DataTableData dataTableData = (DataTableData) throwExceptionOnError(data);
-            SourceConfig sourceConfig = getSourceConfig(dataTableData, converterConfigFile, projectUser, stepData.getId(), fileList, sftpDataList, localDataList);
+            SourceConfig sourceConfig = getSourceConfig(dataTableData, converterConfigFile, projectUser, stepData.getId(), fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList);
             sourceConfigMap.put(sourceConfig.getName().toUpperCase(), sourceConfig);
         }
 
@@ -675,7 +704,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList, List<SFTPData> sftpDataList, List<LocalData> localDataList) throws IOException, InstantiationException, ClassNotFoundException {
+    private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList) throws IOException, InstantiationException, ClassNotFoundException {
         SourceConfig sourceConfig = new SourceConfig(dconvers, new DConversID(dataTableData.getName()).toString(), converterConfigFile.getProperties());
 
         sourceConfig.setIndex(dataTableData.getIndex());
@@ -738,7 +767,12 @@ public class BuildPackageCommand extends IOCommand {
 
             case DATABASE:
                 // datasource from DataBaseId
-                sourceConfig.setDataSource(IDPrefix.DB.getPrefix() + dataFileData.getDataSourceId());
+                int databaseId = dataFileData.getDataSourceId();
+                DatabaseData databaseData = findDatabaseData(databaseId, databaseDataList);
+                String nameFromDabase = new DConversID(databaseData.getName()).toString();
+                sourceConfig.setDataSource(nameFromDabase);
+
+                if (!usedDatabaseIdList.contains(databaseId)) usedDatabaseIdList.add(databaseId);
 
                 // query from content of DataFile.name
                 /* query=$[TXT:IFRS9/sql/shared/TFSHEADER.sql] */
@@ -779,6 +813,15 @@ public class BuildPackageCommand extends IOCommand {
         }
 
         return sourceConfig;
+    }
+
+    private DatabaseData findDatabaseData(int dataSourceId, List<DatabaseData> databaseDataList) throws IOException {
+        for (DatabaseData databaseData : databaseDataList) {
+            if (databaseData.getId() == dataSourceId) {
+                return databaseData;
+            }
+        }
+        throw new IOException("Databbase data not found: id=" + dataSourceId + " '");
     }
 
     private LocalData findLocalData(int dataSourceId, List<LocalData> localDataList) throws IOException {

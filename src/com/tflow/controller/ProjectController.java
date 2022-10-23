@@ -328,6 +328,8 @@ public class ProjectController extends Controller {
     public void buildPackage() {
         log.debug("buildPackage.");
 
+        /*TODO: need RECREATE PACKAGE button to replace selected package*/
+
         Package rebuild;
         if (activePackage == null || activePackage.getComplete() == 100) {
             /*build new package*/
