@@ -11,7 +11,7 @@ public class ClientData extends TWData implements Serializable {
     private static final transient long serialVersionUID = 2021121709996660063L;
 
     /**
-     * map to Client.ComputerName:Ip
+     * map to Client-ComputerName-Ip
      */
     private String id;
 

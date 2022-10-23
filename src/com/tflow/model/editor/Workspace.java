@@ -115,7 +115,8 @@ public class Workspace implements Serializable {
         ClientData clientData = new ClientData();
         String computerName = client.getComputerName();
         String ip = client.getIp();
-        clientData.setId((computerName == null ? "" : computerName) + ":" + (ip == null ? "" : ip));
+        String id = (computerName == null ? "" : computerName) + "-" + (ip == null ? "" : ip);
+        clientData.setId(id.replaceAll("[:.]","_"));
         clientData.setUniqueNumber(client.getId());
         return clientData;
     }
