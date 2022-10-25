@@ -5,6 +5,7 @@ package com.tflow.model.data;
  */
 public enum PropertyVar {
 
+    lock,
     columnList,
     dataSourceId,
     fixedLengthFormatList,

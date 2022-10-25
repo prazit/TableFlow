@@ -30,6 +30,9 @@ public enum JavaScript {
 
     contentWindow("contentWindow."),
 
+    blockScreen("blockScreen();"),
+    unblockScreen("unblockScreen();"),
+
     notiInfo(null),
     notiError(null),
     notiWarn(null),

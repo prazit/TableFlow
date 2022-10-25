@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class Package implements Selectable, HasEvent {
 
+    private boolean lock;
     private int id;
     private PackageType type;
 
@@ -48,6 +49,14 @@ public class Package implements Selectable, HasEvent {
     @Override
     public ProjectFileType getProjectFileType() {
         return ProjectFileType.PACKAGE;
+    }
+
+    public boolean isLock() {
+        return lock;
+    }
+
+    public void setLock(boolean lock) {
+        this.lock = lock;
     }
 
     public int getId() {
@@ -123,12 +132,13 @@ public class Package implements Selectable, HasEvent {
     }
 
     public boolean isNameDisabled() {
-        return complete < 100 || !finished;
+        return lock || complete < 100 || !finished;
     }
 
     @Override
     public String toString() {
         return "{" +
+                ", lock:" + lock +
                 ", id:" + id +
                 ", type:" + type +
                 ", name:'" + name + '\'' +

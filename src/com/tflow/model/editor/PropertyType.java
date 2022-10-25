@@ -36,7 +36,7 @@ public enum PropertyType {
 
     CHARSET(DataCharset.UTF8, true),
     TXTLENGTHMODE(TxtLengthMode.CHARACTER, true),
-    TXTFORMAT("", true), /*TODO: do this in xhtml file, show full list of column with format type and width*/
+    TXTFORMAT("", true),
 
     DBCONNECTION(/*data-base-id*/0, true),
     DBTABLE(/*table-name*/"", true),

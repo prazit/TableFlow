@@ -10,6 +10,15 @@ var tflow = {
     }, lines = []
 ;
 
+function blockScreen() {
+    window.parent.blockScreen();
+}
+
+function unblockScreen() {
+    window.parent.unblockScreen();
+    console.debug("unblockScreen.")
+}
+
 function noti() {
     console.log('call parent.noti();');
     window.parent.noti();

@@ -3,6 +3,7 @@ package com.tflow.tbcmd;
 import com.clevel.dconvers.DConvers;
 import com.clevel.dconvers.conf.*;
 import com.clevel.dconvers.dynvalue.DynamicValueType;
+import com.clevel.dconvers.ngin.Pair;
 import com.clevel.dconvers.transform.TransformTypes;
 import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaErrorCode;
@@ -17,10 +18,7 @@ import com.tflow.util.DConversID;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
 import com.tflow.wcmd.IOCommand;
-import com.clevel.dconvers.ngin.Pair;
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -83,28 +82,26 @@ public class BuildPackageCommand extends IOCommand {
             data = getData(ProjectFileType.PACKAGE_LIST);
             packageList = (List<ItemData>) throwExceptionOnError(data);
 
-            boolean isNewPackage = true;
+            boolean isNewPackage = attributes.getRecordId() == null;
             int packageId;
-            if (packageList.size() == 0) {
-                packageId = 1;
+            if (isNewPackage) {
+                if (packageList.size() == 0) {
+                    packageId = 1;
+                } else {
+                    packageList.sort((s, t) -> Integer.compare(t.getId(), s.getId()));
+                    packageId = packageList.get(0).getId() + 1;
+                }
+
                 packageData = new PackageData();
                 packageData.setId(packageId);
             } else {
-                packageId = packageList.get(packageList.size() - 1).getId();
+                packageId = Integer.parseInt(attributes.getRecordId());
                 data = getData(ProjectFileType.PACKAGE, packageId);
                 packageData = (PackageData) throwExceptionOnError(data);
-                if (packageData.getComplete() == 100) {
-                    packageId++;
-                    packageData = new PackageData();
-                    packageData.setId(packageId);
-                } else {
-                    /*rebuild last error package*/
-                    isNewPackage = false;
-                    packageData.setComplete(0);
-                    packageData.setFinished(false);
-                    packageData.setFileList(null);
-                    packageData.setBuiltDate(null);
-                }
+                packageData.setComplete(0);
+                packageData.setFinished(false);
+                packageData.setFileList(null);
+                packageData.setBuiltDate(null);
             }
 
             packageData.setType(projectData.getType().getPackageType());
@@ -112,7 +109,11 @@ public class BuildPackageCommand extends IOCommand {
             packageData.setName("building...");
 
             ItemData packageItemData = mapper.map(packageData);
-            if (isNewPackage) packageList.add(packageItemData);
+            if (isNewPackage) {
+                packageList.add(packageItemData);
+            } else {
+                setPackageNameInList(packageId, packageData.getName(), packageList);
+            }
 
             buildPackage(packageData, fileList, packageList, projectUser, projectData);
 
@@ -133,11 +134,21 @@ public class BuildPackageCommand extends IOCommand {
         }
     }
 
+    private void setPackageNameInList(int packageId, String newName, List<ItemData> packageList) {
+        for (ItemData item : packageList) {
+            if (item.getId() == packageId) {
+                item.setName(newName);
+                break;
+            }
+        }
+    }
+
     /**
      * @param packageData contains percent complete for ui, this function will update them 4-5 times max
      */
     @SuppressWarnings("unchecked")
     private void buildPackage(PackageData packageData, List<PackageFileData> fileList, List<ItemData> packageList, ProjectUser projectUser, ProjectData projectData) throws InstantiationException, IOException, ClassNotFoundException {
+        setPackageNameInList(packageData.getId(), packageData.getName(), packageList);
         updatePackageList(packageData, packageList, projectUser);
         updatePercentComplete(packageData, projectUser, 0, estimateBuiltDate());
 
@@ -145,20 +156,20 @@ public class BuildPackageCommand extends IOCommand {
         updatePercentComplete(packageData, projectUser, 25, estimateBuiltDate());
 
         addVersionedFiles(fileList, packageData, projectUser);
-        addGeneratedFiles(fileList, packageData, projectUser, projectData);
         updatePercentComplete(packageData, projectUser, 50, estimateBuiltDate());
 
-        addConfigVersionFile(fileList, packageData, projectUser);
+        addGeneratedFiles(fileList, packageData, projectUser, projectData);
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
         String completeName = getCompleteName(packageData, projectData);
         packageData.setName(completeName);
         packageData.setFileList(fileList);
+        packageData.setFinished(true);
         fileList.sort(Comparator.comparing(item -> (item.getBuildPath() + item.getName())));
 
         /*TODO: need to compare previous version and mark for New/Updated File*/
 
-        packageData.setFinished(true);
+        setPackageNameInList(packageData.getId(), packageData.getName(), packageList);
         updatePackageList(packageData, packageList, projectUser);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
     }
@@ -223,12 +234,9 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private String getCompleteName(PackageData packageData, ProjectData projectData) {
-        return new DConversID(projectData.getName()) + "-" + DateFormatUtils.format(packageData.getBuildDate(), "yyyyMMdd-HHmmss-SSS");
-    }
-
-    private void addConfigVersionFile(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) {
-        /*TODO: future feature: add Configuration Version File to package-file-list*/
-
+        int id = packageData.getId();
+        String version = projectData.getVersion();
+        return new DConversID(projectData.getName() + ((version == null) ? ("_r" + id) : ("_" + version + "." + id))).toString();
     }
 
     private void updatePercentComplete(PackageData packageData, ProjectUser projectUser, int percent, Date builtDate) {
@@ -326,7 +334,8 @@ public class BuildPackageCommand extends IOCommand {
 
             String converterFileName;
             List<Integer> usedDatabaseIdList = new ArrayList<>();
-            HashMap<String, ConverterConfigFile> converterConfigMap = getConverterConfigMap(projectUser, fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList);
+            List<Integer> usedSFTPIdList = new ArrayList<>();
+            HashMap<String, ConverterConfigFile> converterConfigMap = getConverterConfigMap(projectUser, fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList, usedSFTPIdList);
             for (ConverterConfigFile converterConfigFile : converterConfigMap.values()) {
                 converterFileName = extractFileName(converterConfigFile.getName());
 
@@ -338,7 +347,7 @@ public class BuildPackageCommand extends IOCommand {
 
                 generatedItemData = new ItemData(generatedFileList.size() + 1, converterFileName);
                 generatedFileList.add(generatedItemData);
-                addGeneratedFile(generatedItemData.getId(), converterFileName, contentBytes, packageData, projectUser, fileList);
+                addGeneratedFile(generatedItemData.getId(), converterFileName, false, contentBytes, packageData, projectUser, fileList);
             }
 
             /*remove unused database before create ConversionConfigFile*/
@@ -348,10 +357,20 @@ public class BuildPackageCommand extends IOCommand {
             }
             databaseDataList = usedDatabaseDataList;
 
-            /*TODO: need to remove unused sftp before create ConversionFile*/
+            /*remove unused sftp before create ConversionConfigFile*/
+            List<SFTPData> usedSFTPDataList = new ArrayList<>();
+            for (Integer sftpId : usedSFTPIdList) {
+                usedSFTPDataList.add(findSftpData(sftpId, sftpDataList));
+            }
+            sftpDataList = usedSFTPDataList;
+            if (log.isDebugEnabled()) {
+                log.debug("usedSFTPDataList: {}", Arrays.toString(usedSFTPDataList.toArray()));
+                log.debug("sftpDataList: {}", Arrays.toString(sftpDataList.toArray()));
+            }
 
-            addDataConversionConfigFile(conversionFileName, dataConversionConfigFile, converterConfigMap, packageData, projectUser, fileList, databaseDataList, localDataList, sftpDataList, generatedFileList);
+            addDataConversionConfigFile(conversionFileName, dataConversionConfigFile, converterConfigMap, packageData, projectUser, fileList, databaseDataList, sftpDataList, generatedFileList);
             addGeneratedBatchFiles(conversionFileName, projectData, packageData, projectUser, fileList, generatedFileList);
+            addGeneratedReadme(dconvers, projectData, packageData, projectUser, fileList, generatedFileList);
 
             /*GENERATED_LIST need to save at the end*/
             dataManager.addData(ProjectFileType.GENERATED_LIST, generatedFileList, projectUser);
@@ -364,7 +383,65 @@ public class BuildPackageCommand extends IOCommand {
         }
     }
 
-    private BinaryFileData addGeneratedFile(int fileId, String fileName, byte[] contentBytes, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList) {
+    private void addGeneratedReadme(DConvers dconvers, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList) {
+
+        String fileName = "version.properties";
+        String[] numbers = projectData.getVersion().split("[.]");
+        String versionName = "version";
+        int versionNumber = 0;
+        int revisionNumber = 0;
+        if (numbers.length > 2) {
+            StringBuilder numberBuilder = new StringBuilder();
+            int last = numbers.length - 2;
+            for (int i = 0; i < last; i++) numberBuilder.append(".").append(numbers[i]);
+            versionName += " " + numberBuilder.substring(1);
+            if (numbers.length > 3) versionNumber = Integer.parseInt(numbers[3]);
+            if (numbers.length > 4) revisionNumber = Integer.parseInt(numbers[4]);
+        } else {
+            if (numbers.length > 0) versionNumber = Integer.parseInt(numbers[0]);
+            if (numbers.length > 1) revisionNumber = Integer.parseInt(numbers[1]);
+        }
+        String content = "project.name=" + projectData.getName() + "\n" +
+                "version.name=" + versionName + "\n" +
+                "version.number=" + versionNumber + "\n" +
+                "revision.number=" + revisionNumber + "\n" +
+                "build.number=" + packageData.getId() + "\n" +
+                "build.date=" + DateTimeUtil.getDateStr(packageData.getBuildDate(), "dd/MM/yyyy HH:mm") + "\n" +
+                "";
+        byte[] contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
+        ItemData generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
+        generatedFileList.add(generatedItemData);
+        addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+
+        /*collect file list for readme.txt*/
+        StringBuilder stringBuilder = new StringBuilder();
+        int count = 0;
+        for (PackageFileData file : fileList) {
+            count++;
+            stringBuilder
+                    .append(" |_ ").append(count).append(") ")
+                    .append(file.getBuildPath()).append(file.getName()).append("\n");
+        }
+
+        fileName = "readme.txt";
+        stringBuilder
+                .append(" |_ ").append(++count).append(") ")
+                .append(FileNameExtension.forName(fileName).getBuildPath()).append(fileName).append("\n");
+
+        content = projectData.getName() + " version " + projectData.getVersion() + " R" + packageData.getId() + "\n" +
+                "Generated by TFLOW DEMO VERSION\n" +
+                "on " + dconvers.getSystemVariableValue(SystemVariable.APPLICATION_FULL_VERSION) + "\n" +
+                "\n" +
+                "Packaged (original-name): " + getCompleteName(packageData, projectData) + "." + packageData.getType().name().toLowerCase() + "\n" +
+                stringBuilder.toString();
+
+        contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
+        generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
+        generatedFileList.add(generatedItemData);
+        addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+    }
+
+    private BinaryFileData addGeneratedFile(int fileId, String fileName, boolean rootPath, byte[] contentBytes, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList) {
         BinaryFileData conversionFileData = new BinaryFileData();
         conversionFileData.setId(fileId);
         conversionFileData.setName(fileName);
@@ -375,53 +452,78 @@ public class BuildPackageCommand extends IOCommand {
         PackageFileData packageFileData = mapper.map(conversionFileData);
         packageFileData.setId(newPackageFileId(packageData));
         packageFileData.setType(FileType.GENERATED);
-        packageFileData.setBuildPath(packageFileData.getExt().getBuildPath());
+        packageFileData.setBuildPath(rootPath ? "" : packageFileData.getExt().getBuildPath());
         fileList.add(packageFileData);
         return conversionFileData;
     }
 
-    private void addGeneratedBatchFiles(String conversionFileName, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList) {
+    private void addGeneratedBatchFiles(String conversionFileName, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList) throws InstantiationException, IOException, ClassNotFoundException {
         FileNameExtension ext = FileNameExtension.forName(conversionFileName);
 
         /*TODO: future feature: need Batch Option object later*/
+        boolean generateBatchFile = true;
+        boolean generateShFile = true;
+        String javaHome = "";
+        String logLevel = "INFO";
+        String logFileName = "/Apps/DConvers/Logs/$[conversionFileName]";
 
         /*generate batcch script*/
-        String batTemplate = "" +
-                "@set JAVA_BIN={}\n" +
-                "@set SOURCE={}\n" +
-                "@set LEVEL={}\n" +
-                "@set CLSPATH={}\n" +
-                "\"%JAVA_BIN%java.exe\" -Xms64m -Xmx2g -Dfile.encoding=UTF-8 -Duser.timezone=\"GMT+7\" -Duser.language=en -Duser.region=EN -Duser.country=US --class-path \"%CLSPATH%\" com.clevel.dconvers.Main --source=\"%SOURCE%\" --level=%LEVEL%\n";
-        String javaHome = "C:/Program Files/OpenJDK/jdk-8.0.262.10-hotspot/bin/";
-        String source = ext.getBuildPath() + conversionFileName;
-        String level = "INFO";
         String clsPath = getJavaClassPath(fileList);
-        String content = MessageFormatter.arrayFormat(batTemplate, new Object[]{javaHome, source, level, clsPath}).getMessage();
-        content = content.replaceAll("[/]", "\\\\");
-        byte[] contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
+        String source = ext.getBuildPath() + conversionFileName;
+        String logback = "logback.xml";
+        String content;
+        String fileName;
+        ItemData generatedItemData;
+        byte[] contentBytes;
+        Charset iso88591 = StandardCharsets.ISO_8859_1;
+        if (generateBatchFile) {
+            String batTemplate = "" +
+                    "@set JAVA_BIN={}\n" +
+                    "@set SOURCEPATH={}\n" +
+                    "@set LOGBACKPATH={}\n" +
+                    "@set LEVEL={}\n" +
+                    "@set CLSPATH={}\n" +
+                    "@\"%JAVA_BIN%java.exe\" -Xms64m -Xmx2g -Dfile.encoding=UTF-8 -Duser.timezone=\"GMT+7\" -Duser.language=en -Duser.region=EN -Duser.country=US --class-path \"%CLSPATH%\" com.clevel.dconvers.Main --source=\"%SOURCEPATH%\" --logback=\"%LOGBACKPATH%\" --level=%LEVEL%\n";
+            content = MessageFormatter.arrayFormat(batTemplate, new Object[]{javaHome, source, FileNameExtension.XML.getBuildPath() + logback, logLevel, clsPath}).getMessage();
+            content = content.replaceAll("[/]", "\\\\");
+            contentBytes = content.getBytes(iso88591);
 
-        String name = "run-" + new DConversID(projectData.getName()) + ".bat";
-        ItemData generatedItemData = new ItemData(generatedFileList.size() + 1, name);
-        generatedFileList.add(generatedItemData);
-        addGeneratedFile(generatedItemData.getId(), name, contentBytes, packageData, projectUser, fileList);
+            fileName = "run-" + new DConversID(projectData.getName()) + ".bat";
+            generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
+            generatedFileList.add(generatedItemData);
+            addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+        }
 
         /*generate shell script*/
-        javaHome = "";
-        String shTemplate = "" +
-                "JAVA_BIN={}\n" +
-                "SOURCE={}\n" +
-                "LEVEL={}\n" +
-                "CLSPATH={}\n" +
-                "\"${JAVA_BIN}java\" -Xms64m -Xmx2g -Dfile.encoding=UTF-8 -Duser.timezone=\"GMT+7\" -Duser.language=en -Duser.region=EN -Duser.country=US --class-path \"${CLSPATH}\" com.clevel.dconvers.Main --source=\"${SOURCE}\" --level=${LEVEL}\n";
-        content = MessageFormatter.arrayFormat(shTemplate, new Object[]{javaHome, source, level, clsPath}).getMessage();
-        contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
+        if (generateShFile) {
+            javaHome = "";
+            String shTemplate = "" +
+                    "JAVA_BIN={}\n" +
+                    "SOURCE={}\n" +
+                    "LEVEL={}\n" +
+                    "CLSPATH={}\n" +
+                    "\"${JAVA_BIN}java\" -Xms64m -Xmx2g -Dfile.encoding=UTF-8 -Duser.timezone=\"GMT+7\" -Duser.language=en -Duser.region=EN -Duser.country=US --class-path \"${CLSPATH}\" com.clevel.dconvers.Main --source=\"${SOURCE}\" --level=${LEVEL}\n";
+            content = MessageFormatter.arrayFormat(shTemplate, new Object[]{javaHome, source, logLevel, clsPath}).getMessage();
+            contentBytes = content.getBytes(iso88591);
 
-        name = "run-" + new DConversID(projectData.getName()) + ".sh";
-        generatedItemData = new ItemData(generatedFileList.size() + 1, name);
+            fileName = "run-" + new DConversID(projectData.getName()) + ".sh";
+            generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
+            generatedFileList.add(generatedItemData);
+            addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+        }
+
+        /*generate logback.xml from template*/
+        Object data = getData(ProjectFileType.VERSIONED, Versioned.TEMPLATE_LOGBACK_XML.getFileId());
+        BinaryFileData binaryFileData = (BinaryFileData) throwExceptionOnError(data);
+        String logbackTemplate = new String(binaryFileData.getContent(), iso88591);
+        logFileName = logFileName.replaceFirst("\\$\\[conversionFileName\\]", conversionFileName.split("[.]")[0]);
+        logbackTemplate = logbackTemplate.replaceAll("\\$\\[logFileName\\]", logFileName);
+        contentBytes = logbackTemplate.getBytes(iso88591);
+        generatedItemData = new ItemData(generatedFileList.size() + 1, logback);
         generatedFileList.add(generatedItemData);
-        addGeneratedFile(generatedItemData.getId(), name, contentBytes, packageData, projectUser, fileList);
+        addGeneratedFile(generatedItemData.getId(), logback, false, contentBytes, packageData, projectUser, fileList);
 
-        /*TODO: generate simple logback.xml*/
+        /* TODO: generate script to add job to any scheduler*/
 
     }
 
@@ -452,7 +554,7 @@ public class BuildPackageCommand extends IOCommand {
         }
     }
 
-    private void addDataConversionConfigFile(String fileName, DataConversionConfigFile dataConversionConfigFile, HashMap<String, ConverterConfigFile> converterConfigMap, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<LocalData> localDataList, List<SFTPData> sftpDataList, List<ItemData> generatedFileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException, ConfigurationException {
+    private void addDataConversionConfigFile(String fileName, DataConversionConfigFile dataConversionConfigFile, HashMap<String, ConverterConfigFile> converterConfigMap, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<ItemData> generatedFileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException, ConfigurationException {
         // all commented will use default values by DConvers
 
         /*dataConversionConfigFile.setPluginsCalcList();
@@ -473,7 +575,7 @@ public class BuildPackageCommand extends IOCommand {
         dataConversionConfigFile.setTargetFileNumber(201);
 
         dataConversionConfigFile.setDataSourceConfigMap(createDataSourceConfigMap(packageData, projectUser, fileList, databaseDataList));
-        dataConversionConfigFile.setSftpConfigMap(createSftpConfigMap(projectUser, sftpDataList));
+        dataConversionConfigFile.setSftpConfigMap(createSftpConfigMap(sftpDataList));
         dataConversionConfigFile.setSmtpConfigMap(createSmtpConfigMap());
 
         dataConversionConfigFile.setConverterConfigMap(converterConfigMap);
@@ -486,7 +588,7 @@ public class BuildPackageCommand extends IOCommand {
 
         ItemData generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
         generatedFileList.add(generatedItemData);
-        addGeneratedFile(generatedItemData.getId(), fileName, contentBytes, packageData, projectUser, fileList);
+        addGeneratedFile(generatedItemData.getId(), fileName, false, contentBytes, packageData, projectUser, fileList);
     }
 
     private List<LocalData> loadLocalDataList(ProjectUser projectUser) throws IOException {
@@ -523,7 +625,7 @@ public class BuildPackageCommand extends IOCommand {
         String objectName = "Database(" + databaseData.getName() + ")";
         if (databaseData.getUrl() == null) throw newRequiredException("URL", objectName);
         if (databaseData.getDbms() == null) throw newRequiredException("DBMS", objectName);
-        databaseData.setDriver(getDriver(databaseData.getDbms(), packageData, projectUser, fileList));
+        databaseData.setDriver(getDriver(databaseData.getDbms(), packageData, fileList));
         if (databaseData.getUser() == null) throw newRequiredException("User", objectName);
         if (databaseData.getPassword() == null) throw newRequiredException("Password", objectName);
         if (databaseData.getRetry() < 0) databaseData.setRetry(0);
@@ -534,7 +636,7 @@ public class BuildPackageCommand extends IOCommand {
         return new UnsupportedOperationException(fieldName + " is required on " + objectName);
     }
 
-    private String getDriver(String dbmsName, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList) throws IOException, InstantiationException, ClassNotFoundException {
+    private String getDriver(String dbmsName, PackageData packageData, List<PackageFileData> fileList) throws IOException, InstantiationException, ClassNotFoundException {
         Dbms dbms = Dbms.valueOf(dbmsName);
         Versioned driverFile = dbms.getDriverFile();
 
@@ -595,27 +697,15 @@ public class BuildPackageCommand extends IOCommand {
         return dataSourceConfig;
     }
 
-    private String wordsAsId(String name) {
-        return StringUtil.capitalize(name.replaceAll("\\p{Punct}|\\s", ""));
-    }
-
     @SuppressWarnings("unchecked")
-    private HashMap<String, HostConfig> createSftpConfigMap(ProjectUser projectUser, List<SFTPData> sftpDataList) throws IOException, ClassNotFoundException, InstantiationException {
+    private HashMap<String, HostConfig> createSftpConfigMap(List<SFTPData> sftpDataList) {
         HashMap<String, HostConfig> sftpConfigMap = new HashMap<>();
-
-        Object data = getData(ProjectFileType.SFTP_LIST);
-        List<Integer> sftpIdList = (List) throwExceptionOnError(data);
-
-        SFTPData sftpData;
         HostConfig hostConfig;
-        for (Integer sftpId : sftpIdList) {
-            data = getData(ProjectFileType.SFTP, sftpId);
-            sftpData = (SFTPData) throwExceptionOnError(data);
+        for (SFTPData sftpData : sftpDataList) {
             hostConfig = getHostConfig(throwExceptionOnValidateFail(sftpData));
             sftpConfigMap.put(hostConfig.getName().toUpperCase(), hostConfig);
             sftpDataList.add(sftpData);
         }
-
         return sftpConfigMap;
     }
 
@@ -650,7 +740,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private HashMap<String, ConverterConfigFile> getConverterConfigMap(ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList) throws IOException, InstantiationException, ClassNotFoundException {
+    private HashMap<String, ConverterConfigFile> getConverterConfigMap(ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList, List<Integer> usedSFTPIdList) throws IOException, InstantiationException, ClassNotFoundException {
         HashMap<String, ConverterConfigFile> converterMap = new HashMap<>();
 
         Object data = getData(ProjectFileType.STEP_LIST);
@@ -661,14 +751,14 @@ public class BuildPackageCommand extends IOCommand {
         for (ItemData itemData : stepIdList) {
             data = getData(ProjectFileType.STEP, itemData.getId(), itemData.getId());
             stepData = (StepData) throwExceptionOnError(data);
-            converterConfigFile = getConverterConfigFile(stepData, projectUser, fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList);
+            converterConfigFile = getConverterConfigFile(stepData, projectUser, fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList, usedSFTPIdList);
             converterMap.put(converterConfigFile.getName().toUpperCase(), converterConfigFile);
         }
 
         return converterMap;
     }
 
-    private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList) throws IOException, InstantiationException, ClassNotFoundException {
+    private ConverterConfigFile getConverterConfigFile(StepData stepData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList, List<Integer> usedSFTPIdList) throws IOException, InstantiationException, ClassNotFoundException {
         String fileExt = Defaults.CONFIG_FILE_EXT.getStringValue();
         String fileName = new DConversID(stepData.getName()) + fileExt;
         String loadName = generatedPath + fileName;
@@ -685,7 +775,7 @@ public class BuildPackageCommand extends IOCommand {
         for (Integer dataTableId : dataTableIdList) {
             data = getData(ProjectFileType.DATA_TABLE, dataTableId, stepData.getId(), dataTableId);
             DataTableData dataTableData = (DataTableData) throwExceptionOnError(data);
-            SourceConfig sourceConfig = getSourceConfig(dataTableData, converterConfigFile, projectUser, stepData.getId(), fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList);
+            SourceConfig sourceConfig = getSourceConfig(dataTableData, converterConfigFile, projectUser, stepData.getId(), fileList, databaseDataList, sftpDataList, localDataList, usedDatabaseIdList, usedSFTPIdList);
             sourceConfigMap.put(sourceConfig.getName().toUpperCase(), sourceConfig);
         }
 
@@ -704,7 +794,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList) throws IOException, InstantiationException, ClassNotFoundException {
+    private SourceConfig getSourceConfig(DataTableData dataTableData, ConverterConfigFile converterConfigFile, ProjectUser projectUser, int stepId, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<LocalData> localDataList, List<Integer> usedDatabaseIdList, List<Integer> usedSFTPIdList) throws IOException, InstantiationException, ClassNotFoundException {
         SourceConfig sourceConfig = new SourceConfig(dconvers, new DConversID(dataTableData.getName()).toString(), converterConfigFile.getProperties());
 
         sourceConfig.setIndex(dataTableData.getIndex());
@@ -732,11 +822,17 @@ public class BuildPackageCommand extends IOCommand {
                 sourceConfig.setDataSource(fileTypes[1]);
 
                 // query=$[FTP:sftpServerName/path/from/SFTP/NAME.md]
-                SFTPData sftpData = findSftpData(dataFileData.getDataSourceId(), sftpDataList);
+                int sftpId = dataFileData.getDataSourceId();
+                SFTPData sftpData = findSftpData(sftpId, sftpDataList);
                 String pathFromSFTP = sftpData.getRootPath();
                 if (!pathFromSFTP.endsWith("/")) pathFromSFTP += "/";
                 String nameFromSFTP = new DConversID(sftpData.getName()) + "/";
                 sourceConfig.setQuery("$[FTP:" + nameFromSFTP + pathFromSFTP + dataFileData.getName() + "]");
+
+                if (!usedSFTPIdList.contains(sftpId)) {
+                    usedSFTPIdList.add(sftpId);
+                    log.debug("usedSFTPIdList.add( {} )", sftpId);
+                }
                 break;
 
             case LOCAL:

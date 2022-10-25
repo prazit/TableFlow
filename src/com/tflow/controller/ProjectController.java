@@ -2,6 +2,7 @@ package com.tflow.controller;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectDataException;
+import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
@@ -103,7 +104,6 @@ public class ProjectController extends Controller {
                         propertyChanged(ProjectFileType.PACKAGE_LIST, packageList, property);
                     }
                 });
-
 
     }
 
@@ -237,12 +237,14 @@ public class ProjectController extends Controller {
     public void openPackage() {
         log.debug("openPackage.");
         reloadPackageList();
-        selectPackage(packageList.size() - 1);
+        selectPackage(0);
     }
 
     public void selectPackage(int packageListIndex) {
         if (packageListIndex < 0) {
             selectedPackageId = -1;
+        } else if (packageListIndex >= packageList.size()) {
+            selectedPackageId = packageList.size() - 1;
         } else {
             selectedPackageId = packageList.get(packageListIndex).getId();
         }
@@ -252,6 +254,7 @@ public class ProjectController extends Controller {
     public void reloadPackageList() {
         try {
             packageList = project.getManager().loadPackageList(project);
+            packageList.sort((s, t) -> s.getId() == 1 ? 1 : Integer.compare(t.getId(), s.getId()));
         } catch (ProjectDataException ex) {
             packageList = new ArrayList<>();
 
@@ -328,14 +331,12 @@ public class ProjectController extends Controller {
     public void buildPackage() {
         log.debug("buildPackage.");
 
-        /*TODO: need RECREATE PACKAGE button to replace selected package*/
-
         Package rebuild;
-        if (activePackage == null || activePackage.getComplete() == 100) {
+        if (activePackage == null || activePackage.isLock()) {
             /*build new package*/
             rebuild = null;
         } else {
-            /*rebuild last package*/
+            /*rebuild selected package*/
             rebuild = activePackage;
             activePackage.getEventManager().removeHandlers(EventName.NAME_CHANGED);
             packageList.remove(getPackageListIndex(activePackage.getId()));
@@ -356,12 +357,17 @@ public class ProjectController extends Controller {
         jsBuilder.post(JavaScript.updateEmByClass, "package-panel").runOnClient();
     }
 
+    public void lockPackage() {
+        activePackage.setLock(true);
+        propertyChanged(ProjectFileType.PACKAGE, activePackage, activePackage.getProperties().getPropertyView(PropertyVar.lock.name()));
+    }
+
     /**
      * IMPORTANT: call this function at least 2 seconds after buildPackage.
      */
     public void refreshBuildingPackage() {
         reloadPackageList();
-        selectPackage(packageList.size() - 1);
+        selectPackage(0);
     }
 
     private int getPackageListIndex(int packageId) {

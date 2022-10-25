@@ -658,12 +658,15 @@ public class ProjectManager {
         long transactionId = 0;
         try {
             transactionId = project.getDataManager().newTransactionId();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ex) {
+            log.error("{}", ex.getMessage());
+            log.trace("", ex);
             return null;
         }
 
         /*create build Message for TBcmd*/
         KafkaRecordAttributes kafkaRecordAttributes = new KafkaRecordAttributes();
+        kafkaRecordAttributes.setRecordId(rebuild == null ? null : String.valueOf(rebuild.getId()));
         kafkaRecordAttributes.setTransactionId(transactionId);
         kafkaRecordAttributes.setProjectId(project.getId());
         kafkaRecordAttributes.setUserId(workspace.getUser().getId());

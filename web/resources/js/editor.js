@@ -8,7 +8,7 @@ function warning(msg) {
 function blockScreen(text) {
     if (tflow.blockScreenText === undefined) tflow.blockScreenText = $('.screen-block-text');
     if (text === undefined) text = "PLEASE WAIT";
-    tflow.blockScreenText[0].innerText = text;
+    if (tflow.blockScreenText[0] !== undefined) tflow.blockScreenText[0].innerText = text;
     PF('screenBlock').show();
 }
 

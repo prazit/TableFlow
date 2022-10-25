@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 /**
  * VERSIONED IDs.
- * Notice: all existing enum below unable to delete, they must always be exists to avoid error in Project-Page.
+ * Notice: don't delete all existing enum below to avoid error in Project-Page.
  */
 public enum Versioned {
 
@@ -12,6 +12,7 @@ public enum Versioned {
     DRIVER_ORACLE(11, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     DRIVER_DB2(12, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     DRIVER_MYSQL(13, "D", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    TEMPLATE_LOGBACK_XML(14, "D", FileNameExtension.XML.getAllowTypes(), FileNameExtension.XML.getAllowMimeTypes()),
 
     /*DConvers Libs*/
     DATA_CONVERSION(21, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
@@ -21,15 +22,12 @@ public enum Versioned {
     APACHE_COMMONS_CONFIGURATION(25, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     APACHE_COMMONS_LANG(26, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     APACHE_COMMONS_LOGGING(27, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
-    /*TODO: need SFTP Library*/
 
-    /*Logback*/
     LOGBACK_CORE(28, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     LOGBACK_CLASSIC(29, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     SLF4J_API(30, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
 
-    /*TODO: run downloded project to find more libs*/
-
+    JSCH_SFTP(32, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
 
     /*WebUI Libs*/
     PRIMEFACES(51, "U", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),

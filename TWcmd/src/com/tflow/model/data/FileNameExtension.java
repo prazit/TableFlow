@@ -8,12 +8,12 @@ public enum FileNameExtension {
     MD("md/"),
     TXT("txt/"),
 
-    XML("xml/"),
+    XML("conf/", "(\\/)(xml)", "/(\\.|\\/)(xml)$/"),
     CONF("conf/"),
-    PROPERTY("conf/"),
+    PROPERTIES("conf/"),
 
-    BAT(""),
-    SH(""),
+    BAT("bat/"),
+    SH("bat/"),
 
     PNG("resources/images/"),
     CSS("resources/css/"),

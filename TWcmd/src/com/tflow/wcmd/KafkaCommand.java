@@ -1,16 +1,8 @@
 package com.tflow.wcmd;
 
-import com.tflow.file.SerializeReader;
-import com.tflow.file.SerializeWriter;
 import com.tflow.kafka.EnvironmentConfigs;
-import com.tflow.kafka.ProjectFileType;
-import com.tflow.model.data.record.RecordAttributesData;
-import com.tflow.util.FileUtil;
-import org.apache.kafka.common.errors.SerializationException;
 
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.io.IOException;
 
 /**
  * Receive kafka message then deserialize and execute something.

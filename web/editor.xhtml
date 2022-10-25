@@ -137,6 +137,7 @@
                                             <p:outputLabel class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}" rendered="#{prop.label != null}">#{prop.label}</p:outputLabel>
                                             <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:inputText maxlength="#{prop.params[0]==null?1024:prop.params[0]}" value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="#{prop.label != null?'ui-g-8':'fit-width'}">
+                                                <p:keyFilter inputRegEx="#{prop.params[1]==null?'/./i':prop.params[1]}"/>
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                             </p:inputText>
                                         </p:outputPanel>

@@ -14,11 +14,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
     </h:head>
-    <h:body style="background-color: var(--surface-a)" styleClass="selectable step#{projectCtl.active(projectCtl.project)}">
-        <script>console.log('-- first-line of flow-chart --');</script>
-
-        <input name="selectableId" type="hidden" value="#{projectCtl.project.selectableId}"/>
-        <p:remoteCommand name="update#{projectCtl.project.selectableId}" oncomplete="updateComplete('#{projectCtl.project.selectableId}')" update="editorForm:projectName"/>
+    <h:body style="background-color: var(--surface-a)">
+        <script>console.log('-- first-line of project --');</script>
 
         <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
@@ -29,7 +26,9 @@
             <h:form id="editorForm">
                 <p:remoteCommand name="refreshElement" action="#{projectCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
 
-                <p:outputPanel id="projectName" style="padding: var(--padding);margin: var(--margin);">
+                <p:outputPanel id="projectName" style="padding: var(--padding);margin: var(--margin);" styleClass="selectable step project#{projectCtl.active(projectCtl.project)}">
+                    <input name="selectableId" type="hidden" value="#{projectCtl.project.selectableId}"/>
+                    <p:remoteCommand name="update#{projectCtl.project.selectableId}" oncomplete="updateComplete('#{projectCtl.project.selectableId}')" update="@parent"/>
                     <h1 style="color: var(--surface-c);">Project: #{projectCtl.project.name}</h1>
                 </p:outputPanel>
 
@@ -292,24 +291,27 @@
                         <p:outputPanel id="packageTab" styleClass="package-panel">
                             <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent"/>
                             <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent"/>
-                            <p:remoteCommand name="updatePackageList" update="selectPackage" onstart="console.log('updatePackageList start.')"/>
+                            <p:remoteCommand name="updatePackageList" update="@parent"/>
 
-                            <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0}">
-                                <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId == null}">
-                                    <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
-                                    <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
-                                    <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
-                                </p:selectOneMenu>
-                                <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId != null}">
-                                    <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
-                                    <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
-                                </p:selectOneMenu>
-
-                                <p:commandButton icon="pi pi-download" value="Download Package" ajax="false" onclick="PrimeFaces.monitorDownload(startDownload, stopDownload);" styleClass="float-right" style="margin:var(--margin)" disabled="#{projectCtl.activePackage.complete lt 100}">
+                            <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0 and projectCtl.activePackage.finished}">
+                                <p:outputPanel rendered="#{projectCtl.activePackage.finished}" style="display:inline-block">
+                                    <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId == null}">
+                                        <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
+                                        <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
+                                        <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId != null}">
+                                        <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
+                                        <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
+                                    </p:selectOneMenu>
+                                </p:outputPanel>
+                                <p:commandButton icon="pi pi-download" value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(blockScreen, unblockScreen);" styleClass="float-right" style="margin:var(--margin)" disabled="#{projectCtl.activePackage.complete lt 100}">
                                     <p:fileDownload value="#{projectCtl.downloadPackage()}"/>
                                 </p:commandButton>
-                                <p:commandButton icon="pi pi-building" value="Create New Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{!projectCtl.activePackage.finished or !projectCtl.lastPackage}" rendered="#{!projectCtl.lastPackage or !projectCtl.activePackage.finished or projectCtl.activePackage.complete == 100}"/>
-                                <p:commandButton icon="pi pi-refresh" value="Try Again" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" disabled="#{!projectCtl.lastPackage}" rendered="#{projectCtl.lastPackage and projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100}"/>
+                                <p:commandButton icon="pi pi-building" value="New Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.activePackage.lock}" update="@parent:@parent"/>
+                                <p:commandButton icon="pi pi-refresh" value="Re-Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock or (projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100)}" update="@parent:@parent"/>
+                                <p:commandButton icon="pi pi-lock" value="Lock" actionListener="#{projectCtl.lockPackage}" oncomplete="window.parent.unblockScreen();" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock}" update="@parent:@parent"/>
+                                <p:commandButton icon="pi pi-lock" value="LOCKED" styleClass="float-right" style="margin:var(--margin)" disabled="true" rendered="#{projectCtl.activePackage.lock}" update="@parent:@parent"/>
                             </p:outputPanel>
 
                             <!-- please select message -->
@@ -322,7 +324,6 @@
 
                             <!-- building message -->
                             <p:outputPanel id="building" rendered="#{projectCtl.activePackage != null and not projectCtl.pleaseSelectPackage and not projectCtl.activePackage.finished}">
-                                <p:divider layout="horizontal"/>
                                 <h2 style="color: var(--surface-c);"><i class="pi pi-spinner pi-spin"></i> BUILDING PACKAGE #{projectCtl.activePackage.complete}%</h2>
                                 <span>started at #{projectCtl.activePackage.buildDate}</span>
                                 <script>$(function () {
@@ -371,7 +372,7 @@
             </h:form>
         </div>
 
-        <script>console.log('-- last-line of flow-chart --');</script>
+        <script>console.log('-- last-line of project --');</script>
     </h:body>
 </f:view>
 </html>

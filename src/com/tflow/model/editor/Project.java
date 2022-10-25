@@ -17,8 +17,8 @@ public class Project implements Selectable, HasEvent {
     private int groupId;
     private String id;
     private String name;
+    private String version;
     private ProjectType type;
-    private int activeStepIndex;
 
     private StepList<Step> stepList;
 
@@ -28,6 +28,7 @@ public class Project implements Selectable, HasEvent {
 
     private Map<String, Variable> variableMap;
 
+    private int activeStepIndex;
     private int lastElementId;
     private int lastUniqueId;
 
@@ -57,6 +58,7 @@ public class Project implements Selectable, HasEvent {
     }
 
     private void init() {
+        version = "1.0";
         type = ProjectType.BATCH;
         stepList = new StepList<>();
         propertyMap = new HashMap<>();
@@ -103,6 +105,14 @@ public class Project implements Selectable, HasEvent {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public ProjectType getType() {
@@ -250,6 +260,7 @@ public class Project implements Selectable, HasEvent {
                 "groupId:'" + groupId + '\'' +
                 ", projectId:'" + id + '\'' +
                 ", name:'" + name + '\'' +
+                ", version:'" + version + '\'' +
                 ", activeStepIndex:" + activeStepIndex +
                 ", stepList:" + stepList +
                 ", databaseMap:" + databaseMap +
