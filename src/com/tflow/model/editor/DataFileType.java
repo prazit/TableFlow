@@ -10,15 +10,15 @@ public enum DataFileType {
 
     /*TODO: Future feature 'DataSourceType.KAFKAPRODUCER' is added also need to remove dataSourceType from this enum*/
     IN_MARKDOWN("Markdown File", "markdown.png", Properties.INPUT_MARKDOWN, "", "/(\\.|\\/)(md|markdown)$/", DataSourceType.FIXED, ExtractMarkdown.class),
-    IN_SQLI("SQL Insert File", "sql.png", Properties.INPUT_SQLI, "", "/(\\.|\\/)(sql)$/", DataSourceType.FIXED, ExtractSQLInsert.class),
-    IN_SQL("SQL Select File", "sql.png", Properties.INPUT_SQL, "", "/(\\.|\\/)(sql)$/", DataSourceType.DATABASE, ExtractSQLSelect.class),
+    IN_SQL("SQL Insert File", "sql.png", Properties.INPUT_SQLI, "", "/(\\.|\\/)(sql)$/", DataSourceType.FIXED, ExtractSQLInsert.class),
+    IN_SQLDB("SQL Select File", "sql.png", Properties.INPUT_SQL, "", "/(\\.|\\/)(sql)$/", DataSourceType.DATABASE, ExtractSQLSelect.class),
     IN_DIR("Directory List", "dir.png", Properties.INPUT_DIRECTORY, "/", null, DataSourceType.DIR, ExtractDirList.class),
     IN_ENVIRONMENT("System Environment", "system.png", Properties.INPUT_SYSTEM_ENVIRONMENT, "Environment", null, DataSourceType.SYSTEM, ExtractSystemEnvironment.class),
 
-    OUT_MD("Markdown File", "markdown.png", Properties.OUTPUT_MARKDOWN, "output.md"),
-    OUT_CSV("CSV File", "csv.png", Properties.OUTPUT_CSV, "output.csv"),
-    OUT_TXT("Fixed Length File", "txt.png", Properties.OUTPUT_TXT, "output.txt"),
-    OUT_SQL("SQL File", "sql.png", Properties.OUTPUT_SQL, "output.sql"),
+    OUT_MD("Markdown File", "markdown.png", Properties.OUTPUT_MARKDOWN, "$[CAL:NAME(CURRENT)].md"),
+    OUT_CSV("CSV File", "csv.png", Properties.OUTPUT_CSV, "$[CAL:NAME(CURRENT)].csv"),
+    OUT_TXT("Fixed Length File", "txt.png", Properties.OUTPUT_TXT, "$[CAL:NAME(CURRENT)].txt"),
+    OUT_SQL("SQL File", "sql.png", Properties.OUTPUT_SQL, "$[CAL:NAME(CURRENT)].sql"),
     OUT_INS("DB Insert", "sql.png", Properties.OUTPUT_DBINSERT, ""),
     OUT_UPD("DB Update", "sql.png", Properties.OUTPUT_DBUPDATE, ""),
     ;
@@ -82,7 +82,7 @@ public enum DataFileType {
     }
 
     public boolean isRequireDatabase() {
-        return DataFileType.IN_SQL == this;
+        return DataFileType.IN_SQLDB == this;
     }
 
     public String getAllowTypes() {

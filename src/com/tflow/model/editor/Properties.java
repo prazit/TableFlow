@@ -83,7 +83,7 @@ public enum Properties {
             "--: tested :--"
     ),
 
-    VERSIONED (
+    VERSIONED(
             "==: Library ::==",
             "--: Library File Properties :--",
             "id:ID:ReadOnly",
@@ -438,20 +438,20 @@ public enum Properties {
             "==: Output File (MD) : Text File contains one or more tables in Markdown Formatted :==",
             "--: Output File Properties :--",
             "type:Type:DataFileType:out|refreshProperties();",
-            "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
+            "dataSourceIdentifier:Storage:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "--: Markdown Properties :--",
             "name:File Name:String:1000",
-            ".:propertyMap:append:Append:Boolean",
-            ".:propertyMap:charset:Charset:Charset|updateProperty('charset');",
-            ".:propertyMap:eol:EOL:String",
-            ".:propertyMap:eof:EOF:String",
-            ".:propertyMap:showComment:Show File Comment:Boolean",
-            ".:propertyMap:showDataSource:With DataSource:Boolean",
-            ".:propertyMap:showQuery:With Query:Boolean",
-            ".:propertyMap:showTableTitle:Show Table Name:Boolean",
-            ".:propertyMap:showRowNumber:Show Row Number:Boolean",
-            ".:propertyMap:showFlowChart:Show Flowchart:Boolean",
-            ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean",
+            ".:propertyMap:charset:Charset:Charset|=UTF-8:updateProperty('charset');",
+            ".:propertyMap:eol:EOL:String|=\\n",
+            ".:propertyMap:eof:EOF:String|=\\n",
+            ".:propertyMap:append:Append:Boolean|=false",
+            ".:propertyMap:showComment:Show File Comment:Boolean|=true",
+            ".:propertyMap:showDataSource:With DataSource:Boolean|=true",
+            ".:propertyMap:showQuery:With Query:Boolean|=true",
+            ".:propertyMap:showTableTitle:Show Table Name:Boolean|=true",
+            ".:propertyMap:showRowNumber:Show Row Number:Boolean|=true",
+            ".:propertyMap:showFlowChart:Show Flowchart:Boolean|=true",
+            ".:propertyMap:showLongFlowChart:Show Long Flowchart:Boolean|=true",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
@@ -707,8 +707,7 @@ public enum Properties {
             "]: Specific Function :",
             "]: Dynamic Value Expression :",
             "useFunction:useFunction:ReadOnly"
-    )
-    ;
+    );
 
     private List<String> prototypeList;
     private List<PropertyView> propertyList;
@@ -820,6 +819,8 @@ public enum Properties {
                     propView.setEnableVar(optional.substring(3));
                 } else if (optional.endsWith(";")) {
                     propView.setJavaScript(optional);
+                } else if (optional.startsWith("=")) {
+                    propView.setDefaultValue(optional.substring(1));
                 }
             }
         }
@@ -829,13 +830,12 @@ public enum Properties {
 
     public String initPropertyMap(Map<String, Object> propertyMap) {
         StringBuilder propertyOrder = new StringBuilder();
-        for (String property : getPrototypeList()) {
-            String[] params = property.split("[:]");
-            if (params[0].equals(".")) {
-                if (!propertyMap.containsKey(params[1])) {
-                    propertyMap.put(params[1], PropertyType.valueOf(params[4].toUpperCase()).getInitial());
-                    propertyOrder.append(",").append(params[1]);
-                }
+        String var;
+        for (PropertyView property : getPropertyList()) {
+            var = property.getVar();
+            if (property.hasParent() && !propertyMap.containsKey(var)) {
+                propertyMap.put(var, (property.getDefaultValue() == null ? property.getType().getInitial() : property.getDefaultValue()));
+                propertyOrder.append(",").append(var);
             }
         }
         return propertyOrder.length() > 0 ? propertyOrder.substring(1) : "";

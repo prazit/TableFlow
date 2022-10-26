@@ -27,6 +27,9 @@ public enum Versioned {
     LOGBACK_CLASSIC(29, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
     SLF4J_API(30, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
 
+    CLI_PROGRESSBAR(31, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+    CLI_PROGRESSBAR_JLINE(33, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
+
     JSCH_SFTP(32, "BKSUW", FileNameExtension.JAR.getAllowTypes(), FileNameExtension.JAR.getAllowMimeTypes()),
 
     /*WebUI Libs*/

@@ -8,6 +8,7 @@ import com.tflow.model.PageParameter;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.FileNameExtension;
 import com.tflow.model.data.PropertyVar;
+import com.tflow.model.data.SystemEnvironment;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
@@ -820,20 +821,22 @@ public class EditorController extends Controller {
         }
 
         /*Auto Add First Step*/
+        boolean needEventHandler = false;
         Step step = null;
         try {
             step = stepList.get(stepIndex);
+            if(step.getIndex() < 0) needEventHandler = true;
         } catch (IndexOutOfBoundsException ex) {
             if (stepIndex == 0) {
                 log.warn("selectStep(0) on new project, then call addStep().");
                 step = addStep();
+                needEventHandler = true;
             } else if (isSelectProject) {
                 step = new Step("for SelectProject from StepList", project);
                 step.setIndex(-1);
                 stepList.addNegativeItem(step);
             }
         }
-        boolean needEventHandler = !isSelectProject && step.getIndex() < 0;
 
         /*call action SelectStep*/
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
@@ -931,6 +934,8 @@ public class EditorController extends Controller {
 
         refreshStepList(project.getStepList());
         selectStep(step.getIndex());
+
+        createStepEventHandlers(step);
 
         FacesUtil.runClientScript(JavaScript.refreshFlowChart.getScript());
     }
@@ -1375,7 +1380,7 @@ public class EditorController extends Controller {
 
         focusOnLastProperties = true;
         jsBuilder.pre(JavaScript.updateProperty, propertyVar)
-                .post(JavaScript.focusProperty, 1000);
+                .post(JavaScript.focusProperty, 1000, propertyVar);
 
         if (invalid) {
             String msg = "Please correct empty value before append!";
@@ -1406,7 +1411,7 @@ public class EditorController extends Controller {
 
         focusOnLastProperties = true;
         jsBuilder.pre(JavaScript.updateProperty, property.getVar())
-                .post(JavaScript.focusProperty, 1000)
+                .post(JavaScript.focusProperty, 1000, property.getVar())
                 .runOnClient(true);
 
         propertyChanged(property);

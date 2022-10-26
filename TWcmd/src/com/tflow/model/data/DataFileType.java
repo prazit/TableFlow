@@ -5,6 +5,7 @@ package com.tflow.model.data;
  */
 public enum DataFileType {
 
+    IN_SQLDB,
     IN_SQL,
     IN_MD,
     IN_ENV,

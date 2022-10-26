@@ -294,7 +294,10 @@
                             <p:remoteCommand name="updatePackageList" update="@parent"/>
 
                             <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0 and projectCtl.activePackage.finished}">
-                                <p:outputPanel rendered="#{projectCtl.activePackage.finished}" style="display:inline-block">
+                                <p:outputPanel rendered="#{projectCtl.activePackage.finished}" style="display:inline-block" styleClass="selectable">
+                                    <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
+                                    <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent:@parent:@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
+
                                     <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId == null}">
                                         <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
                                         <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
@@ -347,9 +350,7 @@
                                     </div>
                                 </p:divider>
 
-                                <p:outputPanel styleClass="ui-g selectable">
-                                    <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
-                                    <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
+                                <p:outputPanel styleClass="ui-g">
                                     <p:dataTable value="#{projectCtl.activePackage.fileList}" var="packageFile" rowIndexVar="rowIndex">
                                         <p:column headerText="File" sortBy="#{packageFile.buildPath}#{packageFile.name}" styleClass="ui-g">
                                             <span class="ui-g-1">#{rowIndex + 1}</span>

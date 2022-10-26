@@ -576,6 +576,8 @@ public class ProjectManager {
                 outputFile = mapper.map((OutputFileData) throwExceptionOnError(data));
                 outputFile.setOwner(transformTable);
                 outputFile.createOwnerEventHandlers();
+                outputFile.selected();
+                outputFile.getProperties().initPropertyMap(outputFile.getPropertyMap());
                 outputList.add(outputFile);
             }
 

@@ -1,27 +1,8 @@
 package com.tflow.model.editor.cmd;
 
-import com.clevel.dconvers.DConvers;
-import com.clevel.dconvers.conf.Property;
-import com.clevel.dconvers.conf.SourceConfig;
-import com.clevel.dconvers.data.DataRow;
-import com.clevel.dconvers.ngin.Converter;
-import com.clevel.dconvers.ngin.Source;
+import com.tflow.model.data.SystemEnvironment;
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.action.Action;
-import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.util.DConversHelper;
-import com.tflow.util.ProjectUtil;
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.builder.ConfigurationBuilder;
-import org.apache.logging.log4j.core.config.properties.PropertiesConfigurationBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 public class ExtractSystemEnvironment extends ExtractCommand {
     @Override

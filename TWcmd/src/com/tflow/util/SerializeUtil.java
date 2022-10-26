@@ -23,6 +23,7 @@ public class SerializeUtil {
                     .setDateFormat("dd/MM/yyyy HH:mm:ss.SSSZ")
                     .excludeFieldsWithModifiers(Modifier.TRANSIENT)
                     .setPrettyPrinting()
+                    .disableHtmlEscaping()
                     .create();
     }
 

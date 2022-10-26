@@ -13,6 +13,7 @@ public class PropertyView {
     private String label;
     private String var;
     private String varParent;
+    private String defaultValue;
 
     private String[] params;
 
@@ -31,12 +32,12 @@ public class PropertyView {
     public PropertyView(String var) {
         type = PropertyType.READONLY;
         this.var = var;
-        this.label = var;
+        label = var;
         init();
     }
 
     private void init() {
-        update = "@this";
+        update = "@parent";
         javaScript = "";
     }
 
@@ -136,12 +137,21 @@ public class PropertyView {
         this.disableVar = disableVar;
     }
 
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     @Override
     public String toString() {
         return "{" +
                 "type:" + type +
                 ", label:'" + label + '\'' +
                 ", var:'" + var + '\'' +
+                ", defaultValue:'" + defaultValue + '\'' +
                 ", varParent:'" + varParent + '\'' +
                 ", update:'" + update + '\'' +
                 ", javaScript:'" + javaScript + '\'' +
