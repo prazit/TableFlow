@@ -1,15 +1,21 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.FileNameExtension;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.datasource.NameValue;
 import com.tflow.model.editor.view.PropertyView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class OutputFile extends DataFile implements HasEvent, HasSelected {
+
+    private Logger log = LoggerFactory.getLogger(OutputFile.class);
 
     private EventManager eventManager;
     private List<EventHandler> columnNameHandlerList;
@@ -70,23 +76,29 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
     public void refreshFixedLengthFormatList(PropertyView property) {
         if (DataFileType.OUT_TXT != type) return;
 
+        Object object = propertyMap.get(PropertyVar.format.name());
+        if (log.isDebugEnabled()) log.debug("refreshFixedLengthFormatList: format:{}, fixedLengthFormatList:{}", object, fixedLengthFormatList == null ? "null" : Arrays.toString(fixedLengthFormatList.toArray()));
+        if ((object == null || ((String) object).isEmpty()) && fixedLengthFormatList == null) {
+            fixedLengthFormatList = new ArrayList<>();
+            correctFixedLengthFormatList(property);
+            return;
+        }
+
         if (fixedLengthFormatList != null) {
             correctFixedLengthFormatList(property);
             return;
         }
 
-        Object object = propertyMap.get(PropertyVar.format.name());
-        String[] formats;
-        if (object == null) {
-            formats = new String[]{};
-        } else {
-            formats = ((String) object).split(",");
-        }
+        String formatString = (String) object;
+        String[] formats = formatString.split(",");
+        if (log.isDebugEnabled()) log.debug("refreshFixedLengthFormatList: formats:{}", Arrays.toString(formats));
 
         fixedLengthFormatList = new ArrayList<>();
-        for (String format : formats) {
-            String[] value = format.split("=");
-            fixedLengthFormatList.add(new NameValue(value[0], value[1]));
+        if (formats.length > 0 && formatString.contains("=")) {
+            for (String format : formats) {
+                String[] value = format.split("=");
+                fixedLengthFormatList.add(new NameValue(value[0], value[1]));
+            }
         }
 
         if (fixedLengthFormatList.size() == 0) {
@@ -119,12 +131,12 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         String formatted;
         for (DataColumn column : columnList) {
             formatted = hashMap.get(column.getName());
-            fixedLengthFormatList.add(new NameValue(column.getName(), formatted == null ? "STR:1" : formatted));
+            fixedLengthFormatList.add(new NameValue(column.getName(), formatted == null ? "STR:10" : formatted));
         }
         fixedLengthFormatList.get(columnList.size() - 1).setLast(true);
     }
 
-    private String getFixedLengthFormat() {
+    private String acceptFixedLengthFormat() {
         StringBuilder stringBuilder = new StringBuilder();
         for (NameValue nameValue : fixedLengthFormatList) {
             stringBuilder.append(",").append(nameValue.getName()).append("=").append(nameValue.getValue());
@@ -154,7 +166,14 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
             public void handle(Event event) {
                 PropertyView property = (PropertyView) event.getData();
                 if (PropertyVar.fixedLengthFormatList.equals(property.getVar())) {
-                    propertyMap.put(PropertyVar.format.name(), getFixedLengthFormat());
+                    propertyMap.put(PropertyVar.format.name(), acceptFixedLengthFormat());
+                } else if (PropertyVar.type.equals(property.getVar())) {
+                    /*need corrected extension of name*/
+                    FileNameExtension ext = FileNameExtension.forName(type.getDefaultName());
+                    if (ext != null) {
+                        int extIndex = name.lastIndexOf(".");
+                        name = name.substring(0, extIndex + 1) + ext.name().toLowerCase();
+                    }
                 }
             }
         });
@@ -210,7 +229,7 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
             hasChanges = true;
             propertyVar = PropertyVar.format.name();
             refreshFixedLengthFormatList(property);
-            propertyMap.put(PropertyVar.format.name(), getFixedLengthFormat());
+            propertyMap.put(PropertyVar.format.name(), acceptFixedLengthFormat());
         }
 
         /*OUTPUT_SQL.columns*/

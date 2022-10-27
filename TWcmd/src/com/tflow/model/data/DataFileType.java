@@ -15,6 +15,9 @@ public enum DataFileType {
     OUT_MD,
     OUT_CSV,
     OUT_TXT,
+
+    OUT_INS,
+    OUT_UPD
     ;
 
     public static DataFileType parse(String dataFileType) {

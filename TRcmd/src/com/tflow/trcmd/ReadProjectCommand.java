@@ -176,10 +176,12 @@ public class ReadProjectCommand extends IOCommand {
         ByteArrayOutputStream zipByteArray = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(zipByteArray);
 
-        String rootPath = new DConversID(packageData.getName()).toString() + "/";
+        ProjectData projectData = getPrototypeProject(additional.getProjectId(), additional);
+        String rootPath = new DConversID(projectData.getName()).toString() + "/";
         BinaryFileData binaryFileData;
         ZipEntry zipEntry;
         for (PackageFileData fileData : packageData.getFileList()) {
+            if(!fileData.isUpdated()) continue;
 
             /*load file content*/
             additional.setRecordId(String.valueOf(fileData.getFileId()));

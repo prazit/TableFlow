@@ -814,4 +814,21 @@ public class ProjectManager {
         }
         return data;
     }
+
+    public boolean verify(Project project) {
+        /*TODO: verify project need to copy loadProject to here and replace all dataManager.getData by mapper.map instead*/
+        /*Example: EditorController.isTestConnectionEnabled() {
+            Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify();
+        }*/
+        return false;
+    }
+
+    public boolean verify(Step step) {
+        /*TODO: verify project need to copy loadStep to here and replace all dataManager.getData by mapper.map instead*/
+        /*Example: EditorController.isTestConnectionEnabled() {
+            Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify();
+        }*/
+        return false;
+    }
+
 }

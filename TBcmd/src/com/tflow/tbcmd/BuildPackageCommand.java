@@ -20,6 +20,7 @@ import com.tflow.util.FileUtil;
 import com.tflow.util.HelperMap;
 import com.tflow.wcmd.IOCommand;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.kafka.common.utils.Bytes;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Write-Data need to use TWcmd to support backup-site/rerun in any case of data-loss.
@@ -81,6 +83,7 @@ public class BuildPackageCommand extends IOCommand {
             packageList = (List<ItemData>) throwExceptionOnError(data);
 
             boolean isNewPackage = attributes.getRecordId() == null;
+            List<PackageFileData> olderFileList = null;
             int packageId;
             if (isNewPackage) {
                 if (packageList.size() == 0) {
@@ -95,7 +98,10 @@ public class BuildPackageCommand extends IOCommand {
             } else {
                 packageId = Integer.parseInt(attributes.getRecordId());
                 data = getData(ProjectFileType.PACKAGE, packageId);
+
                 packageData = (PackageData) throwExceptionOnError(data);
+                olderFileList = packageData.getFileList();
+
                 packageData.setComplete(0);
                 packageData.setFinished(false);
                 packageData.setFileList(null);
@@ -113,7 +119,7 @@ public class BuildPackageCommand extends IOCommand {
                 setPackageNameInList(packageId, packageData.getName(), packageList);
             }
 
-            buildPackage(packageData, fileList, packageList, projectUser, projectData);
+            buildPackage(packageData, olderFileList, fileList, packageList, projectUser, projectData);
 
         } catch (Exception exception) {
             if (packageList != null) {
@@ -144,10 +150,11 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     /**
-     * @param packageData contains percent complete for ui, this function will update them 4-5 times max
+     * @param packageData   contains percent complete for ui, this function will update them 4-5 times max
+     * @param olderFileList
      */
     @SuppressWarnings("unchecked")
-    private void buildPackage(PackageData packageData, List<PackageFileData> fileList, List<ItemData> packageList, ProjectUser projectUser, ProjectData projectData) throws InstantiationException, IOException, ClassNotFoundException {
+    private void buildPackage(PackageData packageData, List<PackageFileData> olderFileList, List<PackageFileData> fileList, List<ItemData> packageList, ProjectUser projectUser, ProjectData projectData) throws InstantiationException, IOException, ClassNotFoundException {
         setPackageNameInList(packageData.getId(), packageData.getName(), packageList);
         updatePackageList(packageList, projectUser);
         updatePercentComplete(packageData, projectUser, 0, estimateBuiltDate());
@@ -158,7 +165,8 @@ public class BuildPackageCommand extends IOCommand {
         addVersionedFiles(fileList, packageData, projectUser);
         updatePercentComplete(packageData, projectUser, 50, estimateBuiltDate());
 
-        addGeneratedFiles(fileList, packageData, projectUser, projectData);
+        PackageData previousPackage = getPreviousPackage(packageData, packageList);
+        addGeneratedFiles(olderFileList, fileList, packageData, projectUser, projectData, previousPackage);
         updatePercentComplete(packageData, projectUser, 75, estimateBuiltDate());
 
         String completeName = getCompleteName(packageData, projectData);
@@ -167,16 +175,82 @@ public class BuildPackageCommand extends IOCommand {
         packageData.setFinished(true);
         fileList.sort(Comparator.comparing(item -> (item.getBuildPath() + item.getName())));
 
-        /*TODO: need to compare previous version and mark for New/Updated File*/
-
+        markUpdated(fileList, previousPackage);
         setPackageNameInList(packageData.getId(), packageData.getName(), packageList);
         updatePackageList(packageList, projectUser);
         updatePercentComplete(packageData, projectUser, 100, DateTimeUtil.now());
     }
 
+    private PackageData getPreviousPackage(PackageData packageData, List<ItemData> packageList) throws IOException, InstantiationException, ClassNotFoundException {
+        int packageIndex = findPackageItemIndex(packageData.getId(), packageList);
+        if (packageIndex == 0) {
+            return null;
+        }
+        int previousIndex = packageIndex - 1;
+        ItemData previousItem = packageList.get(previousIndex);
+
+        /*load previous package by id*/
+        Object data = getData(ProjectFileType.PACKAGE, previousItem.getId());
+        return (PackageData) throwExceptionOnError(data);
+    }
+
+    private void markUpdated(List<PackageFileData> fileList, PackageData previousPackageData) throws InstantiationException, IOException, ClassNotFoundException {
+
+        if (previousPackageData == null) {
+            log.debug("markUpdated: this is first package");
+            /*first package: all file in list are updated*/
+            for (PackageFileData fileData : fileList) fileData.setUpdated(true);
+            return;
+        }
+
+        /*need to compare previous version and mark for New/Updated File*/
+        /* Updated Conditions:
+         * 1. fileId is not in previous fileList
+         * 2. fileId is in previous fileList but file.modifiedDate > previous.builtDate
+         **/
+        boolean foundInPrevious;
+        PackageFileData previousFileData = null;
+        int fileId;
+        RecordAttributesData previousFileAttributes;
+        Date previousModifiedDate;
+        Date builtDate;
+        for (PackageFileData fileData : fileList) {
+            foundInPrevious = false;
+            fileId = fileData.getFileId();
+            for (PackageFileData previousFile : previousPackageData.getFileList()) {
+                if (previousFile.getFileId() == fileId) {
+                    foundInPrevious = true;
+                    previousFileData = previousFile;
+                    break;
+                }
+            }
+
+            if (foundInPrevious) {
+                Object data = getData(ProjectFileType.valueOf(previousFileData.getType().name()), previousFileData.getFileId());
+                throwExceptionOnError(data);
+
+                previousFileAttributes = lastRecordData.getAdditional();
+                previousModifiedDate = previousFileAttributes.getModifiedDate();
+                builtDate = previousPackageData.getBuiltDate();
+                if (log.isDebugEnabled()) log.debug("markUpdated: packageFile found in previous: fileId:{}, name:{}, previousModifiedDate:{}, builtDate:{}", fileId, fileData.getName(), previousModifiedDate, builtDate);
+
+                if (previousModifiedDate.compareTo(builtDate) > 0) {
+                    fileData.setUpdated(true);
+                }
+
+            } else {
+                log.debug("markUpdated: packageFile not found in previous: fileId:{}, name:{}", fileId, fileData.getName());
+                fileData.setUpdated(true);
+            }
+        }
+
+    }
+
     private void updatePackageList(List<ItemData> packageList, ProjectUser projectUser) {
         dataManager.addData(ProjectFileType.PACKAGE_LIST, packageList, projectUser);
     }
+
+    private RecordData lastRecordData;
 
     private Object getData(ProjectFileType projectFileType, RecordAttributesData recordAttributesData) throws InstantiationException, IOException, ClassNotFoundException {
         File file = getFile(projectFileType, recordAttributesData);
@@ -186,8 +260,8 @@ public class BuildPackageCommand extends IOCommand {
         }
 
         try {
-            RecordData recordData = (RecordData) readFrom(file);
-            return recordData.getData();
+            lastRecordData = (RecordData) readFrom(file);
+            return lastRecordData.getData();
         } catch (ClassCastException ex) {
             return KafkaErrorCode.INVALID_DATA_FILE.getCode();
         }
@@ -302,7 +376,7 @@ public class BuildPackageCommand extends IOCommand {
         return data;
     }
 
-    private void addGeneratedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser, ProjectData projectData) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
+    private void addGeneratedFiles(List<PackageFileData> olderFileList, List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser, ProjectData projectData, PackageData previousPackage) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
         generatedPath = environmentConfigs.getBinaryRootPath() + projectUser.getId() + "/";
 
         String conversionFileName = new DConversID(projectData.getName()).toString() + Defaults.CONFIG_FILE_EXT.getStringValue();
@@ -324,6 +398,7 @@ public class BuildPackageCommand extends IOCommand {
 
             Object data = getData(ProjectFileType.GENERATED_LIST);
             List<ItemData> generatedFileList = (List<ItemData>) throwExceptionOnError(data);
+            if (olderFileList != null) removeOlderGenerated(olderFileList, generatedFileList, projectUser);
 
             ByteArrayOutputStream byteArrayOutputStream;
             ItemData generatedItemData;
@@ -343,7 +418,7 @@ public class BuildPackageCommand extends IOCommand {
 
                 generatedItemData = new ItemData(generatedFileList.size() + 1, converterFileName);
                 generatedFileList.add(generatedItemData);
-                addGeneratedFile(generatedItemData.getId(), converterFileName, false, contentBytes, packageData, projectUser, fileList);
+                addGeneratedFile(generatedItemData.getId(), converterFileName, false, contentBytes, packageData, projectUser, fileList, findBinaryFile(converterFileName, previousPackage));
             }
 
             /*remove unused database before create ConversionConfigFile*/
@@ -364,9 +439,9 @@ public class BuildPackageCommand extends IOCommand {
                 log.debug("sftpDataList: {}", Arrays.toString(sftpDataList.toArray()));
             }
 
-            addDataConversionConfigFile(conversionFileName, dataConversionConfigFile, converterConfigMap, packageData, projectUser, fileList, databaseDataList, sftpDataList, generatedFileList);
-            addGeneratedBatchFiles(conversionFileName, projectData, packageData, projectUser, fileList, generatedFileList);
-            addGeneratedReadme(dconvers, projectData, packageData, projectUser, fileList, generatedFileList);
+            addDataConversionConfigFile(conversionFileName, dataConversionConfigFile, converterConfigMap, packageData, projectUser, fileList, databaseDataList, sftpDataList, generatedFileList, previousPackage);
+            addGeneratedBatchFiles(conversionFileName, projectData, packageData, projectUser, fileList, generatedFileList, previousPackage);
+            addGeneratedReadme(dconvers, projectData, packageData, projectUser, fileList, generatedFileList, previousPackage);
 
             /*GENERATED_LIST need to save at the end*/
             dataManager.addData(ProjectFileType.GENERATED_LIST, generatedFileList, projectUser);
@@ -379,7 +454,48 @@ public class BuildPackageCommand extends IOCommand {
         }
     }
 
-    private void addGeneratedReadme(DConvers dconvers, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList) {
+    /**
+     * Used to find existing file from previous package.
+     */
+    private BinaryFileData findBinaryFile(String fileName, PackageData packageData) throws IOException, InstantiationException, ClassNotFoundException {
+        PackageFileData foundFileData = null;
+        for (PackageFileData fileData : packageData.getFileList()) {
+            if (fileName.compareTo(fileData.getName()) == 0) {
+                foundFileData = fileData;
+            }
+        }
+        if (foundFileData == null) {
+            log.debug("findBinaryFile: {} not found in previous package:{}", fileName, packageData);
+            return null;
+        }
+
+        log.debug("findBinaryFile: {} found:{}", fileName, foundFileData);
+        Object data = getData(ProjectFileType.valueOf(foundFileData.getType().name()), foundFileData.getFileId());
+        return (BinaryFileData) throwExceptionOnError(data);
+    }
+
+    private void removeOlderGenerated(List<PackageFileData> olderFileList, List<ItemData> generatedFileList, ProjectUser projectUser) {
+        for (PackageFileData olderFileData : olderFileList) {
+            if (FileType.GENERATED == olderFileData.getType()) {
+
+                /*remove binaryFile*/
+                dataManager.addData(ProjectFileType.PACKAGE, (TWData) null, projectUser, olderFileData.getId());
+
+                /*remove from genreatedFileList*/
+                int removeIndex = -1;
+                for (int index = generatedFileList.size() - 1; index > 0; index--) {
+                    ItemData generatedFileItem = generatedFileList.get(index);
+                    if (generatedFileItem.getId() == olderFileData.getId()) {
+                        removeIndex = index;
+                        break;
+                    }
+                }
+                if (removeIndex >= 0) generatedFileList.remove(removeIndex);
+            }
+        }
+    }
+
+    private void addGeneratedReadme(DConvers dconvers, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList, PackageData previousPackage) throws ClassNotFoundException, IOException, InstantiationException {
 
         String fileName = "version.properties";
         String[] numbers = projectData.getVersion().split("[.]");
@@ -407,7 +523,7 @@ public class BuildPackageCommand extends IOCommand {
         byte[] contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
         ItemData generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
         generatedFileList.add(generatedItemData);
-        addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+        addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList, findBinaryFile(fileName, previousPackage));
 
         /*collect file list for readme.txt*/
         StringBuilder stringBuilder = new StringBuilder();
@@ -424,7 +540,7 @@ public class BuildPackageCommand extends IOCommand {
                 .append(" |_ ").append(++count).append(") ")
                 .append(FileNameExtension.forName(fileName).getBuildPath()).append(fileName).append("\n");
 
-        content = projectData.getName() + " version " + projectData.getVersion() + " R" + packageData.getId() + "\n" +
+        content = projectData.getName() + " version " + projectData.getVersion() + "." + packageData.getId() + "\n" +
                 "Generated by TFLOW DEMO VERSION\n" +
                 "on " + dconvers.getSystemVariableValue(SystemVariable.APPLICATION_FULL_VERSION) + "\n" +
                 "\n" +
@@ -434,16 +550,55 @@ public class BuildPackageCommand extends IOCommand {
         contentBytes = content.getBytes(StandardCharsets.ISO_8859_1);
         generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
         generatedFileList.add(generatedItemData);
-        addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+        addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList, findBinaryFile(fileName, previousPackage));
     }
 
-    private BinaryFileData addGeneratedFile(int fileId, String fileName, boolean rootPath, byte[] contentBytes, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList) {
-        BinaryFileData conversionFileData = new BinaryFileData();
-        conversionFileData.setId(fileId);
-        conversionFileData.setName(fileName);
-        conversionFileData.setExt(FileNameExtension.forName(fileName));
-        conversionFileData.setContent(contentBytes);
-        dataManager.addData(ProjectFileType.GENERATED, conversionFileData, projectUser, conversionFileData.getId());
+    /**
+     * Original from Bytes.BYTES_LEXICO_COMPARATOR
+     */
+    private int compareBytes(byte[] buffer1, byte[] buffer2) {
+        return compareBytes(buffer1, 0, buffer1.length, buffer2, 0, buffer2.length);
+    }
+
+    /**
+     * Original from Bytes.BYTES_LEXICO_COMPARATOR
+     */
+    private int compareBytes(final byte[] buffer1, int offset1, int length1, final byte[] buffer2, int offset2, int length2) {
+
+        // short circuit equal case
+        /*if (buffer1 == buffer2 &&
+                offset1 == offset2 &&
+                length1 == length2) {
+            return 0;
+        }*/
+
+        // similar to Arrays.compare() but considers offset and length
+        int end1 = offset1 + length1;
+        int end2 = offset2 + length2;
+        for (int i = offset1, j = offset2; i < end1 && j < end2; i++, j++) {
+            int a = buffer1[i] & 0xff;
+            int b = buffer2[j] & 0xff;
+            if (a != b) {
+                return a - b;
+            }
+        }
+        return length1 - length2;
+    }
+
+    private BinaryFileData addGeneratedFile(int fileId, String fileName, boolean rootPath, byte[] contentBytes, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, BinaryFileData existingBinaryFileData) {
+        BinaryFileData conversionFileData;
+        if (existingBinaryFileData != null && compareBytes(contentBytes, existingBinaryFileData.getContent()) == 0) {
+            log.debug("addGeneratedFile: identical file then use existing BinaryFile.");
+            conversionFileData = existingBinaryFileData;
+        } else {
+            log.debug("addGeneratedFile: different file then create new BinaryFile.");
+            conversionFileData = new BinaryFileData();
+            conversionFileData.setId(fileId);
+            conversionFileData.setName(fileName);
+            conversionFileData.setExt(FileNameExtension.forName(fileName));
+            conversionFileData.setContent(contentBytes);
+            dataManager.addData(ProjectFileType.GENERATED, conversionFileData, projectUser, conversionFileData.getId());
+        }
 
         PackageFileData packageFileData = mapper.map(conversionFileData);
         packageFileData.setId(newPackageFileId(packageData));
@@ -453,7 +608,7 @@ public class BuildPackageCommand extends IOCommand {
         return conversionFileData;
     }
 
-    private void addGeneratedBatchFiles(String conversionFileName, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList) throws InstantiationException, IOException, ClassNotFoundException {
+    private void addGeneratedBatchFiles(String conversionFileName, ProjectData projectData, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<ItemData> generatedFileList, PackageData previousPackage) throws InstantiationException, IOException, ClassNotFoundException {
         FileNameExtension ext = FileNameExtension.forName(conversionFileName);
 
         /*TODO: future feature: need Batch Option object later*/
@@ -487,7 +642,7 @@ public class BuildPackageCommand extends IOCommand {
             fileName = "run-" + new DConversID(projectData.getName()) + ".bat";
             generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
             generatedFileList.add(generatedItemData);
-            addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+            addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList, findBinaryFile(fileName, previousPackage));
         }
 
         /*generate shell script*/
@@ -505,7 +660,7 @@ public class BuildPackageCommand extends IOCommand {
             fileName = "run-" + new DConversID(projectData.getName()) + ".sh";
             generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
             generatedFileList.add(generatedItemData);
-            addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList);
+            addGeneratedFile(generatedItemData.getId(), fileName, true, contentBytes, packageData, projectUser, fileList, findBinaryFile(fileName, previousPackage));
         }
 
         /*generate logback.xml from template*/
@@ -517,7 +672,7 @@ public class BuildPackageCommand extends IOCommand {
         contentBytes = logbackTemplate.getBytes(iso88591);
         generatedItemData = new ItemData(generatedFileList.size() + 1, logback);
         generatedFileList.add(generatedItemData);
-        addGeneratedFile(generatedItemData.getId(), logback, false, contentBytes, packageData, projectUser, fileList);
+        addGeneratedFile(generatedItemData.getId(), logback, false, contentBytes, packageData, projectUser, fileList, findBinaryFile(logback, previousPackage));
 
         /* TODO: generate script to add job to any scheduler*/
 
@@ -550,7 +705,7 @@ public class BuildPackageCommand extends IOCommand {
         }
     }
 
-    private void addDataConversionConfigFile(String fileName, DataConversionConfigFile dataConversionConfigFile, HashMap<String, ConverterConfigFile> converterConfigMap, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<ItemData> generatedFileList) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException, ConfigurationException {
+    private void addDataConversionConfigFile(String fileName, DataConversionConfigFile dataConversionConfigFile, HashMap<String, ConverterConfigFile> converterConfigMap, PackageData packageData, ProjectUser projectUser, List<PackageFileData> fileList, List<DatabaseData> databaseDataList, List<SFTPData> sftpDataList, List<ItemData> generatedFileList, PackageData previousPackage) throws IOException, UnsupportedOperationException, ClassNotFoundException, InstantiationException, ConfigurationException {
         // all commented will use default values by DConvers
 
         /*dataConversionConfigFile.setPluginsCalcList();
@@ -594,7 +749,7 @@ public class BuildPackageCommand extends IOCommand {
 
         ItemData generatedItemData = new ItemData(generatedFileList.size() + 1, fileName);
         generatedFileList.add(generatedItemData);
-        addGeneratedFile(generatedItemData.getId(), fileName, false, contentBytes, packageData, projectUser, fileList);
+        addGeneratedFile(generatedItemData.getId(), fileName, false, contentBytes, packageData, projectUser, fileList, findBinaryFile(fileName, previousPackage));
     }
 
     private byte[] unescape(ByteArrayOutputStream byteArrayOutputStream) {
@@ -948,6 +1103,17 @@ public class BuildPackageCommand extends IOCommand {
         return sourceConfig;
     }
 
+    private int findPackageItemIndex(int packageId, List<ItemData> packageList) throws IOException {
+        ItemData itemData;
+        for (int index = 0; index < packageList.size(); index++) {
+            itemData = packageList.get(index);
+            if (itemData.getId() == packageId) {
+                return index;
+            }
+        }
+        throw new IOException("Package data not found: id=" + packageId + " '");
+    }
+
     private DatabaseData findDatabaseData(int dataSourceId, List<DatabaseData> databaseDataList) throws IOException {
         for (DatabaseData databaseData : databaseDataList) {
             if (databaseData.getId() == dataSourceId) {
@@ -995,30 +1161,6 @@ public class BuildPackageCommand extends IOCommand {
         DataFileType outputFileType = DataFileType.parse(outputFileData.getType());
         if (outputFileType == null) return;
 
-        log.debug("setOutputConfig: outputFile.PropertyMap:{}, outputFileData:{}", outputFileData.getPropertyMap(), outputFileData);
-        switch (outputFileType) {
-            case OUT_SQL:
-                setOutputSQL(outputConfig, outputFileData);
-                break;
-            case OUT_MD:
-                setOutputMD(outputConfig, outputFileData, sftpDataList, localDataList);
-                break;
-            case OUT_CSV:
-                setOutputCSV(outputConfig, outputFileData);
-                break;
-            case OUT_TXT:
-                setOutputTXT(outputConfig, outputFileData);
-                break;
-        }
-    }
-
-    private void setOutputSQL(OutputConfig outputConfig, OutputFileData outputFileData) {
-        Map<String, Object> propertyMap = outputFileData.getPropertyMap();
-        /*TODO: future feature: set output for SQL*/
-    }
-
-    private void setOutputMD(OutputConfig outputConfig, OutputFileData outputFileData, List<SFTPData> sftpDataList, List<LocalData> localDataList) throws IOException {
-
         String outputPath;
         boolean sftp;
         String sftpPath;
@@ -1026,9 +1168,10 @@ public class BuildPackageCommand extends IOCommand {
         if (dataSourceType == null) throw new IOException("Invalid DataSourceType: " + outputFileData.getDataSourceType());
         switch (dataSourceType) {
             case SFTP:
-                outputPath = "";
+                SFTPData sftpData = findSftpData(outputFileData.getDataSourceId(), sftpDataList);
+                outputPath = sftpData.getTmp();
                 sftp = true;
-                sftpPath = findSftpData(outputFileData.getDataSourceId(), sftpDataList).getRootPath();
+                sftpPath = sftpData.getRootPath();
                 break;
 
             case LOCAL:
@@ -1044,24 +1187,130 @@ public class BuildPackageCommand extends IOCommand {
                 break;
         }
 
+        log.debug("setOutputConfig: outputFile.PropertyMap:{}, outputFileData:{}", outputFileData.getPropertyMap(), outputFileData);
+        switch (outputFileType) {
+            case OUT_SQL:
+                setOutputSQL(outputConfig, outputFileData, outputPath, sftp, sftpPath);
+                break;
+            case OUT_MD:
+                setOutputMD(outputConfig, outputFileData, sftpDataList, localDataList, outputPath, sftp, sftpPath);
+                break;
+            case OUT_CSV:
+                setOutputCSV(outputConfig, outputFileData, outputPath, sftp, sftpPath);
+                break;
+            case OUT_TXT:
+                setOutputTXT(outputConfig, outputFileData, outputPath, sftp, sftpPath);
+                break;
+            case OUT_INS:
+                setOutputDBInsert(outputConfig, outputFileData, outputPath, sftp, sftpPath);
+                break;
+            case OUT_UPD:
+                setOutputDBUpdate(outputConfig, outputFileData, outputPath, sftp, sftpPath);
+                break;
+        }
+    }
+
+    private void setOutputDBUpdate(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
+        /*TODO: require Database before test*/
+    }
+
+    private void setOutputDBInsert(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
+        /*TODO: require Database before test*/
+    }
+
+    private void setOutputMD(OutputConfig outputConfig, OutputFileData outputFileData, List<SFTPData> sftpDataList, List<LocalData> localDataList, String outputPath, boolean sftp, String sftpPath) throws IOException {
         HelperMap<String, Object> propertyMap = new HelperMap();
         propertyMap.putAll(outputFileData.getPropertyMap());
         outputConfig.setMarkdown(true);
         outputConfig.setMarkdownOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
-        outputConfig.setMarkdownOutputAppend((Boolean) propertyMap.get("append", false));
+        outputConfig.setMarkdownOutputAppend(propertyMap.getBoolean("append", false));
         outputConfig.setMarkdownOutputCharset((String) propertyMap.get("charset", "UTF-8"));
         outputConfig.setMarkdownOutputEOL((String) propertyMap.get("eol", "\n"));
         outputConfig.setMarkdownOutputEOF((String) propertyMap.get("eof", "\n"));
-        outputConfig.setMarkdownComment((Boolean) propertyMap.get("showComment", true));
-        outputConfig.setMarkdownCommentDataSource((Boolean) propertyMap.get("showDataSource", true));
-        outputConfig.setMarkdownCommentQuery((Boolean) propertyMap.get("showQuery", true));
-        outputConfig.setMarkdownTitle((Boolean) propertyMap.get("showTableTitle", true));
-        outputConfig.setMarkdownRowNumber((Boolean) propertyMap.get("showRowNumber", true));
-        outputConfig.setMarkdownMermaid((Boolean) propertyMap.get("showFlowChart", true));
-        outputConfig.setMarkdownMermaidFull((Boolean) propertyMap.get("showLongFlowChart", true));
+        outputConfig.setMarkdownComment(propertyMap.getBoolean("showComment", true));
+        outputConfig.setMarkdownCommentDataSource(propertyMap.getBoolean("showDataSource", true));
+        outputConfig.setMarkdownCommentQuery(propertyMap.getBoolean("showQuery", true));
+        outputConfig.setMarkdownTitle(propertyMap.getBoolean("showTableTitle", true));
+        outputConfig.setMarkdownRowNumber(propertyMap.getBoolean("showRowNumber", true));
+        outputConfig.setMarkdownMermaid(propertyMap.getBoolean("showFlowChart", true));
+        outputConfig.setMarkdownMermaidFull(propertyMap.getBoolean("showLongFlowChart", true));
         if (sftp) {
             outputConfig.setMarkdownSftp("true");
             outputConfig.setMarkdownSftpOutput(normalizeOutputFilePath(sftpPath) + normalizeOutputFileName(outputFileData.getName()));
+        }
+    }
+
+    private void setOutputSQL(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
+        HelperMap<String, Object> propertyMap = new HelperMap();
+        propertyMap.putAll(outputFileData.getPropertyMap());
+        outputConfig.setSql(true);
+        outputConfig.setSqlOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
+        outputConfig.setSqlOutputAppend(propertyMap.getBoolean("append", false));
+        outputConfig.setSqlOutputCharset((String) propertyMap.get("charset", "UTF-8"));
+        outputConfig.setSqlOutputEOL((String) propertyMap.get("eol", "\n"));
+        outputConfig.setSqlOutputEOF((String) propertyMap.get("eof", "\n"));
+        outputConfig.setSqlTable((String) propertyMap.get("tableName", "table_name"));
+        outputConfig.setSqlCreate(propertyMap.getBoolean("create", false));
+        outputConfig.setSqlInsert(propertyMap.getBoolean("insert", true));
+        outputConfig.setSqlUpdate(propertyMap.getBoolean("update", false));
+        outputConfig.setSqlNameQuotes((String) propertyMap.get("quotesOfName", ""));
+        outputConfig.setSqlValueQuotes((String) propertyMap.get("quotesOfValue", "'"));
+        outputConfig.setSqlColumn((List<String>) propertyMap.get("columns"));
+        if (sftp) {
+            outputConfig.setSqlSftp("true");
+            outputConfig.setSqlSftpOutput(normalizeOutputFilePath(sftpPath) + normalizeOutputFileName(outputFileData.getName()));
+        }
+    }
+
+    private void setOutputCSV(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
+        HelperMap<String, Object> propertyMap = new HelperMap();
+        propertyMap.putAll(outputFileData.getPropertyMap());
+        outputConfig.setCsv(true);
+        outputConfig.setCsvOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
+        outputConfig.setCsvOutputAppend(propertyMap.getBoolean("append", false));
+        outputConfig.setCsvOutputCharset((String) propertyMap.get("charset", "UTF-8"));
+        outputConfig.setCsvOutputEOL((String) propertyMap.get("bof", ""));
+        outputConfig.setCsvOutputEOL((String) propertyMap.get("eol", "\n"));
+        outputConfig.setCsvOutputEOF((String) propertyMap.get("eof", "\n"));
+        outputConfig.setCsvHeader(propertyMap.getBoolean("header", true));
+        outputConfig.setCsvSeparator((String) propertyMap.get("separator", ","));
+        outputConfig.setCsvFormatInteger((String) propertyMap.get("integerFormat", "0"));
+        outputConfig.setCsvFormatDecimal((String) propertyMap.get("decimalFormat", "0.0000"));
+        outputConfig.setCsvFormatDate((String) propertyMap.get("dateFormat", "yyyy/MM/dd"));
+        outputConfig.setCsvFormatDatetime((String) propertyMap.get("dateTimeFormat", "yyyy/MM/dd HH:mm:ss"));
+        if (sftp) {
+            outputConfig.setCsvSftp("true");
+            outputConfig.setCsvSftpOutput(normalizeOutputFilePath(sftpPath) + normalizeOutputFileName(outputFileData.getName()));
+        }
+    }
+
+    private void setOutputTXT(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
+        HelperMap<String, Object> propertyMap = new HelperMap();
+        propertyMap.putAll(outputFileData.getPropertyMap());
+        outputConfig.setTxt(true);
+        outputConfig.setTxtOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
+        outputConfig.setTxtOutputAppend(propertyMap.getBoolean("append", false));
+        outputConfig.setTxtOutputCharset((String) propertyMap.get("charset", "UTF-8"));
+        outputConfig.setTxtOutputEOL((String) propertyMap.get("bof", ""));
+        outputConfig.setTxtOutputEOL((String) propertyMap.get("eol", "\n"));
+        outputConfig.setTxtOutputEOF((String) propertyMap.get("eof", "\n"));
+        outputConfig.setTxtSeparator((String) propertyMap.get("separator", ","));
+        outputConfig.setTxtFormatDate((String) propertyMap.get("dateFormat", "yyyy/MM/dd"));
+        outputConfig.setTxtFormatDatetime((String) propertyMap.get("dateTimeFormat", "yyyy/MM/dd HH:mm:ss"));
+        outputConfig.setTxtFillString((String) propertyMap.get("fillString", " "));
+        outputConfig.setTxtFillNumber((String) propertyMap.get("fillNumber", "0"));
+        outputConfig.setTxtFillDate((String) propertyMap.get("fillDate", " "));
+
+        String[] formats = ((String) propertyMap.get("format", "STR:1")).split("[,]");
+        List<String> formatList = new ArrayList<>();
+        for (String format : formats) {
+            formatList.add(format.split("[=]")[1]);
+        }
+        outputConfig.setTxtFormat(formatList);
+
+        if (sftp) {
+            outputConfig.setTxtSftp("true");
+            outputConfig.setTxtSftpOutput(normalizeOutputFilePath(sftpPath) + normalizeOutputFileName(outputFileData.getName()));
         }
     }
 
@@ -1082,16 +1331,6 @@ public class BuildPackageCommand extends IOCommand {
         path = path.replaceAll("//|///|////", "/");
         if (!path.endsWith("/")) path += "/";
         return path;
-    }
-
-    private void setOutputCSV(OutputConfig outputConfig, OutputFileData outputFileData) {
-        Map<String, Object> propertyMap = outputFileData.getPropertyMap();
-        /*TODO: future feature: set output for CSV*/
-    }
-
-    private void setOutputTXT(OutputConfig outputConfig, OutputFileData outputFileData) {
-        Map<String, Object> propertyMap = outputFileData.getPropertyMap();
-        /*TODO: future feature: set output for TXT*/
     }
 
     @SuppressWarnings("unchecked")

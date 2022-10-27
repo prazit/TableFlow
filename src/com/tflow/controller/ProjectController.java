@@ -3,6 +3,7 @@ package com.tflow.controller;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.PropertyVar;
+import com.tflow.model.data.verify.Verifiers;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
@@ -16,8 +17,10 @@ import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.UploadedFileView;
 import com.tflow.model.editor.view.VersionedFile;
+import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.DateTimeUtil;
 import org.apache.tika.Tika;
+import org.mapstruct.factory.Mappers;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -51,6 +54,7 @@ public class ProjectController extends Controller {
     private int selectedPackageId;
     private Package activePackage;
     private boolean pleaseSelectPackage;
+    private boolean verified;
 
     @Override
     public Page getPage() {
@@ -61,6 +65,7 @@ public class ProjectController extends Controller {
     public void onCreation() {
         log.debug("onCreation.");
         project = workspace.getProject();
+        verified = false;
         createEventHandlers();
     }
 
@@ -357,6 +362,15 @@ public class ProjectController extends Controller {
         jsBuilder.post(JavaScript.updateEmByClass, "package-panel").runOnClient();
     }
 
+    public void verifyProject() {
+        /*verify project before buildPackage, need to produce Message with SelectableID for Error List (beside StepList)*/
+        try {
+            verified = project.getManager().verify(project);
+        } catch (Exception ex) {
+            verified = false;
+        }
+    }
+
     public void lockPackage() {
         activePackage.setLock(true);
         propertyChanged(ProjectFileType.PACKAGE, activePackage, activePackage.getProperties().getPropertyView(PropertyVar.lock.name()));
@@ -448,6 +462,14 @@ public class ProjectController extends Controller {
 
     public void setPleaseSelectPackage(boolean pleaseSelectPackage) {
         this.pleaseSelectPackage = pleaseSelectPackage;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 
     public List<UploadedFileView> getUploadedList() {

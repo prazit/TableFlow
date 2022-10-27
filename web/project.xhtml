@@ -180,7 +180,7 @@
                             </p:tab>
                             <p:tab>
                                 <f:facet name="title">
-                                    <i class="pi pi-code"/>
+                                    <i class="pi pi-box"/>
                                     <p:outputLabel value=" System Variables"/>
                                 </f:facet>
                                 <p:outputPanel styleClass="ui-g">
@@ -288,85 +288,119 @@
                             <i class="pi #{ProjectSection.PACKAGE.icon}"/>
                             <p:outputLabel value=" #{ProjectSection.PACKAGE.title}"/>
                         </f:facet>
-                        <p:outputPanel id="packageTab" styleClass="package-panel">
-                            <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent"/>
-                            <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent"/>
-                            <p:remoteCommand name="updatePackageList" update="@parent"/>
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-code"/>
+                                <b>Packages</b>
+                            </div>
+                        </p:divider>
+                        <p:tabView>
+                            <p:tab>
+                                <f:facet name="title">
+                                    <i class="pi pi-building"/>
+                                    <p:outputLabel value=" Build"/>
+                                </f:facet>
+                                <p:outputPanel id="packageTab" styleClass="package-panel">
+                                    <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent"/>
+                                    <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent"/>
+                                    <p:remoteCommand name="updatePackageList" update="@parent"/>
 
-                            <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0 and projectCtl.activePackage.finished}">
-                                <p:outputPanel rendered="#{projectCtl.activePackage.finished}" style="display:inline-block" styleClass="selectable">
-                                    <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
-                                    <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent:@parent:@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
+                                    <!-- actions -->
+                                    <p:outputPanel id="selectPackage" rendered="#{projectCtl.packageList.size() > 0 and projectCtl.activePackage.finished}">
+                                        <p:outputPanel rendered="#{projectCtl.activePackage.finished}" style="display:inline-block" styleClass="selectable">
+                                            <input name="selectableId" type="hidden" value="#{projectCtl.activePackage.selectableId}"/>
+                                            <p:remoteCommand name="update#{projectCtl.activePackage.selectableId}" update="@parent:@parent:@parent" oncomplete="updateComplete('#{projectCtl.activePackage.selectableId}')"/>
 
-                                    <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId == null}">
-                                        <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
-                                        <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
-                                        <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
-                                    </p:selectOneMenu>
-                                    <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId != null}">
-                                        <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
-                                        <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
-                                    </p:selectOneMenu>
+                                            <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId == null}">
+                                                <f:selectItem itemLabel="---- select package here ----" itemValue=""/>
+                                                <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
+                                                <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
+                                            </p:selectOneMenu>
+                                            <p:selectOneMenu value="#{projectCtl.selectedPackageId}" style="margin-top:var(--margin)" rendered="#{projectCtl.selectedPackageId != null}">
+                                                <f:selectItems value="#{projectCtl.packageList}" var="package" itemValue="#{package.id}" itemLabel="#{package.name}"/>
+                                                <p:ajax event="change" listener="#{projectCtl.selectedPackageChanged}" update="@parent:@parent"/>
+                                            </p:selectOneMenu>
+                                        </p:outputPanel>
+
+                                        <p:commandButton icon="pi pi-download" value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(blockScreen, unblockScreen);" styleClass="float-right" style="margin:var(--margin)" disabled="#{projectCtl.activePackage.complete lt 100}">
+                                            <p:fileDownload value="#{projectCtl.downloadPackage()}"/>
+                                        </p:commandButton>
+
+                                        <p:commandButton icon="pi pi-lock" value="Lock" actionListener="#{projectCtl.lockPackage}" oncomplete="window.parent.unblockScreen();" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock}" update="@parent:@parent"/>
+                                        <p:commandButton icon="pi pi-lock" value="LOCKED" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.activePackage.lock}" disabled="true" update="@parent:@parent"/>
+
+                                        <p:commandButton icon="pi pi-building" value="New Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.activePackage.lock}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/>
+                                        <p:commandButton icon="pi pi-refresh" value="Re-Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock or (projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100)}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/>
+
+                                        <p:commandButton icon="pi pi-check-circle" value="Verify" actionListener="#{projectCtl.verifyProject}" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.verified}" update="@parent:@parent"/>
+                                        <p:commandButton icon="pi pi-check" value="VERIFIED" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.verified}" disabled="true" update="@parent:@parent"/>
+                                    </p:outputPanel>
+
+                                    <!-- please select message -->
+                                    <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() == 0}">
+                                        <h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/>
+                                            Need to <p:commandButton value="Verify" actionListener="#{projectCtl.verifyProject}" disabled="#{projectCtl.verified}" update="@parent"/> and
+                                            <p:commandButton value="Create First Package" actionListener="#{projectCtl.buildPackage}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/> to see package information.
+                                        </h2>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() > 0}"><h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/> Select Package from the List above.</h2></p:outputPanel>
+
+                                    <!-- building message -->
+                                    <p:outputPanel id="building" rendered="#{projectCtl.activePackage != null and not projectCtl.pleaseSelectPackage and not projectCtl.activePackage.finished}">
+                                        <h2 style="color: var(--surface-c);"><i class="pi pi-spinner pi-spin"></i> BUILDING PACKAGE #{projectCtl.activePackage.complete}%</h2>
+                                        <span>started at #{projectCtl.activePackage.buildDate}</span>
+                                        <script>$(function () {
+                                            console.log('setTimeout');
+                                            var timeoutId = setTimeout(function () {
+                                                console.log('call updatePackageTab');
+                                                updatePackageTab();
+                                                clearTimeout(timeoutId);
+                                            }, 3000);
+                                        });
+                                        </script>
+                                    </p:outputPanel>
+
+                                    <!-- active package -->
+                                    <p:outputPanel id="activePackage" rendered="#{not projectCtl.pleaseSelectPackage and projectCtl.activePackage.finished}">
+
+                                        <p:divider layout="horizontal">
+                                            <div class="inline-flex align-items-center">
+                                                <i class="pi pi-list mr-2"/>
+                                                <b>File List</b>
+                                            </div>
+                                        </p:divider>
+
+                                        <p:outputPanel styleClass="ui-g">
+                                            <p:dataTable value="#{projectCtl.activePackage.fileList}" var="packageFile" rowIndexVar="rowIndex">
+                                                <p:column headerText="File" sortBy="#{packageFile.buildPath}#{packageFile.name}" styleClass="ui-g">
+                                                    <span class="ui-g-1">#{rowIndex + 1}</span>
+                                                    <span class="ui-g-10">#{packageFile.buildPath}<b>#{packageFile.name}</b></span>
+                                                    <p:outputPanel styleClass="ui-g-1" rendered="#{packageFile.updated}"><i class="pi pi-check-circle" style="font-size: 1em; color: var(--surface-c);"/></p:outputPanel>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:outputPanel>
+
+                                    </p:outputPanel>
+
+                                    <script>$(function () {
+                                        updatePanelComplete('.package-panel');
+                                    });</script>
+
                                 </p:outputPanel>
-                                <p:commandButton icon="pi pi-download" value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(blockScreen, unblockScreen);" styleClass="float-right" style="margin:var(--margin)" disabled="#{projectCtl.activePackage.complete lt 100}">
-                                    <p:fileDownload value="#{projectCtl.downloadPackage()}"/>
-                                </p:commandButton>
-                                <p:commandButton icon="pi pi-building" value="New Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.activePackage.lock}" update="@parent:@parent"/>
-                                <p:commandButton icon="pi pi-refresh" value="Re-Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock or (projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100)}" update="@parent:@parent"/>
-                                <p:commandButton icon="pi pi-lock" value="Lock" actionListener="#{projectCtl.lockPackage}" oncomplete="window.parent.unblockScreen();" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock}" update="@parent:@parent"/>
-                                <p:commandButton icon="pi pi-lock" value="LOCKED" styleClass="float-right" style="margin:var(--margin)" disabled="true" rendered="#{projectCtl.activePackage.lock}" update="@parent:@parent"/>
-                            </p:outputPanel>
-
-                            <!-- please select message -->
-                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() == 0}">
-                                <h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/>
-                                    Need to <p:commandButton value="Create First Package" actionListener="#{projectCtl.buildPackage}" update="@parent:@parent"/> to see package information.
-                                </h2>
-                            </p:outputPanel>
-                            <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() > 0}"><h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/> Select Package from the List above.</h2></p:outputPanel>
-
-                            <!-- building message -->
-                            <p:outputPanel id="building" rendered="#{projectCtl.activePackage != null and not projectCtl.pleaseSelectPackage and not projectCtl.activePackage.finished}">
-                                <h2 style="color: var(--surface-c);"><i class="pi pi-spinner pi-spin"></i> BUILDING PACKAGE #{projectCtl.activePackage.complete}%</h2>
-                                <span>started at #{projectCtl.activePackage.buildDate}</span>
-                                <script>$(function () {
-                                    console.log('setTimeout');
-                                    var timeoutId = setTimeout(function () {
-                                        console.log('call updatePackageTab');
-                                        updatePackageTab();
-                                        clearTimeout(timeoutId);
-                                    }, 3000);
-                                });
-                                </script>
-                            </p:outputPanel>
-
-                            <!-- active package -->
-                            <p:outputPanel id="activePackage" rendered="#{not projectCtl.pleaseSelectPackage and projectCtl.activePackage.finished}">
-
-                                <p:divider layout="horizontal">
+                            </p:tab>
+                            <p:tab>
+                                <f:facet name="title">
+                                    <i class="pi pi-check-square"/>
+                                    <p:outputLabel value=" Options"/>
+                                </f:facet>
+                                <p:divider align="left">
                                     <div class="inline-flex align-items-center">
-                                        <i class="pi pi-list mr-2"/>
-                                        <b>File List</b>
+                                        <i class="pi pi-check-square"/>
+                                        <b>Batch Options</b>
                                     </div>
                                 </p:divider>
-
-                                <p:outputPanel styleClass="ui-g">
-                                    <p:dataTable value="#{projectCtl.activePackage.fileList}" var="packageFile" rowIndexVar="rowIndex">
-                                        <p:column headerText="File" sortBy="#{packageFile.buildPath}#{packageFile.name}" styleClass="ui-g">
-                                            <span class="ui-g-1">#{rowIndex + 1}</span>
-                                            <span class="ui-g-10">#{packageFile.buildPath}<b>#{packageFile.name}</b></span>
-                                            <p:outputPanel styleClass="ui-g-1" rendered="#{!packageFile.updated}"><i class="pi pi-check-circle" style="font-size: 1em; color: var(--surface-c);"/></p:outputPanel>
-                                        </p:column>
-                                    </p:dataTable>
-                                </p:outputPanel>
-
-                            </p:outputPanel>
-
-                            <script>$(function () {
-                                updatePanelComplete('.package-panel');
-                            });</script>
-
-                        </p:outputPanel>
+                            </p:tab>
+                        </p:tabView>
                     </p:tab>
                 </p:tabView>
 

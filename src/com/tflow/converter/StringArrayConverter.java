@@ -27,7 +27,7 @@ public class StringArrayConverter implements Converter {
         for (String string : strings) {
             joined.append(separator).append(string);
         }
-        return joined.substring(1);
+        return joined.length() < 1 ? "" : joined.substring(1);
     }
 
     @Override

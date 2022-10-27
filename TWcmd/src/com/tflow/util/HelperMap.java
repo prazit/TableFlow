@@ -10,4 +10,11 @@ public class HelperMap<K, V> extends HashMap<K, V> {
         return value;
     }
 
+    public Boolean getBoolean(Object key, Boolean defaultValue) {
+        V value = super.get(key);
+        if (value == null) return defaultValue;
+        if (value instanceof Boolean) return (Boolean) value;
+        return Boolean.parseBoolean(value.toString());
+    }
+
 }

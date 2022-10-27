@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 public enum FileNameExtension {
 
     SQL("sql/"),
+    CSV("csv/"),
     MD("md/"),
     TXT("txt/"),
 

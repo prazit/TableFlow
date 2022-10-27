@@ -1,7 +1,6 @@
 package com.tflow.model.editor;
 
 import com.clevel.dconvers.ngin.Crypto;
-import com.tflow.model.editor.cmd.ChangePropertyValue;
 import com.tflow.model.editor.view.PropertyView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +86,7 @@ public enum Properties {
             "==: Library ::==",
             "--: Library File Properties :--",
             "id:ID:ReadOnly",
-            "name:File Name:Upload:id::Invalid Library file!|updateProperty('name');",
+            "name:File Name:Upload:id::Invalid Library file!|updateProperty('name');updateProperty('uploadedDate');",
             "uploadedDate:Uploaded:ReadOnly",
             "--: Technical Support :--"
     ),
@@ -296,9 +295,9 @@ public enum Properties {
             "type:Type:DataFileType:in|refreshProperties();:[]typeDisabled",
             "name:Name:String:40|updateProperty('type');",
             "--: Runtime Properties :--",
-            ".:propertyMap:dir:Directory:String:1024",
-            ".:propertyMap:sub:Dive into sub-directory:Boolean",
-            ".:propertyMap:fileOnly:File only (exclude directory):Boolean",
+            ".:propertyMap:dir:Directory:String:1024|=/",
+            ".:propertyMap:sub:Dive into sub-directory:Boolean|=true",
+            ".:propertyMap:fileOnly:File only (exclude directory):Boolean|=false",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "--: tested :--"
@@ -326,7 +325,7 @@ public enum Properties {
             "--: Runtime Properties :--",
             "dataSourceIdentifier:File Source:DATASOURCE:SFTP,LOCAL,FIXED|updateProperty('dataSourceType');updateProperty('dataSourceId');",
             ".:propertyMap:quotesName:Quote Symbol for name:String:1",
-            ".:propertyMap:quotesValue:Quote Symbol for value:String:1",
+            ".:propertyMap:quotesValue:Quote Symbol for value:String:1|=\'",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
@@ -342,7 +341,7 @@ public enum Properties {
             "--: Runtime Properties :--",
             "dataSourceIdentifier:Database:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
             ".:propertyMap:quotesName:Quotes for name:String:1000",
-            ".:propertyMap:quotesValue:Quotes for value:String:1000",
+            ".:propertyMap:quotesValue:Quotes for value:String:1000|=\'",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
@@ -388,17 +387,17 @@ public enum Properties {
             "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "--: Fixed Length Properties :--",
             "name:File Name:String:1000",
-            ".:propertyMap:append:Append:Boolean",
-            ".:propertyMap:charset:Charset:Charset|updateProperty('charset');",
-            ".:propertyMap:eol:EOL:String",
+            ".:propertyMap:append:Append:Boolean|=false",
+            ".:propertyMap:charset:Charset:Charset|=UTF-8:updateProperty('charset');",
+            ".:propertyMap:eol:EOL:String|=\\n",
             ".:propertyMap:eof:EOF:String",
             ".:propertyMap:separator:Separator:String",
             ".:propertyMap:lengthMode:Length Mode:TxtLengthMode|updateProperty('lengthMode');",
-            ".:propertyMap:dateFormat:Date Format:String",
-            ".:propertyMap:dateTimeFormat:DateTime Format:String",
-            ".:propertyMap:fillString:String Filler:String",
-            ".:propertyMap:fillNumber:Number Filler:String",
-            ".:propertyMap:fillDate:Date Filler:String",
+            ".:propertyMap:dateFormat:Date Format:String|=yyyy/MM/dd",
+            ".:propertyMap:dateTimeFormat:DateTime Format:String|=yyyy/MM/dd HH{COLON}mm{COLON}ss",
+            ".:propertyMap:fillString:String Filler:String|= ",
+            ".:propertyMap:fillNumber:Number Filler:String|=0",
+            ".:propertyMap:fillDate:Date Filler:String|= ",
             "fixedLengthFormatList:Fixed Length Formatter:Properties:Column:Type & Length:false|updateProperty('format');updateProperty('fixedLengthFormatList');",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
@@ -415,18 +414,18 @@ public enum Properties {
             "dataSourceIdentifier:Source:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "--: CSV Properties :--",
             "name:File Name:String:1000",
-            ".:propertyMap:append:Append:Boolean",
-            ".:propertyMap:charset:Charset:Charset|updateProperty('charset');",
+            ".:propertyMap:append:Append:Boolean|=false",
+            ".:propertyMap:charset:Charset:Charset|=UTF-8:updateProperty('charset');",
             ".:propertyMap:bof:BOF:String",
-            ".:propertyMap:eol:EOL:String",
-            ".:propertyMap:eof:EOF:String",
-            ".:propertyMap:header:Column Header:Boolean",
-            ".:propertyMap:separator:Separator:String",
+            ".:propertyMap:eol:EOL:String|=\\n",
+            ".:propertyMap:eof:EOF:String|=\\n",
+            ".:propertyMap:header:Column Header:Boolean|=true",
+            ".:propertyMap:separator:Separator:String|=,",
             ".:propertyMap:lengthMode:Length Mode:TxtLengthMode|updateProperty('lengthMode');",
-            ".:propertyMap:integerFormat:Integer Format:String",
-            ".:propertyMap:decimalFormat:Decimal Format:String",
-            ".:propertyMap:dateFormat:Date Format:String",
-            ".:propertyMap:dateTimeFormat:DateTime Format:String",
+            ".:propertyMap:integerFormat:Integer Format:String|=0",
+            ".:propertyMap:decimalFormat:Decimal Format:String|=0.0000",
+            ".:propertyMap:dateFormat:Date Format:String|=yyyy/MM/dd",
+            ".:propertyMap:dateTimeFormat:DateTime Format:String|=yyyy/MM/dd HH{COLON}mm{COLON}ss",
             "--: Technical Support :--",
             "id:ID:ReadOnly",
             "dataSourceType:Datasource Type:ReadOnly",
@@ -465,18 +464,18 @@ public enum Properties {
             "type:Type:DataFileType:out|refreshProperties();",
             "dataSourceIdentifier:File Path:DATASOURCE:SFTP,LOCAL|updateProperty('dataSourceType');updateProperty('dataSourceId');updateProperty('dataSourceIdentifier');",
             "name:File Name:String:1000",
-            ".:propertyMap:append:Append:Boolean",
-            ".:propertyMap:charset:Charset:Charset|updateProperty('charset');",
-            ".:propertyMap:eol:EOL:String",
-            ".:propertyMap:eof:EOF:String",
+            ".:propertyMap:append:Append:Boolean|=false",
+            ".:propertyMap:charset:Charset:Charset|=UTF-8:updateProperty('charset');",
+            ".:propertyMap:eol:EOL:String|=\\n",
+            ".:propertyMap:eof:EOF:String|=\\n",
             "--: SQL Properties :--",
             ".:propertyMap:columns:Included Column:ColumnList|updateProperty('columns');",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
-            ".:propertyMap:quotesOfValue:Quotes for Value:String",
-            ".:propertyMap:tableName:Table Name:String:1000",
-            ".:propertyMap:create:Generate Table Creation Script:Boolean",
-            ".:propertyMap:insert:Generate SQL Insert:Boolean",
-            ".:propertyMap:update:Generate SQL Update:Boolean",
+            ".:propertyMap:quotesOfValue:Quotes for Value:String|='",
+            ".:propertyMap:tableName:Table Name:String:1000|=table_name",
+            ".:propertyMap:create:Generate Table Creation Script:Boolean|=false",
+            ".:propertyMap:insert:Generate SQL Insert:Boolean|=true",
+            ".:propertyMap:update:Generate SQL Update:Boolean|=false",
             "--: Direct SQL Properties :--",
             "==: Direct SQL : sql statements that need to run before/after the insert statements :==",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
@@ -498,7 +497,7 @@ public enum Properties {
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columns:Included Column:ColumnList|refreshProperties();",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
-            ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            ".:propertyMap:quotesOfValue:Quotes for Value:String|='",
             "--: Direct SQL Properties :--",
             "==: Direct SQL : sql statements that need to run before/after the insert statements :==",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
@@ -520,7 +519,7 @@ public enum Properties {
             ".:propertyMap:dbTable:Table Name:DBTable:dataSource",
             ".:propertyMap:columns:Included Column:ColumnList|refreshProperties();",
             ".:propertyMap:quotesOfName:Quotes for Name:String:1000",
-            ".:propertyMap:quotesOfValue:Quotes for Value:String",
+            ".:propertyMap:quotesOfValue:Quotes for Value:String|='",
             "--: Direct SQL Properties :--",
             "==: Direct SQL : sql statements that need to run before/after the insert statements :==",
             ".:propertyMap:preSQL:Pre-SQL:StringArray",
@@ -820,7 +819,7 @@ public enum Properties {
                 } else if (optional.endsWith(";")) {
                     propView.setJavaScript(optional);
                 } else if (optional.startsWith("=")) {
-                    propView.setDefaultValue(optional.substring(1));
+                    propView.setDefaultValue(optional.substring(1).replace("{COLON}", ":"));
                 }
             }
         }
@@ -834,14 +833,13 @@ public enum Properties {
         for (PropertyView property : getPropertyList()) {
             var = property.getVar();
             if (property.hasParent() && !propertyMap.containsKey(var)) {
-                propertyMap.put(var, (property.getDefaultValue() == null ? property.getType().getInitial() : property.getDefaultValue()));
+                Object defaultValue = property.getDefaultValue() == null ? property.getType().getInitial() : property.getDefaultValue();
+                propertyMap.put(var, defaultValue);
                 propertyOrder.append(",").append(var);
             }
         }
         return propertyOrder.length() > 0 ? propertyOrder.substring(1) : "";
     }
-
-    /*getProperty*/
 
     private String propertyToGetMethod(String propertyName) {
         return "get" +
