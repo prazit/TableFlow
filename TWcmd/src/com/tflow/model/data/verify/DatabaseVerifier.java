@@ -1,6 +1,7 @@
 package com.tflow.model.data.verify;
 
 import com.tflow.model.data.DatabaseData;
+import com.tflow.model.data.IssueData;
 import com.tflow.model.data.TWData;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class DatabaseVerifier extends DataVerifier {
     }
 
     @Override
-    protected boolean verifyData(TWData data, ArrayList<String> messageList) {
+    protected boolean verifyData(TWData data, ArrayList<IssueData> messageList) {
         if(!(data instanceof DatabaseData)) return false;
 
         /*TODO: verify DatabaseData*/

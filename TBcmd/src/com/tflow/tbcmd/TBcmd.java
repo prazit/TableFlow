@@ -4,6 +4,7 @@ import com.tflow.kafka.KafkaTopics;
 import com.tflow.model.data.DataManager;
 import com.tflow.system.CLIbase;
 import com.tflow.util.SerializeUtil;
+import com.tflow.wcmd.KafkaCommand;
 import com.tflow.zookeeper.AppName;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -74,25 +75,30 @@ public class TBcmd extends CLIbase {
                 }
 
                 /*TODO: future feature: add command to UpdateProjectCommandQueue*/
-                BuildPackageCommand buildPackageCommand = new BuildPackageCommand(offset, key, value, environmentConfigs, dataManager);
-                log.info("Incoming message: {}", buildPackageCommand.toString());
+                KafkaCommand currentCommand;
+                if(key.equalsIgnoreCase("build")) {
+                    currentCommand = new BuildPackageCommand(offset, key, value, environmentConfigs, dataManager);
+                }else{
+                    currentCommand = new VerifyProjectCommand(offset, key, value, environmentConfigs, dataManager);
+                }
+                log.info("Incoming message: {}", currentCommand.toString());
 
                 /*TODO: future feature: move this execute block into UpdateProjectCommandQueue*/
                 try {
-                    buildPackageCommand.execute();
-                    log.info("Incoming message completed: {}", buildPackageCommand.toString());
+                    currentCommand.execute();
+                    log.info("Incoming message completed: {}", currentCommand.toString());
                 } catch (InvalidParameterException inex) {
                     /*Notice: how to handle rejected command, can rebuild when percentComplete < 100*/
                     log.error("Invalid parameter: {}", inex.getMessage());
-                    log.warn("Message rejected: {}", buildPackageCommand.toString());
+                    log.warn("Message rejected: {}", currentCommand.toString());
                 } catch (UnsupportedOperationException ex) {
                     /*Notice: how to handle rejected command, can rebuild when percentComplete < 100*/
                     log.error("UnsupportedOperationException: {}", ex.getMessage());
-                    log.warn("Message rejected: {}", buildPackageCommand.toString());
+                    log.warn("Message rejected: {}", currentCommand.toString());
                 } catch (Exception ex) {
                     log.error("Unexpected error occur: " + ex.getMessage());
                     log.trace("", ex);
-                    log.warn("Message rejected: {}", buildPackageCommand.toString());
+                    log.warn("Message rejected: {}", currentCommand.toString());
                 } finally {
                     dataManager.waitAllTasks();
                 }

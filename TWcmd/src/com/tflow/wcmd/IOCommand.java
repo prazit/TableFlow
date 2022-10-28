@@ -3,9 +3,12 @@ package com.tflow.wcmd;
 import com.tflow.file.SerializeReader;
 import com.tflow.file.SerializeWriter;
 import com.tflow.kafka.EnvironmentConfigs;
+import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.*;
 import com.tflow.model.data.record.RecordAttributesData;
 import com.tflow.model.data.record.RecordData;
+import com.tflow.model.mapper.PackageMapper;
 import com.tflow.util.DateTimeUtil;
 import com.tflow.util.FileUtil;
 import org.apache.kafka.common.errors.SerializationException;
@@ -20,10 +23,14 @@ import java.util.List;
 
 public abstract class IOCommand extends KafkaCommand {
 
-    public IOCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs) {
-        super(offset, key, value, environmentConfigs);
-    }
+    protected DataManager dataManager;
+    protected RecordAttributesData recordAttributes;
+    protected PackageMapper mapper;
 
+    public IOCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, DataManager dataManager) {
+        super(offset, key, value, environmentConfigs);
+        this.dataManager = dataManager;
+    }
 
     protected OutputStream createOutputStream(String className, FileOutputStream fileOutputStream) throws InstantiationException {
         try {
@@ -200,6 +207,153 @@ public abstract class IOCommand extends KafkaCommand {
         ((SerializeWriter) outputStream).writeSerialize(object);
         outputStream.close();
         fileOut.close();
+    }
+
+    protected RecordData lastRecordData;
+
+    protected Object getData(ProjectFileType projectFileType, RecordAttributesData recordAttributesData) throws InstantiationException, IOException, ClassNotFoundException {
+        File file = getFile(projectFileType, recordAttributesData);
+        if (!file.exists()) {
+            info("DATA_FILE_NOT_FOUND: {}", file);
+            return KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode();
+        }
+
+        try {
+            lastRecordData = (RecordData) readFrom(file);
+            return lastRecordData.getData();
+        } catch (ClassCastException ex) {
+            return KafkaErrorCode.INVALID_DATA_FILE.getCode();
+        }
+    }
+
+    protected Object getData(ProjectFileType projectFileType) throws InstantiationException, IOException, ClassNotFoundException {
+        return getData(projectFileType, recordAttributes);
+    }
+
+    protected Object getData(ProjectFileType projectFileType, String recordId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(recordId);
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    protected Object getData(ProjectFileType projectFileType, int recordId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    protected Object getData(ProjectFileType projectFileType, int recordId, int stepId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        recordAttributesData.setStepId(String.valueOf(stepId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    protected Object getData(ProjectFileType projectFileType, int recordId, int stepId, int dataTableId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        recordAttributesData.setStepId(String.valueOf(stepId));
+        recordAttributesData.setDataTableId(String.valueOf(dataTableId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    protected Object getData(ProjectFileType projectFileType, int recordId, int stepId, int ignoredId, int transformTableId) throws ClassNotFoundException, IOException, InstantiationException {
+        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
+        recordAttributesData.setRecordId(String.valueOf(recordId));
+        recordAttributesData.setStepId(String.valueOf(stepId));
+        recordAttributesData.setTransformTableId(String.valueOf(transformTableId));
+        return getData(projectFileType, recordAttributesData);
+    }
+
+    protected List<LocalData> loadLocalDataList() throws IOException, InstantiationException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.LOCAL_LIST);
+        List<Integer> localIdList = (List<Integer>) throwExceptionOnError(data);
+
+        List<LocalData> localDataList = new ArrayList<>();
+        for (Integer id : localIdList) {
+            data = getData(ProjectFileType.LOCAL, id);
+            localDataList.add((LocalData) throwExceptionOnError(data));
+        }
+
+        return localDataList;
+    }
+
+    protected List<SFTPData> loadSFTPDataList() throws IOException, InstantiationException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.SFTP_LIST);
+        List<Integer> sftpIdList = (List<Integer>) throwExceptionOnError(data);
+
+        List<SFTPData> sftpDataList = new ArrayList<>();
+        for (Integer id : sftpIdList) {
+            data = getData(ProjectFileType.SFTP, id);
+            sftpDataList.add((SFTPData) throwExceptionOnError(data));
+        }
+
+        return sftpDataList;
+    }
+
+    protected List<DatabaseData> loadDatabaseDataList() throws ClassNotFoundException, IOException, InstantiationException {
+        Object data = getData(ProjectFileType.DB_LIST);
+        List<Integer> dbIdList = (List) throwExceptionOnError(data);
+
+        List<DatabaseData> databaseDataList = new ArrayList<>();
+        for (Integer databaseId : dbIdList) {
+            data = getData(ProjectFileType.DB, databaseId);
+            databaseDataList.add((DatabaseData) throwExceptionOnError(data));
+        }
+
+        return databaseDataList;
+    }
+
+    protected List<VariableData> loadVariableDataList() throws ClassNotFoundException, IOException, InstantiationException {
+        List<VariableData> variableDataList = new ArrayList<>();
+
+        Object data = getData(ProjectFileType.VARIABLE_LIST);
+        List<Integer> varIdList = (List<Integer>) throwExceptionOnError(data);
+
+        for (Integer varId : varIdList) {
+            data = getData(ProjectFileType.VARIABLE, varId);
+            variableDataList.add((VariableData) throwExceptionOnError(data));
+        }
+
+        return variableDataList;
+    }
+
+    protected List<BinaryFileData> loadVersionedDataList(String codeFilter) throws ClassNotFoundException, IOException, InstantiationException {
+        List<BinaryFileData> binaryFileDataList = new ArrayList<>();
+
+        Object data = getData(ProjectFileType.VERSIONED_LIST);
+        List<VersionedFileData> versionedFileDataList = (List<VersionedFileData>) throwExceptionOnError(data);
+
+        Versioned versioned;
+        for (VersionedFileData versionedFileData : versionedFileDataList) {
+            versioned = Versioned.valueOf(versionedFileData.getId());
+            if (versioned.getProjectTypeCodes().contains(codeFilter)) {
+                data = getData(ProjectFileType.VERSIONED, versioned.getFileId());
+                binaryFileDataList.add((BinaryFileData) throwExceptionOnError(data));
+            }
+        }
+
+        return binaryFileDataList;
+    }
+
+    protected List<StepData> loadStepDataList() throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.STEP_LIST);
+        List<Integer> stepIdList = (List) throwExceptionOnError(data);
+
+        List<StepData> stepDataList = new ArrayList<>();
+        for (Integer stepId : stepIdList) {
+            data = getData(ProjectFileType.STEP, stepId, stepId);
+            stepDataList.add((StepData) throwExceptionOnError(data));
+        }
+
+        return stepDataList;
+    }
+
+    protected Object throwExceptionOnError(Object data) throws IOException {
+        if (data instanceof Long) {
+            throw new IOException(KafkaErrorCode.parse((Long) data).name());
+        }
+        return data;
     }
 
 }

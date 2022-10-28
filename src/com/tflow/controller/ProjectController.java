@@ -3,7 +3,6 @@ package com.tflow.controller;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.PropertyVar;
-import com.tflow.model.data.verify.Verifiers;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
@@ -17,21 +16,15 @@ import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.UploadedFileView;
 import com.tflow.model.editor.view.VersionedFile;
-import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.DateTimeUtil;
 import org.apache.tika.Tika;
-import org.mapstruct.factory.Mappers;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.util.SerializableSupplier;
 
-import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +48,7 @@ public class ProjectController extends Controller {
     private Package activePackage;
     private boolean pleaseSelectPackage;
     private boolean verified;
+    private boolean building;
 
     @Override
     public Page getPage() {
@@ -335,6 +329,7 @@ public class ProjectController extends Controller {
 
     public void buildPackage() {
         log.debug("buildPackage.");
+        building = true;
 
         Package rebuild;
         if (activePackage == null || activePackage.isLock()) {
@@ -352,6 +347,7 @@ public class ProjectController extends Controller {
             String msg = "Unexpected Error Occurred, try to build-package few minutes later";
             jsBuilder.pre(JavaScript.notiError, msg);
             log.error(msg);
+            building = false;
             return;
         }
 
@@ -360,28 +356,32 @@ public class ProjectController extends Controller {
 
         pleaseSelectPackage = false;
         jsBuilder.post(JavaScript.updateEmByClass, "package-panel").runOnClient();
+        building = false;
     }
 
     public void verifyProject() {
-        /*verify project before buildPackage, need to produce Message with SelectableID for Error List (beside StepList)*/
-        try {
-            verified = project.getManager().verify(project);
-        } catch (Exception ex) {
-            verified = false;
+        List<Issue> issueList = null;
+        if (!project.getManager().verifyProject(project)) {
+            jsBuilder.pre(JavaScript.notiError, "Can't verify project, try again few minutes later.");
+            log.error("verifyProject return false, project is not verified!");
+            return;
         }
+
+        /*TODO: show progressbar like building*/
     }
 
     public void lockPackage() {
-        activePackage.setLock(true);
+        activePackage.setLock(!activePackage.isLock());
         propertyChanged(ProjectFileType.PACKAGE, activePackage, activePackage.getProperties().getPropertyView(PropertyVar.lock.name()));
     }
 
     /**
      * IMPORTANT: call this function at least 2 seconds after buildPackage.
      */
-    public void refreshBuildingPackage() {
+    public synchronized Integer refreshBuildingPackage() {
         reloadPackageList();
         selectPackage(0);
+        return activePackage.getComplete();
     }
 
     private int getPackageListIndex(int packageId) {
@@ -445,7 +445,7 @@ public class ProjectController extends Controller {
 
     public boolean isLastPackage() {
         if (packageList == null || activePackage == null) return false;
-        return packageList.get(packageList.size() - 1).getId() == activePackage.getId();
+        return packageList.get(0).getId() == activePackage.getId();
     }
 
     public Package getActivePackage() {

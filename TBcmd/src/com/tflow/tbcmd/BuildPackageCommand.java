@@ -41,17 +41,12 @@ public class BuildPackageCommand extends IOCommand {
     private Logger log = LoggerFactory.getLogger(BuildPackageCommand.class);
 
     private KafkaRecordAttributes attributes;
-    private RecordAttributesData recordAttributes;
-
-    private DataManager dataManager;
-    private PackageMapper mapper;
 
     private String generatedPath;
     private DConvers dconvers;
 
     public BuildPackageCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, DataManager dataManager) {
-        super(offset, key, value, environmentConfigs);
-        this.dataManager = dataManager;
+        super(offset, key, value, environmentConfigs, dataManager);
     }
 
     @Override
@@ -250,62 +245,6 @@ public class BuildPackageCommand extends IOCommand {
         dataManager.addData(ProjectFileType.PACKAGE_LIST, packageList, projectUser);
     }
 
-    private RecordData lastRecordData;
-
-    private Object getData(ProjectFileType projectFileType, RecordAttributesData recordAttributesData) throws InstantiationException, IOException, ClassNotFoundException {
-        File file = getFile(projectFileType, recordAttributesData);
-        if (!file.exists()) {
-            log.error("DATA_FILE_NOT_FOUND: {}", file);
-            return KafkaErrorCode.DATA_FILE_NOT_FOUND.getCode();
-        }
-
-        try {
-            lastRecordData = (RecordData) readFrom(file);
-            return lastRecordData.getData();
-        } catch (ClassCastException ex) {
-            return KafkaErrorCode.INVALID_DATA_FILE.getCode();
-        }
-    }
-
-    private Object getData(ProjectFileType projectFileType) throws InstantiationException, IOException, ClassNotFoundException {
-        return getData(projectFileType, recordAttributes);
-    }
-
-    private Object getData(ProjectFileType projectFileType, String recordId) throws ClassNotFoundException, IOException, InstantiationException {
-        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
-        recordAttributesData.setRecordId(recordId);
-        return getData(projectFileType, recordAttributesData);
-    }
-
-    private Object getData(ProjectFileType projectFileType, int recordId) throws ClassNotFoundException, IOException, InstantiationException {
-        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
-        recordAttributesData.setRecordId(String.valueOf(recordId));
-        return getData(projectFileType, recordAttributesData);
-    }
-
-    private Object getData(ProjectFileType projectFileType, int recordId, int stepId) throws ClassNotFoundException, IOException, InstantiationException {
-        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
-        recordAttributesData.setRecordId(String.valueOf(recordId));
-        recordAttributesData.setStepId(String.valueOf(stepId));
-        return getData(projectFileType, recordAttributesData);
-    }
-
-    private Object getData(ProjectFileType projectFileType, int recordId, int stepId, int dataTableId) throws ClassNotFoundException, IOException, InstantiationException {
-        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
-        recordAttributesData.setRecordId(String.valueOf(recordId));
-        recordAttributesData.setStepId(String.valueOf(stepId));
-        recordAttributesData.setDataTableId(String.valueOf(dataTableId));
-        return getData(projectFileType, recordAttributesData);
-    }
-
-    private Object getData(ProjectFileType projectFileType, int recordId, int stepId, int ignoredId, int transformTableId) throws ClassNotFoundException, IOException, InstantiationException {
-        RecordAttributesData recordAttributesData = mapper.clone(recordAttributes);
-        recordAttributesData.setRecordId(String.valueOf(recordId));
-        recordAttributesData.setStepId(String.valueOf(stepId));
-        recordAttributesData.setTransformTableId(String.valueOf(transformTableId));
-        return getData(projectFileType, recordAttributesData);
-    }
-
     private String getCompleteName(PackageData packageData, ProjectData projectData) {
         int id = packageData.getId();
         String version = projectData.getVersion();
@@ -367,13 +306,6 @@ public class BuildPackageCommand extends IOCommand {
 
     private Date estimateBuiltDate() {
         return DateTimeUtil.now();
-    }
-
-    private Object throwExceptionOnError(Object data) throws IOException {
-        if (data instanceof Long) {
-            throw new IOException(KafkaErrorCode.parse((Long) data).name());
-        }
-        return data;
     }
 
     private void addGeneratedFiles(List<PackageFileData> olderFileList, List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser, ProjectData projectData, PackageData previousPackage) throws IOException, UnsupportedOperationException, InstantiationException, ClassNotFoundException {
@@ -458,6 +390,11 @@ public class BuildPackageCommand extends IOCommand {
      * Used to find existing file from previous package.
      */
     private BinaryFileData findBinaryFile(String fileName, PackageData packageData) throws IOException, InstantiationException, ClassNotFoundException {
+        if(packageData==null) {
+            log.debug("findBinaryFile: {} not found on null previous package", fileName);
+            return null;
+        }
+
         PackageFileData foundFileData = null;
         for (PackageFileData fileData : packageData.getFileList()) {
             if (fileName.compareTo(fileData.getName()) == 0) {
@@ -732,11 +669,7 @@ public class BuildPackageCommand extends IOCommand {
         dataConversionConfigFile.setConverterConfigMap(converterConfigMap);
 
         List<Pair<String, String>> variableList = new ArrayList<>();
-        Object data = getData(ProjectFileType.VARIABLE_LIST);
-        List<Integer> varIdList = (List<Integer>) throwExceptionOnError(data);
-        for (Integer varId : varIdList) {
-            data = getData(ProjectFileType.VARIABLE, varId);
-            VariableData variableData = (VariableData) throwExceptionOnError(data);
+        for (VariableData variableData : loadVariableDataList()) {
             variableList.add(new Pair<String, String>(variableData.getName(), variableData.getValue()));
         }
         dataConversionConfigFile.setVariableList(variableList);
@@ -761,45 +694,6 @@ public class BuildPackageCommand extends IOCommand {
             log.warn("Unescape failed: {} : {}", ex.getClass().getSimpleName(), ex.getMessage());
             return byteArrayOutputStream.toByteArray();
         }
-    }
-
-    private List<LocalData> loadLocalDataList() throws IOException, InstantiationException, ClassNotFoundException {
-        Object data = getData(ProjectFileType.LOCAL_LIST);
-        List<Integer> localIdList = (List<Integer>) throwExceptionOnError(data);
-
-        List<LocalData> localDataList = new ArrayList<>();
-        for (Integer id : localIdList) {
-            data = getData(ProjectFileType.LOCAL, id);
-            localDataList.add((LocalData) throwExceptionOnError(data));
-        }
-
-        return localDataList;
-    }
-
-    private List<SFTPData> loadSFTPDataList() throws IOException, InstantiationException, ClassNotFoundException {
-        Object data = getData(ProjectFileType.SFTP_LIST);
-        List<Integer> sftpIdList = (List<Integer>) throwExceptionOnError(data);
-
-        List<SFTPData> sftpDataList = new ArrayList<>();
-        for (Integer id : sftpIdList) {
-            data = getData(ProjectFileType.SFTP, id);
-            sftpDataList.add((SFTPData) throwExceptionOnError(data));
-        }
-
-        return sftpDataList;
-    }
-
-    private List<DatabaseData> loadDatabaseDataList() throws ClassNotFoundException, IOException, InstantiationException {
-        Object data = getData(ProjectFileType.DB_LIST);
-        List<Integer> dbIdList = (List) throwExceptionOnError(data);
-
-        List<DatabaseData> databaseDataList = new ArrayList<>();
-        for (Integer databaseId : dbIdList) {
-            data = getData(ProjectFileType.DB, databaseId);
-            databaseDataList.add((DatabaseData) throwExceptionOnError(data));
-        }
-
-        return databaseDataList;
     }
 
     @SuppressWarnings("unchecked")

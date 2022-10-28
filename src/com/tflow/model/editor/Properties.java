@@ -32,6 +32,18 @@ public enum Properties {
             "name:Parameter Name:String:1000"
     ),
 
+    ISSUE (
+            "==: ISSUED ::==",
+            "--: Detail :--",
+            "id:Name:ReadOnly",
+            "name:Name:ReadOnly",
+            "description::ReadOnly",
+            "--: Object :--",
+            "stepId:Step ID:ReadOnly",
+            "selectableId:Selectable ID:ReadOnly",
+            "go:Go to object:Button:gotoIssue"
+    ),
+
     PROJECT(
             "==: Project : Project of the data-conversion can contains many Table-Flows or known as step inside :==",
             "--: Project Properties :--",

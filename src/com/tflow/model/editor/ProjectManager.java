@@ -2,6 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.*;
 import com.tflow.model.data.*;
+import com.tflow.model.data.verify.Verifiers;
 import com.tflow.model.editor.cmd.AddProject;
 import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.datasource.Database;
@@ -815,20 +816,36 @@ public class ProjectManager {
         return data;
     }
 
-    public boolean verify(Project project) {
-        /*TODO: verify project need to copy loadProject to here and replace all dataManager.getData by mapper.map instead*/
-        /*Example: EditorController.isTestConnectionEnabled() {
-            Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify();
-        }*/
-        return false;
-    }
+    public boolean verifyProject(Project project) {
+        Date buildDate = DateTimeUtil.now();
+        Producer<String, Object> producer = createProducer();
 
-    public boolean verify(Step step) {
-        /*TODO: verify project need to copy loadStep to here and replace all dataManager.getData by mapper.map instead*/
-        /*Example: EditorController.isTestConnectionEnabled() {
-            Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify();
-        }*/
-        return false;
+        Workspace workspace = project.getOwner();
+        long transactionId = 0;
+        try {
+            transactionId = project.getDataManager().newTransactionId();
+        } catch (InterruptedException ex) {
+            log.error("{}", ex.getMessage());
+            log.trace("", ex);
+            return false;
+        }
+
+        /*create build Message for TBcmd*/
+        KafkaRecordAttributes kafkaRecordAttributes = new KafkaRecordAttributes();
+        kafkaRecordAttributes.setRecordId(project.getId());
+        kafkaRecordAttributes.setTransactionId(transactionId);
+        kafkaRecordAttributes.setProjectId(project.getId());
+        kafkaRecordAttributes.setUserId(workspace.getUser().getId());
+        kafkaRecordAttributes.setClientId(workspace.getClient().getId());
+        kafkaRecordAttributes.setModifiedDate(buildDate);
+        log.debug("Outgoing message: verify(attributes:{})", kafkaRecordAttributes);
+
+        /*send message*/
+        Future<RecordMetadata> future = producer.send(new ProducerRecord<>(buildPackageTopic, "verify", kafkaRecordAttributes));
+
+        boolean success = isSuccess(future);
+        producer.close();
+        return success;
     }
 
 }

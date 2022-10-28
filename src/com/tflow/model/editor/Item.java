@@ -2,8 +2,8 @@ package com.tflow.model.editor;
 
 public class Item {
 
-    private int id;
-    private String name;
+    protected int id;
+    protected String name;
 
     public int getId() {
         return id;

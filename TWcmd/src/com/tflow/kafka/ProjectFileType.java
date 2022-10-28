@@ -33,6 +33,8 @@ public enum ProjectFileType {
     GENERATED_LIST("generated-list", 9),
     GENERATED("", 9),
 
+    ISSUE_LIST("issue-list", 1),
+
     STEP_LIST("step-list", 1),
     STEP("", 2),
 
@@ -79,6 +81,7 @@ public enum ProjectFileType {
 
     LINE_LIST("line-list", 2),
     LINE("", 2),
+
     ;
 
     private String prefix;

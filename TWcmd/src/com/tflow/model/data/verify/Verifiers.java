@@ -12,6 +12,7 @@ public class Verifiers {
         ;
 
         public Class aClass;
+
         DataVerifiers(Class aClass) {
             this.aClass = aClass;
         }
@@ -32,7 +33,7 @@ public class Verifiers {
             /*impossible: InstantiationException: class cannot be instantiated*/
             /*impossible: IllegalAccessException: private/protected constructor*/
             /*possible: InvocationTargetException: error within constructor*/
-            return new DefaultVerifier(ex);
+            return new DefaultVerifier(ex, data);
         }
     }
 }

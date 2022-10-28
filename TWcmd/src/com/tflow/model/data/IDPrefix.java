@@ -1,7 +1,8 @@
 package com.tflow.model.data;
 
 public enum IDPrefix {
-    
+
+    ISSUE("issue"),
     VERSIONED("lib"),
     GROUP(""),
     TEMPLATE("T"),

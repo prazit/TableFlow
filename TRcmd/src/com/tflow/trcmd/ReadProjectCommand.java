@@ -45,13 +45,11 @@ public class ReadProjectCommand extends IOCommand {
     private KafkaProducer<String, Object> dataProducer;
     private RecordMapper mapper;
     private HeaderData headerData;
-    private DataManager dataManager;
 
     public ReadProjectCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs, KafkaProducer<String, Object> dataProducer, String topic, DataManager dataManager) {
-        super(offset, key, value, environmentConfigs);
+        super(offset, key, value, environmentConfigs, dataManager);
         this.dataProducer = dataProducer;
         this.topic = topic;
-        this.dataManager = dataManager;
     }
 
     @Override

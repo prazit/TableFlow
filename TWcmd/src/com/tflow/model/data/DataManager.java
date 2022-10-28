@@ -639,8 +639,11 @@ public class DataManager {
         return -1L;
     }
 
-    private Object captureData(ProjectFileType fileType, HeaderData headerData) {
-        log.debug("captureData(fileType:{}, header:{})", fileType, headerData);
+    /**
+     * This function need synchronized to avoid ConcurrentException from KafkaConsumer that not support multi-threaded.
+     */
+    private synchronized Object captureData(ProjectFileType fileType, HeaderData headerData) {
+        log.debug("captureData(thread:{}, fileType:{}, header:{})", Thread.currentThread().getName(), fileType, headerData);
 
         /*TODO: timeout and maxTry need to load from configuration*/
         Object capturedData = null;

@@ -29,7 +29,7 @@ public class UpdateProjectCommand extends IOCommand {
     private Logger log = LoggerFactory.getLogger(UpdateProjectCommand.class);
 
     public UpdateProjectCommand(long offset, String key, Object value, EnvironmentConfigs environmentConfigs) {
-        super(offset, key, value, environmentConfigs);
+        super(offset, key, value, environmentConfigs, null);
     }
 
     @Override

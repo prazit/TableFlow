@@ -5807,7 +5807,7 @@ body .ui-log .ui-log-content {
 body .ui-progressbar {
   border: 0 none;
   height: 1rem;
-  background: #eaeaea;
+  background: var(--surface-d);
   border-radius: 3px;
 }
 body .ui-progressbar .ui-progressbar-value {
@@ -5818,7 +5818,7 @@ body .ui-progressbar .ui-progressbar-value {
 }
 body .ui-progressbar .ui-progressbar-label {
   margin-top: 0;
-  color: #dedede;
+  color: var(--surface-a);
   line-height: 1rem;
 }
 
