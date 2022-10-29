@@ -48,6 +48,7 @@ public class ProjectController extends Controller {
     private Package activePackage;
     private boolean pleaseSelectPackage;
     private boolean verified;
+    private boolean verifying;
     private boolean building;
 
     @Override
@@ -60,6 +61,7 @@ public class ProjectController extends Controller {
         log.debug("onCreation.");
         project = workspace.getProject();
         verified = false;
+        verifying = false;
         createEventHandlers();
     }
 
@@ -367,7 +369,28 @@ public class ProjectController extends Controller {
             return;
         }
 
-        /*TODO: show progressbar like building*/
+        /*show progressbar like building*/
+        project.getIssues().setStartDate(DateTimeUtil.now());
+        verifying = true;
+    }
+
+    public int refreshIssueList() {
+        Issues issues = null;
+        try {
+            issues = project.getManager().loadIssues(project);
+            project.setIssues(issues);
+        } catch (ProjectDataException ex) {
+            log.error("refreshIssueList: error during verify process! {}", ex.getMessage());
+            verifying = false;
+            return 100;
+        }
+
+        int complete = issues.getComplete();
+        if (complete == 100) {
+            verifying = issues.getIssueList().size() > 0;
+        }
+        log.debug("refreshIssueList: complete: {}", complete);
+        return complete;
     }
 
     public void lockPackage() {
@@ -375,9 +398,6 @@ public class ProjectController extends Controller {
         propertyChanged(ProjectFileType.PACKAGE, activePackage, activePackage.getProperties().getPropertyView(PropertyVar.lock.name()));
     }
 
-    /**
-     * IMPORTANT: call this function at least 2 seconds after buildPackage.
-     */
     public synchronized Integer refreshBuildingPackage() {
         reloadPackageList();
         selectPackage(0);
@@ -470,6 +490,14 @@ public class ProjectController extends Controller {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
+    }
+
+    public boolean isVerifying() {
+        return verifying;
+    }
+
+    public void setVerifying(boolean verifying) {
+        this.verifying = verifying;
     }
 
     public List<UploadedFileView> getUploadedList() {

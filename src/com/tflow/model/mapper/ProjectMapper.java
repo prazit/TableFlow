@@ -153,6 +153,8 @@ public interface ProjectMapper {
 
     VersionedFile map(VersionedFileData versionedFileData);
 
+    Issues map(IssuesData issuesData);
+
     /*---- ALL ABOUT ID ----*/
 
     default Integer id(Step step) {
@@ -288,4 +290,5 @@ public interface ProjectMapper {
     List<VersionedFileData> fromVersionedFileList(List<VersionedFile> versionedFileList);
 
     List<Integer> fromVariableList(List<Variable> variableList);
+
 }

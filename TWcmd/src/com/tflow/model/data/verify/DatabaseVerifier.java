@@ -14,11 +14,18 @@ public class DatabaseVerifier extends DataVerifier {
 
     @Override
     protected boolean verifyData(TWData data, ArrayList<IssueData> messageList) {
-        if(!(data instanceof DatabaseData)) return false;
+        DatabaseData databaseData = (DatabaseData) data;
+        int objectId = databaseData.getId();
 
-        /*TODO: verify DatabaseData*/
+        String objectName = verifyName(databaseData.getName(), "Database({name})", objectId);
 
-        return true;
+        if (isNullOrEmpty(databaseData.getUrl())) addIssueRequired(objectId, objectName, "url");
+        if (isNullOrEmpty(databaseData.getDbms())) addIssueRequired(objectId, objectName, "dbms");
+        if (isNullOrEmpty(databaseData.getUser())) addIssueRequired(objectId, objectName, "user");
+        if (isNullOrEmpty(databaseData.getPassword())) addIssueRequired(objectId, objectName, "password");
+        if (databaseData.getRetry() < 0 || databaseData.getRetry() > 9) addIssueRange(objectId, objectName, "retry", "1-9");
+
+        return !hasIssue;
     }
 
 }

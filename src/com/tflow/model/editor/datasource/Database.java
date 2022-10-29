@@ -215,7 +215,7 @@ public class Database extends DataSource implements Selectable, HasEvent {
     }
 
     public boolean isTestConnectionEnabled() {
-        return Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify();
+        return Verifiers.getVerifier(Mappers.getMapper(ProjectMapper.class).map(this)).verify(0, new ArrayList<>());
     }
 
     @Override

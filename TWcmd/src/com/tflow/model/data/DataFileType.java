@@ -5,16 +5,16 @@ package com.tflow.model.data;
  */
 public enum DataFileType {
 
-    IN_SQLDB,
+    IN_MARKDOWN,
     IN_SQL,
-    IN_MD,
-    IN_ENV,
+    IN_SQLDB,
     IN_DIR,
+    IN_ENVIRONMENT,
 
-    OUT_SQL,
     OUT_MD,
     OUT_CSV,
     OUT_TXT,
+    OUT_SQL,
 
     OUT_INS,
     OUT_UPD

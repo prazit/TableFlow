@@ -14,6 +14,7 @@ import com.tflow.util.FileUtil;
 import org.apache.kafka.common.errors.SerializationException;
 import org.slf4j.helpers.MessageFormatter;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -338,16 +339,113 @@ public abstract class IOCommand extends KafkaCommand {
 
     protected List<StepData> loadStepDataList() throws InstantiationException, IOException, ClassNotFoundException {
         Object data = getData(ProjectFileType.STEP_LIST);
-        List<Integer> stepIdList = (List) throwExceptionOnError(data);
+        List<ItemData> stepIdList = (List) throwExceptionOnError(data);
 
         List<StepData> stepDataList = new ArrayList<>();
-        for (Integer stepId : stepIdList) {
-            data = getData(ProjectFileType.STEP, stepId, stepId);
+        for (ItemData stepItem : stepIdList) {
+            data = getData(ProjectFileType.STEP, stepItem.getId(), stepItem.getId());
             stepDataList.add((StepData) throwExceptionOnError(data));
         }
 
         return stepDataList;
     }
+
+    protected List<TableFxData> loadTransformationDataList(int stepId, int transformTableId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.TRANSFORMATION_LIST, stepId, 0, transformTableId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<TableFxData> tableFxDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.TRANSFORMATION, id, stepId, 0, transformTableId);
+            tableFxDataList.add((TableFxData) throwExceptionOnError(data));
+        }
+        return tableFxDataList;
+    }
+
+    protected List<OutputFileData> loadTransformOutputDataList(int stepId, int transformTableId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, stepId, 0, transformTableId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<OutputFileData> outputFileDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.TRANSFORM_OUTPUT, id, stepId, 0, transformTableId);
+            outputFileDataList.add((OutputFileData) throwExceptionOnError(data));
+        }
+        return outputFileDataList;
+    }
+
+    protected List<TransformColumnData> loadTransformColumnDataList(int stepId, int transformTableId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, stepId, 0, transformTableId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<TransformColumnData> transformColumnDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.TRANSFORM_COLUMN, id, stepId, 0, transformTableId);
+            transformColumnDataList.add((TransformColumnData) throwExceptionOnError(data));
+        }
+        return transformColumnDataList;
+    }
+
+    protected List<TransformTableData> loadTransformTableDataList(int stepId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.TRANSFORM_TABLE_LIST, 0, stepId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<TransformTableData> transformTableDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.TRANSFORM_TABLE, id, stepId, 0, id);
+            transformTableDataList.add((TransformTableData) throwExceptionOnError(data));
+        }
+        return transformTableDataList;
+    }
+
+    protected List<OutputFileData> loadDataOutputDataList(int stepId, int dataTableId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.DATA_OUTPUT_LIST, 0, stepId, dataTableId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<OutputFileData> outputFileDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.DATA_OUTPUT, id, stepId, dataTableId);
+            outputFileDataList.add((OutputFileData) throwExceptionOnError(data));
+        }
+        return outputFileDataList;
+    }
+
+    protected List<DataColumnData> loadDataColumnDataList(int stepId, int dataTableId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.DATA_COLUMN_LIST, 0, stepId, dataTableId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<DataColumnData> dataColumnDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.DATA_COLUMN, id, stepId, dataTableId);
+            dataColumnDataList.add((DataColumnData) throwExceptionOnError(data));
+        }
+        return dataColumnDataList;
+    }
+
+    protected List<DataTableData> loadDataTableDataList(int stepId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.DATA_TABLE_LIST, 0, stepId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<DataTableData> dataTableDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.DATA_TABLE, id, stepId, id);
+            dataTableDataList.add((DataTableData) throwExceptionOnError(data));
+        }
+        return dataTableDataList;
+    }
+
+    protected List<DataFileData> loadDataFileDataList(int stepId) throws InstantiationException, IOException, ClassNotFoundException {
+        Object data = getData(ProjectFileType.DATA_FILE_LIST, 0, stepId);
+        List<Integer> idList = (List) throwExceptionOnError(data);
+
+        List<DataFileData> dataFileDataList = new ArrayList<>();
+        for (Integer id : idList) {
+            data = getData(ProjectFileType.DATA_FILE, id, stepId);
+            dataFileDataList.add((DataFileData) throwExceptionOnError(data));
+        }
+        return dataFileDataList;
+    }
+
 
     protected Object throwExceptionOnError(Object data) throws IOException {
         if (data instanceof Long) {

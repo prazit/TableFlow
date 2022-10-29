@@ -785,6 +785,17 @@ public class ProjectManager {
         return mapper.map(binaryFileData);
     }
 
+    public Issues loadIssues(Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        DataManager dataManager = project.getDataManager();
+
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.ISSUE_LIST, projectUser);
+        IssuesData issuesData = (IssuesData) throwExceptionOnError(data);
+
+        return mapper.map(issuesData);
+    }
+
     private boolean isSuccess(Future<RecordMetadata> future) {
         while (!future.isDone()) {
             try {
@@ -807,13 +818,6 @@ public class ProjectManager {
             result = false;
         }
         return result;
-    }
-
-    private Object throwExceptionOnError(Object data) throws ProjectDataException {
-        if (data instanceof Long) {
-            throw new ProjectDataException(KafkaErrorCode.parse((Long) data).name());
-        }
-        return data;
     }
 
     public boolean verifyProject(Project project) {
@@ -846,6 +850,13 @@ public class ProjectManager {
         boolean success = isSuccess(future);
         producer.close();
         return success;
+    }
+
+    private Object throwExceptionOnError(Object data) throws ProjectDataException {
+        if (data instanceof Long) {
+            throw new ProjectDataException(KafkaErrorCode.parse((Long) data).name());
+        }
+        return data;
     }
 
 }

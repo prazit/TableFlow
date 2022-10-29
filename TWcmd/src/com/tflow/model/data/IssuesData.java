@@ -3,6 +3,7 @@ package com.tflow.model.data;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -13,5 +14,8 @@ public class IssuesData extends TWData {
 
     private int complete;
     private Boolean finished;
+
+    private Date startDate;
+    private Date finishDate;
 
 }

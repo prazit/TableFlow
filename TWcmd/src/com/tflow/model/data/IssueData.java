@@ -11,5 +11,6 @@ public class IssueData extends ItemData {
 
     private int stepId;
     private String objectId;
+    private String propertyVar;
 
 }

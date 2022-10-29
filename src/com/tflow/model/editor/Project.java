@@ -41,6 +41,8 @@ public class Project implements Selectable, HasEvent {
     private transient DataManager dataManager;
     private transient EventManager eventManager;
 
+    private transient Issues issues;
+
     /*for ProjectMapper*/
     public Project() {
         init();
@@ -63,6 +65,7 @@ public class Project implements Selectable, HasEvent {
         stepList = new StepList<>();
         propertyMap = new HashMap<>();
         eventManager = new EventManager(this);
+        issues = new Issues();
         createEventHandlers();
     }
 
@@ -254,6 +257,14 @@ public class Project implements Selectable, HasEvent {
         return eventManager;
     }
 
+    public Issues getIssues() {
+        return issues;
+    }
+
+    public void setIssues(Issues issues) {
+        this.issues = issues;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -269,6 +280,7 @@ public class Project implements Selectable, HasEvent {
                 ", variableMap:" + variableMap +
                 ", lastElementId:" + lastElementId +
                 ", lastUniqueId:" + lastUniqueId +
+                ", issues:" + issues.getIssueList().size() +
                 '}';
     }
 

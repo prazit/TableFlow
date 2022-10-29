@@ -301,6 +301,7 @@
                                     <p:outputLabel value=" Build"/>
                                 </f:facet>
                                 <p:outputPanel id="packageTab" styleClass="package-panel">
+                                    <p:remoteCommand name="refreshIssueList" actionListener="#{projectCtl.refreshIssueList}" update="@parent"/>
                                     <p:remoteCommand name="updatePackageTab" actionListener="#{projectCtl.refreshBuildingPackage}" update="@parent"/>
                                     <p:remoteCommand name="buildPackage" actionListener="#{projectCtl.buildPackage}" update="@parent"/>
                                     <p:remoteCommand name="updatePackageList" update="@parent"/>
@@ -344,6 +345,29 @@
                                         </h2>
                                     </p:outputPanel>
                                     <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() > 0}"><h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/> Select Package from the List above.</h2></p:outputPanel>
+
+                                    <!-- verify message -->
+                                    <p:outputPanel id="verifying" rendered="#{projectCtl.verifying}">
+                                        <h2 style="color: var(--surface-c);"><i class="pi pi-spinner pi-spin"></i> VERIFY FULL PROJECT ...</h2>
+                                        <span>started at #{projectCtl.project.issues.startDate}</span>
+                                        <p:progressBar widgetVar="verifying" ajax="true" value="#{projectCtl.refreshIssueList()}" labelTemplate="{value}%" styleClass="animated" global="false" interval="1000">
+                                            <p:ajax event="complete" oncomplete="refreshIssueList();"/>
+                                        </p:progressBar>
+
+                                        <p:divider align="left">
+                                            <div class="inline-flex align-items-center">
+                                                <i class="pi pi-code"/>
+                                                <b>Issues:</b>
+                                            </div>
+                                        </p:divider>
+                                        <p:dataList value="#{projectCtl.project.issues.issueList}" var="issue" styleClass="fit-width">
+                                            <div>#{issue}</div>
+                                        </p:dataList>
+                                        <script>$(function () {
+                                            PF('verifying').start();
+                                        });
+                                        </script>
+                                    </p:outputPanel>
 
                                     <!-- building message -->
                                     <p:outputPanel id="building" rendered="#{projectCtl.activePackage != null and not projectCtl.pleaseSelectPackage and not projectCtl.activePackage.finished}">
