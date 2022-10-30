@@ -2,22 +2,44 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.IssueType;
 
 import java.util.Map;
 
-public class Issue extends Item implements Selectable {
+public class Issue implements Selectable {
 
-    private String description;
+    private int id;
+    private IssueType type;
 
     private int stepId;
-    private String selectableId;
+    private ProjectFileType objectType;
+    private String objectId;
+    private String propertyVar;
 
-    public String getDescription() {
-        return description;
+    private String display;
+
+    public String getDisplay() {
+        return display;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDisplay(String display) {
+        this.display = display;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public IssueType getType() {
+        return type;
+    }
+
+    public void setType(IssueType type) {
+        this.type = type;
     }
 
     public int getStepId() {
@@ -28,8 +50,28 @@ public class Issue extends Item implements Selectable {
         this.stepId = stepId;
     }
 
-    public void setSelectableId(String selectableId) {
-        this.selectableId = selectableId;
+    public String getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(String objectId) {
+        this.objectId = objectId;
+    }
+
+    public ProjectFileType getObjectType() {
+        return objectType;
+    }
+
+    public void setObjectType(ProjectFileType objectType) {
+        this.objectType = objectType;
+    }
+
+    public String getPropertyVar() {
+        return propertyVar;
+    }
+
+    public void setPropertyVar(String propertyVar) {
+        this.propertyVar = propertyVar;
     }
 
     @Override
@@ -65,11 +107,11 @@ public class Issue extends Item implements Selectable {
     @Override
     public String toString() {
         return "{" +
-                "id:" + id +
-                ", name:'" + name + '\'' +
-                ", description:'" + description + '\'' +
-                ", stepId:" + stepId +
-                ", selectableId:'" + selectableId + '\'' +
+                "id=" + id +
+                ", type='" + type + '\'' +
+                ", stepId=" + stepId +
+                ", objectId='" + objectId + '\'' +
+                ", propertyVar='" + propertyVar + '\'' +
                 '}';
     }
 }

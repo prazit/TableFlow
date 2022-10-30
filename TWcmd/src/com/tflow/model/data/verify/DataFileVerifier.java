@@ -17,7 +17,6 @@ public class DataFileVerifier extends DataVerifier {
 
         String objectName = verifyName(dataFileData.getName(), "DataFile({name})", objectId);
         if (isNullOrEmpty(dataFileData.getDataSourceType())) addIssueRequired(objectId, objectName, "dataSourceType");
-        if (dataFileData.getDataSourceId() == 0) addIssueRequired(objectId, objectName, "dataSourceId");
 
         String type = dataFileData.getType();
         Map<String, Object> propertyMap = dataFileData.getPropertyMap();
@@ -25,7 +24,6 @@ public class DataFileVerifier extends DataVerifier {
         else switch (DataFileType.valueOf(type)) {
             case IN_SQLDB:
             case IN_SQL:
-                verifyProperty("quotesName", propertyMap, objectId, objectName);
                 verifyProperty("quotesValue", propertyMap, objectId, objectName);
                 break;
 
@@ -38,6 +36,8 @@ public class DataFileVerifier extends DataVerifier {
                 /*nothing*/
                 break;
         }
+
+        /*if (dataFileData.getDataSourceId() == 0) addIssueRequired(objectId, objectName, "dataSourceId");*/
 
         return !hasIssue;
     }

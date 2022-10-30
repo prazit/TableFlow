@@ -2,6 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.FileNameExtension;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.datasource.NameValue;
 import com.tflow.model.editor.view.PropertyView;
@@ -247,7 +248,7 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
 
     @Override
     public String getSelectableId() {
-        return "of" + id;
+        return IDPrefix.DATA_OUTPUT.getPrefix() + id;
     }
 
     @Override

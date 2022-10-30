@@ -3,6 +3,8 @@ package com.tflow.model.editor;
 import com.tflow.model.data.FileNameExtension;
 import com.tflow.model.data.FileType;
 
+import java.util.Date;
+
 public class PackageFile {
 
     private int id;
@@ -11,8 +13,8 @@ public class PackageFile {
 
     private FileType type;
     private int fileId;
-
     private String buildPath;
+    private Date modifiedDate;
 
     private boolean updated;
 
@@ -64,6 +66,14 @@ public class PackageFile {
         this.buildPath = buildPath;
     }
 
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
+
     public boolean isUpdated() {
         return updated;
     }
@@ -81,6 +91,7 @@ public class PackageFile {
                 ", type:" + type +
                 ", fileId:" + fileId +
                 ", buildPath:'" + buildPath + '\'' +
+                ", modified:" + modifiedDate +
                 ", updated:" + updated +
                 '}';
     }

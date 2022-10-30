@@ -555,7 +555,7 @@ public class DataManager {
         return getData(fileType, additional);
     }
 
-    public Object getData(ProjectFileType fileType, KafkaRecordAttributes additional) {
+    public synchronized Object getData(ProjectFileType fileType, KafkaRecordAttributes additional) {
         validate(fileType, additional);
 
         long code = requestData(fileType, additional);
@@ -642,7 +642,7 @@ public class DataManager {
     /**
      * This function need synchronized to avoid ConcurrentException from KafkaConsumer that not support multi-threaded.
      */
-    private synchronized Object captureData(ProjectFileType fileType, HeaderData headerData) {
+    private Object captureData(ProjectFileType fileType, HeaderData headerData) {
         log.debug("captureData(thread:{}, fileType:{}, header:{})", Thread.currentThread().getName(), fileType, headerData);
 
         /*TODO: timeout and maxTry need to load from configuration*/

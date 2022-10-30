@@ -1,13 +1,13 @@
 package com.tflow.controller;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.IssueType;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.action.Action;
-import com.tflow.model.editor.action.ActionResultKey;
-import com.tflow.model.editor.action.AddVariable;
+import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.DataSource;
 import com.tflow.model.editor.datasource.Database;
@@ -50,6 +50,7 @@ public class ProjectController extends Controller {
     private boolean verified;
     private boolean verifying;
     private boolean building;
+    private Date startDate;
 
     @Override
     public Page getPage() {
@@ -362,35 +363,126 @@ public class ProjectController extends Controller {
     }
 
     public void verifyProject() {
-        List<Issue> issueList = null;
+        /*show progressbar like building*/
+        startDate = DateTimeUtil.now();
+        Issues issues = project.getIssues();
+        issues.setFinished(false);
+        issues.setComplete(0);
+        issues.setStartDate(startDate);
+        verifying = true;
+
         if (!project.getManager().verifyProject(project)) {
             jsBuilder.pre(JavaScript.notiError, "Can't verify project, try again few minutes later.");
             log.error("verifyProject return false, project is not verified!");
-            return;
         }
-
-        /*show progressbar like building*/
-        project.getIssues().setStartDate(DateTimeUtil.now());
-        verifying = true;
     }
 
-    public int refreshIssueList() {
-        Issues issues = null;
+    public synchronized int refreshIssueList() {
+        Issues issues = project.getIssues();
+        if (issues != null && issues.isFinished()) {
+            log.debug("refreshIssueList: called after finished will be ignored");
+            verifying = false;
+            jsBuilder.pre(JavaScript.stopProgressBar, "verifying").runOnClient();
+            return 100;
+        }
+
         try {
-            issues = project.getManager().loadIssues(project);
-            project.setIssues(issues);
+            Issues newIssues = project.getManager().loadIssues(project);
+            /*skip older issues*/
+            if (newIssues.getStartDate().compareTo(issues.getStartDate()) >= 0) {
+                setIssueDisplay(newIssues);
+                project.setIssues(newIssues);
+                issues = newIssues;
+            }
         } catch (ProjectDataException ex) {
             log.error("refreshIssueList: error during verify process! {}", ex.getMessage());
             verifying = false;
+            jsBuilder.pre(JavaScript.stopProgressBar, "verifying").runOnClient();
             return 100;
         }
 
         int complete = issues.getComplete();
         if (complete == 100) {
-            verifying = issues.getIssueList().size() > 0;
+            verifying = false;
+            verified = issues.getIssueList().size() == 0;
+            jsBuilder.pre(JavaScript.stopProgressBar, "verifying").runOnClient();
         }
         log.debug("refreshIssueList: complete: {}", complete);
         return complete;
+    }
+
+    private void setIssueDisplay(Issues issues) {
+        String stepName;
+        String objectType;
+        String objectName;
+        String propertyLabel;
+        String propertyRange;
+        String display;
+        Step step;
+        for (Issue issue : issues.getIssueList()) {
+
+            /*step name*/
+            if (issue.getStepId() <= 0) {
+                step = project.getStepList().get(-1);
+                stepName = null;
+            } else {
+                step = findStep(issue.getStepId());
+                if (step.getIndex() < 0) loadStep(project.getStepList().indexOf(step));
+                stepName = "step:" + step.getName();
+            }
+
+            /*get object name from issue.objectType*/
+            String selectableId = IDPrefix.valueOf(issue.getObjectType().name()).getPrefix() + issue.getObjectId();
+            Selectable selectableObject = step.getSelectableMap().get(selectableId);
+            log.debug("selectableId:{}, selectableObject:{}, step:{}", selectableId, selectableObject, step.getName());
+            if (selectableObject == null) {
+                objectName = "unknown";
+                propertyLabel = issue.getPropertyVar();
+            } else {
+                objectName = (String) selectableObject.getProperties().getPropertyValue(selectableObject, "name", log);
+
+                /*property label*/
+                PropertyView property = selectableObject.getProperties().getPropertyView(issue.getPropertyVar());
+                propertyLabel = property.getLabel();
+            }
+
+            /*get object type from issue.objectType*/
+            objectType = issue.getObjectType().name().toLowerCase().replace("_", "-");
+
+            /*TODO: need to improve message for types of child of table [OUTPUT,COLUMN,TRANSFORMATION]*/
+
+            /*message pattern from IssueType*/
+            if (IssueType.REQUIRED == issue.getType()) {
+                display = "Required value for " + propertyLabel + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
+            } else {/*IssueType.OUT_OF_RANGE*/
+                propertyRange = "";
+                display = "Value out of range(" + propertyRange + ") for " + propertyLabel + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
+            }
+            issue.setDisplay(display);
+        }
+    }
+
+    private void loadStep(int stepIndex) {
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.PROJECT, project);
+        paramMap.put(CommandParamKey.INDEX, stepIndex);
+
+        try {
+            new LoadStep(paramMap).execute();
+        } catch (RequiredParamException ex) {
+            jsBuilder.pre(JavaScript.notiError, "Load Step Failed {}", ex.getMessage());
+            log.error("Load Step Failed! {}", ex.getMessage());
+        }
+
+    }
+
+    private Step findStep(int stepId) {
+        for (Step step : project.getStepList()) {
+            if (step.getId() == stepId) {
+                return step;
+            }
+        }
+        return null;
     }
 
     public void lockPackage() {
@@ -401,7 +493,10 @@ public class ProjectController extends Controller {
     public synchronized Integer refreshBuildingPackage() {
         reloadPackageList();
         selectPackage(0);
-        return activePackage.getComplete();
+
+        int complete = activePackage.getComplete();
+        if (complete == 100) jsBuilder.pre(JavaScript.stopProgressBar, "building").runOnClient();
+        return complete;
     }
 
     private int getPackageListIndex(int packageId) {

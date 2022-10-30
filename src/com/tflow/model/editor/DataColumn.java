@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.IDPrefix;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -118,7 +119,7 @@ public class DataColumn implements Serializable, Selectable {
 
     @Override
     public String getSelectableId() {
-        return "dc" + id;
+        return IDPrefix.DATA_COLUMN.getPrefix() + id;
     }
 
     public DataTable getOwner() {

@@ -53,6 +53,7 @@ public enum JavaScript {
     showPropertyList("showPropertyList(%s,%s);"),
     showActionButtons("showActionButtons(%s,%s);"),
     showColumnNumbers("showColumnNumbers(%s,%s);"),
+    stopProgressBar("PF('%s').cancel();"),
     ;
 
     private String javascript;

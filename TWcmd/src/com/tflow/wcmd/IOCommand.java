@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public abstract class IOCommand extends KafkaCommand {
@@ -53,6 +54,13 @@ public abstract class IOCommand extends KafkaCommand {
         }
     }
 
+    protected Date getModifiedDate(ProjectFileType projectFileType, RecordAttributesData additional) {
+        File file = getFile(projectFileType, additional);
+        if (file.exists()) {
+            return new Date(file.lastModified());
+        }
+        return null;
+    }
 
     protected File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {
         String fileName = getFileName(projectFileType.getPrefix(), additional.getRecordId());

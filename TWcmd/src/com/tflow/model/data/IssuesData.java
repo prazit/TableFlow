@@ -13,7 +13,7 @@ public class IssuesData extends TWData {
     private List<IssueData> issueList;
 
     private int complete;
-    private Boolean finished;
+    private boolean finished;
 
     private Date startDate;
     private Date finishDate;

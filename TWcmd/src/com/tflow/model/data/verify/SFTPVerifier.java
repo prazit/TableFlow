@@ -23,7 +23,7 @@ public class SFTPVerifier extends DataVerifier {
 
         if (isNullOrEmpty(sftpData.getUser())) addIssueRequired(objectId, objectName, "user");
         if (isNullOrEmpty(sftpData.getPassword())) addIssueRequired(objectId, objectName, "password");
-        if (sftpData.getRetry() < 0 || sftpData.getRetry() > 9) addIssueRange(objectId, objectName, "retry", "1-9");
+        if (sftpData.getRetry() < 0 || sftpData.getRetry() > 9) addIssueRange(objectId, objectName, "retry");
 
         if (isNullOrEmpty(sftpData.getRootPath())) addIssueRequired(objectId, objectName, "rootPath");
         if (isNullOrEmpty(sftpData.getTmp())) addIssueRequired(objectId, objectName, "tmp");

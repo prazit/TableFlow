@@ -19,11 +19,15 @@ public class DatabaseVerifier extends DataVerifier {
 
         String objectName = verifyName(databaseData.getName(), "Database({name})", objectId);
 
+        if (isNullOrEmpty(databaseData.getHost())) addIssueRequired(objectId, objectName, "host");
+        if (isNullOrEmpty(databaseData.getPort())) addIssueRequired(objectId, objectName, "port");
+        if (isNullOrEmpty(databaseData.getSchema())) addIssueRequired(objectId, objectName, "schema");
+
         if (isNullOrEmpty(databaseData.getUrl())) addIssueRequired(objectId, objectName, "url");
         if (isNullOrEmpty(databaseData.getDbms())) addIssueRequired(objectId, objectName, "dbms");
         if (isNullOrEmpty(databaseData.getUser())) addIssueRequired(objectId, objectName, "user");
         if (isNullOrEmpty(databaseData.getPassword())) addIssueRequired(objectId, objectName, "password");
-        if (databaseData.getRetry() < 0 || databaseData.getRetry() > 9) addIssueRange(objectId, objectName, "retry", "1-9");
+        if (databaseData.getRetry() < 0 || databaseData.getRetry() > 9) addIssueRange(objectId, objectName, "retry");
 
         return !hasIssue;
     }

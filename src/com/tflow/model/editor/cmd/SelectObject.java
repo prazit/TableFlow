@@ -26,6 +26,9 @@ public class SelectObject extends Command {
 
         /*Action Result*/
 
+        // not save Mockup-Step for SelectProject
+        if(step.getIndex() < 0) return;
+
         // save Step Data for ActiveObject
         Project project = step.getOwner();
         DataManager dataManager = project.getDataManager();

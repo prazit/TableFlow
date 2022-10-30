@@ -67,7 +67,7 @@ public class BuildPackageCommand extends IOCommand {
         ProjectData projectData = null;
         List<ItemData> packageList = null;
         PackageData packageData = null;
-        List<PackageFileData> fileList = new ArrayList<>();
+        List<PackageFileData> fileList = new ArrayList<>(); /*TODO: all in fileList need modifiedDate*/
         ProjectUser projectUser = mapper.map(attributes);
 
         try {
@@ -283,6 +283,8 @@ public class BuildPackageCommand extends IOCommand {
 
     @SuppressWarnings("unchecked")
     private void addUploadedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, ClassNotFoundException, InstantiationException {
+        String recordId = recordAttributes.getRecordId();
+
         Object data = getData(ProjectFileType.UPLOADED_LIST);
         List<BinaryFileItemData> binaryFileItemDataList = (List<BinaryFileItemData>) throwExceptionOnError(data);
         for (BinaryFileItemData binaryFileItemData : binaryFileItemDataList) {
@@ -294,8 +296,14 @@ public class BuildPackageCommand extends IOCommand {
             FileNameExtension fileNameExtension = FileNameExtension.forName(binaryFileItemData.getName());
             packageFileData.setExt(fileNameExtension);
             packageFileData.setBuildPath(fileNameExtension.getBuildPath());
+
+            recordAttributes.setRecordId(String.valueOf(packageFileData.getFileId()));
+            packageFileData.setModifiedDate(getModifiedDate(ProjectFileType.UPLOADED, recordAttributes));
+
             fileList.add(packageFileData);
         }
+
+        recordAttributes.setRecordId(recordId);
     }
 
     private int newPackageFileId(PackageData packageData) {
@@ -390,7 +398,7 @@ public class BuildPackageCommand extends IOCommand {
      * Used to find existing file from previous package.
      */
     private BinaryFileData findBinaryFile(String fileName, PackageData packageData) throws IOException, InstantiationException, ClassNotFoundException {
-        if(packageData==null) {
+        if (packageData == null) {
             log.debug("findBinaryFile: {} not found on null previous package", fileName);
             return null;
         }

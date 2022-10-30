@@ -24,7 +24,10 @@ public class SelectStep extends Action {
                 CommandParamKey.PROJECT,
                 CommandParamKey.INDEX
         );
-        setCommands(new com.tflow.model.editor.cmd.SelectStep());
+        setCommands(
+                new com.tflow.model.editor.cmd.LoadStep(),
+                new com.tflow.model.editor.cmd.SelectStep()
+        );
     }
 
     @Override

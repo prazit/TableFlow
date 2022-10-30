@@ -353,16 +353,6 @@
                                         <p:progressBar widgetVar="verifying" ajax="true" value="#{projectCtl.refreshIssueList()}" labelTemplate="{value}%" styleClass="animated" global="false" interval="1000">
                                             <p:ajax event="complete" oncomplete="refreshIssueList();"/>
                                         </p:progressBar>
-
-                                        <p:divider align="left">
-                                            <div class="inline-flex align-items-center">
-                                                <i class="pi pi-code"/>
-                                                <b>Issues:</b>
-                                            </div>
-                                        </p:divider>
-                                        <p:dataList value="#{projectCtl.project.issues.issueList}" var="issue" styleClass="fit-width">
-                                            <div>#{issue}</div>
-                                        </p:dataList>
                                         <script>$(function () {
                                             PF('verifying').start();
                                         });
@@ -382,13 +372,26 @@
                                         </script>
                                     </p:outputPanel>
 
-                                    <!-- active package -->
+                                    <!-- issue list -->
+                                    <p:outputPanel rendered="#{projectCtl.project.issues.issueList.size() > 0}">
+                                        <p:divider align="left">
+                                            <div class="inline-flex align-items-center">
+                                                <i class="pi pi-code"/>
+                                                <b>Issues:</b>
+                                            </div>
+                                        </p:divider>
+                                        <p:dataList value="#{projectCtl.project.issues.issueList}" var="issue" styleClass="fit-width">
+                                            <div>#{issue.id} : #{issue.display}</div>
+                                        </p:dataList>
+                                    </p:outputPanel>
+
+                                    <!-- active package/file list -->
                                     <p:outputPanel id="activePackage" rendered="#{not projectCtl.pleaseSelectPackage and projectCtl.activePackage.finished}">
 
                                         <p:divider layout="horizontal">
                                             <div class="inline-flex align-items-center">
                                                 <i class="pi pi-list mr-2"/>
-                                                <b>File List</b>
+                                                <b>Files</b>
                                             </div>
                                         </p:divider>
 

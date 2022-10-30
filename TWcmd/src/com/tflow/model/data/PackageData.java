@@ -20,7 +20,7 @@ public class PackageData extends TWData {
     private Date builtDate;
 
     private int complete;
-    private Boolean finished;
+    private boolean finished;
 
     private List<PackageFileData> fileList;
     private int lastFileId;

@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.data.SourceType;
 import com.tflow.model.editor.datasource.NameValue;
@@ -128,6 +129,11 @@ public class TransformTable extends DataTable implements HasEvent, HasSelected {
     @Override
     public EventManager getEventManager() {
         return eventManager;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return IDPrefix.TRANSFORM_TABLE.getPrefix() + id;
     }
 
     @Override

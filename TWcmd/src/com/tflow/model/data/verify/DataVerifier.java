@@ -1,6 +1,8 @@
 package com.tflow.model.data.verify;
 
+import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IssueData;
+import com.tflow.model.data.IssueType;
 import com.tflow.model.data.TWData;
 
 import java.util.ArrayList;
@@ -10,36 +12,42 @@ public abstract class DataVerifier {
 
     private ArrayList<IssueData> issueList;
     private TWData data;
+
+    private ProjectFileType objectType;
     private int stepId;
 
     protected boolean hasIssue = false;
 
+    protected void addIssueTooLong(int objectId, String objectName, String propertyVar) {
+        addIssue(objectId, propertyVar, IssueType.TOO_LONG);
+    }
+
     protected void addIssueRequired(int objectId, String objectName, String propertyVar) {
-        addIssue(objectId, propertyVar, objectName + " requires " + propertyVar, null);
+        addIssue(objectId, propertyVar, IssueType.REQUIRED);
     }
 
     protected void addIssueRequired(String objectId, String objectName, String propertyVar) {
-        addIssue(objectId, propertyVar, objectName + " requires " + propertyVar, null);
+        addIssue(objectId, propertyVar, IssueType.REQUIRED);
     }
 
-    protected void addIssueRange(int objectId, String objectName, String propertyVar, String range) {
-        addIssue(objectId, propertyVar, objectName + " " + propertyVar + " out of range " + range, null);
+    protected void addIssueRange(int objectId, String objectName, String propertyVar) {
+        addIssue(objectId, propertyVar, IssueType.OUT_OF_RANGE);
     }
 
-    protected void addIssue(int objectId, String propertyVar, String displayName, String description) {
-        addIssue(String.valueOf(objectId), propertyVar, displayName, description);
+    protected void addIssue(int objectId, String propertyVar, IssueType type) {
+        addIssue(String.valueOf(objectId), propertyVar, type);
     }
 
-    protected void addIssue(String objectId, String propertyVar, String displayName, String description) {
+    protected void addIssue(String objectId, String propertyVar, IssueType type) {
         IssueData issueData = new IssueData();
 
+        issueData.setId(lastIssueId() + 1);
+        issueData.setType(type.name());
+
         issueData.setStepId(stepId);
+        issueData.setObjectType(objectType.name());
         issueData.setObjectId(objectId);
         issueData.setPropertyVar(propertyVar);
-
-        issueData.setId(lastIssueId() + 1);
-        issueData.setName(displayName);
-        issueData.setDescription(description);
 
         issueList.add(issueData);
         hasIssue = true;
@@ -89,8 +97,9 @@ public abstract class DataVerifier {
      * @param stepId found issue only
      * @return true means data is valid, false means data is invalid.
      */
-    public boolean verify(int stepId, ArrayList<IssueData> issueList) {
+    public boolean verify(int stepId, ProjectFileType objectType, ArrayList<IssueData> issueList) {
         this.stepId = stepId;
+        this.objectType = objectType;
         this.issueList = issueList;
         return verifyData(data, issueList);
     }

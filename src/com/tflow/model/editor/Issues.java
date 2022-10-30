@@ -8,7 +8,7 @@ public class Issues {
     private List<Issue> issueList;
 
     private int complete;
-    private Boolean finished;
+    private boolean finished;
 
     private Date startDate;
     private Date finishDate;
@@ -33,11 +33,11 @@ public class Issues {
         this.complete = complete;
     }
 
-    public Boolean getFinished() {
+    public boolean isFinished() {
         return finished;
     }
 
-    public void setFinished(Boolean finished) {
+    public void setFinished(boolean finished) {
         this.finished = finished;
     }
 

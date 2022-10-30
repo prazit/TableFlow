@@ -5,11 +5,14 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class IssueData extends ItemData {
+public class IssueData {
+    private static final transient long serialVersionUID = 2021121709996660017L;
 
-    private String description;
+    private int id;
+    private String type;
 
     private int stepId;
+    private String objectType;
     private String objectId;
     private String propertyVar;
 

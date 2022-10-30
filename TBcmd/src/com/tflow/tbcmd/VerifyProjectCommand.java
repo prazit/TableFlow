@@ -46,35 +46,31 @@ public class VerifyProjectCommand extends IOCommand {
         issuesData.setIssueList(issueList);
         updateIssuesData(0, issuesData, projectUser);
 
-        /*verifier for project*/
+        /*0.verifier for project*/
         Object data = getData(ProjectFileType.PROJECT, projectUser.getId());
         ProjectData projectData = (ProjectData) throwExceptionOnError(data);
-
-        DataVerifier verifier = Verifiers.getVerifier(projectData);
-        if (!verifier.verify(0, issueList)) {
-            issueList.addAll(verifier.getIssueList());
-        }
+        Verifiers.getVerifier(projectData).verify(-1, ProjectFileType.PROJECT, issueList);
 
         /*1.verifier for db-list*/
-        verifyDataList(loadDatabaseDataList(), 0, issueList);
+        verifyDataList(loadDatabaseDataList(), -1, issueList, ProjectFileType.DB);
         updateIssuesData(10, issuesData, projectUser);
 
         /*2.verifier for sftp-list*/
-        verifyDataList(loadSFTPDataList(), 0, issueList);
+        verifyDataList(loadSFTPDataList(), -1, issueList, ProjectFileType.SFTP);
 
         /*3.verifier for local-list*/
-        verifyDataList(loadLocalDataList(), 0, issueList);
+        verifyDataList(loadLocalDataList(), -1, issueList, ProjectFileType.LOCAL);
 
         /*4.verifier for variable-list*/
-        verifyDataList(loadVariableDataList(), 0, issueList);
+        verifyDataList(loadVariableDataList(), -1, issueList, ProjectFileType.VARIABLE);
         updateIssuesData(20, issuesData, projectUser);
 
         /*TODO: 5.verifier for library-list*/
-        verifyDataList(loadVersionedDataList(projectData.getType().getCode()), 0, issueList);
+        verifyDataList(loadVersionedDataList(projectData.getType().getCode()), -1, issueList, ProjectFileType.VERSIONED);
 
         /*6.verifier for step-list*/
         List<StepData> stepDataList = loadStepDataList();
-        verifyDataList(stepDataList, 0, issueList);
+        verifyDataList(stepDataList, -1, issueList, ProjectFileType.STEP);
         updateIssuesData(30, issuesData, projectUser);
 
         List<DataTableData> dataTableDataList;
@@ -87,68 +83,69 @@ public class VerifyProjectCommand extends IOCommand {
             stepId = stepData.getId();
 
             /*7.verifier for data-file-list*/
-            verifyDataList(loadDataFileDataList(stepId), stepId, issueList);
-
+            verifyDataList(loadDataFileDataList(stepId), stepId, issueList, ProjectFileType.DATA_FILE);
+            
             /*8.verifier for data-table-list*/
             dataTableDataList = loadDataTableDataList(stepId);
-            verifyDataList(dataTableDataList, stepId, issueList);
+            verifyDataList(dataTableDataList, stepId, issueList, ProjectFileType.DATA_TABLE);
 
             for (DataTableData dataTableData : dataTableDataList) {
                 dataTableId = dataTableData.getId();
 
                 /*9.verifier for data-column-list*/
-                verifyDataList(loadDataColumnDataList(stepId, dataTableId), stepId, issueList);
+                verifyDataList(loadDataColumnDataList(stepId, dataTableId), stepId, issueList, ProjectFileType.DATA_COLUMN);
 
                 /*10.verifier for output-list*/
-                verifyDataList(loadDataOutputDataList(stepId, dataTableId), stepId, issueList);
+                verifyDataList(loadDataOutputDataList(stepId, dataTableId), stepId, issueList, ProjectFileType.DATA_OUTPUT);
             }
 
             /*11.verifier for transform-table-list*/
             transformTableDataList = loadTransformTableDataList(stepId);
-            verifyDataList(transformTableDataList, stepId, issueList);
+            verifyDataList(transformTableDataList, stepId, issueList, ProjectFileType.TRANSFORM_TABLE);
 
             for (TransformTableData transformTableData : transformTableDataList) {
                 transformTableId = transformTableData.getId();
 
                 /*12.verifier for transform-column-list*/
-                verifyDataList(loadTransformColumnDataList(stepId, transformTableId), stepId, issueList);
+                verifyDataList(loadTransformColumnDataList(stepId, transformTableId), stepId, issueList, ProjectFileType.TRANSFORM_COLUMN);
 
                 /*13.verifier for transform-output-list*/
-                verifyDataList(loadTransformOutputDataList(stepId, transformTableId), stepId, issueList);
+                verifyDataList(loadTransformOutputDataList(stepId, transformTableId), stepId, issueList, ProjectFileType.TRANSFORM_OUTPUT);
 
                 /*14.verifier for tranformation-list*/
-                verifyDataList(loadTransformationDataList(stepId, transformTableId), stepId, issueList);
+                verifyDataList(loadTransformationDataList(stepId, transformTableId), stepId, issueList, ProjectFileType.TRANSFORMATION);
             }
 
             updateIssuesData(issuesData.getComplete() + percentCompleteAdder, issuesData, projectUser);
         }
 
         /*save complete status*/
+        finished(projectUser, issuesData);
+
+    }
+
+    private void finished(ProjectUser projectUser, IssuesData issuesData) {
+        issuesData.setFinished(true);
         issuesData.setFinishDate(DateTimeUtil.now());
         updateIssuesData(100, issuesData, projectUser);
+    }
 
+    private void verifyDataList(List<? extends TWData> dataList, int stepId, ArrayList<IssueData> issueList, ProjectFileType objectType) {
+        boolean isStep = (dataList.size() > 0 && dataList.get(0) instanceof StepData);
+        for (TWData data : dataList) {
+            DataVerifier verifier = Verifiers.getVerifier(data);
+            if (isStep) {
+                verifier.verify(((StepData) data).getId(), objectType, issueList);
+            } else {
+                verifier.verify(stepId, objectType, issueList);
+            }
+        }
     }
 
     private void updateIssuesData(int percentCompleted, IssuesData issuesData, ProjectUser projectUser) {
         issuesData.setComplete(percentCompleted);
         dataManager.addData(ProjectFileType.ISSUE_LIST, issuesData, projectUser);
         dataManager.waitAllTasks();
-    }
-
-    private void verifyDataList(List<? extends TWData> dataList, int stepId, ArrayList<IssueData> issueList) {
-        boolean isStep = (dataList.size() > 0 && dataList.get(0) instanceof StepData);
-        for (TWData data : dataList) {
-            DataVerifier verifier = Verifiers.getVerifier(data);
-            if (isStep) {
-                if (!verifier.verify(((StepData) data).getId(), issueList)) {
-                    issueList.addAll(verifier.getIssueList());
-                }
-                continue;
-            }
-            if (!verifier.verify(stepId, issueList)) {
-                issueList.addAll(verifier.getIssueList());
-            }
-        }
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.tflow.model.data;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Date;
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class PackageFileData extends TWData {
@@ -15,6 +17,7 @@ public class PackageFileData extends TWData {
     FileType type;
     int fileId;
     String buildPath;
+    Date modifiedDate;
 
     boolean updated;
 

@@ -1,6 +1,7 @@
 package com.tflow.model.editor;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.room.Room;
@@ -212,7 +213,7 @@ public class DataFile extends Room implements Selectable, HasEndPlug, HasEvent {
 
     @Override
     public String getSelectableId() {
-        return "df" + id;
+        return IDPrefix.DATA_FILE.getPrefix() + id;
     }
 
     public boolean getTypeDisabled() {

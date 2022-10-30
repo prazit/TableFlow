@@ -24,19 +24,18 @@ public class OutputFileVerifier extends DataVerifier {
         if (type == null) addIssueRequired(objectId, objectName, "type");
         else switch (DataFileType.valueOf(type)) {
             case OUT_SQL:
-                verifyProperty("EOL", propertyMap, objectId, objectName);
+                verifyProperty("eol", propertyMap, objectId, objectName);
                 verifyProperty("columns", propertyMap, objectId, objectName);
-                verifyProperty("quotesOfName", propertyMap, objectId, objectName);
                 verifyProperty("quotesOfValue", propertyMap, objectId, objectName);
                 verifyProperty("tableName", propertyMap, objectId, objectName);
                 break;
 
             case OUT_MD:
-                verifyProperty("EOL", propertyMap, objectId, objectName);
+                verifyProperty("eol", propertyMap, objectId, objectName);
                 break;
 
             case OUT_CSV:
-                verifyProperty("EOL", propertyMap, objectId, objectName);
+                verifyProperty("eol", propertyMap, objectId, objectName);
                 verifyProperty("integerFormat", propertyMap, objectId, objectName);
                 verifyProperty("decimalFormat", propertyMap, objectId, objectName);
                 verifyProperty("dateFormat", propertyMap, objectId, objectName);
@@ -44,7 +43,7 @@ public class OutputFileVerifier extends DataVerifier {
                 break;
 
             case OUT_TXT:
-                verifyProperty("EOL", propertyMap, objectId, objectName);
+                verifyProperty("eol", propertyMap, objectId, objectName);
                 verifyProperty("dateFormat", propertyMap, objectId, objectName);
                 verifyProperty("dateTimeFormat", propertyMap, objectId, objectName);
                 verifyProperty("fillString", propertyMap, objectId, objectName);
@@ -57,7 +56,6 @@ public class OutputFileVerifier extends DataVerifier {
             case OUT_UPD:
                 verifyProperty("dbTable", propertyMap, objectId, objectName);
                 verifyProperty("columns", propertyMap, objectId, objectName);
-                verifyProperty("quotesOfName", propertyMap, objectId, objectName);
                 verifyProperty("quotesOfValue", propertyMap, objectId, objectName);
                 break;
         }

@@ -2,6 +2,8 @@ package com.tflow.model.data.verify;
 
 import com.tflow.model.data.IssueData;
 import com.tflow.model.data.TWData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
@@ -16,12 +18,13 @@ public class DefaultVerifier extends DataVerifier {
         Exception exception = ((ExceptionData) data).getException();
         TWData objectData = exceptionData.getData();
 
-        IssueData issueData = new IssueData();
-        issueData.setStepId(-1);
-        issueData.setObjectId("");
-        issueData.setName(exception.getClass().getSimpleName() + ": on " + objectData.getClass().getSimpleName());
-        issueData.setDescription(exception.getMessage());
-        messageList.add(issueData);
-        return false;
+        String simpleName = objectData.getClass().getSimpleName();
+        simpleName = simpleName.substring(0, simpleName.length() - 4);
+
+        Logger log = LoggerFactory.getLogger(getClass());
+        log.error("No {}Verifier for {}Data", simpleName, simpleName);
+        log.trace("", exception);
+
+        return true;
     }
 }

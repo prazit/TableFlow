@@ -3,18 +3,16 @@ package com.tflow.model.editor.cmd;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
-import com.tflow.model.data.StringItemData;
-import com.tflow.model.data.VersionedFileData;
-import com.tflow.model.editor.*;
+import com.tflow.model.editor.BinaryFile;
+import com.tflow.model.editor.PropertyType;
+import com.tflow.model.editor.Workspace;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.util.ProjectUtil;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 
 public class AddVersioned extends Command {
