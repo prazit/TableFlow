@@ -371,7 +371,7 @@ public abstract class IOCommand extends KafkaCommand {
     }
 
     protected List<OutputFileData> loadTransformOutputDataList(int stepId, int transformTableId) throws InstantiationException, IOException, ClassNotFoundException {
-        Object data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, stepId, 0, transformTableId);
+        Object data = getData(ProjectFileType.TRANSFORM_OUTPUT_LIST, transformTableId, stepId, 0, transformTableId);
         List<Integer> idList = (List) throwExceptionOnError(data);
 
         List<OutputFileData> outputFileDataList = new ArrayList<>();
@@ -383,7 +383,7 @@ public abstract class IOCommand extends KafkaCommand {
     }
 
     protected List<TransformColumnData> loadTransformColumnDataList(int stepId, int transformTableId) throws InstantiationException, IOException, ClassNotFoundException {
-        Object data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, stepId, 0, transformTableId);
+        Object data = getData(ProjectFileType.TRANSFORM_COLUMN_LIST, transformTableId, stepId, 0, transformTableId);
         List<Integer> idList = (List) throwExceptionOnError(data);
 
         List<TransformColumnData> transformColumnDataList = new ArrayList<>();

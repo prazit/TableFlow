@@ -3,7 +3,6 @@ package com.tflow.model.data.verify;
 import com.tflow.model.data.IssueData;
 import com.tflow.model.data.TWData;
 import com.tflow.model.data.TransformColumnData;
-import com.tflow.model.data.TransformTableData;
 
 import java.util.ArrayList;
 
@@ -19,8 +18,11 @@ public class TransformColumnVerifier extends DataVerifier {
 
         String objectName = verifyName(transformColumnData.getName(), "DataTable({name})", objectId);
 
-        if (isNullOrEmpty(transformColumnData.getDynamicExpression())) addIssueRequired(objectId, objectName, "dynamicExpression");
-        if (transformColumnData.getSourceColumnId() == 0) addIssueRequired(objectId, objectName, "sourceColumnId");
+        if (transformColumnData.isUseDynamic()) {
+            if (isNullOrEmpty(transformColumnData.getDynamicExpression())) addIssueRequired(objectId, objectName, "dynamicExpression");
+        } else {
+            if (transformColumnData.getSourceColumnId() == 0) addIssueRequired(objectId, objectName, "sourceColumnId");
+        }
 
         return !hasIssue;
     }

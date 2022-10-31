@@ -469,7 +469,7 @@ public class ProjectController extends Controller {
 
             /*message pattern from IssueType*/
             if (IssueType.REQUIRED == issue.getType()) {
-                display = "Required value for " + propertyLabel + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
+                display = "Required value for " + (propertyLabel == null ? issue.getPropertyVar() : propertyLabel) + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
             } else {/*IssueType.OUT_OF_RANGE*/
                 propertyRange = "";
                 display = "Value out of range(" + propertyRange + ") for " + propertyLabel + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);

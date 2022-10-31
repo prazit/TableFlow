@@ -228,6 +228,7 @@
                                                     <p:remoteCommand name="update#{tcolumn.selectableId}" update="@parent" oncomplete="updateComplete('#{tcolumn.selectableId}')"/>
                                                     <div class="#{tcolumn.endPlug.styleClass}" id="#{tcolumn.endPlug}"></div>
                                                     <p:graphicImage library="images" name="#{tcolumn.type.image}"/>
+                                                    <label class="number">#{tcolumn.index}</label>
                                                     <label>#{tcolumn.name}</label>
                                                     <div class="#{tcolumn.startPlug.styleClass}" id="#{tcolumn.startPlug}"></div>
                                                 </p:outputPanel>

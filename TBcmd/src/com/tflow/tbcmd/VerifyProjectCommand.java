@@ -40,6 +40,18 @@ public class VerifyProjectCommand extends IOCommand {
         ProjectUser projectUser = mapper.map(attributes);
 
         IssuesData issuesData = new IssuesData();
+        try {
+            verifyProject(issuesData, projectUser);
+        } catch (Exception ex) {
+            issuesData.setFinished(true);
+            issuesData.setFinishDate(DateTimeUtil.now());
+            updateIssuesData(issuesData.getComplete(), issuesData, projectUser);
+            throw ex;
+        }
+
+    }
+
+    private void verifyProject(IssuesData issuesData, ProjectUser projectUser) throws ClassNotFoundException, IOException, InstantiationException {
         issuesData.setStartDate(DateTimeUtil.now());
 
         ArrayList<IssueData> issueList = new ArrayList<>();
@@ -84,7 +96,7 @@ public class VerifyProjectCommand extends IOCommand {
 
             /*7.verifier for data-file-list*/
             verifyDataList(loadDataFileDataList(stepId), stepId, issueList, ProjectFileType.DATA_FILE);
-            
+
             /*8.verifier for data-table-list*/
             dataTableDataList = loadDataTableDataList(stepId);
             verifyDataList(dataTableDataList, stepId, issueList, ProjectFileType.DATA_TABLE);
@@ -121,7 +133,6 @@ public class VerifyProjectCommand extends IOCommand {
 
         /*save complete status*/
         finished(projectUser, issuesData);
-
     }
 
     private void finished(ProjectUser projectUser, IssuesData issuesData) {

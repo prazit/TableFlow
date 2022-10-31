@@ -1,5 +1,6 @@
 package com.tflow.model.data.verify;
 
+import com.clevel.dconvers.dynvalue.DynamicValueType;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IssueData;
 import com.tflow.model.data.IssueType;
@@ -84,6 +85,52 @@ public abstract class DataVerifier {
 
     protected void verifyProperty(String propertyVar, Map<String, Object> propertyMap, int objectId, String objectName) {
         if (isNullOrEmpty(propertyMap.get(propertyVar))) addIssueRequired(objectId, objectName, propertyVar);
+    }
+
+    /**
+     * TODO: Future Feature: wait until another people come in.
+     */
+    protected boolean verifyDynamicExpression(Object value) {
+
+        /* Example of value : Full Dynamic Expression
+         *
+         */
+
+        /*TODO: check match parenthesises $[]*/
+
+        /*TOOD: parse sub expression to check by verifyExpression() */
+
+        return true;
+    }
+
+    protected boolean verifyExpression(Object value) {
+        if(isNullOrEmpty(value)) return false;
+
+        /* Example of value : Column/Simple Dynamic Expression (without $[])
+         * see DynamicValueType class.
+         */
+        String expression = (String) value;
+
+        /*TODO: check valid ValueType: parse 3CHARSPREFIX to DynamicValueType */
+        if(expression.substring(3, 4).equals(":")) {
+
+        }
+
+        DynamicValueType dynamicValueType = DynamicValueType.parse(expression.substring(0,3));
+
+        /*TODO: switch for valueType*/
+
+        /*TODO: SRC,TAR,MAP: valid table name*/
+
+        /*TODO: CAL: valid function name*/
+
+        /*TODO: CAL: FUNCTION: valid parameters (possible values)*/
+
+        /*TODO: */
+
+        /*TODO: check many more*/
+
+        return true;
     }
 
     protected boolean isNullOrEmpty(Object value) {

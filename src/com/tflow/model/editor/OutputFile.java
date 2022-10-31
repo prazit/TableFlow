@@ -95,10 +95,11 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         if (log.isDebugEnabled()) log.debug("refreshFixedLengthFormatList: formats:{}", Arrays.toString(formats));
 
         fixedLengthFormatList = new ArrayList<>();
+        int index = 0;
         if (formats.length > 0 && formatString.contains("=")) {
             for (String format : formats) {
                 String[] value = format.split("=");
-                fixedLengthFormatList.add(new NameValue(value[0], value[1]));
+                fixedLengthFormatList.add(new NameValue(value[0], value[1], index++));
             }
         }
 
@@ -130,9 +131,10 @@ public class OutputFile extends DataFile implements HasEvent, HasSelected {
         /*recreate value list with existing-values and default-value for new-column*/
         List<DataColumn> columnList = ((DataTable) owner).getColumnList();
         String formatted;
+        int index = 0;
         for (DataColumn column : columnList) {
             formatted = hashMap.get(column.getName());
-            fixedLengthFormatList.add(new NameValue(column.getName(), formatted == null ? "STR:10" : formatted));
+            fixedLengthFormatList.add(new NameValue(column.getName(), formatted == null ? "STR:10" : formatted, index++));
         }
         fixedLengthFormatList.get(columnList.size() - 1).setLast(true);
     }

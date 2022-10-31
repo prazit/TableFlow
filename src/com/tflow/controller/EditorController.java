@@ -825,7 +825,7 @@ public class EditorController extends Controller {
         Step step = null;
         try {
             step = stepList.get(stepIndex);
-            if(step.getIndex() < 0) needEventHandler = true;
+            if (step.getIndex() < 0) needEventHandler = true;
         } catch (IndexOutOfBoundsException ex) {
             if (stepIndex == 0) {
                 log.warn("selectStep(0) on new project, then call addStep().");
@@ -1393,14 +1393,10 @@ public class EditorController extends Controller {
     /**
      * for PropertyType.PROPERTIES
      */
-    public void propertiesRemove(PropertyView property) {
+    public void propertiesRemove(PropertyView property, int index) {
         try {
             List<NameValue> nameValueList = (List<NameValue>) activeObject.getProperties().getPropertyValue(activeObject, property.getVar(), log);
-            nameValueList.remove(nameValueList.size() - 1);
-            for (NameValue nameValue : nameValueList) {
-                nameValue.setLast(false);
-            }
-            nameValueList.get(nameValueList.size() - 1).setLast(true);
+            nameValueList.remove(index);
         } catch (Exception ex) {
             String msg = "propertiesRemove(propertyVar:" + property.getVar() + ") found error";
             jsBuilder.pre(JavaScript.notiError, msg);
@@ -1409,12 +1405,12 @@ public class EditorController extends Controller {
             return;
         }
 
+        propertyChanged(property);
+
         focusOnLastProperties = true;
         jsBuilder.pre(JavaScript.updateProperty, property.getVar())
                 .post(JavaScript.focusProperty, 1000, property.getVar())
                 .runOnClient(true);
-
-        propertyChanged(property);
     }
 
     /**

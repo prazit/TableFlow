@@ -40,16 +40,30 @@ public class SetQuickColumnList extends Command {
         Operation operation = Operation.NOOP;
 
         int columnCount = columnList.size();
-        if (columnCount > quickColumnList.size()) {
-            // remove last column
-            operation = Operation.REMOVE;
-            transformColumn = (TransformColumn) columnList.remove(columnList.size() - 1);
-            step.getSelectableMap().remove(transformColumn.getSelectableId());
+        int removeIndex = 0;
+        for (NameValue nameValue : quickColumnList) {
+            if (nameValue.getIndex() != removeIndex) {
+                // remove by index
+                operation = Operation.REMOVE;
+                transformColumn = (TransformColumn) columnList.remove(removeIndex);
+                step.getSelectableMap().remove(transformColumn.getSelectableId());
+                break;
+            }
+            removeIndex++;
         }
+        NameValue nameValue = null;
+        for (; removeIndex < quickColumnList.size(); removeIndex++) {
+            nameValue = quickColumnList.get(removeIndex);
+            nameValue.setIndex(removeIndex);
+            nameValue.setLast(false);
+        }
+        if (nameValue == null) quickColumnList.get(quickColumnList.size() - 1).setLast(true);
+        else nameValue.setLast(true);
+
 
         /*Notice: only one column has changed at a time*/
-        else for (int index = 0; index < quickColumnList.size(); index++) {
-            NameValue nameValue = quickColumnList.get(index);
+        if (operation == Operation.NOOP) for (int index = 0; index < quickColumnList.size(); index++) {
+            nameValue = quickColumnList.get(index);
 
             if (index < columnCount) {
                 // update existing column if changed

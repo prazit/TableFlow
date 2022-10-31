@@ -108,10 +108,11 @@ public class TransformTable extends DataTable implements HasEvent, HasSelected {
         if (columnList.size() == 0) return;
 
         quickColumnList = new ArrayList<>();
+        int index = 0;
         TransformColumn column;
         for (DataColumn dataColumn : columnList) {
             column = (TransformColumn) dataColumn;
-            quickColumnList.add(new NameValue(column.getName(), column.getValue()));
+            quickColumnList.add(new NameValue(column.getName(), column.getValue(), index++));
         }
         quickColumnList.get(columnList.size() - 1).setLast(true);
     }

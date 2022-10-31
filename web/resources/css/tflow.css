@@ -149,6 +149,7 @@ body .tool-panel .ui-tabs .ui-menu {
 }
 
 .tool-panel.ui-panel .ui-panel-titlebar {
+    /*overflow: hidden; this will hide the dropdown menu too*/
     padding: var(--padding);
     padding-left: calc(var(--padding) + var(--padding));
     height: var(--tool-panel-title-height);
