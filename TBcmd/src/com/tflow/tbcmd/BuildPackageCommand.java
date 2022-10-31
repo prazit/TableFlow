@@ -67,7 +67,7 @@ public class BuildPackageCommand extends IOCommand {
         ProjectData projectData = null;
         List<ItemData> packageList = null;
         PackageData packageData = null;
-        List<PackageFileData> fileList = new ArrayList<>(); /*TODO: all in fileList need modifiedDate*/
+        List<PackageFileData> fileList = new ArrayList<>();
         ProjectUser projectUser = mapper.map(attributes);
 
         try {
@@ -84,7 +84,6 @@ public class BuildPackageCommand extends IOCommand {
                 if (packageList.size() == 0) {
                     packageId = 1;
                 } else {
-                    packageList.sort((s, t) -> Integer.compare(t.getId(), s.getId()));
                     packageId = packageList.get(0).getId() + 1;
                 }
 
@@ -109,7 +108,7 @@ public class BuildPackageCommand extends IOCommand {
 
             ItemData packageItemData = mapper.map(packageData);
             if (isNewPackage) {
-                packageList.add(packageItemData);
+                packageList.add(0, packageItemData);
             } else {
                 setPackageNameInList(packageId, packageData.getName(), packageList);
             }
@@ -177,11 +176,13 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private PackageData getPreviousPackage(PackageData packageData, List<ItemData> packageList) throws IOException, InstantiationException, ClassNotFoundException {
-        int packageIndex = findPackageItemIndex(packageData.getId(), packageList);
-        if (packageIndex == 0) {
+        if (packageList.size() == 1) {
+            log.debug("getPreviousPackage: no previous-package for first package");
             return null;
         }
-        int previousIndex = packageIndex - 1;
+
+        int packageIndex = findPackageItemIndex(packageData.getId(), packageList);
+        int previousIndex = packageIndex + 1;
         ItemData previousItem = packageList.get(previousIndex);
 
         /*load previous package by id*/
@@ -198,6 +199,7 @@ public class BuildPackageCommand extends IOCommand {
             return;
         }
 
+        String recordId = recordAttributes.getRecordId();
         /*need to compare previous version and mark for New/Updated File*/
         /* Updated Conditions:
          * 1. fileId is not in previous fileList
@@ -206,7 +208,6 @@ public class BuildPackageCommand extends IOCommand {
         boolean foundInPrevious;
         PackageFileData previousFileData = null;
         int fileId;
-        RecordAttributesData previousFileAttributes;
         Date previousModifiedDate;
         Date builtDate;
         for (PackageFileData fileData : fileList) {
@@ -221,24 +222,22 @@ public class BuildPackageCommand extends IOCommand {
             }
 
             if (foundInPrevious) {
-                Object data = getData(ProjectFileType.valueOf(previousFileData.getType().name()), previousFileData.getFileId());
-                throwExceptionOnError(data);
+                recordAttributes.setRecordId(String.valueOf(previousFileData.getFileId()));
+                previousModifiedDate = getModifiedDate(ProjectFileType.valueOf(previousFileData.getType().name()), recordAttributes);
 
-                previousFileAttributes = lastRecordData.getAdditional();
-                previousModifiedDate = previousFileAttributes.getModifiedDate();
                 builtDate = previousPackageData.getBuiltDate();
                 if (log.isDebugEnabled()) log.debug("markUpdated: packageFile found in previous: fileId:{}, name:{}, previousModifiedDate:{}, builtDate:{}", fileId, fileData.getName(), previousModifiedDate, builtDate);
-
                 if (previousModifiedDate.compareTo(builtDate) > 0) {
                     fileData.setUpdated(true);
                 }
 
             } else {
-                log.debug("markUpdated: packageFile not found in previous: fileId:{}, name:{}", fileId, fileData.getName());
+                if (log.isDebugEnabled()) log.debug("markUpdated: packageFile not found in previous: fileId:{}, name:{}", fileId, fileData.getName());
                 fileData.setUpdated(true);
             }
         }
 
+        recordAttributes.setRecordId(recordId);
     }
 
     private void updatePackageList(List<ItemData> packageList, ProjectUser projectUser) {
@@ -260,6 +259,8 @@ public class BuildPackageCommand extends IOCommand {
 
     @SuppressWarnings("unchecked")
     private void addVersionedFiles(List<PackageFileData> fileList, PackageData packageData, ProjectUser projectUser) throws IOException, ClassNotFoundException, InstantiationException {
+        String recordId = recordAttributes.getRecordId();
+
         /*TODO: future feature: need real filter from Project.Type*/
         String filter = ProjectType.BATCH.getCode();
         Object data = getData(ProjectFileType.VERSIONED_LIST);
@@ -276,9 +277,15 @@ public class BuildPackageCommand extends IOCommand {
                 FileNameExtension fileNameExtension = FileNameExtension.forName(versionedFileData.getName());
                 packageFileData.setExt(fileNameExtension);
                 packageFileData.setBuildPath(fileNameExtension.getBuildPath());
+
+                recordAttributes.setRecordId(String.valueOf(packageFileData.getFileId()));
+                packageFileData.setModifiedDate(getModifiedDate(ProjectFileType.VERSIONED, recordAttributes));
+
                 fileList.add(packageFileData);
             }
         }
+
+        recordAttributes.setRecordId(recordId);
     }
 
     @SuppressWarnings("unchecked")
@@ -549,6 +556,7 @@ public class BuildPackageCommand extends IOCommand {
         packageFileData.setId(newPackageFileId(packageData));
         packageFileData.setType(FileType.GENERATED);
         packageFileData.setBuildPath(rootPath ? "" : packageFileData.getExt().getBuildPath());
+        packageFileData.setModifiedDate(DateTimeUtil.now());
         fileList.add(packageFileData);
         return conversionFileData;
     }
@@ -752,6 +760,12 @@ public class BuildPackageCommand extends IOCommand {
             packageFileData.setType(FileType.VERSIONED);
             packageFileData.setId(newPackageFileId(packageData));
             packageFileData.setBuildPath(packageFileData.getExt().getBuildPath());
+
+            String recordId = recordAttributes.getRecordId();
+            recordAttributes.setRecordId(String.valueOf(packageFileData.getFileId()));
+            packageFileData.setModifiedDate(getModifiedDate(ProjectFileType.VERSIONED, recordAttributes));
+            recordAttributes.setRecordId(recordId);
+
             fileList.add(packageFileData);
         }
 

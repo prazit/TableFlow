@@ -378,18 +378,16 @@ public class ProjectController extends Controller {
     }
 
     public synchronized int refreshIssueList() {
-        Issues issues = project.getIssues();
-        if (issues != null && issues.isFinished()) {
-            log.debug("refreshIssueList: called after finished will be ignored");
-            verifying = false;
-            jsBuilder.pre(JavaScript.stopProgressBar, "verifying").runOnClient();
-            return 100;
+        if (!verifying) {
+            log.debug("refreshIssueList: called before start verifying will ignored");
+            return 0;
         }
 
+        Issues issues = project.getIssues();
         try {
             Issues newIssues = project.getManager().loadIssues(project);
-            /*skip older issues*/
-            if (newIssues.getStartDate().compareTo(issues.getStartDate()) >= 0) {
+            if (newIssues != null && ((issues.getStartDate() == null) || newIssues.getStartDate().compareTo(issues.getStartDate()) >= 0)) {
+                /*new issues only, will ignore for null and older issues*/
                 setIssueDisplay(newIssues);
                 project.setIssues(newIssues);
                 issues = newIssues;
@@ -397,16 +395,17 @@ public class ProjectController extends Controller {
         } catch (ProjectDataException ex) {
             log.error("refreshIssueList: error during verify process! {}", ex.getMessage());
             verifying = false;
-            jsBuilder.pre(JavaScript.stopProgressBar, "verifying").runOnClient();
             return 100;
         }
 
         int complete = issues.getComplete();
-        if (complete == 100) {
+        if (issues.isFinished()) {
+            complete = 100;
             verifying = false;
             verified = issues.getIssueList().size() == 0;
-            jsBuilder.pre(JavaScript.stopProgressBar, "verifying").runOnClient();
+            jsBuilder.post(JavaScript.notiInfo, "Verify Project Success");
         }
+
         log.debug("refreshIssueList: complete: {}", complete);
         return complete;
     }

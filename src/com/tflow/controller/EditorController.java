@@ -1488,7 +1488,6 @@ public class EditorController extends Controller {
         /*TODO: need configs: max.uploaded.bytes and max.versioned.bytes */
         EnvironmentConfigs configs = EnvironmentConfigs.valueOf(workspace.getEnvironment().name());
 
-
         return true;
     }
 
