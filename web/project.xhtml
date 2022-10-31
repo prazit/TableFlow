@@ -327,20 +327,20 @@
                                             <p:fileDownload value="#{projectCtl.downloadPackage()}"/>
                                         </p:commandButton>
 
-                                        <p:commandButton icon="pi pi-building" value="New Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.activePackage.lock}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/>
-                                        <p:commandButton icon="pi pi-refresh" value="Re-Package" actionListener="#{projectCtl.buildPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock or (projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100)}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/>
+                                        <p:commandButton icon="pi pi-building" value="New Package" actionListener="#{projectCtl.buildPackage}" onclick="showProgress('package-panel','building');" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.activePackage.lock}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/>
+                                        <p:commandButton icon="pi pi-refresh" value="Re-Package" actionListener="#{projectCtl.buildPackage}" onclick="showProgress('package-panel','building');" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock or (projectCtl.activePackage.finished and projectCtl.activePackage.complete lt 100)}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/>
 
                                         <p:commandButton icon="pi pi-lock" value="#{projectCtl.lastPackage?'Unlock':'Locked'}" actionListener="#{projectCtl.lockPackage}" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.activePackage.lock}" disabled="#{!projectCtl.lastPackage}" update="@parent:@parent"/>
                                         <p:commandButton icon="pi pi-lock" value="Lock" actionListener="#{projectCtl.lockPackage}" oncomplete="window.parent.unblockScreen();" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.activePackage.lock}" update="@parent:@parent"/>
 
-                                        <p:commandButton icon="pi pi-check-circle" value="Verify" actionListener="#{projectCtl.verifyProject}" onclick="showVerify();" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.verified}" update="@parent:@parent"/>
+                                        <p:commandButton icon="pi pi-check-circle" value="Verify" actionListener="#{projectCtl.verifyProject}" onclick="showProgress('package-panel','verifying');" styleClass="float-right" style="margin:var(--margin)" rendered="#{!projectCtl.verified}" update="@parent:@parent"/>
                                         <p:commandButton icon="pi pi-check-circle" value="Verified" styleClass="float-right" style="margin:var(--margin)" rendered="#{projectCtl.verified}" disabled="true" update="@parent:@parent"/>
                                     </p:outputPanel>
 
                                     <!-- first build/please select message -->
                                     <p:outputPanel rendered="#{projectCtl.pleaseSelectPackage and projectCtl.packageList.size() == 0}">
                                         <h2 style="color: var(--surface-c);"><i class="pi pi-info-circle"/>
-                                            Need to <p:commandButton value="Verify" actionListener="#{projectCtl.verifyProject}" onclick="showVerify();" disabled="#{projectCtl.verified}" update="@parent:@parent"/> and
+                                            Need to <p:commandButton value="Verify" actionListener="#{projectCtl.verifyProject}" onclick="showProgress('package-panel','verifying');" disabled="#{projectCtl.verified}" update="@parent:@parent"/> and
                                             <p:commandButton value="Create First Package" actionListener="#{projectCtl.buildPackage}" disabled="#{!projectCtl.verified}" update="@parent:@parent"/> to see package information.
                                         </h2>
                                     </p:outputPanel>
@@ -351,34 +351,17 @@
                                         <h2 style="color: var(--surface-c);"><i class="pi pi-spinner pi-spin"></i> VERIFY FULL PROJECT ...</h2>
                                         <span>started at #{projectCtl.project.issues.startDate}</span>
                                         <p:progressBar widgetVar="verifying" ajax="true" value="#{projectCtl.refreshIssueList()}" labelTemplate="{value}%" styleClass="animated" global="false" interval="1000">
-                                            <p:ajax event="complete" oncomplete="refreshIssueList();hideVerify();"/>
+                                            <p:ajax event="complete" oncomplete="hideProgress('package-panel','verifying');" update="@parent:@parent"/>
                                         </p:progressBar>
-                                        <script>
-                                            function showVerify() {
-                                                console.debug('showVerify() started');
-                                                $('.package-panel .verifying').removeClass('hide');
-                                                PF('verifying').start();
-                                            }
-
-                                            function hideVerify() {
-                                                console.debug('hideVerify() started');
-                                                PF('verifying').cancel();
-                                                $('.package-panel .verifying').addClass('hide');
-                                            }
-                                        </script>
                                     </p:outputPanel>
 
                                     <!-- building message -->
-                                    <p:outputPanel id="building" rendered="#{projectCtl.activePackage != null and not projectCtl.pleaseSelectPackage and not projectCtl.activePackage.finished}">
+                                    <p:outputPanel id="building" styleClass="#{projectCtl.building?'':'hide '}building">
                                         <h2 style="color: var(--surface-c);"><i class="pi pi-spinner pi-spin"></i> PACKAGE BUILDING ...</h2>
                                         <span>started at #{projectCtl.activePackage.buildDate}</span>
                                         <p:progressBar widgetVar="building" ajax="true" value="#{projectCtl.refreshBuildingPackage()}" labelTemplate="{value}%" styleClass="animated" global="false" interval="1000">
-                                            <p:ajax event="complete" oncomplete="updatePackageTab();"/>
+                                            <p:ajax event="complete" oncomplete="hideProgress('package-panel','building');" update="@parent:@parent"/>
                                         </p:progressBar>
-                                        <script>$(function () {
-                                            PF('building').start();
-                                        });
-                                        </script>
                                     </p:outputPanel>
 
                                     <!-- issue list -->

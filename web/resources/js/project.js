@@ -1,5 +1,17 @@
 'use strict';
 
+function showProgress(parentClass, className) {
+    PF(className).start();
+    var selector = '.' + parentClass + ' .' + className;
+    $(selector).removeClass('hide');
+}
+
+function hideProgress(parentClass, className) {
+    PF(className).cancel();
+    var selector = '.' + parentClass + ' .' + className;
+    $(selector).addClass('hide');
+}
+
 function updatePanelComplete(panel) {
     selectableHandle($(panel + ' .selectable'));
     buttonHandle($(panel + ' .button'));

@@ -358,8 +358,7 @@ public class ProjectController extends Controller {
         createPackageEventHandlers();
 
         pleaseSelectPackage = false;
-        jsBuilder.post(JavaScript.updateEmByClass, "package-panel").runOnClient();
-        building = false;
+        /*jsBuilder.post(JavaScript.updateEmByClass, "package-panel").runOnClient();*/
     }
 
     public void verifyProject() {
@@ -403,10 +402,28 @@ public class ProjectController extends Controller {
             complete = 100;
             verifying = false;
             verified = issues.getIssueList().size() == 0;
-            jsBuilder.post(JavaScript.notiInfo, "Verify Project Success");
+            jsBuilder.post(JavaScript.notiInfo, "Verify Project Completed");
         }
 
         log.debug("refreshIssueList: complete: {}", complete);
+        return complete;
+    }
+
+    public synchronized Integer refreshBuildingPackage() {
+        if (!building) {
+            log.debug("refreshBuildingPackage: called before start build-package will ignored");
+            return 0;
+        }
+
+        reloadPackageList();
+        selectPackage(0);
+
+        int complete = activePackage.getComplete();
+        if (activePackage.isFinished()) {
+            building = false;
+            complete = 100;
+            jsBuilder.post(JavaScript.notiInfo, "Package Creation Completed");
+        }
         return complete;
     }
 
@@ -487,15 +504,6 @@ public class ProjectController extends Controller {
     public void lockPackage() {
         activePackage.setLock(!activePackage.isLock());
         propertyChanged(ProjectFileType.PACKAGE, activePackage, activePackage.getProperties().getPropertyView(PropertyVar.lock.name()));
-    }
-
-    public synchronized Integer refreshBuildingPackage() {
-        reloadPackageList();
-        selectPackage(0);
-
-        int complete = activePackage.getComplete();
-        if (complete == 100) jsBuilder.pre(JavaScript.stopProgressBar, "building").runOnClient();
-        return complete;
     }
 
     private int getPackageListIndex(int packageId) {
@@ -592,6 +600,14 @@ public class ProjectController extends Controller {
 
     public void setVerifying(boolean verifying) {
         this.verifying = verifying;
+    }
+
+    public boolean isBuilding() {
+        return building;
+    }
+
+    public void setBuilding(boolean building) {
+        this.building = building;
     }
 
     public List<UploadedFileView> getUploadedList() {
