@@ -54,6 +54,7 @@ public enum JavaScript {
     showActionButtons("showActionButtons(%s,%s);"),
     showColumnNumbers("showColumnNumbers(%s,%s);"),
     stopProgressBar("PF('%s').cancel();"),
+    changeTheme("PrimeFaces.changeTheme('%s');contentWindow.PrimeFaces.changeTheme('%s');"),
     ;
 
     private String javascript;

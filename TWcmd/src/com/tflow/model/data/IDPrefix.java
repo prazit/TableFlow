@@ -27,6 +27,8 @@ public enum IDPrefix {
     DS(""),
     DATA_SOURCE_SELECTOR(""),
     TRANSFORM_COLUMNFX(""),
+
+    QUERY("q"),
     ;
 
     String prefix;

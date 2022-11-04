@@ -1,6 +1,7 @@
 package com.tflow.controller;
 
 import com.tflow.model.PageParameter;
+import com.tflow.model.editor.JavaScript;
 import com.tflow.system.Environment;
 import com.tflow.system.constant.Theme;
 
@@ -42,12 +43,14 @@ public class TopMenuController extends Controller {
 
     public void lightTheme() {
         workspace.getUser().setTheme(Theme.LIGHT);
-        workspace.openPage(workspace.getCurrentPage());
+        String theme = Theme.LIGHT.getName();
+        jsBuilder.pre(JavaScript.changeTheme, theme, theme).runOnClient();
     }
 
     public void darkTheme() {
         workspace.getUser().setTheme(Theme.DARK);
-        workspace.openPage(workspace.getCurrentPage());
+        String theme = Theme.DARK.getName();
+        jsBuilder.pre(JavaScript.changeTheme, theme, theme).runOnClient();
     }
 
     public void dummy() {

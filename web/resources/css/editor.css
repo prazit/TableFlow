@@ -24,10 +24,6 @@ body .ui-panelgrid .ui-panelgrid-cell {
     align-items: center;
 }
 
-/*.main-panel .tool-panel.ui-panel .ui-panel-titlebar {
-    background-color: var(--surface-a);
-}*/
-
 .main-panel .tool-panel.ui-panel .ui-panel-actions {
     width: 100%;
 }
@@ -50,7 +46,6 @@ body .ui-panelgrid .ui-panelgrid-cell {
 }
 
 .main-panel .tool-panel.ui-panel .ui-panel-content {
-    /*border-top: 0;*/
     padding: 0;
 }
 
@@ -179,6 +174,21 @@ iframe {
     height: calc(100% - 1px);
     width: calc(100% - 1px);
     position: static;
+}
+
+/* -- query-chart -- */
+
+body .query-panel {
+    min-height: 20rem;
+    align-items: stretch;
+}
+
+body .query-panel .select-table-panel {
+    background-color: var(--surface-b);
+}
+
+body .query-panel .select-column-panel {
+    background-color: var(--surface-a);
 }
 
 /* -- flow-chart -- */

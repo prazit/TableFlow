@@ -21,10 +21,14 @@
 
                     <p:menuitem value="Light Mode" icon="pi pi-fw pi-sun"
                                 actionListener="${topMenuCtl.lightTheme}"
-                                rendered="${workspace.user.theme=='DARK'}" title="Switch to Light Theme"/>
+                                rendered="${workspace.user.theme=='DARK'}"
+                                update="@form"
+                                title="Switch to Light Theme"/>
                     <p:menuitem value="Dark Mode" icon="pi pi-fw pi-moon"
                                 actionListener="${topMenuCtl.darkTheme}"
-                                rendered="${workspace.user.theme=='LIGHT'}" title="Switch to Dark Theme"/>
+                                rendered="${workspace.user.theme=='LIGHT'}"
+                                update="@form"
+                                title="Switch to Dark Theme"/>
 
                     <p:divider layout="vertical"/>
 

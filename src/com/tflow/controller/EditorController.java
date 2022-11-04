@@ -1575,4 +1575,52 @@ public class EditorController extends Controller {
 
         jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
     }
+
+    public void openSQLEditor(PropertyView property) {
+        DataFile dataFile = (DataFile) activeObject;
+        if (containsNestedSQL(dataFile)) {
+            jsBuilder.pre(JavaScript.notiInfo,"Nested SQL detected! splitting to multiple files, please wait...");
+            dataFile = splitNestedSQL(dataFile);
+            if (dataFile == null) {
+                jsBuilder.post(JavaScript.notiWarn, "Complicated SQL, please split SQL yourself or cover all nested by parenthesis and try again");
+                return;
+            }
+        }
+
+        /*check database connection first*/
+        int dataSourceId = dataFile.getDataSourceId();
+        if (!isDatabaseReady(dataSourceId)) {
+            jsBuilder.pre(JavaScript.notiWarn, "Database Connection Required!");
+            return;
+        }
+        jsBuilder.pre(JavaScript.notiInfo, "Database Connection Ready");
+
+        /*hide stepList*/
+        jsBuilder.pre(JavaScript.showStepList, false, true);
+
+        /*change menu and sub-page*/
+        editorType = EditorType.SQL;
+        jsBuilder
+                .pre(JavaScript.setFlowChart, editorType.getPage())
+                .post(JavaScript.refreshFlowChart)
+                .runOnClient();
+
+        /*continue on SQLEditorController.onCreation() */
+    }
+
+    /**
+     * @param dataFile original dataFile need to be split.
+     * @return new DataFile contains equivalent SQL.
+     */
+    private DataFile splitNestedSQL(DataFile dataFile) {
+        /*TODO: need to detect nested select and show warning/confirm to split it to more than one data files from inside to outside*/
+
+        return null;
+    }
+
+    private boolean containsNestedSQL(DataFile dataFile) {
+        /*TODO: need to detect nested select and show warning/confirm to split it to more than one data files from inside to outside*/
+
+        return false;
+    }
 }

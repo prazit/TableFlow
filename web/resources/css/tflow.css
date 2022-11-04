@@ -212,6 +212,11 @@ body .tool-panel .ui-tabs .ui-menu {
     width: 100%;
 }
 
+.fit-height {
+    display: block;
+    height: 100%;
+}
+
 .error-panel {
     background-color: orangered;
     color: yellow;

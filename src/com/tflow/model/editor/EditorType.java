@@ -2,8 +2,10 @@ package com.tflow.model.editor;
 
 public enum EditorType {
 
+    SQL("resources/sqlMenu.xhtml", "sqlquery.xhtml"),
     STEP("resources/stepMenu.xhtml", "flowchart.xhtml"),
-    PROJECT("resources/projectMenu.xhtml", "project.xhtml");
+    PROJECT("resources/projectMenu.xhtml", "project.xhtml"),
+    ;
 
     String page;
     String menu;

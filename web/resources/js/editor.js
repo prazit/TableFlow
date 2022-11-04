@@ -252,24 +252,6 @@ function zoomEnd(submit) {
     ]);
 }
 
-/*function lineStart() {
-    console.debug("DEBUG: lineStart.")
-    lines.lineStart = {
-        left: window.scrollX,
-        top: window.scrollY
-    };
-    window.scrollTo(0, 0);
-}
-
-function lineEnd() {
-    console.debug("DEBUG: lineEnd.")
-    lines.lineEnd = {
-        left: lines.lineStart,
-        top: window.scrollY
-    };
-    window.scrollTo(lines.lineEnd);
-}*/
-
 function serverStart() {
     /*show progress and disable all server action (allow client action)*/
     $('.container').addClass('server');

@@ -1,5 +1,7 @@
 package com.tflow.model.data;
 
+import javax.jws.HandlerChain;
+
 /**
  * Variable name for event PROPERTY_CHANGED.
  */
@@ -23,6 +25,7 @@ public enum PropertyVar {
     showActionButtons,
     showColumnNumbers,
     showStepList,
+    queryId,
     ;
 
     public boolean equals(String varName) {

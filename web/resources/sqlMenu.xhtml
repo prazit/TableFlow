@@ -1,0 +1,20 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui">
+
+    <p:menubar>
+
+        <p:submenu label="View">
+            <p:menuitem value="Property List" icon="pi pi-fw pi-list" onclick="toggleRight()"/>
+        </p:submenu>
+
+        <p:submenu label="Testing">
+            <p:submenu label="Properties">
+                <p:menuitem value="Check Enum Update On Redeploy" icon="pi pi-fw pi-plus" actionListener="#{editorCtl.testEnumUpdateOnRedeploy}"/>
+            </p:submenu>
+        </p:submenu>
+
+    </p:menubar>
+
+</f:view>

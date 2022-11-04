@@ -2,6 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.*;
 import com.tflow.model.data.*;
+import com.tflow.model.data.query.QueryData;
 import com.tflow.model.data.verify.Verifiers;
 import com.tflow.model.editor.cmd.AddProject;
 import com.tflow.model.editor.datasource.DataSourceSelector;
@@ -12,6 +13,7 @@ import com.tflow.model.editor.room.EmptyRoom;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
+import com.tflow.model.editor.sql.Query;
 import com.tflow.model.editor.view.UploadedFileView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
@@ -646,6 +648,29 @@ public class ProjectManager {
         BinaryFileData binaryFileData = (BinaryFileData) throwExceptionOnError(data);
 
         return mapper.map(binaryFileData);
+    }
+
+    public Query loadQuery(int queryId, Project project) throws ProjectDataException {
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        DataManager dataManager = project.getDataManager();
+
+        ProjectUser projectUser = mapper.toProjectUser(project);
+        Object data = dataManager.getData(ProjectFileType.QUERY, projectUser, queryId);
+        QueryData queryData = (QueryData) throwExceptionOnError(data);
+
+        /*TODO: load all child*/
+        /*
+        QUERY_TABLE_LIST("query-table-list", 5),
+        QUERY_TABLE("", 5),
+        QUERY_COLUMN_LIST("query-column-list", 6),
+        QUERY_COLUMN("", 6),
+        QUERY_FILTER_LIST("", 5),
+        QUERY_FILTER("", 5),
+        QUERY_SORT_LIST("", 5),
+        QUERY_SORT("", 5),
+        */
+
+        return mapper.map(queryData);
     }
 
     /**
