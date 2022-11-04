@@ -25,10 +25,6 @@ public class ExtractSQLSelect extends ExtractCommand {
         properties.addProperty("source." + dConversTableId + ".query.quotes.name", dataFile.getPropertyMap().get(PropertyVar.quotesName.name()));
         properties.addProperty("source." + dConversTableId + ".query.quotes.value", dataFile.getPropertyMap().get(PropertyVar.quotesValue.name()));
 
-        String dConversTableMetaId = dConversTableId + "_meta";
-        dConvers.addSourceTable(dConversTableMetaId, 1, "ResultSetMetaData", "SRC:" + dConversTableId, "ColumnLabel");
-        dConvers.addConsoleOutput(dConversTableMetaId);
-
         try {
             BinaryFile binaryFile = project.getManager().loadUploaded(dataFile.getUploadedId(), project);
             dConvers.addReader(readerName, new InputStreamReader(new ByteArrayInputStream(binaryFile.getContent())));

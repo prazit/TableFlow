@@ -13,7 +13,7 @@ function addLink($startSelectable, $endSelectable, $activeObject) {
 
 function buttonPerform(remoteFunction) {
 
-    window.parent.blockScreen();
+    blockScreen();
 
     var dragTarget = $draggable.dragging.dragTarget,
         selectable = getSelectable(dragTarget),
@@ -54,6 +54,7 @@ function updateComplete(selectableId) {
 function postUpdate(func) {
     var i = tflow.postUpdate.length;
     tflow.postUpdate[i] = func;
+    unblockScreen();
 }
 
 function doPostUpdate() {

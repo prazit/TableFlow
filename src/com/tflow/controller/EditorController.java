@@ -359,7 +359,7 @@ public class EditorController extends Controller {
         log.warn(msg);
     }
 
-    public List<SelectItem> getItemList(PropertyView propertyView) throws ClassNotFoundException, ClassCastException {
+    public List<SelectItem> getItemList(PropertyView propertyView, String selectableId) throws ClassNotFoundException, ClassCastException {
         PropertyType type = propertyView.getType();
         String[] params = propertyView.getParams();
 
@@ -368,6 +368,12 @@ public class EditorController extends Controller {
         Project project = workspace.getProject();
         Step activeStep = project.getActiveStep();
         Selectable activeObject = activeStep.getActiveObject();
+
+        if (!activeObject.getSelectableId().equals(selectableId)) {
+            log.debug("getItemList: ignore older getting after activeObject changed from '{}' to '{}'", selectableId, activeObject.getSelectableId());
+            return new ArrayList<>();
+        }
+
         Properties properties = activeObject.getProperties();
         ProjectFileType activeObjectType = activeObject.getProjectFileType();
         if (log.isDebugEnabled()) log.debug("getItemList(property:{}, activeStep:{}, activeObject:({}){}.", propertyView, activeStep.getSelectableId(), activeObject.getClass().getSimpleName(), activeObject);
@@ -1226,7 +1232,7 @@ public class EditorController extends Controller {
         propertyList = activeObject.getProperties().getPropertyList();
     }
 
-    public void setToolPanel() {
+    public synchronized void setToolPanel() {
         Project project = workspace.getProject();
         Step step = project.getActiveStep();
         boolean fromClientMenu = Boolean.parseBoolean(FacesUtil.getRequestParam("fromMenu"));

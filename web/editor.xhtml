@@ -212,11 +212,11 @@
                                             <span style="display:none">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8" rendered="#{editorCtl.isEmpty(prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var])}">
                                                 <f:selectItem itemLabel="---- select -----" itemValue=""/>
-                                                <f:selectItems value="#{editorCtl.getItemList(prop)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
+                                                <f:selectItems value="#{editorCtl.getItemList(prop,editorCtl.activeObject.selectableId)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="topForm:notiMsg #{prop.update}"/>
                                             </p:selectOneMenu>
                                             <p:selectOneMenu value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" disabled="#{editorCtl.disabled(prop)}" styleClass="ui-g-8" rendered="#{not editorCtl.isEmpty(prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var])}">
-                                                <f:selectItems value="#{editorCtl.getItemList(prop)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
+                                                <f:selectItems value="#{editorCtl.getItemList(prop,editorCtl.activeObject.selectableId)}" var="item" itemLabel="#{item.label}" itemValue="#{item.value}"/>
                                                 <p:ajax event="change" listener="#{editorCtl.propertyChanged(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="topForm:notiMsg #{prop.update}"/>
                                             </p:selectOneMenu>
                                         </p:outputPanel>
