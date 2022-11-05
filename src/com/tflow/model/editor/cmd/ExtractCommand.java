@@ -1,18 +1,14 @@
 package com.tflow.model.editor.cmd;
 
-import com.clevel.dconvers.DConvers;
 import com.clevel.dconvers.data.DataRow;
-import com.clevel.dconvers.ngin.Converter;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
 import com.tflow.model.editor.action.ActionResultKey;
 import com.tflow.util.DConversHelper;
 import com.tflow.util.ProjectUtil;
-import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 

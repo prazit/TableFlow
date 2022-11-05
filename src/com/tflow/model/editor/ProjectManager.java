@@ -2,7 +2,7 @@ package com.tflow.model.editor;
 
 import com.tflow.kafka.*;
 import com.tflow.model.data.*;
-import com.tflow.model.data.query.QueryData;
+import com.tflow.model.data.query.*;
 import com.tflow.model.data.verify.Verifiers;
 import com.tflow.model.editor.cmd.AddProject;
 import com.tflow.model.editor.datasource.DataSourceSelector;
@@ -14,6 +14,9 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.sql.Query;
+import com.tflow.model.editor.sql.QueryColumn;
+import com.tflow.model.editor.sql.QueryFilter;
+import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.model.editor.view.UploadedFileView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
@@ -651,26 +654,69 @@ public class ProjectManager {
     }
 
     public Query loadQuery(int queryId, Project project) throws ProjectDataException {
+        int stepId = project.getActiveStep().getId();
+
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         DataManager dataManager = project.getDataManager();
 
         ProjectUser projectUser = mapper.toProjectUser(project);
-        Object data = dataManager.getData(ProjectFileType.QUERY, projectUser, queryId);
-        QueryData queryData = (QueryData) throwExceptionOnError(data);
+        Object data = dataManager.getData(ProjectFileType.QUERY, projectUser, queryId, stepId, String.valueOf(queryId));
+        Query query = mapper.map((QueryData) throwExceptionOnError(data));
 
-        /*TODO: load all child*/
-        /*
-        QUERY_TABLE_LIST("query-table-list", 5),
-        QUERY_TABLE("", 5),
-        QUERY_COLUMN_LIST("query-column-list", 6),
-        QUERY_COLUMN("", 6),
-        QUERY_FILTER_LIST("", 5),
-        QUERY_FILTER("", 5),
-        QUERY_SORT_LIST("", 5),
-        QUERY_SORT("", 5),
-        */
+        /*QUERY_TABLE_LIST*/
+        data = dataManager.getData(ProjectFileType.QUERY_TABLE_LIST, projectUser, queryId, stepId, String.valueOf(queryId));
+        List<Integer> idList = (List) throwExceptionOnError(data);
 
-        return mapper.map(queryData);
+        /*QUERY_TABLE*/
+        List<QueryTable> tableList = query.getTableList();
+        QueryTableData queryTableData;
+        QueryTable queryTable;
+        QueryColumnData queryColumnData;
+        for (Integer tableId : idList) {
+            data = dataManager.getData(ProjectFileType.QUERY_TABLE, projectUser, tableId, stepId, (queryId + "/" + tableId));
+            queryTableData = (QueryTableData) throwExceptionOnError(data);
+            queryTable = mapper.map(queryTableData);
+            tableList.add(queryTable);
+
+            /*QUERY_COLUMN_LIST*/
+            data = dataManager.getData(ProjectFileType.QUERY_COLUMN_LIST, projectUser, queryId, stepId, (queryId + "/" + tableId));
+            List<Integer> columnIdList = (List) throwExceptionOnError(data);
+
+            /*QUERY_COLUMN*/
+            List<QueryColumn> columnList = queryTable.getColumnList();
+            for (Integer columnId : columnIdList) {
+                data = dataManager.getData(ProjectFileType.QUERY_COLUMN, projectUser, columnId, stepId, (queryId + "/" + tableId));
+                queryColumnData = (QueryColumnData) throwExceptionOnError(data);
+                columnList.add(mapper.map(queryColumnData));
+            }
+        }
+
+        /*QUERY_FILTER_LIST*/
+        data = dataManager.getData(ProjectFileType.QUERY_FILTER_LIST, projectUser, queryId, stepId, String.valueOf(queryId));
+        idList = (List) throwExceptionOnError(data);
+
+        /*QUERY_FILTER*/
+        List<QueryFilter> filterList = query.getFilterList();
+        QueryFilterData queryFilterData;
+        for (Integer filterId : idList) {
+            data = dataManager.getData(ProjectFileType.QUERY_FILTER, projectUser, filterId, stepId, String.valueOf(queryId));
+            queryFilterData = (QueryFilterData) throwExceptionOnError(data);
+            filterList.add(mapper.map(queryFilterData));
+        }
+        
+        /*QUERY_SORT_LIST*/
+        data = dataManager.getData(ProjectFileType.QUERY_SORT_LIST, projectUser, queryId, stepId, String.valueOf(queryId));
+        idList = (List) throwExceptionOnError(data);
+
+        /*QUERY_SORT*/
+        QuerySortData querySortData;
+        for (Integer sortId : idList) {
+            data = dataManager.getData(ProjectFileType.QUERY_SORT, projectUser, sortId, stepId, String.valueOf(queryId));
+            querySortData = (QuerySortData) throwExceptionOnError(data);
+            filterList.add(mapper.map(querySortData));
+        }
+
+        return query;
     }
 
     /**

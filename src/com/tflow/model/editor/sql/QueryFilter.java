@@ -1,6 +1,8 @@
 package com.tflow.model.editor.sql;
 
 import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.query.QueryFilterConnector;
+import com.tflow.model.data.query.QueryFilterOperation;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.Selectable;

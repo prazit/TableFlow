@@ -18,6 +18,7 @@ public class RecordAttributesData implements Serializable {
     private String stepId;
     private String dataTableId;
     private String transformTableId;
+    private String childId;
 
     /* Transaction Field Group: all fields are required */
     private ProjectFileType fileType;

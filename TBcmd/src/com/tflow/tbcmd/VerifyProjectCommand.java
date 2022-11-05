@@ -77,7 +77,7 @@ public class VerifyProjectCommand extends IOCommand {
         verifyDataList(loadVariableDataList(), -1, issueList, ProjectFileType.VARIABLE);
         updateIssuesData(20, issuesData, projectUser);
 
-        /*TODO: 5.verifier for library-list*/
+        /*TODO: 5.verifier for library-list (need to copy from Project-Page.Library-List)*/
         verifyDataList(loadVersionedDataList(projectData.getType().getCode()), -1, issueList, ProjectFileType.VERSIONED);
 
         /*6.verifier for step-list*/

@@ -527,6 +527,11 @@ public class ReadProjectCommand extends IOCommand {
             throw new InvalidParameterException(KafkaErrorCode.REQUIRES_TRANSFORMTABLE_ID.name());
         }
 
+        // childId is required ont type 3,4,5,6.
+        if (requireType > 2 && requireType < 7 && additional.getChildId() == null) {
+            throw new InvalidParameterException(KafkaErrorCode.REQUIRES_CHILD_ID.name());
+        }
+
         return fileType;
     }
 

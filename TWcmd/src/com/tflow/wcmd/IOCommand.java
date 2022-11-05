@@ -82,11 +82,10 @@ public abstract class IOCommand extends KafkaCommand {
                 break;
 
             case 3:
-                path = additional.getProjectId() + "/" + additional.getStepId() + "/" + additional.getDataTableId() + "/";
-                break;
-
             case 4:
-                path = additional.getProjectId() + "/" + additional.getStepId() + "/" + additional.getTransformTableId() + "/";
+            case 5:
+            case 6:
+                path = additional.getProjectId() + "/" + additional.getStepId() + "/" + additional.getChildId() + "/";
                 break;
 
             case 9:

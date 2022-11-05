@@ -5,15 +5,14 @@ import com.tflow.kafka.KafkaRecord;
 import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.PageParameter;
-import com.tflow.model.data.Dbms;
-import com.tflow.model.data.FileNameExtension;
-import com.tflow.model.data.PropertyVar;
-import com.tflow.model.data.SystemEnvironment;
+import com.tflow.model.data.*;
+import com.tflow.model.editor.DataFileType;
 import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
+import com.tflow.model.editor.datasource.DataSourceType;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.VersionedFile;
@@ -1577,13 +1576,29 @@ public class EditorController extends Controller {
     }
 
     public void openSQLEditor(PropertyView property) {
+        ProjectManager projectManager = workspace.getProjectManager();
         DataFile dataFile = (DataFile) activeObject;
-        if (containsNestedSQL(dataFile)) {
-            jsBuilder.pre(JavaScript.notiInfo,"Nested SQL detected! splitting to multiple files, please wait...");
-            dataFile = splitNestedSQL(dataFile);
-            if (dataFile == null) {
-                jsBuilder.post(JavaScript.notiWarn, "Complicated SQL, please split SQL yourself or cover all nested by parenthesis and try again");
+        BinaryFile sqlFile = null;
+
+        boolean hasQuery = dataFile.getPropertyMap().get(PropertyVar.queryId.name()) != null;
+        if(!hasQuery) {
+            try {
+                sqlFile = projectManager.loadUploaded(dataFile.getUploadedId(), workspace.getProject());
+            } catch (ProjectDataException ex) {
+                String msg = "Load SQL File Failed! {}";
+                log.error(msg, ex.getMessage());
+                log.trace("", ex);
+                jsBuilder.pre(JavaScript.notiError, msg, ex.getMessage());
                 return;
+            }
+
+            if (containsNestedSQL(sqlFile)) {
+                jsBuilder.pre(JavaScript.notiInfo, "Nested SQL detected! splitting to multiple files, please wait...");
+                dataFile = splitNestedSQL(dataFile);
+                if (dataFile == null) {
+                    jsBuilder.post(JavaScript.notiWarn, "Complicated SQL, please split SQL yourself or cover all nested by parenthesis and try again");
+                    return;
+                }
             }
         }
 
@@ -1594,6 +1609,23 @@ public class EditorController extends Controller {
             return;
         }
         jsBuilder.pre(JavaScript.notiInfo, "Database Connection Ready");
+
+        /*need queryId*/
+        if (!hasQuery) {
+            Map<CommandParamKey, Object> paramMap = new HashMap<>();
+            paramMap.put(CommandParamKey.PROJECT, workspace.getProject());
+            paramMap.put(CommandParamKey.DATA_FILE, dataFile);
+            paramMap.put(CommandParamKey.BINARY_FILE, sqlFile);
+            try {
+                new AddQuery(paramMap).execute();
+            } catch (RequiredParamException ex) {
+                String msg = "Add Query Failed! {}";
+                log.error(msg, ex.getMessage());
+                log.trace("", ex);
+                jsBuilder.pre(JavaScript.notiError, msg, ex.getMessage());
+                return;
+            }
+        }
 
         /*hide stepList*/
         jsBuilder.pre(JavaScript.showStepList, false, true);
@@ -1615,12 +1647,15 @@ public class EditorController extends Controller {
     private DataFile splitNestedSQL(DataFile dataFile) {
         /*TODO: need to detect nested select and show warning/confirm to split it to more than one data files from inside to outside*/
 
+        /*TODO: call action for SplitNestedSQL*/
+
         return null;
     }
 
-    private boolean containsNestedSQL(DataFile dataFile) {
-        /*TODO: need to detect nested select and show warning/confirm to split it to more than one data files from inside to outside*/
-
-        return false;
+    private boolean containsNestedSQL(BinaryFile sqlFile) {
+        /*if found 'select' more than one time is Nested*/
+        String sql = new String(sqlFile.getContent(), StandardCharsets.ISO_8859_1).toUpperCase();
+        int index = sql.indexOf("SELECT");
+        return sql.indexOf("SELECT", index + 1) > 0;
     }
 }

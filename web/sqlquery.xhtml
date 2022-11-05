@@ -23,12 +23,11 @@
         <h:outputScript library="js" name="sqlquery.js#{app.forceReloadResources}" target="head"/>
 
         <div class="flow-chart">
-            <h:form id="editorForm">
                 <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
 
                 <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);">
                     <p:importEnum type="com.tflow.controller.SQLQuerySection" var="SQLQuerySection"/>
-                    <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="@parent"/>
+                    <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}"/>
 
                     <p:tab title="#{SQLQuerySection.QUERY.title}">
                         <f:facet name="title">
@@ -48,7 +47,9 @@
 
                                 <div class="select-table-panel ui-g-2">
                                     <div class="vertical-scroll-panel">
-                                        <!-- TODO: Table List with Selected Tables -->
+                                        <p:dataList value="#{sqlQueryCtl.tableList}" var="tableName">
+                                            <div>#{tableName}</div>
+                                        </p:dataList>
                                     </div>
                                 </div>
 
@@ -61,8 +62,8 @@
 
                             </div>
 
-                            <p:tabView id="queryTabview" style="padding: var(--padding);margin: var(--margin);">
-                                <p:ajax event="tabChange" listener="#{sqlQueryCtl.openQueryCondition}" update="@parent"/>
+                            <p:tabView id="queryTabView" style="padding: var(--padding);margin: var(--margin);">
+                                <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}"/>
 
                                 <p:tab title="#{SQLQuerySection.FILTER.title}">
                                     <f:facet name="title">
@@ -76,6 +77,10 @@
                                             <b>Where conditions</b>
                                         </div>
                                     </p:divider>
+
+                                    <p:outputPanel id="filterTab">
+                                        FILTERS HERE
+                                    </p:outputPanel>
                                 </p:tab>
 
                                 <p:tab title="#{SQLQuerySection.SORT.title}">
@@ -90,6 +95,10 @@
                                             <b>Order by</b>
                                         </div>
                                     </p:divider>
+
+                                    <p:outputPanel id="sortTab">
+                                        SORT HERE
+                                    </p:outputPanel>
                                 </p:tab>
                             </p:tabView>
 
@@ -108,11 +117,11 @@
                             </div>
                         </p:divider>
 
-                        Generated SQL Here
+                        <p:outputPanel id="sqlTab">
+                            SQL HERE
+                        </p:outputPanel>
                     </p:tab>
                 </p:tabView>
-
-            </h:form>
         </div>
 
         <script>console.log('-- last-line of sql query --');</script>

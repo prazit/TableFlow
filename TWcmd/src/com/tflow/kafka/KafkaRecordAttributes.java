@@ -6,10 +6,16 @@ import java.util.Date;
 public class KafkaRecordAttributes implements Serializable {
     private static final transient long serialVersionUID = 2022061609996660001L;
 
-    /* Parent Field Group: all fields are optional */
-    private String recordId;
+    /* Parent Field Group: all fields are optional
+     * childId is replacement of dataTableId and transformTableId, store multiple ids separated by slash.
+     * Relationship between projectId, stepId, stepChildId and recordId is Data-Path like this: /projectId/stepId/childId/recordId
+     */
     private String projectId;
     private String stepId;
+    private String childId;
+    private String recordId;
+
+    /*Informal deprecated*/
     private String dataTableId;
     private String transformTableId;
 
@@ -76,6 +82,14 @@ public class KafkaRecordAttributes implements Serializable {
         this.transformTableId = transformTableId;
     }
 
+    public String getChildId() {
+        return childId;
+    }
+
+    public void setChildId(String childId) {
+        this.childId = childId;
+    }
+
     public String getRecordId() {
         return recordId;
     }
@@ -127,6 +141,7 @@ public class KafkaRecordAttributes implements Serializable {
                 ", stepId:'" + stepId + '\'' +
                 ", dataTableId:'" + dataTableId + '\'' +
                 ", transformTableId:'" + transformTableId + '\'' +
+                ", childId:'" + childId + '\'' +
                 ", recordId:'" + recordId + '\'' +
                 '}';
     }

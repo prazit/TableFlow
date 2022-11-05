@@ -114,6 +114,11 @@ public class UpdateProjectCommand extends IOCommand {
             throw new InvalidParameterException("Additional.TransformTableId is required for operation('" + fileType.name() + "')");
         }
 
+        // childId is required ont type 3,4,5,6.
+        if (requireType > 2 && requireType < 7 && additional.getChildId() == null) {
+            throw new InvalidParameterException("Additional.ChildId is required for operation('" + fileType.name() + "')");
+        }
+
         additional.setFileType(fileType);
         normalizeAttributes(additional);
 

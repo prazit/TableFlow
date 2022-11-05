@@ -1,7 +1,7 @@
 package com.tflow.model.mapper;
 
 import com.tflow.model.data.*;
-import com.tflow.model.data.query.QueryData;
+import com.tflow.model.data.query.*;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.*;
@@ -9,6 +9,9 @@ import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.sql.Query;
+import com.tflow.model.editor.sql.QueryColumn;
+import com.tflow.model.editor.sql.QueryFilter;
+import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.model.editor.view.VersionedFile;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -158,6 +161,14 @@ public interface ProjectMapper {
     Issues map(IssuesData issuesData);
 
     Query map(QueryData queryData);
+
+    QueryTable map(QueryTableData queryTableData);
+
+    QueryColumn map(QueryColumnData queryColumnData);
+
+    QueryFilter map(QueryFilterData queryFilterData);
+
+    QueryFilter map(QuerySortData querySortData);
 
     /*---- ALL ABOUT ID ----*/
 

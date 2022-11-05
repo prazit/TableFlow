@@ -1,5 +1,6 @@
 package com.tflow.model.editor;
 
+import com.tflow.system.Properties;
 import com.tflow.controller.Page;
 import com.tflow.controller.Parameter;
 import com.tflow.kafka.KafkaErrorCode;
@@ -304,6 +305,21 @@ public class Workspace implements Serializable {
 
     public Page getCurrentPage() {
         return currentPage;
+    }
+
+    public Properties getConfigs(String prefix) {
+        int length = prefix.length();
+
+        Properties subset = new Properties();
+        Properties configs = app.getConfigs();
+        for (Object key : configs.keySet()) {
+            String keyString = (String) key;
+            if (keyString.startsWith(prefix)) {
+                subset.put(keyString.substring(length), configs.get(key));
+            }
+        }
+
+        return subset;
     }
 
     /**

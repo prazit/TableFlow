@@ -203,4 +203,8 @@ public class DConversHelper {
         msg.append("}");
         log.debug("DConvers-Properties: {}", msg.toString());
     }
+
+    public void addVariable(String name, String value) {
+        properties.addProperty("variable." + name, value);
+    }
 }

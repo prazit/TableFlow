@@ -20,7 +20,6 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.util.*;
@@ -456,9 +455,24 @@ public class DataManager {
         return additional;
     }
 
+    public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, String childId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        additional.setChildId(childId);
+        addData(fileType, idList, additional);
+        return additional;
+    }
+
+    public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, String childId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        additional.setChildId(childId);
+        addData(fileType, (Object) object, additional);
+        return additional;
+    }
+
     public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int dataTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
+        additional.setChildId(String.valueOf(dataTableId));
         addData(fileType, idList, additional);
         return additional;
     }
@@ -466,6 +480,7 @@ public class DataManager {
     public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int dataTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
+        additional.setChildId(String.valueOf(dataTableId));
         addData(fileType, (Object) object, additional);
         return additional;
     }
@@ -473,6 +488,7 @@ public class DataManager {
     public KafkaRecordAttributes addData(ProjectFileType fileType, List idList, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
+        additional.setChildId(String.valueOf(transformTableId));
         addData(fileType, idList, additional);
         return additional;
     }
@@ -480,6 +496,7 @@ public class DataManager {
     public KafkaRecordAttributes addData(ProjectFileType fileType, TWData object, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
+        additional.setChildId(String.valueOf(transformTableId));
         addData(fileType, (Object) object, additional);
         return additional;
     }
@@ -519,6 +536,7 @@ public class DataManager {
         if (requireType > 1 && requireType < 9 && additional.getStepId() == null) throw new InvalidParameterException("Required Field: StepId for " + fileType);
         if (requireType == 3 && additional.getDataTableId() == null) throw new InvalidParameterException("Required Field: DataTableId for " + fileType);
         if (requireType == 4 && additional.getTransformTableId() == null) throw new InvalidParameterException("Required Field: TransformTableId for " + fileType);
+        if (/*3,4,5,6*/ requireType > 2 && requireType < 7 && additional.getChildId() == null) throw new InvalidParameterException("Required Field: ChildId for " + fileType);
 
         additional.setModifiedDate(DateTimeUtil.now());
     }
@@ -543,15 +561,23 @@ public class DataManager {
         return getData(fileType, additional);
     }
 
+    public Object getData(ProjectFileType fileType, ProjectUser project, int recordId, int stepId, String childId) {
+        KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
+        additional.setChildId(childId);
+        return getData(fileType, additional);
+    }
+
     public Object getData(ProjectFileType fileType, ProjectUser project, int recordId, int stepId, int dataTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setDataTableId(String.valueOf(dataTableId));
+        additional.setChildId(String.valueOf(dataTableId));
         return getData(fileType, additional);
     }
 
     public Object getData(ProjectFileType fileType, ProjectUser project, int recordId, int stepId, int ignoredId, int transformTableId) {
         KafkaRecordAttributes additional = new KafkaRecordAttributes(project.getClientId(), project.getUserId(), project.getId(), String.valueOf(recordId), String.valueOf(stepId));
         additional.setTransformTableId(String.valueOf(transformTableId));
+        additional.setChildId(String.valueOf(transformTableId));
         return getData(fileType, additional);
     }
 

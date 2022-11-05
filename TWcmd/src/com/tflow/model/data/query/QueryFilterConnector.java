@@ -1,4 +1,4 @@
-package com.tflow.model.editor.sql;
+package com.tflow.model.data.query;
 
 public enum QueryFilterConnector {
 
