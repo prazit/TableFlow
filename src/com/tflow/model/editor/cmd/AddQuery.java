@@ -8,6 +8,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.sql.Query;
 import com.tflow.model.editor.sql.QueryColumn;
+import com.tflow.model.editor.sql.QueryFilter;
 import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.system.Properties;
 import com.tflow.util.DConversHelper;
@@ -51,10 +52,121 @@ public class AddQuery extends Command {
         String[] selectArray = splitBy(select.toString(), "[,]");
         List<QueryColumn> selectedColumnList = query.getColumnList();
         addColumnTo(selectedColumnList, selectArray);
+        if (log.isDebugEnabled()) log.debug("SelectedColumnList: {}", Arrays.toString(selectedColumnList.toArray()));
 
         /*from => tableList*/
         String[] fromArray = splitBy(from.toString(), "[,]|([Ff][Uu][Ll][Ll] |[Ll][Ee][Ff][Tt] |[Rr][Ii][Gg][Hh][Tt] )*([Ii][Nn][Nn][Ee][Rr] |[Oo][Uu][Tt][Ee][Rr] )*([Jj][Oo][Ii][Nn])");
         List<QueryTable> tableList = query.getTableList();
+        addTableTo(tableList, fromArray, selectedColumnList);
+        if (log.isDebugEnabled()) log.debug("TableList: {}", Arrays.toString(tableList.toArray()));
+
+        /*where => filterList*/
+        String[] whereArray = splitBy(where.toString(), "[Aa][Nn][Dd]|[Oo][Rr]");
+        List<QueryFilter> filterList = query.getFilterList();
+        addFilterTo(filterList, whereArray);
+        if (log.isDebugEnabled()) log.debug("FilterList: {}", Arrays.toString(filterList.toArray()));
+
+        /*TODO: oder by => sortList*/
+        String[] orderByArray = splitBy(orderBy.toString(), "[,]");
+
+        // TODO: save Query Data
+
+        // TODO: save DataFile
+
+    }
+
+    private void addFilterTo(List<QueryFilter> filterList, String[] whereArray) {
+        /*first condition need connector same as other condition*/
+        whereArray[0] = "AND " + whereArray[0];
+        StringBuilder operation;
+        String connector;
+        int operationIndex;
+        for (String where : whereArray) {
+            connector = where.substring(0, 3).trim().toUpperCase();
+            operation = new StringBuilder();
+            operationIndex = findOperation(where, operation);
+            QueryFilter queryFilter = new QueryFilter(
+                    connector,
+                    where.substring(3, operationIndex).trim(),
+                    operation.toString(),
+                    where.substring(operationIndex + operation.length()).trim()
+            );
+            filterList.add(queryFilter);
+        }
+    }
+
+    private int findOperation(String where, StringBuilder operation) {
+        char[] one = {'=', '>', '<', '!'};
+        char[] second = {'S', 'N'};
+
+        where = where.toUpperCase();
+        char[] chars = where.toCharArray();
+        char ch;
+        char next;
+        int operLength = 0;
+        int operStart = 0;
+        for (int index = 0; index < chars.length; index++) {
+            ch = chars[index];
+            if (match(ch, one)) {
+                /*[ =, >, <, <>, !=, >=, <= ]*/
+                next = chars[index + 1];
+                operLength = (next == '=' || next == '>') ? 2 : 1;
+                operStart = index;
+                break;
+
+            } else if (ch == 'I') {
+                /*[ IS, IN, IS NOT ]*/
+                next = chars[index + 1];
+                if (match(next, second)) {
+                    next = chars[index + 2];
+                    if (next == ' ') {
+                        if (where.substring(index, index + 6).equals("IS NOT")) {
+                            operLength = 6;
+                            operStart = index;
+                            break;
+                        } else {
+                            /*[ IS, IN ]*/
+                            operLength = 2;
+                            operStart = index;
+                            break;
+                        }
+                    }
+                }
+
+            } else if (ch == 'N') {
+                if (where.substring(index, index + 6).equals("NOT IN")) {
+                    operLength = 6;
+                    operStart = index;
+                    break;
+                } else if (where.substring(index, index + 8).equals("NOT LIKE")) {
+                    operLength = 8;
+                    operStart = index;
+                    break;
+                }
+
+            } else if (ch == 'L') {
+                if (where.substring(index, index + 4).equals("LIKE")) {
+                    operLength = 4;
+                    operStart = index;
+                    break;
+                }
+            }
+        } // end of for
+
+        operation.append(where, operStart, operStart + operLength);
+        return operStart;
+    }
+
+    private boolean match(char ch, char[] chars) {
+        for (char aChar : chars) {
+            if (ch == aChar) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void addTableTo(List<QueryTable> tableList, String[] fromArray, List<QueryColumn> selectedColumnList) {
         QueryTable queryTable;
         StringBuilder tableName;
         StringBuilder tableAlias;
@@ -82,7 +194,7 @@ public class AddQuery extends Command {
                 joinCondition = new StringBuilder();
                 splitTableWithJoin(table, words, tableName, tableAlias, tableJoinType, joinedTableName, joinCondition);
 
-                queryTable = new QueryTable(tableName.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
+                queryTable = new QueryTable(tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
                 tableList.add(queryTable);
                 loadColumnList(queryTable);
                 markSelectedColumn(queryTable, selectedColumnList);
@@ -91,19 +203,6 @@ public class AddQuery extends Command {
             }
         }
         tableList.sort(Comparator.comparing(QueryTable::getName));
-        if (log.isDebugEnabled()) log.debug("TableList: {}", Arrays.toString(tableList.toArray()));
-
-        /*TODO: where => filterList*/
-        String[] whereArray = splitBy(where.toString(), "[Aa][Nn][Dd]|[Oo][Rr]");
-
-
-        /*TODO: oder by => sortList*/
-        String[] orderByArray = splitBy(orderBy.toString(), "[,]");
-
-        // TODO: save Query Data
-
-        // TODO: save DataFile
-
     }
 
     private void addColumnTo(List<QueryColumn> selectedColumnList, String[] selectArray) {

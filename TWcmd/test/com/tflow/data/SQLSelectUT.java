@@ -2,6 +2,8 @@ package com.tflow.data;
 
 import com.tflow.UTBase;
 import com.tflow.model.data.query.ColumnType;
+import com.tflow.model.data.query.QueryFilterConnector;
+import com.tflow.model.data.query.QueryFilterOperation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -41,7 +43,7 @@ public class SQLSelectUT extends UTBase {
                 "           tableA.d as d," +
                 "           tableA.e + ( tableA.f - tableA.g )," +
                 "           tableE.f" +
-                "   from tableA, tableH, tableI" +
+                "from tableA, tableH, tableI" +
                 "   inner join tableB B on B.b = SUBSTR(TRIM(tableA.b), 0, 7) " +
                 "   left join tableC on (tableC.c = B.c) " +
                 "   left outer join tableF on (tableF.f = tableA.f) " +
@@ -49,10 +51,20 @@ public class SQLSelectUT extends UTBase {
                 "   right outer  join tableG on (tableG.g = tableA.g) " +
                 "   full outer join tableE on (tableE.e = tableB.e) " +
                 "   outer join tableJ on (tableJ.j = tableE.j) " +
-                "   where    tableA.x = 0 " +
-                "   and (tableC.c = tableB.c OR tableC.c = tableB.c)" +
+                "   " +
+                "where    tableA.x <> 0 " +
+                "   and (tableC.c <= tableB.c OR tableC.c => tableB.c)" +
                 "   and tableB.y = 0" +
-                "   order    by tableA.a, b";
+                "   and tableG.y > 0" +
+                "   and tableF.y < 10000" +
+                "   and tableE.i not in ('a','b','c')" +
+                "   and tableF.a in ('a','b','c')" +
+                "   and tableC.d like '%test%'" +
+                "   and tableD.d not like '%test%'" +
+                "   and tableA.d != 'd'" +
+                "   and tableA.f is null" +
+                "   and tableB.f is not null" +
+                "order    by tableA.a, b";
 
         sql = sql.replaceAll("[\\s]+", " ");
         StringBuilder select = new StringBuilder();
@@ -83,6 +95,117 @@ public class SQLSelectUT extends UTBase {
         /*from => tableList*/
         //List<QueryTable> tableList = query.getTableList();
         List<String> tableList = new ArrayList<>();
+        addTableTo(tableList, fromArray);
+        println("TableList: {}", Arrays.toString(tableList.toArray()));
+
+        /*TODO: where => filterList*/
+        List<String> filterList = new ArrayList<>();
+        addFilterTo(filterList, whereArray);
+        println("FilterList: {}", Arrays.toString(filterList.toArray()));
+
+    }
+
+    private void addFilterTo(List<String> filterList, String[] whereArray) {
+        /*first condition need connector*/
+        whereArray[0] = "AND " + whereArray[0];
+        StringBuilder operation;
+        String connector;
+        int operationIndex;
+        for (String where : whereArray) {
+            operation = new StringBuilder();
+            connector = where.substring(0, 3).trim().toUpperCase();
+            operationIndex = findOperation(where, operation);
+            String queryFilter = "{connector: " + connector + ", " +
+                    "leftValue: " + where.substring(3, operationIndex).trim() + ", " +
+                    "operation: " + operation + ", " +
+                    "rightValue: " + where.substring(operationIndex + operation.length()).trim() + "}";
+            filterList.add(queryFilter);
+        }
+    }
+
+    private int findOperation(String where, StringBuilder operation) {
+        char[] one = {'=', '>', '<', '!'};
+        char[] second = {'S', 'N'};
+
+        where = where.toUpperCase();
+        char[] chars = where.toCharArray();
+        char ch;
+        char next;
+        int operLength = 0;
+        int operStart = 0;
+        for (int index = 0; index < chars.length; index++) {
+            ch = chars[index];
+            if (match(ch, one)) {
+                /*[ =, >, <, <>, !=, >=, <= ]*/
+                next = chars[index + 1];
+                operLength = (next == '=' || next == '>') ? 2 : 1;
+                operStart = index;
+                break;
+
+            } else if (ch == 'I') {
+                /*[ IS, IN, IS NOT ]*/
+                next = chars[index + 1];
+                if (match(next, second)) {
+                    next = chars[index + 2];
+                    if (next == ' ') {
+                        if (where.substring(index, index + 6).equals("IS NOT")) {
+                            operLength = 6;
+                            operStart = index;
+                            break;
+                        } else {
+                            /*[ IS, IN ]*/
+                            operLength = 2;
+                            operStart = index;
+                            break;
+                        }
+                    }
+                }
+
+            } else if (ch == 'N') {
+                if (where.substring(index, index + 6).equals("NOT IN")) {
+                    operLength = 6;
+                    operStart = index;
+                    break;
+                } else if (where.substring(index, index + 8).equals("NOT LIKE")) {
+                    operLength = 8;
+                    operStart = index;
+                    break;
+                }
+
+            } else if (ch == 'L') {
+                if (where.substring(index, index + 4).equals("LIKE")) {
+                    operLength = 4;
+                    operStart = index;
+                    break;
+                }
+            }
+        } // end of for
+
+        operation.append(where, operStart, operStart + operLength);
+        println("findOperation: operStart: {}, operLength: {}, operation: {}, where: {}", operStart, operLength, operation, where);
+        return operStart;
+    }
+
+    private boolean match(char ch, char[] chars) {
+        for (char aChar : chars) {
+            if (ch == aChar) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int findOperationSimple(String where, StringBuilder operation) {
+        String replacement = "__OPERATION__";
+        String finder = where.replaceAll("[<>=]", replacement);
+        boolean singleChar = finder.length() > where.length();
+        if (!singleChar) finder = where.replaceAll("[<!][>=]", replacement);
+        int index = finder.indexOf(replacement);
+        operation.append(where, index, index + (singleChar ? 1 : 2));
+        return index;
+    }
+
+    private void addTableTo(List<String> tableList, String[] fromArray) {
         for (String table : fromArray) {
             println("From-Component: '{}'", table);
             indent();
@@ -119,8 +242,6 @@ public class SQLSelectUT extends UTBase {
             indent(-1);
         }
         tableList.sort(Comparator.comparing(String::toUpperCase));
-        println("TableList: {}", Arrays.toString(tableList.toArray()));
-
     }
 
     private void addColumnTo(List<String> selectedColumnList, String[] selectArray) {
@@ -170,8 +291,7 @@ public class SQLSelectUT extends UTBase {
         }
     }
 
-
-    private void splitTableWithJoin(String table, String[] words, StringBuilder tableName,  StringBuilder tableAlias, StringBuilder tableJoinType, StringBuilder joinedTableName, StringBuilder joinCondition) {
+    private void splitTableWithJoin(String table, String[] words, StringBuilder tableName, StringBuilder tableAlias, StringBuilder tableJoinType, StringBuilder joinedTableName, StringBuilder joinCondition) {
         /*this is one of JOIN Type and condition always appear after word 'ON'*/
         joinCondition.append(table.split("[Oo][Nn]")[1]);
 
@@ -187,7 +307,7 @@ public class SQLSelectUT extends UTBase {
                 tableName.append(words[i + 1]);
                 if ("ON".equals(words[i + 2].toUpperCase())) {
                     tableAlias.append(words[i + 1]);
-                }else{
+                } else {
                     tableAlias.append(words[i + 2]);
                 }
                 next = i + 3;

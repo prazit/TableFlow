@@ -30,11 +30,13 @@ public class QueryTable extends Room {
 
     public QueryTable(String name) {
         this.name = name;
+        this.alias = name;
         this.joinType = TableJoinType.NONE;
     }
 
-    public QueryTable(String name, String joinType, String joinTable, String joinCondition) {
+    public QueryTable(String name, String alias, String joinType, String joinTable, String joinCondition) {
         this.name = name;
+        this.alias = alias;
         this.joinType = TableJoinType.valueOf(joinType);
         this.joinTable = joinTable;
         this.joinCondition = joinCondition;
@@ -54,6 +56,14 @@ public class QueryTable extends Room {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     public List<QueryColumn> getColumnList() {
@@ -117,6 +127,7 @@ public class QueryTable extends Room {
         return "{" +
                 "id:" + id +
                 ", name:'" + name + '\'' +
+                ", alias:'" + alias + '\'' +
                 ", columnList:" + Arrays.toString(columnList.toArray()) +
                 ", joinType:" + joinType +
                 ", joinTable:'" + joinTable + '\'' +
