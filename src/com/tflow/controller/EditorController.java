@@ -41,6 +41,7 @@ import org.primefaces.model.menu.MenuModel;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -1486,8 +1487,22 @@ public class EditorController extends Controller {
             return false;
         }
 
-        /*TODO: need configs: max.uploaded.bytes and max.versioned.bytes */
-        EnvironmentConfigs configs = EnvironmentConfigs.valueOf(workspace.getEnvironment().name());
+        /*Max Size*/
+        com.tflow.system.Properties configs = workspace.getConfigs("");
+        long maxBytes = configs.getPropertyLong((isVersionedFile ? "versioned" : "uploaded") + ".max.bytes", 104857600);
+        if (binaryFile.getContent().length > maxBytes) {
+            jsBuilder.pre(JavaScript.notiWarn, property.getParams()[2] + " exceed the maximum size {}bytes", maxBytes);
+            return false;
+        }
+
+        // SQL File: not allow Nested Select for now, more detail see splitNestedSQL().
+        if (!isVersionedFile && selectable instanceof DataFile) {
+            DataFile dataFile = (DataFile) selectable;
+            if (dataFile.getType() == DataFileType.IN_SQLDB && containsNestedSQL(binaryFile)) {
+                jsBuilder.pre(JavaScript.notiWarn, property.getParams()[2] + " Nested Select is not allowed!");
+                return false;
+            }
+        }
 
         return true;
     }
@@ -1575,32 +1590,12 @@ public class EditorController extends Controller {
         jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
     }
 
+    /**
+     * Notice: must extract before to confirm this SQL is valid
+     */
     public void openSQLEditor(PropertyView property) {
         ProjectManager projectManager = workspace.getProjectManager();
         DataFile dataFile = (DataFile) activeObject;
-        BinaryFile sqlFile = null;
-
-        boolean hasQuery = dataFile.getPropertyMap().get(PropertyVar.queryId.name()) != null;
-        if(!hasQuery) {
-            try {
-                sqlFile = projectManager.loadUploaded(dataFile.getUploadedId(), workspace.getProject());
-            } catch (ProjectDataException ex) {
-                String msg = "Load SQL File Failed! {}";
-                log.error(msg, ex.getMessage());
-                log.trace("", ex);
-                jsBuilder.pre(JavaScript.notiError, msg, ex.getMessage());
-                return;
-            }
-
-            if (containsNestedSQL(sqlFile)) {
-                jsBuilder.pre(JavaScript.notiInfo, "Nested SQL detected! splitting to multiple files, please wait...");
-                dataFile = splitNestedSQL(dataFile);
-                if (dataFile == null) {
-                    jsBuilder.post(JavaScript.notiWarn, "Complicated SQL, please split SQL yourself or cover all nested by parenthesis and try again");
-                    return;
-                }
-            }
-        }
 
         /*check database connection first*/
         int dataSourceId = dataFile.getDataSourceId();
@@ -1611,9 +1606,21 @@ public class EditorController extends Controller {
         jsBuilder.pre(JavaScript.notiInfo, "Database Connection Ready");
 
         /*need queryId*/
+        boolean hasQuery = dataFile.getPropertyMap().get(PropertyVar.queryId.name()) != null;
         if (!hasQuery) {
+            BinaryFile sqlFile = null;
+            try {
+                sqlFile = projectManager.loadUploaded(dataFile.getUploadedId(), workspace.getProject());
+            } catch (ProjectDataException ex) {
+                String msg = "Load SQL File Failed! {}";
+                log.error(msg, ex.getMessage());
+                log.trace("", ex);
+                jsBuilder.pre(JavaScript.notiError, msg, ex.getMessage());
+                return;
+            }
+
             Map<CommandParamKey, Object> paramMap = new HashMap<>();
-            paramMap.put(CommandParamKey.PROJECT, workspace.getProject());
+            paramMap.put(CommandParamKey.WORKSPACE, workspace);
             paramMap.put(CommandParamKey.DATA_FILE, dataFile);
             paramMap.put(CommandParamKey.BINARY_FILE, sqlFile);
             try {
@@ -1641,13 +1648,15 @@ public class EditorController extends Controller {
     }
 
     /**
+     * TODO: Future Feature: Automatic Split Nested SQL.
+     *
      * @param dataFile original dataFile need to be split.
      * @return new DataFile contains equivalent SQL.
      */
     private DataFile splitNestedSQL(DataFile dataFile) {
-        /*TODO: need to detect nested select and show warning/confirm to split it to more than one data files from inside to outside*/
+        /*TODO: Future Feature: need to detect nested select and show warning/confirm to split it to more than one data files from inside to outside*/
 
-        /*TODO: call action for SplitNestedSQL*/
+        /*TODO: Future Feature: call action for SplitNestedSQL*/
 
         return null;
     }

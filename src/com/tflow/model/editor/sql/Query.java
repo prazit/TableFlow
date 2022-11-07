@@ -19,6 +19,9 @@ public class Query implements Selectable {
 
     private Tower tower;
 
+    /*selected column list include normal-column and alias-columns/compute-columns*/
+    private List<QueryColumn> columnList;
+
     private List<QueryTable> tableList;
     private List<Line> lineList;
 
@@ -28,6 +31,7 @@ public class Query implements Selectable {
     public Query() {
         name= "";
         tower = new Tower();
+        columnList = new ArrayList<>();
         tableList = new ArrayList<>();
         lineList = new ArrayList<>();
         filterList = new ArrayList<>();
@@ -56,6 +60,14 @@ public class Query implements Selectable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<QueryColumn> getColumnList() {
+        return columnList;
+    }
+
+    public void setColumnList(List<QueryColumn> columnList) {
+        this.columnList = columnList;
     }
 
     public List<QueryTable> getTableList() {

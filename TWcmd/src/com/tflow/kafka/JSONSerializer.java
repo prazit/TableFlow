@@ -21,7 +21,7 @@ public class JSONSerializer implements Serializer<Object> {
         }
 
 
-        /*TODO: try to configs like this:> https://stackoverflow.com/questions/55152219/handling-large-messages-with-kafka*/
+        /*Notice: kafka topic need to configs like this:> https://stackoverflow.com/questions/55152219/handling-large-messages-with-kafka*/
         /*TODO: remove messageBuilder for debug info*/
         StringBuilder messageBuilder = new StringBuilder();
 
