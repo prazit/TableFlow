@@ -3,16 +3,20 @@ package com.tflow.model.editor.cmd;
 import com.clevel.dconvers.data.DataColumn;
 import com.clevel.dconvers.data.DataRow;
 import com.clevel.dconvers.data.DataTable;
-import com.tflow.model.data.query.ColumnType;
+import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.DataManager;
+import com.tflow.model.data.ProjectDataException;
+import com.tflow.model.data.ProjectUser;
+import com.tflow.model.data.PropertyVar;
+import com.tflow.model.data.query.*;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
-import com.tflow.model.editor.sql.Query;
-import com.tflow.model.editor.sql.QueryColumn;
-import com.tflow.model.editor.sql.QueryFilter;
-import com.tflow.model.editor.sql.QueryTable;
+import com.tflow.model.editor.sql.*;
+import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.Properties;
 import com.tflow.util.DConversHelper;
 import com.tflow.util.ProjectUtil;
+import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +39,8 @@ public class AddQuery extends Command {
         BinaryFile sqlFile = (BinaryFile) paramMap.get(CommandParamKey.BINARY_FILE);
 
         Query query = new Query();
+        query.setId(ProjectUtil.newUniqueId(project));
+        dataFile.getPropertyMap().put(PropertyVar.queryId.name(), query.getId());
 
         /* assume sql is simple select (no nested) */
         String sql = new String(sqlFile.getContent(), StandardCharsets.ISO_8859_1).replaceAll("[\\s]+", " ");
@@ -66,13 +72,78 @@ public class AddQuery extends Command {
         addFilterTo(filterList, whereArray);
         if (log.isDebugEnabled()) log.debug("FilterList: {}", Arrays.toString(filterList.toArray()));
 
-        /*TODO: oder by => sortList*/
+        /*oder by => sortList*/
         String[] orderByArray = splitBy(orderBy.toString(), "[,]");
+        List<QuerySort> sortList = query.getSortList();
+        addSortTo(sortList, orderByArray);
+        if (log.isDebugEnabled()) log.debug("SortList: {}", Arrays.toString(sortList.toArray()));
 
-        // TODO: save Query Data
+        // save Query Data
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        DataManager dataManager = project.getDataManager();
+        ProjectUser projectUser = workspace.getProjectUser();
+        int stepId = project.getActiveStep().getId();
+        saveQuery(query, stepId, mapper, dataManager, projectUser);
 
-        // TODO: save DataFile
+        // save DataFile
+        dataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), projectUser, dataFile.getId(), stepId);
 
+        // save Project data: need to update Project record every Action that call the newUniqueId*/
+        dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
+
+        // need to wait commit thread after addData.
+        dataManager.waitAllTasks();
+
+    }
+
+    private void saveQuery(Query query, int stepId, ProjectMapper mapper, DataManager dataManager, ProjectUser projectUser) {
+        int queryId = query.getId();
+        dataManager.addData(ProjectFileType.QUERY, mapper.map(query), projectUser, queryId, stepId, String.valueOf(queryId));
+
+        /*QUERY_TABLE_LIST*/
+        dataManager.addData(ProjectFileType.QUERY_TABLE_LIST, mapper.fromQueryTableList(query.getTableList()), projectUser, queryId, stepId, String.valueOf(queryId));
+
+        /*QUERY_TABLE*/
+        List<QueryTable> tableList = query.getTableList();
+        int tableId;
+        for (QueryTable queryTable : tableList) {
+            tableId = queryTable.getId();
+            dataManager.addData(ProjectFileType.QUERY_TABLE, mapper.map(queryTable), projectUser, tableId, stepId, (queryId + "/" + tableId));
+
+            /*QUERY_COLUMN_LIST*/
+            dataManager.addData(ProjectFileType.QUERY_COLUMN_LIST, mapper.fromQueryColumnList(queryTable.getColumnList()), projectUser, queryId, stepId, (queryId + "/" + tableId));
+
+            /*QUERY_COLUMN*/
+            List<QueryColumn> columnList = queryTable.getColumnList();
+            int columnId;
+            for (QueryColumn queryColumn : columnList) {
+                columnId = queryColumn.getId();
+                dataManager.addData(ProjectFileType.QUERY_COLUMN, mapper.map(queryColumn), projectUser, columnId, stepId, (queryId + "/" + tableId));
+            }
+        }
+
+        /*QUERY_FILTER_LIST*/
+        dataManager.addData(ProjectFileType.QUERY_FILTER_LIST, mapper.fromQueryFilterList(query.getFilterList()), projectUser, queryId, stepId, String.valueOf(queryId));
+
+        /*QUERY_FILTER*/
+        List<QueryFilter> filterList = query.getFilterList();
+        QueryFilterData queryFilterData;
+        int filterId;
+        for (QueryFilter queryFilter : filterList) {
+            filterId = queryFilter.getId();
+            dataManager.addData(ProjectFileType.QUERY_FILTER, mapper.map(queryFilter), projectUser, filterId, stepId, String.valueOf(queryId));
+        }
+
+        /*QUERY_SORT_LIST*/
+        dataManager.addData(ProjectFileType.QUERY_SORT_LIST, mapper.fromQuerySortList(query.getSortList()), projectUser, queryId, stepId, String.valueOf(queryId));
+
+        /*QUERY_SORT*/
+        QuerySortData querySortData;
+        int sortId;
+        for (QuerySort querySort : query.getSortList()) {
+            sortId = querySort.getId();
+            dataManager.addData(ProjectFileType.QUERY_SORT, mapper.map(querySort), projectUser, sortId, stepId, String.valueOf(queryId));
+        }
     }
 
     private void addFilterTo(List<QueryFilter> filterList, String[] whereArray) {
@@ -244,6 +315,16 @@ public class AddQuery extends Command {
             queryColumn.setValue(value);
             queryColumn.setSelected(true);
             selectedColumnList.add(queryColumn);
+        }
+    }
+
+    private void addSortTo(List<QuerySort> sortList, String[] sortArray) {
+        sortArray[0] = ", " + sortArray[0];
+        QuerySort querySort;
+        int index = 0;
+        for (String sort : sortArray) {
+            querySort = new QuerySort(index++, ProjectUtil.newUniqueId(project), sort.substring(1).trim());
+            sortList.add(querySort);
         }
     }
 

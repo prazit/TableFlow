@@ -13,6 +13,12 @@ public class QuerySort implements Selectable {
     private int index;
     private String value;
 
+    public QuerySort(int index, int id, String value) {
+        this.id = id;
+        this.index = index;
+        this.value = value;
+    }
+
     public int getId() {
         return id;
     }

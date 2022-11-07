@@ -22,7 +22,6 @@ public class JSONSerializer implements Serializer<Object> {
 
 
         /*Notice: kafka topic need to configs like this:> https://stackoverflow.com/questions/55152219/handling-large-messages-with-kafka*/
-        /*TODO: remove messageBuilder for debug info*/
         StringBuilder messageBuilder = new StringBuilder();
 
         /* for Write Producer, for Read Producer */
@@ -94,7 +93,7 @@ public class JSONSerializer implements Serializer<Object> {
         }
 
         messageBuilder.append(", Message-Size: ").append(serialized == null ? 0 : serialized.length);
-        LoggerFactory.getLogger(JSONSerializer.class).warn("JSONSerialize: serialized={}", messageBuilder);
+        LoggerFactory.getLogger(JSONSerializer.class).debug("JSONSerialize: serialized={}", messageBuilder);
 
         return serialized;
     }

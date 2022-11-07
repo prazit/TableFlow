@@ -465,8 +465,6 @@ public class ProjectController extends Controller {
             /*get object type from issue.objectType*/
             objectType = issue.getObjectType().name().toLowerCase().replace("_", "-");
 
-            /*TODO: need to improve message for types of child of table [OUTPUT,COLUMN,TRANSFORMATION]*/
-
             /*message pattern from IssueType*/
             if (IssueType.REQUIRED == issue.getType()) {
                 display = "Required value for " + (propertyLabel == null ? issue.getPropertyVar() : propertyLabel) + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);

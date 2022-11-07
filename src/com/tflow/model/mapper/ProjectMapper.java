@@ -8,10 +8,7 @@ import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.room.Floor;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
-import com.tflow.model.editor.sql.Query;
-import com.tflow.model.editor.sql.QueryColumn;
-import com.tflow.model.editor.sql.QueryFilter;
-import com.tflow.model.editor.sql.QueryTable;
+import com.tflow.model.editor.sql.*;
 import com.tflow.model.editor.view.VersionedFile;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -100,6 +97,15 @@ public interface ProjectMapper {
     FloorData map(Floor floor);
 
     RoomData map(Room room);
+
+    QueryData map(Query query);
+
+    QueryColumnData map(QueryColumn queryColumn);
+
+    QueryFilterData map(QueryFilter queryFilter);
+
+    QuerySortData map(QuerySort querySort);
+
 
 
     ProjectGroupList map(GroupListData groupListData);
@@ -216,6 +222,22 @@ public interface ProjectMapper {
         return variable.getId();
     }
 
+    default Integer id(QueryTable queryTable) {
+        return queryTable.getId();
+    }
+
+    default Integer id(QueryColumn queryColumn) {
+        return queryColumn.getId();
+    }
+
+    default Integer id(QueryFilter queryFilter) {
+        return queryFilter.getId();
+    }
+
+    default Integer id(QuerySort querySort) {
+        return querySort.getId();
+    }
+
     default String selectableId(Selectable selectable) {
         return selectable.getSelectableId();
     }
@@ -305,5 +327,13 @@ public interface ProjectMapper {
     List<VersionedFileData> fromVersionedFileList(List<VersionedFile> versionedFileList);
 
     List<Integer> fromVariableList(List<Variable> variableList);
+
+    List<Integer> fromQueryTableList(List<QueryTable> tableList);
+
+    List<Integer> fromQueryColumnList(List<QueryColumn> columnList);
+
+    List<Integer> fromQueryFilterList(List<QueryFilter> filterList);
+
+    List<Integer> fromQuerySortList(List<QuerySort> sortList);
 
 }
