@@ -42,7 +42,9 @@ public class SQLSelectUT extends UTBase {
                 "           tableC.c + ( tableA.c - tableC.a ) as c," +
                 "           tableA.d as d," +
                 "           tableA.e + ( tableA.f - tableA.g )," +
-                "           tableE.f" +
+                "           tableE.f," +
+                "           tableH.*," +
+                "           tableI.*" +
                 "from tableA, tableH, tableI" +
                 "   inner join tableB B on B.b = SUBSTR(TRIM(tableA.b), 0, 7) " +
                 "   left join tableC on (tableC.c = B.c) " +
@@ -88,9 +90,9 @@ public class SQLSelectUT extends UTBase {
         printArray("OrderBy-Array:", orderByArray);
 
         /*select => columnList*/
-        /*List<String> selectedColumnList = new ArrayList<>();
+        List<String> selectedColumnList = new ArrayList<>();
         addColumnTo(selectedColumnList, selectArray);
-        println("SelectedColumnList: {}", Arrays.toString(selectedColumnList.toArray()));*/
+        println("SelectedColumnList: {}", Arrays.toString(selectedColumnList.toArray()));
 
         /*from => tableList*/
         //List<QueryTable> tableList = query.getTableList();
@@ -255,7 +257,7 @@ public class SQLSelectUT extends UTBase {
         int index = 0;
         for (String column : selectArray) {
             uppercase = column.toUpperCase();
-            if (uppercase.replaceAll("\\s*[,]*\\s*[A-Z_]+[.][A-Z_]+\\s*(AS\\s*[A-Z_]+\\s*)*", "").isEmpty()) {
+            if (uppercase.replaceAll("\\s*[,]*\\s*[A-Z_]+[.][*A-Z_]+\\s*(AS\\s*[A-Z_]+\\s*)*", "").isEmpty()) {
                 if (uppercase.contains("AS")) {
                     type = ColumnType.ALIAS;
                     values = column.split("[Aa][Ss]");

@@ -10,10 +10,7 @@ import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.sql.*;
 import com.tflow.model.editor.view.VersionedFile;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +104,6 @@ public interface ProjectMapper {
     QuerySortData map(QuerySort querySort);
 
 
-
     ProjectGroupList map(GroupListData groupListData);
 
     ProjectGroup map(GroupData groupData);
@@ -175,6 +171,11 @@ public interface ProjectMapper {
     QueryFilter map(QueryFilterData queryFilterData);
 
     QueryFilter map(QuerySortData querySortData);
+
+    /*---- ALL COPY ----*/
+
+    @Mapping(target = "id", ignore = true)
+    void copy(QueryColumn sourceColumn, @MappingTarget QueryColumn targetColumn);
 
     /*---- ALL ABOUT ID ----*/
 

@@ -78,8 +78,11 @@ public class AddQuery extends Command {
         addSortTo(sortList, orderByArray);
         if (log.isDebugEnabled()) log.debug("SortList: {}", Arrays.toString(sortList.toArray()));
 
-        // save Query Data
+        /*correction-1: select tableA.* need all column from tableA*/
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        correctSelectAll(query, mapper);
+
+        // save Query Data
         DataManager dataManager = project.getDataManager();
         ProjectUser projectUser = workspace.getProjectUser();
         int stepId = project.getActiveStep().getId();
@@ -94,6 +97,38 @@ public class AddQuery extends Command {
         // need to wait commit thread after addData.
         dataManager.waitAllTasks();
 
+    }
+
+    private void correctSelectAll(Query query, ProjectMapper mapper) {
+        List<QueryColumn> columnList = query.getColumnList();
+        QueryColumn queryColumn;
+        QueryColumn newColumn;
+        QueryTable queryTable;
+        String tableName;
+        for (int index = 0; index < columnList.size(); index++) {
+
+            /*find column with star symbol*/
+            queryColumn = columnList.get(index);
+            if (!queryColumn.getName().equals("*")) continue;
+
+            /*find table from found-column*/
+            tableName = queryColumn.getValue().split("[.]")[0];
+            queryTable = findTable(tableName, query.getTableList());
+
+            /*remove found-column before insert columns*/
+            columnList.remove(index);
+
+            /*insert all column from found-table*/
+            for (QueryColumn column : queryTable.getColumnList()) {
+                column.setSelected(true);
+                newColumn = new QueryColumn();
+                mapper.copy(column, newColumn);
+                newColumn.setId(ProjectUtil.newUniqueId(project));
+                newColumn.setSelected(true);
+                columnList.add(index++, newColumn);
+            }
+
+        }
     }
 
     private void saveQuery(Query query, int stepId, ProjectMapper mapper, DataManager dataManager, ProjectUser projectUser) {
@@ -269,11 +304,16 @@ public class AddQuery extends Command {
                 tableList.add(queryTable);
                 loadColumnList(queryTable);
                 markSelectedColumn(queryTable, selectedColumnList);
-                QueryTable joinTable = findTable(queryTable.getJoinTable(), tableList);
-                queryTable.setJoinTableId(joinTable == null ? 0 : joinTable.getId());
             }
         }
         tableList.sort(Comparator.comparing(QueryTable::getName));
+
+        /*need Table-ID for JoinedTable*/
+        QueryTable joinTable;
+        for (QueryTable table : tableList) {
+            joinTable = findTable(table.getJoinTable(), tableList);
+            table.setJoinTableId(joinTable == null ? 0 : joinTable.getId());
+        }
     }
 
     private void addColumnTo(List<QueryColumn> selectedColumnList, String[] selectArray) {
@@ -287,7 +327,7 @@ public class AddQuery extends Command {
         int index = 0;
         for (String column : selectArray) {
             uppercase = column.toUpperCase();
-            if (uppercase.replaceAll("\\s*[,]*\\s*[A-Z_]+[.][A-Z_]+\\s*(AS\\s*[A-Z_]+\\s*)*", "").isEmpty()) {
+            if (uppercase.replaceAll("\\s*[,]*\\s*[A-Z_]+[.][*A-Z_]+\\s*(AS\\s*[A-Z_]+\\s*)*", "").isEmpty()) {
                 if (uppercase.contains("AS")) {
                     type = ColumnType.ALIAS;
                     values = column.split("[Aa][Ss]");
@@ -388,7 +428,7 @@ public class AddQuery extends Command {
                 return table;
             }
         }
-        return null;
+        throw new UnsupportedOperationException("Invalid Table Reference: " + tableName + " not found in table list!");
     }
 
     private void splitTableWithJoin(String table, String[] words, StringBuilder tableName, StringBuilder tableAlias, StringBuilder tableJoinType, StringBuilder joinedTableName, StringBuilder joinCondition) {
