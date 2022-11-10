@@ -4,15 +4,17 @@ import com.tflow.UTBase;
 import com.tflow.model.data.query.ColumnType;
 import com.tflow.model.data.query.QueryFilterConnector;
 import com.tflow.model.data.query.QueryFilterOperation;
+import jdk.nashorn.internal.runtime.regexp.RegExp;
+import jdk.nashorn.internal.runtime.regexp.RegExpFactory;
+import jdk.nashorn.internal.runtime.regexp.RegExpMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SQLSelectUT extends UTBase {
 
@@ -35,7 +37,7 @@ public class SQLSelectUT extends UTBase {
 
     @Test
     public void splitSQL() {
-        String sql = "" +
+        /*String sql = "" +
                 "    select " +
                 "           tableA.a," +
                 "           tableB.b as b," +
@@ -66,7 +68,47 @@ public class SQLSelectUT extends UTBase {
                 "   and tableA.d != 'd'" +
                 "   and tableA.f is null" +
                 "   and tableB.f is not null" +
-                "order    by tableA.a, b";
+                "order    by tableA.a, b";*/
+
+        String sql = "Select\n" +
+                "    'BG'                                    as schm_type,\n" +
+                "    BGM.BG_TYPE                             as schm_code,\n" +
+                "    ascii(substr(BGM.BG_SRL_NUM, 1, 1))\n" +
+                "        || ascii(substr(BGM.BG_SRL_NUM, 2, 1))\n" +
+                "        || ascii(substr(BGM.BG_SRL_NUM, 3, 1))\n" +
+                "        || substr(BGM.BG_SRL_NUM, 4, 77)    as deal_id,\n" +
+                "    '00000000'                              as first_payment_date,\n" +
+                "    to_char(bgm.bg_expiry_date, 'YYYYMMDD') as next_payment_date,\n" +
+                "    to_char(bgm.bg_expiry_date, 'YYYYMMDD') as next_interest_date,\n" +
+                "    0.00                                    as outstanding_accrue_interest,\n" +
+                "    ' '                                     as revolving_nonrevolving_flag,\n" +
+                "    some(substr(BGM.BG_SRL_NUM, 1, 1))\n" +
+                "        || some(substr(BGM.BG_SRL_NUM, 2, 1))\n" +
+                "        || some(substr(BGM.BG_SRL_NUM, 3, 1))\n" +
+                "        || substr(BGM.BG_SRL_NUM, 4, 77),\n" +
+                "\n" +
+                "from tbaadm.bgm\n" +
+                "         left join tbaadm.bgp on (bgp.bg_type = bgm.bg_type)\n" +
+                "         left join tbaadm.sol on (sol.sol_id = 792)\n" +
+                "\n" +
+                "where bgm.entity_cre_flg = 'Y'\n" +
+                "  and bgp.cont_liab_tran_flg = 'Y'\n" +
+                "\n" +
+                "  and (  bgm.close_date is null\n" +
+                "    or ( bgm.close_date is not null\n" +
+                "                       )\n" +
+                "    )\n" +
+                "order by\n" +
+                "    schm_type,\n" +
+                "    schm_code,\n" +
+                "    deal_id,\n" +
+                "    first_payment_date,\n" +
+                "    next_payment_date,\n" +
+                "    next_interest_date,\n" +
+                "    outstanding_accrue_interest,\n" +
+                "    revolving_nonrevolving_flag,\n" +
+                "    SOL.SOL_ID,\n" +
+                "    BGM.BG_SRL_NUM\n";
 
         sql = sql.replaceAll("[\\s]+", " ");
         StringBuilder select = new StringBuilder();
@@ -79,10 +121,10 @@ public class SQLSelectUT extends UTBase {
         log.debug("AddQuery: where = {}", where);
         log.debug("AddQuery: orderBy = {}", orderBy);
 
-        String[] selectArray = splitBy(select.toString(), "[,]");
+        String[] selectArray = splitColumn(select.toString());
         String[] fromArray = splitBy(from.toString(), "([Ff][Uu][Ll][Ll] |[Ll][Ee][Ff][Tt] |[Rr][Ii][Gg][Hh][Tt] )*([Ii][Nn][Nn][Ee][Rr] |[Oo][Uu][Tt][Ee][Rr] )*([Jj][Oo][Ii][Nn])");
         String[] whereArray = splitBy(where.toString(), "[Aa][Nn][Dd]|[Oo][Rr]");
-        String[] orderByArray = splitBy(orderBy.toString(), "[,]");
+        String[] orderByArray = splitColumn(orderBy.toString());
 
         printArray("Select-Array:", selectArray);
         printArray("From-Array:", fromArray);
@@ -260,7 +302,7 @@ public class SQLSelectUT extends UTBase {
             if (uppercase.replaceAll("\\s*[,]*\\s*[A-Z_]+[.][*A-Z_]+\\s*(AS\\s*[A-Z_]+\\s*)*", "").isEmpty()) {
                 if (uppercase.contains("AS")) {
                     type = ColumnType.ALIAS;
-                    values = column.split("[Aa][Ss]");
+                    values = column.split("[^a-zA-Z0-9_][Aa][Ss][^a-zA-Z0-9_]");
                     name = values[1];
                     value = values[0].startsWith(",") ? values[0].substring(1) : values[0];
                 } else {
@@ -271,7 +313,7 @@ public class SQLSelectUT extends UTBase {
                 }
             } else if (uppercase.contains("AS")) {
                 type = ColumnType.COMPUTE;
-                values = column.split("[Aa][Ss]");
+                values = column.split("[^a-zA-Z0-9_][Aa][Ss][^a-zA-Z0-9_]");
                 name = values[1];
                 value = values[0].startsWith(",") ? values[0].substring(1) : values[0];
             } else {
@@ -336,6 +378,81 @@ public class SQLSelectUT extends UTBase {
         String splitter = "__SPLITTER__";
         source = source.replaceAll("(" + splitters + ")", splitter + "$1");
         return source.split(splitter);
+    }
+
+    private String[] splitColumn(String source) {
+        /*split compute-column need different way (Remember: compute-column always need alias, need alert at the Extract process)*/
+        List<String> columnList = new ArrayList<>();
+        String replacedWord = "RE__PLACED__";
+
+        /*collect all Quoted*/
+        String quotedPattern = "[']([^']+)[']|[\\\"]([^\\\"]+)[\\\"]|[\\(]([^\\(\\)]+)[\\)]";
+        LinkedHashMap<String, String> quotedMap = new LinkedHashMap();
+        int count = 0;
+        String replaced = source;
+        while (true) {
+            String key = replacedWord + (++count);
+            String before = replaced;
+            int lengthBefore = before.length();
+            replaced = before.replaceFirst(quotedPattern, key);
+            if (replaced.length() != lengthBefore) {
+                int index = replaced.indexOf(key);
+                String value = before.substring(index, index + (lengthBefore - replaced.length() + key.length()));
+                quotedMap.put(key, value);
+            } else {
+                break;
+            }
+        }
+        //println("source: {}", source);
+        //println("replaced: {}", replaced);
+        //println("quotedMap: {}", quotedMap);
+
+        /*selector: (operator) (constant|name)*/
+        String selector = "((\\s*[\\+\\-\\*\\/]|\\s*[\\|\\&]{2})*((\\s*['].*[']|\\s*[\"].*[\"]|\\s*[0-9]+([.][0-9]+)?)|(\\s*[A-Za-z][A-Za-z0-9_]*[.][A-Za-z][A-Za-z0-9_]*|\\s*[A-Za-z][A-Za-z0-9_]*)))+";
+        String item = firstItem(replaced, selector);
+        while (item != null) {
+            replaced = replaced.replaceFirst(selector, "");
+            columnList.add(item);
+            item = firstItem(replaced, selector);
+        }
+        //printArray("columnList", columnList.toArray(new String[columnList.size()]));
+
+        /*restore all value by replace all key*/
+        String[] result = new String[columnList.size()];
+        int index = 0;
+        selector = replacedWord + "[0-9]+";
+        String value;
+        String key;
+        for (String column : columnList) {
+            indent();
+            key = firstItem(column, selector);
+            while (key != null) {
+                value = quotedMap.get(key);
+                column = column.replaceFirst(selector, value);
+                key = firstItem(column, selector);
+            }
+            result[index++] = column;
+            indent(-1);
+        }
+
+        //printArray("result", result);
+        return result;
+    }
+
+    /**
+     * find item in source by selector
+     *
+     * @return first item when found, otherwise return null
+     */
+    private String firstItem(String source, String selector) {
+        String finder = "F__I__N__D__E__R";
+        int lengthBefore = source.length();
+        String replaced = source.replaceFirst(selector, finder);
+        if (replaced.length() != lengthBefore) {
+            int index = replaced.indexOf(finder);
+            return source.substring(index, index + (lengthBefore - replaced.length() + finder.length()));
+        }
+        return null;
     }
 
     private void splitSQLPart(String sql, StringBuilder select, StringBuilder from, StringBuilder where, StringBuilder orderBy) {

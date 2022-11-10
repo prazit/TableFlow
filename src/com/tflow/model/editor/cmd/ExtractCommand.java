@@ -32,7 +32,8 @@ public abstract class ExtractCommand extends Command {
 
         /*start DConvers to create source table by configs above*/
         if (!dConversHelper.run()) {
-            throw new UnsupportedOperationException("DConvers exit with some error, exit code = " + dConversHelper.getExitCode());
+            Throwable firstError = dConversHelper.getFirstError();
+            throw new UnsupportedOperationException((firstError == null ? "DConvers exit with some error, exit code = " + dConversHelper.getExitCode() + "." : firstError.getMessage()));
         }
 
         /*got extracted table, get source table by id*/
@@ -42,6 +43,10 @@ public abstract class ExtractCommand extends Command {
         com.clevel.dconvers.data.DataTable extractedTable = dConversHelper.getSourceTable(dConversTableId);
 
         DataRow firstRow = extractedTable.getRow(0);
+        if (firstRow == null) {
+            throw new UnsupportedOperationException("No data received from the SQL! please add at lease one row before extract data.");
+        }
+
         if ((idColName == null || idColName.isEmpty()) && firstRow != null) {
             idColName = firstRow.getColumn(0).getName();
         }

@@ -331,6 +331,8 @@ public abstract class Command {
 
         try {
             extractor.execute(paramMap);
+        } catch (UnsupportedOperationException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new UnsupportedOperationException("extract data failure", ex);
         }

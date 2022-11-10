@@ -12,6 +12,10 @@ body .ui-panelgrid .ui-panelgrid-cell {
     border: 0;
 }
 
+body .screen-area .screen-blocker {
+    z-index: 90909;
+}
+
 .screen-area > .ui-splitter {
     height: 100%;
     border: 0;

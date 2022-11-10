@@ -91,7 +91,7 @@ public class QueryColumn {
                 ", name:'" + name + '\'' +
                 ", value:'" + value + '\'' +
                 ", selected:" + selected +
-                ", owner:" + owner.getName() +
+                ", owner:" + (owner == null ? "none" : owner.getName()) +
                 '}';
     }
 }

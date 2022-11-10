@@ -3,6 +3,7 @@ package com.tflow.model.editor.sql;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.room.Room;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class QueryTable extends Room {
         this.name = name;
         this.alias = name;
         this.joinType = TableJoinType.NONE;
+        this.columnList = new ArrayList<>();
     }
 
     public QueryTable(String name, String alias, String joinType, String joinTable, String joinCondition) {
@@ -40,6 +42,7 @@ public class QueryTable extends Room {
         this.joinType = TableJoinType.valueOf(joinType);
         this.joinTable = joinTable;
         this.joinCondition = joinCondition;
+        this.columnList = new ArrayList<>();
     }
 
     public int getId() {

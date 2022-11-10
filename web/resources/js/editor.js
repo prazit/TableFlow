@@ -9,11 +9,11 @@ function blockScreen(text) {
     if (tflow.blockScreenText === undefined) tflow.blockScreenText = $('.screen-block-text');
     if (text === undefined) text = "PLEASE WAIT";
     if (tflow.blockScreenText[0] !== undefined) tflow.blockScreenText[0].innerText = text;
-    PF('screenBlock').show();
+    $('.screen-blocker').show();
 }
 
 function unblockScreen() {
-    PF('screenBlock').hide();
+    $('.screen-blocker').hide();
 }
 
 function updateProperty(className) {

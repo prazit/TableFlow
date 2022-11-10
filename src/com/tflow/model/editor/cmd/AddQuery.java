@@ -42,6 +42,8 @@ public class AddQuery extends Command {
         query.setId(ProjectUtil.newUniqueId(project));
         dataFile.getPropertyMap().put(PropertyVar.queryId.name(), query.getId());
 
+        /* TODO: remove block of comment and inline-comment first*/
+
         /* assume sql is simple select (no nested) */
         String sql = new String(sqlFile.getContent(), StandardCharsets.ISO_8859_1).replaceAll("[\\s]+", " ");
         StringBuilder select = new StringBuilder();
@@ -412,12 +414,13 @@ public class AddQuery extends Command {
     }
 
     private QueryColumn findColumn(String columnName, QueryTable queryTable) {
-        columnName = columnName.toUpperCase();
+        columnName = columnName.trim().toUpperCase();
         for (QueryColumn column : queryTable.getColumnList()) {
             if (columnName.equals(column.getName().toLowerCase())) {
                 return column;
             }
         }
+        // need null instead of throw new UnsupportedOperationException("Invalid Column Reference: '" + columnName + "' not found in table '" + queryTable.getName() + "'");
         return null;
     }
 
@@ -428,7 +431,7 @@ public class AddQuery extends Command {
                 return table;
             }
         }
-        throw new UnsupportedOperationException("Invalid Table Reference: " + tableName + " not found in table list!");
+        throw new UnsupportedOperationException("Invalid Table Reference: '" + tableName + "' not found in table list!");
     }
 
     private void splitTableWithJoin(String table, String[] words, StringBuilder tableName, StringBuilder tableAlias, StringBuilder tableJoinType, StringBuilder joinedTableName, StringBuilder joinCondition) {

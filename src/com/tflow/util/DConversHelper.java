@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Notice: please don't make static function in here.
@@ -206,5 +207,12 @@ public class DConversHelper {
 
     public void addVariable(String name, String value) {
         properties.addProperty("variable." + name, value);
+    }
+
+    public Throwable getFirstError() {
+        if (dConvers.errorList.size() == 0) {
+            return null;
+        }
+        return dConvers.errorList.get(0);
     }
 }

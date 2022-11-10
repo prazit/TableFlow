@@ -21,8 +21,9 @@ public class AddQuery extends Action {
     @Override
     protected void initCommands() {
         setParams(
-                CommandParamKey.PROJECT,
-                CommandParamKey.DATA_FILE
+                CommandParamKey.WORKSPACE,
+                CommandParamKey.DATA_FILE,
+                CommandParamKey.BINARY_FILE
         );
         setCommands(
                 new com.tflow.model.editor.cmd.AddQuery()

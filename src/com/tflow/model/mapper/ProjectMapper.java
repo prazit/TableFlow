@@ -175,6 +175,7 @@ public interface ProjectMapper {
     /*---- ALL COPY ----*/
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "selected", ignore = true)
     void copy(QueryColumn sourceColumn, @MappingTarget QueryColumn targetColumn);
 
     /*---- ALL ABOUT ID ----*/
