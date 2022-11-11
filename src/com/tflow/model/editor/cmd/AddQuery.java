@@ -22,16 +22,18 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class AddQuery extends Command {
 
+    private Logger log;
     private Workspace workspace;
     private Project project;
     private DataFile dataFile;
 
     @Override
     public void execute(Map<CommandParamKey, Object> paramMap) throws UnsupportedOperationException {
-        Logger log = LoggerFactory.getLogger(getClass());
+        log = LoggerFactory.getLogger(getClass());
 
         workspace = (Workspace) paramMap.get(CommandParamKey.WORKSPACE);
         project = workspace.getProject();
@@ -41,8 +43,6 @@ public class AddQuery extends Command {
         Query query = new Query();
         query.setId(ProjectUtil.newUniqueId(project));
         dataFile.getPropertyMap().put(PropertyVar.queryId.name(), query.getId());
-
-        /* TODO: remove block of comment and inline-comment first*/
 
         /* assume sql is simple select (no nested) */
         String sql = new String(sqlFile.getContent(), StandardCharsets.ISO_8859_1).replaceAll("[\\s]+", " ");
@@ -57,7 +57,7 @@ public class AddQuery extends Command {
         log.debug("AddQuery: orderBy = {}", where);
 
         /*select => columnList*/
-        String[] selectArray = splitBy(select.toString(), "[,]");
+        String[] selectArray = splitColumn(select.toString());
         List<QueryColumn> selectedColumnList = query.getColumnList();
         addColumnTo(selectedColumnList, selectArray);
         if (log.isDebugEnabled()) log.debug("SelectedColumnList: {}", Arrays.toString(selectedColumnList.toArray()));
@@ -75,7 +75,7 @@ public class AddQuery extends Command {
         if (log.isDebugEnabled()) log.debug("FilterList: {}", Arrays.toString(filterList.toArray()));
 
         /*oder by => sortList*/
-        String[] orderByArray = splitBy(orderBy.toString(), "[,]");
+        String[] orderByArray = splitColumn(orderBy.toString());
         List<QuerySort> sortList = query.getSortList();
         addSortTo(sortList, orderByArray);
         if (log.isDebugEnabled()) log.debug("SortList: {}", Arrays.toString(sortList.toArray()));
@@ -137,6 +137,7 @@ public class AddQuery extends Command {
         int queryId = query.getId();
         dataManager.addData(ProjectFileType.QUERY, mapper.map(query), projectUser, queryId, stepId, String.valueOf(queryId));
 
+        /*TODO: QUERY_TABLE_LIST data in storage is not valid*/
         /*QUERY_TABLE_LIST*/
         dataManager.addData(ProjectFileType.QUERY_TABLE_LIST, mapper.fromQueryTableList(query.getTableList()), projectUser, queryId, stepId, String.valueOf(queryId));
 
@@ -184,6 +185,8 @@ public class AddQuery extends Command {
     }
 
     private void addFilterTo(List<QueryFilter> filterList, String[] whereArray) {
+        if (whereArray.length == 0) return;
+
         /*first condition need connector same as other condition*/
         whereArray[0] = "AND " + whereArray[0];
         StringBuilder operation;
@@ -276,11 +279,14 @@ public class AddQuery extends Command {
 
     private void addTableTo(List<QueryTable> tableList, String[] fromArray, List<QueryColumn> selectedColumnList) {
         QueryTable queryTable;
+        StringBuilder tableSchema;
         StringBuilder tableName;
         StringBuilder tableAlias;
         StringBuilder tableJoinType;
         StringBuilder joinedTableName;
         StringBuilder joinCondition;
+        String tableNameString;
+        String tableAliasString;
         String[] words;
         String upperCase;
         for (String table : fromArray) {
@@ -288,21 +294,28 @@ public class AddQuery extends Command {
             upperCase = words[0].toUpperCase();
             if (upperCase.isEmpty() || !"INNER|LEFT|RIGHT|FULL|OUTER".contains(upperCase)) {
                 for (String word : words) {
-                    queryTable = new QueryTable(word);
+                    if (word.contains(".")) {
+                        String[] schemaName = word.split("[.]");
+                        queryTable = new QueryTable(schemaName[1]);
+                        queryTable.setSchema(schemaName[0]);
+                    } else {
+                        queryTable = new QueryTable(word);
+                    }
                     tableList.add(queryTable);
                     loadColumnList(queryTable);
                     markSelectedColumn(queryTable, selectedColumnList);
                 }
 
             } else {
+                tableSchema = new StringBuilder();
                 tableName = new StringBuilder();
                 tableAlias = new StringBuilder();
                 tableJoinType = new StringBuilder();
                 joinedTableName = new StringBuilder();
                 joinCondition = new StringBuilder();
-                splitTableWithJoin(table, words, tableName, tableAlias, tableJoinType, joinedTableName, joinCondition);
+                splitTableWithJoin(table, words, tableSchema, tableName, tableAlias, tableJoinType, joinedTableName, joinCondition);
+                queryTable = new QueryTable(tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
 
-                queryTable = new QueryTable(tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
                 tableList.add(queryTable);
                 loadColumnList(queryTable);
                 markSelectedColumn(queryTable, selectedColumnList);
@@ -313,7 +326,10 @@ public class AddQuery extends Command {
         /*need Table-ID for JoinedTable*/
         QueryTable joinTable;
         for (QueryTable table : tableList) {
-            joinTable = findTable(table.getJoinTable(), tableList);
+            String joinTableName = table.getJoinTable();
+            if (joinTableName.isEmpty()) continue;
+
+            joinTable = findTable(joinTableName, tableList);
             table.setJoinTableId(joinTable == null ? 0 : joinTable.getId());
         }
     }
@@ -325,14 +341,15 @@ public class AddQuery extends Command {
         String name;
         String value;
         String uppercase;
+        String normalNamePattern = "([.]*[A-Z_*][A-Z0-9_]+)+";
         int compute = 0;
         int index = 0;
         for (String column : selectArray) {
             uppercase = column.toUpperCase();
-            if (uppercase.replaceAll("\\s*[,]*\\s*[A-Z_]+[.][*A-Z_]+\\s*(AS\\s*[A-Z_]+\\s*)*", "").isEmpty()) {
-                if (uppercase.contains("AS")) {
+            if (uppercase.replaceAll("\\s*[,]*\\s*" + normalNamePattern + "(\\s+AS\\s+[A-Z0-9_]+\\s*|\\s*)", "").isEmpty()) {
+                if (Pattern.compile("[\\s]AS[\\s]").matcher(uppercase).find()) {
                     type = ColumnType.ALIAS;
-                    values = column.split("[Aa][Ss]");
+                    values = column.split("[\\s][Aa][Ss][\\s]");
                     name = values[1];
                     value = values[0].startsWith(",") ? values[0].substring(1) : values[0];
                 } else {
@@ -341,9 +358,9 @@ public class AddQuery extends Command {
                     name = values[1];
                     value = column.startsWith(",") ? column.substring(1) : column;
                 }
-            } else if (uppercase.contains("AS")) {
+            } else if (Pattern.compile("[\\s]AS[\\s]").matcher(uppercase).find()) {
                 type = ColumnType.COMPUTE;
-                values = column.split("[Aa][Ss]");
+                values = column.split("[\\s][Aa][Ss][\\s]");
                 name = values[1];
                 value = values[0].startsWith(",") ? values[0].substring(1) : values[0];
             } else {
@@ -361,6 +378,8 @@ public class AddQuery extends Command {
     }
 
     private void addSortTo(List<QuerySort> sortList, String[] sortArray) {
+        if (sortArray.length == 0) return;
+
         sortArray[0] = ", " + sortArray[0];
         QuerySort querySort;
         int index = 0;
@@ -427,14 +446,14 @@ public class AddQuery extends Command {
     private QueryTable findTable(String tableName, List<QueryTable> tableList) {
         tableName = tableName.toUpperCase();
         for (QueryTable table : tableList) {
-            if (tableName.equals(table.getName().toLowerCase())) {
+            if (tableName.equals(table.getName().toUpperCase())) {
                 return table;
             }
         }
         throw new UnsupportedOperationException("Invalid Table Reference: '" + tableName + "' not found in table list!");
     }
 
-    private void splitTableWithJoin(String table, String[] words, StringBuilder tableName, StringBuilder tableAlias, StringBuilder tableJoinType, StringBuilder joinedTableName, StringBuilder joinCondition) {
+    private void splitTableWithJoin(String table, String[] words, StringBuilder tableSchema, StringBuilder tableName, StringBuilder tableAlias, StringBuilder tableJoinType, StringBuilder joinedTableName, StringBuilder joinCondition) {
         /*this is one of JOIN Type and condition always appear after word 'ON'*/
         joinCondition.append(table.split("[Oo][Nn]")[1]);
 
@@ -458,9 +477,23 @@ public class AddQuery extends Command {
             }
         }
 
-        /*find Joined Table Name*/
         String tableNameString = tableName.toString();
+        if (tableNameString.contains(".")) {
+            String[] schemaName = tableNameString.split("[.]");
+            tableSchema.append(schemaName[0]);
+            tableNameString = schemaName[1];
+            tableName.setLength(0);
+            tableName.append(tableNameString);
+        }
         String tableAliasString = tableAlias.toString();
+        if (tableAliasString.contains(".")) {
+            String[] schemaName = tableAliasString.split("[.]");
+            tableAliasString = schemaName[1];
+            tableAlias.setLength(0);
+            tableAlias.append(tableAliasString);
+        }
+
+        /*find Joined Table Name*/
         for (int i = next; i < wordCount; i++) {
             if (words[i].contains(".")) {
                 /*this is table-name.column-name*/
@@ -477,6 +510,74 @@ public class AddQuery extends Command {
         String splitter = "__SPLITTER__";
         source = source.replaceAll("(" + splitters + ")", splitter + "$1");
         return source.split(splitter);
+    }
+
+    private String[] splitColumn(String source) {
+        /*split compute-column need different way (Remember: compute-column always need alias, need alert at the Extract process)*/
+        List<String> columnList = new ArrayList<>();
+        String replacedWord = "RE__PLACED__";
+
+        /*collect all Quoted*/
+        String quotedPattern = "[']([^']+)[']|[\\\"]([^\\\"]+)[\\\"]|[\\(]([^\\(\\)]+)[\\)]";
+        LinkedHashMap<String, String> quotedMap = new LinkedHashMap();
+        int count = 0;
+        String replaced = source;
+        while (true) {
+            String key = replacedWord + (++count);
+            String before = replaced;
+            int lengthBefore = before.length();
+            replaced = before.replaceFirst(quotedPattern, key);
+            if (replaced.length() != lengthBefore) {
+                int index = replaced.indexOf(key);
+                String value = before.substring(index, index + (lengthBefore - replaced.length() + key.length()));
+                quotedMap.put(key, value);
+            } else {
+                break;
+            }
+        }
+
+        /*selector: (operator) (constant|name)*/
+        String selector = "((\\s*[\\+\\-\\*\\/]|\\s*[\\|\\&]{2})*((\\s*['].*[']|\\s*[\"].*[\"]|\\s*[0-9]+([.][0-9]+)?)|(\\s*[A-Za-z][A-Za-z0-9_]*[.][A-Za-z][A-Za-z0-9_]*|\\s*[A-Za-z][A-Za-z0-9_]*)))+";
+        String item = firstItem(replaced, selector);
+        while (item != null) {
+            replaced = replaced.replaceFirst(selector, "");
+            columnList.add(item);
+            item = firstItem(replaced, selector);
+        }
+
+        /*restore all value by replace all key*/
+        String[] result = new String[columnList.size()];
+        int index = 0;
+        selector = replacedWord + "[0-9]+";
+        String value;
+        String key;
+        for (String column : columnList) {
+            key = firstItem(column, selector);
+            while (key != null) {
+                value = quotedMap.get(key);
+                column = column.replaceFirst(selector, value);
+                key = firstItem(column, selector);
+            }
+            result[index++] = column;
+        }
+
+        return result;
+    }
+
+    /**
+     * find item in source by selector
+     *
+     * @return first item when found, otherwise return null
+     */
+    private String firstItem(String source, String selector) {
+        String finder = "F__I__N__D__E__R";
+        int lengthBefore = source.length();
+        String replaced = source.replaceFirst(selector, finder);
+        if (replaced.length() != lengthBefore) {
+            int index = replaced.indexOf(finder);
+            return source.substring(index, index + (lengthBefore - replaced.length() + finder.length()));
+        }
+        return null;
     }
 
     private void splitSQLPart(String sql, StringBuilder select, StringBuilder from, StringBuilder where, StringBuilder orderBy) {

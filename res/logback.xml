@@ -49,6 +49,9 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
+    <logger name="com.clevel.dconvers" level="off">
+    </logger>
+
     <root level="trace">
         <appender-ref ref="STDOUT" />
     </root>

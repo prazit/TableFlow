@@ -71,7 +71,7 @@ public class SQLSelectUT extends UTBase {
                 "order    by tableA.a, b";*/
 
         String sql = "Select\n" +
-                "    'BG'                                    as schm_type,\n" +
+                /*"    'BG'                                    as schm_type,\n" +
                 "    BGM.BG_TYPE                             as schm_code,\n" +
                 "    ascii(substr(BGM.BG_SRL_NUM, 1, 1))\n" +
                 "        || ascii(substr(BGM.BG_SRL_NUM, 2, 1))\n" +
@@ -86,7 +86,8 @@ public class SQLSelectUT extends UTBase {
                 "        || some(substr(BGM.BG_SRL_NUM, 2, 1))\n" +
                 "        || some(substr(BGM.BG_SRL_NUM, 3, 1))\n" +
                 "        || substr(BGM.BG_SRL_NUM, 4, 77),\n" +
-                "\n" +
+                "\n" +*/
+                "'BG' as schm_type, BGM.BG_TYPE as schm_code, ascii(substr(BGM.BG_SRL_NUM, 1, 1)) || ascii(substr(BGM.BG_SRL_NUM, 2, 1)) || ascii(substr(BGM.BG_SRL_NUM, 3, 1)) || substr(BGM.BG_SRL_NUM, 4, 77) , '00000000' as first_payment_date, to_char(bgm.bg_expiry_date, 'YYYYMMDD') as next_payment_date, to_char(bgm.bg_expiry_date, 'YYYYMMDD') as next_interest_date, 0.00 as outstanding_accrue_interest, ' ' as revolving_nonrevolving_flag" +
                 "from tbaadm.bgm\n" +
                 "         left join tbaadm.bgp on (bgp.bg_type = bgm.bg_type)\n" +
                 "         left join tbaadm.sol on (sol.sol_id = 792)\n" +
@@ -98,6 +99,7 @@ public class SQLSelectUT extends UTBase {
                 "    or ( bgm.close_date is not null\n" +
                 "                       )\n" +
                 "    )\n" +
+                "\n" +
                 "order by\n" +
                 "    schm_type,\n" +
                 "    schm_code,\n" +
@@ -295,14 +297,15 @@ public class SQLSelectUT extends UTBase {
         String name;
         String value;
         String uppercase;
+        String normalNamePattern = "([.]*[A-Z_*][A-Z0-9_]+)+";
         int compute = 0;
         int index = 0;
         for (String column : selectArray) {
             uppercase = column.toUpperCase();
-            if (uppercase.replaceAll("\\s*[,]*\\s*[A-Z_]+[.][*A-Z_]+\\s*(AS\\s*[A-Z_]+\\s*)*", "").isEmpty()) {
-                if (uppercase.contains("AS")) {
+            if (uppercase.replaceAll("\\s*[,]*\\s*" + normalNamePattern + "(\\s+AS\\s+[A-Z0-9_]+\\s*|\\s*)", "").isEmpty()) {
+                if (Pattern.compile("[\\s]AS[\\s]").matcher(uppercase).find()) {
                     type = ColumnType.ALIAS;
-                    values = column.split("[^a-zA-Z0-9_][Aa][Ss][^a-zA-Z0-9_]");
+                    values = column.split("[\\s][Aa][Ss][\\s]");
                     name = values[1];
                     value = values[0].startsWith(",") ? values[0].substring(1) : values[0];
                 } else {
@@ -311,9 +314,9 @@ public class SQLSelectUT extends UTBase {
                     name = values[1];
                     value = column.startsWith(",") ? column.substring(1) : column;
                 }
-            } else if (uppercase.contains("AS")) {
+            } else if (Pattern.compile("[\\s]AS[\\s]").matcher(uppercase).find()) {
                 type = ColumnType.COMPUTE;
-                values = column.split("[^a-zA-Z0-9_][Aa][Ss][^a-zA-Z0-9_]");
+                values = column.split("[\\s][Aa][Ss][\\s]");
                 name = values[1];
                 value = values[0].startsWith(",") ? values[0].substring(1) : values[0];
             } else {

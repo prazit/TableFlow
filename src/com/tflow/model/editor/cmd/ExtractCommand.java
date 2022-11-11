@@ -9,6 +9,8 @@ import com.tflow.util.ProjectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,8 +61,32 @@ public abstract class ExtractCommand extends Command {
         /*copy column from extracted-table*/
         if (firstRow != null) {
             List<DataColumn> columnList = dataTable.getColumnList();
+            Map<String, String> nameMap = new HashMap<>();
+            int computeColumnIndex = 0;
+            String columnName;
+            String temp;
+            int maximumNameLength = 40; //TODO: need configs for column.name.max.length
             for (com.clevel.dconvers.data.DataColumn extractedColumn : firstRow.getColumnList()) {
-                columnList.add(new DataColumn(extractedColumn.getIndex(), DataType.parse(extractedColumn.getType()), extractedColumn.getName(), ProjectUtil.newElementId(project), dataTable));
+                columnName = extractedColumn.getName();
+                if (columnName.length() > maximumNameLength) {
+                    if (columnName.replaceFirst("[\\+\\-\\*\\/\\(\\)\\|\\&]", "").length() < columnName.length()) {
+                        columnName = "COMPUTED" + (++computeColumnIndex);
+                    } else {
+                        columnName = columnName.substring(0, maximumNameLength);
+                        temp = columnName;
+                        int count = 0;
+                        while (nameMap.get(temp) != null) {
+                            temp = columnName + (++count);
+                        }
+                        columnName = temp;
+                        if (extractedColumn.getName().equalsIgnoreCase(idColName)) {
+                            dataTable.setIdColName(columnName);
+                        }
+                    }
+                }
+                nameMap.put(columnName, columnName);
+
+                columnList.add(new DataColumn(extractedColumn.getIndex(), DataType.parse(extractedColumn.getType()), columnName, ProjectUtil.newElementId(project), dataTable));
             }
         }
 

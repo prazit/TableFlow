@@ -10,6 +10,7 @@ public enum PropertyVar {
     lock,
     columnList,
     dataSourceId,
+    editable,
     fixedLengthFormatList,
     format,
     function,

@@ -12,6 +12,7 @@ import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.sql.Query;
 import com.tflow.system.Properties;
 import com.tflow.util.DConversHelper;
+import com.tflow.util.HelperMap;
 import org.primefaces.event.TabChangeEvent;
 
 import javax.faces.view.ViewScoped;
@@ -103,7 +104,10 @@ public class SQLQueryController extends Controller {
     }
 
     private void reloadQuery() {
-        int queryId = (Integer) dataFile.getPropertyMap().get(PropertyVar.queryId.name());
+        HelperMap<String, Object> propertyMap = new HelperMap();
+        propertyMap.putAll(dataFile.getPropertyMap());
+
+        int queryId = propertyMap.getInteger(PropertyVar.queryId.name(), 0);
         try {
             query = workspace.getProjectManager().loadQuery(queryId, workspace.getProject());
         } catch (Exception ex) {

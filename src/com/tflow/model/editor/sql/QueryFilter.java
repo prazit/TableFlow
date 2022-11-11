@@ -103,4 +103,16 @@ public class QueryFilter implements Selectable {
     public Map<String, Object> getPropertyMap() {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id:" + id +
+                ", index:" + index +
+                ", connector:" + connector +
+                ", leftValue:'" + leftValue + '\'' +
+                ", operation:" + operation +
+                ", rightValue:'" + rightValue + '\'' +
+                '}';
+    }
 }

@@ -17,4 +17,12 @@ public class HelperMap<K, V> extends HashMap<K, V> {
         return Boolean.parseBoolean(value.toString());
     }
 
+    public Integer getInteger(Object key, Integer defaultValue) {
+        V value = super.get(key);
+        if (value == null) return defaultValue;
+        if (value instanceof Integer) return (Integer) value;
+        if (value instanceof Double) return ((Double) value).intValue();
+        return Integer.parseInt(value.toString());
+    }
+
 }

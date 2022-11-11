@@ -85,8 +85,8 @@ public class QueryColumn {
     @Override
     public String toString() {
         return "{" +
-                ", index:" + index +
-                "id:" + id +
+                "index:" + index +
+                ", id:" + id +
                 ", type:'" + type + '\'' +
                 ", name:'" + name + '\'' +
                 ", value:'" + value + '\'' +
