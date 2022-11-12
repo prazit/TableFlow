@@ -112,8 +112,21 @@ body .top-menu .ui-menu.ui-menubar-options {
     text-align: right;
 }
 
-.screen-area {
+body .screen-area {
     height: calc(100% - var(--top-bar-height));
+}
+
+body .screen-area .screen-blocker {
+    z-index: 90909;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    opacity: 60%;
+    text-transform: uppercase;
 }
 
 .screen-area .ui-panel {

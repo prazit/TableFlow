@@ -4,6 +4,8 @@ import com.tflow.kafka.KafkaErrorCode;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
+import com.tflow.model.data.PropertyVar;
+import com.tflow.model.data.TWData;
 import com.tflow.model.editor.Package;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.Action;
@@ -15,8 +17,10 @@ import com.tflow.model.editor.datasource.SFTP;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
+import com.tflow.util.HelperMap;
 import com.tflow.util.ProjectUtil;
 import org.mapstruct.factory.Mappers;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -188,8 +192,21 @@ public abstract class Command {
                 break;
 
             case DATA_FILE: /*Notice: DATA_FILE found used in all INPUT_XX and OUTPUT_XX*/
+                /*Notice: DATA_FILE has special case for query switch of DataFileType.IN_SQLDB*/
                 DataFile dataFile = (DataFile) dataObject;
+
+                /*remove query before*/
+                HelperMap<String, Object> propertyMap = new HelperMap<>(dataFile.getPropertyMap());
+                Integer querySwitchChanged = propertyMap.getInteger(PropertyVar.querySwitchChanged.name(), 0);
+                Integer queryId = propertyMap.getInteger(PropertyVar.queryId.name(), 0);
+                LoggerFactory.getLogger(getClass()).debug("saveSelectable(DATA_FILE): queryId:{}, querySwitchChanged: {}", queryId, querySwitchChanged);
+                if (queryId == 0 && querySwitchChanged > 0) {
+                    dataManager.addData(ProjectFileType.QUERY, (TWData) null, projectUser, querySwitchChanged, stepId, "" + querySwitchChanged);
+                }
+
+                dataFile.getPropertyMap().remove(PropertyVar.querySwitchChanged.name());
                 dataManager.addData(ProjectFileType.DATA_FILE, mapper.map(dataFile), projectUser, dataFile.getId(), stepId);
+
                 break;
 
             case DATA_TABLE:

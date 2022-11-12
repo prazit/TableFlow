@@ -49,6 +49,10 @@ public class ProjectDataWriteBuffer {
     }
 
     public String uniqueKey() {
+        if (fileType.name().endsWith("_LIST")) {
+            return fileType + String.valueOf(hashCode());
+        }
+
         String recordId = additional.getRecordId();
         return fileType + (recordId == null ? "" : recordId);
     }

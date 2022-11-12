@@ -135,33 +135,22 @@ public class AddQuery extends Command {
 
     private void saveQuery(Query query, int stepId, ProjectMapper mapper, DataManager dataManager, ProjectUser projectUser) {
         int queryId = query.getId();
-        dataManager.addData(ProjectFileType.QUERY, mapper.map(query), projectUser, queryId, stepId, String.valueOf(queryId));
+        String childId = String.valueOf(queryId);
+        dataManager.addData(ProjectFileType.QUERY, mapper.map(query), projectUser, queryId, stepId, childId);
 
-        /*TODO: QUERY_TABLE_LIST data in storage is not valid*/
         /*QUERY_TABLE_LIST*/
-        dataManager.addData(ProjectFileType.QUERY_TABLE_LIST, mapper.fromQueryTableList(query.getTableList()), projectUser, queryId, stepId, String.valueOf(queryId));
+        dataManager.addData(ProjectFileType.QUERY_TABLE_LIST, mapper.fromQueryTableList(query.getTableList()), projectUser, queryId, stepId, childId);
 
         /*QUERY_TABLE*/
         List<QueryTable> tableList = query.getTableList();
         int tableId;
         for (QueryTable queryTable : tableList) {
             tableId = queryTable.getId();
-            dataManager.addData(ProjectFileType.QUERY_TABLE, mapper.map(queryTable), projectUser, tableId, stepId, (queryId + "/" + tableId));
-
-            /*QUERY_COLUMN_LIST*/
-            dataManager.addData(ProjectFileType.QUERY_COLUMN_LIST, mapper.fromQueryColumnList(queryTable.getColumnList()), projectUser, queryId, stepId, (queryId + "/" + tableId));
-
-            /*QUERY_COLUMN*/
-            List<QueryColumn> columnList = queryTable.getColumnList();
-            int columnId;
-            for (QueryColumn queryColumn : columnList) {
-                columnId = queryColumn.getId();
-                dataManager.addData(ProjectFileType.QUERY_COLUMN, mapper.map(queryColumn), projectUser, columnId, stepId, (queryId + "/" + tableId));
-            }
+            dataManager.addData(ProjectFileType.QUERY_TABLE, mapper.map(queryTable), projectUser, tableId, stepId, childId);
         }
 
         /*QUERY_FILTER_LIST*/
-        dataManager.addData(ProjectFileType.QUERY_FILTER_LIST, mapper.fromQueryFilterList(query.getFilterList()), projectUser, queryId, stepId, String.valueOf(queryId));
+        dataManager.addData(ProjectFileType.QUERY_FILTER_LIST, mapper.fromQueryFilterList(query.getFilterList()), projectUser, queryId, stepId, childId);
 
         /*QUERY_FILTER*/
         List<QueryFilter> filterList = query.getFilterList();
@@ -169,18 +158,18 @@ public class AddQuery extends Command {
         int filterId;
         for (QueryFilter queryFilter : filterList) {
             filterId = queryFilter.getId();
-            dataManager.addData(ProjectFileType.QUERY_FILTER, mapper.map(queryFilter), projectUser, filterId, stepId, String.valueOf(queryId));
+            dataManager.addData(ProjectFileType.QUERY_FILTER, mapper.map(queryFilter), projectUser, filterId, stepId, childId);
         }
 
         /*QUERY_SORT_LIST*/
-        dataManager.addData(ProjectFileType.QUERY_SORT_LIST, mapper.fromQuerySortList(query.getSortList()), projectUser, queryId, stepId, String.valueOf(queryId));
+        dataManager.addData(ProjectFileType.QUERY_SORT_LIST, mapper.fromQuerySortList(query.getSortList()), projectUser, queryId, stepId, childId);
 
         /*QUERY_SORT*/
         QuerySortData querySortData;
         int sortId;
         for (QuerySort querySort : query.getSortList()) {
             sortId = querySort.getId();
-            dataManager.addData(ProjectFileType.QUERY_SORT, mapper.map(querySort), projectUser, sortId, stepId, String.valueOf(queryId));
+            dataManager.addData(ProjectFileType.QUERY_SORT, mapper.map(querySort), projectUser, sortId, stepId, childId);
         }
     }
 
@@ -197,6 +186,7 @@ public class AddQuery extends Command {
             operation = new StringBuilder();
             operationIndex = findOperation(where, operation);
             QueryFilter queryFilter = new QueryFilter(
+                    ProjectUtil.newUniqueId(project),
                     connector,
                     where.substring(3, operationIndex).trim(),
                     operation.toString(),
@@ -296,10 +286,10 @@ public class AddQuery extends Command {
                 for (String word : words) {
                     if (word.contains(".")) {
                         String[] schemaName = word.split("[.]");
-                        queryTable = new QueryTable(schemaName[1]);
+                        queryTable = new QueryTable(ProjectUtil.newUniqueId(project), schemaName[1]);
                         queryTable.setSchema(schemaName[0]);
                     } else {
-                        queryTable = new QueryTable(word);
+                        queryTable = new QueryTable(ProjectUtil.newUniqueId(project), word);
                     }
                     tableList.add(queryTable);
                     loadColumnList(queryTable);
@@ -314,7 +304,7 @@ public class AddQuery extends Command {
                 joinedTableName = new StringBuilder();
                 joinCondition = new StringBuilder();
                 splitTableWithJoin(table, words, tableSchema, tableName, tableAlias, tableJoinType, joinedTableName, joinCondition);
-                queryTable = new QueryTable(tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
+                queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
 
                 tableList.add(queryTable);
                 loadColumnList(queryTable);
@@ -406,25 +396,60 @@ public class AddQuery extends Command {
 
     private void loadColumnList(QueryTable queryTable) {
         String tableName = queryTable.getName().toUpperCase();
+        String tableSchema = queryTable.getSchema();
+        log.debug("loadColumnList: table: {}={}", tableName, queryTable);
 
         /*load table list from Database using DConvers*/
         int dataSourceId = dataFile.getDataSourceId();
         Database database = project.getDatabaseMap().get(dataSourceId);
         String shortenDBMS = database.getDbms().name().split("[_]")[0].toLowerCase();
         Properties configs = workspace.getConfigs("dconvers." + shortenDBMS + ".");
+        tableSchema = tableSchema == null ? database.getSchema().toUpperCase() : tableSchema;
 
+        /*load SYNONYMS info by table_name*/
         DConversHelper dConvers = new DConversHelper();
+        String dbSchema = tableSchema;
+        String dbTable = tableName;
         String dataSourceName = dConvers.addDatabase(dataSourceId, project);
-        dConvers.addSourceTable("columns", 1, dataSourceName, configs.getProperty("sql.columns"), "");
-        dConvers.addVariable("schema", database.getSchema());
-        dConvers.addVariable("table", tableName);
+        String synonymsTableName = "synonyms";
+        dConvers.addSourceTable(synonymsTableName, 1, dataSourceName, configs.getProperty("sql.synonyms"), "TABLE_NAME");
+        dConvers.addVariable("table", tableName.toUpperCase());
+        dConvers.addConsoleOutput(synonymsTableName);
+        if (dConvers.run()) {
+            DataTable synonymsTable = dConvers.getSourceTable(synonymsTableName);
+            if (synonymsTable != null) {
+                DataRow row = synonymsTable.getRow(0);
+                dbTable = row.getColumn(0).getValue();
+                dbSchema = row.getColumn(1).getValue();
+            }
+        } else {
+            log.warn("load SYNONYMS failed but allow to try next step.");
+        }
+
+        /*load column list by table_name and owner*/
+        dConvers = new DConversHelper();
+        dataSourceName = dConvers.addDatabase(dataSourceId, project);
+        String columnsTableName = "columns";
+        dConvers.addSourceTable(columnsTableName, 1, dataSourceName, configs.getProperty("sql.columns"), "");
+        dConvers.addVariable("schema", dbSchema);
+        dConvers.addVariable("table", dbTable);
+        dConvers.addConsoleOutput(columnsTableName);
         if (!dConvers.run()) {
             throw new UnsupportedOperationException("Load Column List Failed by DConvers!");
         }
 
-        /*first column must be column-name*/
+        if (log.isDebugEnabled()) {
+            byte[] configFileContent = dConvers.getConfigFile();
+            log.debug("DConvers Config File: {}", configFileContent == null ? "null" : new String(configFileContent, StandardCharsets.ISO_8859_1));
+        }
+
         List<QueryColumn> columnList = queryTable.getColumnList();
-        DataTable tables = dConvers.getSourceTable("columns");
+        DataTable tables = dConvers.getSourceTable(columnsTableName);
+        if (tables.getRowList().size() == 0) {
+            throw new UnsupportedOperationException("No column for table " + tableName + "!");
+        }
+
+        /*first column must be column-name*/
         int index = 0;
         for (DataRow row : tables.getRowList()) {
             DataColumn column = row.getColumn(0);

@@ -19,7 +19,8 @@ public class QueryFilter implements Selectable {
     private QueryFilterOperation operation;
     private String rightValue;
 
-    public QueryFilter(String connector, String leftValue, String operation, String rightValue) {
+    public QueryFilter(int id, String connector, String leftValue, String operation, String rightValue) {
+        this.id = id;
         this.connector = QueryFilterConnector.valueOf(connector);
         this.leftValue = leftValue;
         this.operation = QueryFilterOperation.parse(operation);

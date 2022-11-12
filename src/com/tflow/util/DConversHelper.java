@@ -9,10 +9,12 @@ import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.NameValue;
 import com.tflow.model.editor.datasource.SFTP;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Iterator;
@@ -214,5 +216,15 @@ public class DConversHelper {
             return null;
         }
         return dConvers.errorList.get(0);
+    }
+
+    public byte[] getConfigFile() {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            dConvers.dataConversionConfigFile.saveProperties(byteArrayOutputStream);
+        } catch (Exception ex) {
+            return null;
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 }

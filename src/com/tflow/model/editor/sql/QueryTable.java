@@ -27,25 +27,32 @@ public class QueryTable extends Room {
 
     /*for Mapper*/
     public QueryTable() {
-        /*nothing*/
+        this.joinType = TableJoinType.NONE;
+        init();
     }
 
-    public QueryTable(String name) {
+    public QueryTable(int id, String name) {
+        this.id = id;
         this.schema = "";
         this.name = name;
         this.alias = name;
         this.joinType = TableJoinType.NONE;
         this.joinTable = "";
-        this.columnList = new ArrayList<>();
+        init();
     }
 
-    public QueryTable(String schema, String name, String alias, String joinType, String joinTable, String joinCondition) {
+    public QueryTable(int id, String schema, String name, String alias, String joinType, String joinTable, String joinCondition) {
+        this.id = id;
         this.schema = schema;
         this.name = name;
         this.alias = alias;
         this.joinType = TableJoinType.valueOf(joinType);
         this.joinTable = joinTable;
         this.joinCondition = joinCondition;
+        init();
+    }
+
+    public void init() {
         this.columnList = new ArrayList<>();
     }
 

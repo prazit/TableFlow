@@ -1135,8 +1135,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private void setOutputMD(OutputConfig outputConfig, OutputFileData outputFileData, List<SFTPData> sftpDataList, List<LocalData> localDataList, String outputPath, boolean sftp, String sftpPath) throws IOException {
-        HelperMap<String, Object> propertyMap = new HelperMap();
-        propertyMap.putAll(outputFileData.getPropertyMap());
+        HelperMap<String, Object> propertyMap = new HelperMap(outputFileData.getPropertyMap());
         outputConfig.setMarkdown(true);
         outputConfig.setMarkdownOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
         outputConfig.setMarkdownOutputAppend(propertyMap.getBoolean("append", false));
@@ -1157,8 +1156,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private void setOutputSQL(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
-        HelperMap<String, Object> propertyMap = new HelperMap();
-        propertyMap.putAll(outputFileData.getPropertyMap());
+        HelperMap<String, Object> propertyMap = new HelperMap(outputFileData.getPropertyMap());
         outputConfig.setSql(true);
         outputConfig.setSqlOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
         outputConfig.setSqlOutputAppend(propertyMap.getBoolean("append", false));
@@ -1179,8 +1177,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private void setOutputCSV(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
-        HelperMap<String, Object> propertyMap = new HelperMap();
-        propertyMap.putAll(outputFileData.getPropertyMap());
+        HelperMap<String, Object> propertyMap = new HelperMap(outputFileData.getPropertyMap());
         outputConfig.setCsv(true);
         outputConfig.setCsvOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
         outputConfig.setCsvOutputAppend(propertyMap.getBoolean("append", false));
@@ -1201,8 +1198,7 @@ public class BuildPackageCommand extends IOCommand {
     }
 
     private void setOutputTXT(OutputConfig outputConfig, OutputFileData outputFileData, String outputPath, boolean sftp, String sftpPath) {
-        HelperMap<String, Object> propertyMap = new HelperMap();
-        propertyMap.putAll(outputFileData.getPropertyMap());
+        HelperMap<String, Object> propertyMap = new HelperMap(outputFileData.getPropertyMap());
         outputConfig.setTxt(true);
         outputConfig.setTxtOutput(normalizeOutputFilePath(outputPath) + normalizeOutputFileName(outputFileData.getName()));
         outputConfig.setTxtOutputAppend(propertyMap.getBoolean("append", false));

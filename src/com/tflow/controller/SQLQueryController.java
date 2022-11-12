@@ -104,9 +104,7 @@ public class SQLQueryController extends Controller {
     }
 
     private void reloadQuery() {
-        HelperMap<String, Object> propertyMap = new HelperMap();
-        propertyMap.putAll(dataFile.getPropertyMap());
-
+        HelperMap<String, Object> propertyMap = new HelperMap(dataFile.getPropertyMap());
         int queryId = propertyMap.getInteger(PropertyVar.queryId.name(), 0);
         try {
             query = workspace.getProjectManager().loadQuery(queryId, workspace.getProject());

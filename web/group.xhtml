@@ -23,7 +23,13 @@
             </ui:include>
             <ui:include src="resources/topMenu.xhtml"/>
 
-            <div class="screen-area" style="background-color:var(--surface-e);padding:var(--padding);display: flex">
+            <p:outputPanel id="screen-area" styleClass="screen-area" style="background-color:var(--surface-e);padding:var(--padding);display: flex">
+                <div class="screen-blocker" style="display: none;">
+                    <div style="font-size:var(--font-size-1);color:var(--surface-c)">
+                        <i class="pi pi-spinner pi-spin"></i>
+                        <span class="screen-block-text">please wait ...</span>
+                    </div>
+                </div>
                 <h:form id="groupForm" style="width:100%">
                     <p:panel style="width: 100%">
                         <f:facet name="header">
@@ -76,8 +82,8 @@
                                         <p:column headerText="Project List">#{project.name} (#{project.id})</p:column>
                                     </p:dataTable>
                                     <p:outputPanel>
-                                        <p:commandButton value="Open Project" style="width:100%;margin:var(--margin)" actionListener="#{groupCtl.openSelectedProject}" disabled="#{groupCtl.selectedProject == null}"/>
-                                        <p:commandButton value="Clone Project" style="width:100%;margin:var(--margin)" actionListener="#{groupCtl.cloneSelectedProject}" disabled="#{groupCtl.selectedProject == null}"/>
+                                        <p:commandButton value="Open Project" onclick="blockScreen()" style="width:100%;margin:var(--margin)" actionListener="#{groupCtl.openSelectedProject}" disabled="#{groupCtl.selectedProject == null}"/>
+                                        <p:commandButton value="Clone Project" onclick="blockScreen()" style="width:100%;margin:var(--margin)" actionListener="#{groupCtl.cloneSelectedProject}" disabled="#{groupCtl.selectedProject == null}"/>
                                     </p:outputPanel>
                                 </p:panelGrid>
                             </p:tab>
@@ -109,7 +115,7 @@
                         </p:tabView>
                     </p:panel>
                 </h:form>
-            </div>
+            </p:outputPanel>
         </div>
     </h:body>
 </f:view>

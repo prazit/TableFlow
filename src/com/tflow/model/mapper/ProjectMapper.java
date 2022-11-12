@@ -97,6 +97,8 @@ public interface ProjectMapper {
 
     QueryData map(Query query);
 
+    QueryTableData map(QueryTable queryTable);
+
     QueryColumnData map(QueryColumn queryColumn);
 
     QueryFilterData map(QueryFilter queryFilter);

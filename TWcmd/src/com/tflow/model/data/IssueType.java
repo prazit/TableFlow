@@ -10,6 +10,9 @@ public enum IssueType {
 
     /*String, byte[], array*/
     TOO_LONG,
+
+    /*Unexpected Exception*/
+    EXCEPTION,
     ;
 
 }

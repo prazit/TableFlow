@@ -46,10 +46,11 @@
     </logger>
 
     <logger name="com.tflow.zookeeper" level="info">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="KAFKA" />
     </logger>
 
-    <logger name="com.clevel.dconvers" level="off">
+    <logger name="com.clevel.dconvers" level="info">
+        <appender-ref ref="FILE" />
     </logger>
 
     <root level="trace">

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -19,4 +20,5 @@ public class QueryTableData extends RoomData implements Serializable {
     private LinePlugData startPlug;
     private LinePlugData endPlug;
 
+    private List<QueryColumnData> columnList;
 }

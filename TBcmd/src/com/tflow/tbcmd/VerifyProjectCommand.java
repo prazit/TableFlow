@@ -45,6 +45,20 @@ public class VerifyProjectCommand extends IOCommand {
         } catch (Exception ex) {
             issuesData.setFinished(true);
             issuesData.setFinishDate(DateTimeUtil.now());
+            List<IssueData> issueList = issuesData.getIssueList();
+            if (issueList.size() == 0) {
+                IssueData issueData = new IssueData();
+
+                issueData.setId(1);
+                issueData.setType(IssueType.EXCEPTION.name());
+
+                issueData.setStepId(0);
+                issueData.setObjectType(ProjectFileType.PROJECT.name());
+                issueData.setObjectId("0");
+                issueData.setPropertyVar(ex.getMessage());
+
+                issueList.add(issueData);
+            }
             updateIssuesData(issuesData.getComplete(), issuesData, projectUser);
             throw ex;
         }

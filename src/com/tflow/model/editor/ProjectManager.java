@@ -660,11 +660,12 @@ public class ProjectManager {
         DataManager dataManager = project.getDataManager();
 
         ProjectUser projectUser = mapper.toProjectUser(project);
-        Object data = dataManager.getData(ProjectFileType.QUERY, projectUser, queryId, stepId, String.valueOf(queryId));
+        String childId = String.valueOf(queryId);
+        Object data = dataManager.getData(ProjectFileType.QUERY, projectUser, queryId, stepId, childId);
         Query query = mapper.map((QueryData) throwExceptionOnError(data));
 
         /*QUERY_TABLE_LIST*/
-        data = dataManager.getData(ProjectFileType.QUERY_TABLE_LIST, projectUser, queryId, stepId, String.valueOf(queryId));
+        data = dataManager.getData(ProjectFileType.QUERY_TABLE_LIST, projectUser, queryId, stepId, childId);
         List<Integer> idList = (List) throwExceptionOnError(data);
 
         /*QUERY_TABLE*/
@@ -673,45 +674,33 @@ public class ProjectManager {
         QueryTable queryTable;
         QueryColumnData queryColumnData;
         for (Integer tableId : idList) {
-            data = dataManager.getData(ProjectFileType.QUERY_TABLE, projectUser, tableId, stepId, (queryId + "/" + tableId));
+            data = dataManager.getData(ProjectFileType.QUERY_TABLE, projectUser, tableId, stepId, childId);
             queryTableData = (QueryTableData) throwExceptionOnError(data);
             queryTable = mapper.map(queryTableData);
             tableList.add(queryTable);
-
-            /*QUERY_COLUMN_LIST*/
-            data = dataManager.getData(ProjectFileType.QUERY_COLUMN_LIST, projectUser, queryId, stepId, (queryId + "/" + tableId));
-            List<Integer> columnIdList = (List) throwExceptionOnError(data);
-
-            /*QUERY_COLUMN*/
-            List<QueryColumn> columnList = queryTable.getColumnList();
-            for (Integer columnId : columnIdList) {
-                data = dataManager.getData(ProjectFileType.QUERY_COLUMN, projectUser, columnId, stepId, (queryId + "/" + tableId));
-                queryColumnData = (QueryColumnData) throwExceptionOnError(data);
-                columnList.add(mapper.map(queryColumnData));
-            }
         }
 
         /*QUERY_FILTER_LIST*/
-        data = dataManager.getData(ProjectFileType.QUERY_FILTER_LIST, projectUser, queryId, stepId, String.valueOf(queryId));
+        data = dataManager.getData(ProjectFileType.QUERY_FILTER_LIST, projectUser, queryId, stepId, childId);
         idList = (List) throwExceptionOnError(data);
 
         /*QUERY_FILTER*/
         List<QueryFilter> filterList = query.getFilterList();
         QueryFilterData queryFilterData;
         for (Integer filterId : idList) {
-            data = dataManager.getData(ProjectFileType.QUERY_FILTER, projectUser, filterId, stepId, String.valueOf(queryId));
+            data = dataManager.getData(ProjectFileType.QUERY_FILTER, projectUser, filterId, stepId, childId);
             queryFilterData = (QueryFilterData) throwExceptionOnError(data);
             filterList.add(mapper.map(queryFilterData));
         }
         
         /*QUERY_SORT_LIST*/
-        data = dataManager.getData(ProjectFileType.QUERY_SORT_LIST, projectUser, queryId, stepId, String.valueOf(queryId));
+        data = dataManager.getData(ProjectFileType.QUERY_SORT_LIST, projectUser, queryId, stepId, childId);
         idList = (List) throwExceptionOnError(data);
 
         /*QUERY_SORT*/
         QuerySortData querySortData;
         for (Integer sortId : idList) {
-            data = dataManager.getData(ProjectFileType.QUERY_SORT, projectUser, sortId, stepId, String.valueOf(queryId));
+            data = dataManager.getData(ProjectFileType.QUERY_SORT, projectUser, sortId, stepId, childId);
             querySortData = (QuerySortData) throwExceptionOnError(data);
             filterList.add(mapper.map(querySortData));
         }

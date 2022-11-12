@@ -77,7 +77,8 @@ public class DataFile extends Room implements Selectable, HasEndPlug, HasEvent {
                     dataSourceType = type.getDataSourceType();
                 } else if (PropertyVar.editable.equals(property.getVar())) {
                     /*editable CHANGED need to reset queryId for DataFileType.IN_SQLDB*/
-                    propertyMap.remove(PropertyVar.queryId.name());
+                    Object queryId = propertyMap.remove(PropertyVar.queryId.name());
+                    if (queryId != null) propertyMap.put(PropertyVar.querySwitchChanged.name(), queryId);
                 }
             }
         });

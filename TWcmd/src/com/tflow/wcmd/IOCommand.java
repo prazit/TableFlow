@@ -262,6 +262,7 @@ public abstract class IOCommand extends KafkaCommand {
         recordAttributesData.setRecordId(String.valueOf(recordId));
         recordAttributesData.setStepId(String.valueOf(stepId));
         recordAttributesData.setDataTableId(String.valueOf(dataTableId));
+        recordAttributesData.setChildId(String.valueOf(dataTableId));
         return getData(projectFileType, recordAttributesData);
     }
 
@@ -270,6 +271,7 @@ public abstract class IOCommand extends KafkaCommand {
         recordAttributesData.setRecordId(String.valueOf(recordId));
         recordAttributesData.setStepId(String.valueOf(stepId));
         recordAttributesData.setTransformTableId(String.valueOf(transformTableId));
+        recordAttributesData.setChildId(String.valueOf(transformTableId));
         return getData(projectFileType, recordAttributesData);
     }
 
@@ -358,7 +360,7 @@ public abstract class IOCommand extends KafkaCommand {
     }
 
     protected List<TableFxData> loadTransformationDataList(int stepId, int transformTableId) throws InstantiationException, IOException, ClassNotFoundException {
-        Object data = getData(ProjectFileType.TRANSFORMATION_LIST, stepId, 0, transformTableId);
+        Object data = getData(ProjectFileType.TRANSFORMATION_LIST, 0, stepId, 0, transformTableId);
         List<Integer> idList = (List) throwExceptionOnError(data);
 
         List<TableFxData> tableFxDataList = new ArrayList<>();

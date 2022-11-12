@@ -27,6 +27,7 @@ public enum PropertyVar {
     showColumnNumbers,
     showStepList,
     queryId,
+    querySwitchChanged,
     ;
 
     public boolean equals(String varName) {

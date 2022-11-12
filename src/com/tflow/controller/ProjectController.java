@@ -402,7 +402,8 @@ public class ProjectController extends Controller {
             complete = 100;
             verifying = false;
             verified = issues.getIssueList().size() == 0;
-            jsBuilder.post(JavaScript.notiInfo, "Verify Project Completed");
+            if (issues.getComplete() == 100) jsBuilder.post(JavaScript.notiInfo, "Verify Project Completed");
+            else jsBuilder.post(JavaScript.notiWarn, "Verify Project Failed!");
         }
 
         log.debug("refreshIssueList: complete: {}", complete);
@@ -466,11 +467,22 @@ public class ProjectController extends Controller {
             objectType = issue.getObjectType().name().toLowerCase().replace("_", "-");
 
             /*message pattern from IssueType*/
-            if (IssueType.REQUIRED == issue.getType()) {
-                display = "Required value for " + (propertyLabel == null ? issue.getPropertyVar() : propertyLabel) + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
-            } else {/*IssueType.OUT_OF_RANGE*/
-                propertyRange = "";
-                display = "Value out of range(" + propertyRange + ") for " + propertyLabel + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
+            switch (issue.getType()) {
+                case REQUIRED:
+                    display = "Required value for " + (propertyLabel == null ? issue.getPropertyVar() : propertyLabel) + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
+                    break;
+                case OUT_OF_RANGE:
+                    propertyRange = "";
+                    display = "Value out of range(" + propertyRange + ") for " + propertyLabel + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
+                    break;
+                case TOO_LONG:
+                    display = "Value too long for " + (propertyLabel == null ? issue.getPropertyVar() : propertyLabel) + " of " + objectType + ":" + objectName + (stepName == null ? "" : " in " + stepName);
+                    break;
+                case EXCEPTION:
+                    display = "Exception occurs during verify process: " + issue.getPropertyVar() + " , more details found in TBCmd log file.";
+                    break;
+                default:
+                    display = "Unknown issue occurred: " + issue.toString();
             }
             issue.setDisplay(display);
         }
