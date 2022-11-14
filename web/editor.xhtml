@@ -197,14 +197,28 @@
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.COLUMNLIST==prop.type}">
-                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}</div>
+                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}<br/>
+                                                <p:commandLink value="Add All" actionListener="#{editorCtl.initColumnList(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" disabled="#{editorCtl.disabled(prop)}" process="@this" update="#{prop.update}" styleClass="float-right"/>
+                                            </div>
                                             <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:outputPanel styleClass="ui-g-8 ui-nopad">
                                                 <p:chips value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" addOnBlur="true" disabled="#{editorCtl.disabled(prop)}" title="Use X button to remove unwanted columns" styleClass="#{prop.var}">
                                                     <p:ajax event="itemUnselect" listener="#{editorCtl.columnListUnselect}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                                     <p:ajax event="itemSelect" listener="#{editorCtl.columnListSelect}" process="@this" update="@this"/>
                                                 </p:chips>
-                                                <p:commandLink value="Add all again" actionListener="#{editorCtl.initColumnList(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" disabled="#{editorCtl.disabled(prop)}" process="@this" update="#{prop.update}" styleClass="fit-width"/>
+                                            </p:outputPanel>
+                                        </p:outputPanel>
+
+                                        <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.SELECTEDNAMES==prop.type}">
+                                            <div class="ui-g-4 property-label#{editorCtl.disabledClass(prop)}">#{prop.label}<br/>
+                                                <p:commandLink value="Add All" actionListener="#{editorCtl.initSelectedNames(prop)}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" disabled="#{editorCtl.disabled(prop)}" process="@this" update="#{prop.update}" styleClass="float-right"/>
+                                            </div>
+                                            <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
+                                            <p:outputPanel styleClass="ui-g-8 ui-nopad">
+                                                <p:chips value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" addOnBlur="true" disabled="#{editorCtl.disabled(prop)}" title="Use X button to remove unwanted name" styleClass="#{prop.var}">
+                                                    <p:ajax event="itemUnselect" onstart="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                    <p:ajax event="itemSelect" listener="#{editorCtl.selectedNamesSelect}" process="@this" update="@this"/>
+                                                </p:chips>
                                             </p:outputPanel>
                                         </p:outputPanel>
 

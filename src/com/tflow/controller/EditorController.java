@@ -13,6 +13,7 @@ import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.datasource.DataSourceType;
+import com.tflow.model.editor.sql.Query;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.VersionedFile;
@@ -1563,6 +1564,24 @@ public class EditorController extends Controller {
         propertyChanged(activeObject.getProjectFileType(), activeObject, property);
     }
 
+    /**
+     * for PropertyType.SELECTEDNAMES
+     */
+    public void initSelectedNames(PropertyView property) {
+        log.debug("initSelectedNames: property: {}", property);
+        try {
+            List<String> allNameList = (List<String>) activeObject.getProperties().getPropertyValue(activeObject, property.getParams()[0], log);
+            property.setNewValue(allNameList);
+            activeObject.getProperties().setPropertyValue(activeObject, property, log);
+        } catch (Exception ex) {
+            String msg = "{}: {}";
+            String exceptionName = ex.getClass().getName();
+            jsBuilder.pre(JavaScript.notiError, msg, exceptionName, ex.getMessage());
+            log.error(msg, exceptionName, ex.getMessage());
+            log.trace(FacesUtil.getFormattedStackTrace(ex, "com.tflow", "\n"));
+        }
+    }
+
     public void testDatabaseConnection(PropertyView property) {
         Database database = (Database) activeObject;
         int dataSourceId = database.getId();
@@ -1673,6 +1692,8 @@ public class EditorController extends Controller {
         jsBuilder.pre(JavaScript.showStepList, true, true);
 
         /*refresh flowchart*/
+        Query query = (Query) activeObject;
+        selectObject(query.getOwner().getSelectableId());
         selectStep(getStep().getIndex());
     }
 }

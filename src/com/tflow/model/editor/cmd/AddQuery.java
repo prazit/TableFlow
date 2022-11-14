@@ -66,6 +66,7 @@ public class AddQuery extends Command {
         String[] fromArray = splitBy(from.toString(), "[,]|([Ff][Uu][Ll][Ll] |[Ll][Ee][Ff][Tt] |[Rr][Ii][Gg][Hh][Tt] )*([Ii][Nn][Nn][Ee][Rr] |[Oo][Uu][Tt][Ee][Rr] )*([Jj][Oo][Ii][Nn])");
         List<QueryTable> tableList = query.getTableList();
         addTableTo(tableList, fromArray, selectedColumnList);
+        addSchemaTo(query.getSchemaList(), tableList);
         if (log.isDebugEnabled()) log.debug("TableList: {}", Arrays.toString(tableList.toArray()));
 
         /*where => filterList*/
@@ -80,9 +81,12 @@ public class AddQuery extends Command {
         addSortTo(sortList, orderByArray);
         if (log.isDebugEnabled()) log.debug("SortList: {}", Arrays.toString(sortList.toArray()));
 
-        /*correction-1: select tableA.* need all column from tableA*/
+        /*correction#1: select tableA.* need all column from tableA*/
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         correctSelectAll(query, mapper);
+
+        /*not update selectableMap, lets SQLQueryController do it*/
+
 
         // save Query Data
         DataManager dataManager = project.getDataManager();
@@ -99,6 +103,15 @@ public class AddQuery extends Command {
         // need to wait commit thread after addData.
         dataManager.waitAllTasks();
 
+    }
+
+    private void addSchemaTo(List<String> schemaList, List<QueryTable> tableList) {
+        String schema;
+        for (QueryTable table : tableList) {
+            schema = table.getSchema();
+            if (schema != null) schemaList.add(schema);
+        }
+        schemaList.sort(String::compareTo);
     }
 
     private void correctSelectAll(Query query, ProjectMapper mapper) {

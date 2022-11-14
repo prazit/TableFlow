@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -16,4 +17,7 @@ public class QueryData extends TWData implements Serializable {
 
     private int tower;
 
+    private List<String> schemaList;
+
+    private List<QueryColumnData> columnList;
 }

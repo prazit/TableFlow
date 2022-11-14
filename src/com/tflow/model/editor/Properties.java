@@ -32,7 +32,7 @@ public enum Properties {
             "name:Parameter Name:String:1000"
     ),
 
-    ISSUE (
+    ISSUE(
             "==: ISSUED ::==",
             "--: Detail :--",
             "id:Name:ReadOnly",
@@ -366,10 +366,13 @@ public enum Properties {
     QUERY(
             "==: Query (SQL Select) ::==",
             "name:Name:ReadOnly",
-            "quickColumnList:Selected Column Alias:Properties:Alias:Value:false|updateProperty('quickColumnList');",
+            "schemaList:Schemas:SelectedNames:allSchemaList|updateProperty('schemaList');", // selected schemas, can select/unselect
+            "quickColumnList:Selected Columns:Properties:Alias:Value:false|updateProperty('quickColumnList');", // quickColumnList = selected columns, can re-order, can modify alias and value (make compute-column)
             "--: Technical Support :--",
-            "id:ID:ReadOnly",
-            "dataSourceType:Datasource Type:ReadOnly"
+            "id:ID:ReadOnly"
+
+            /*-- table-list + flow-chart: selected tables (selected-column.table) can select/unselect --*/
+            /*-- flow-chart: selected columns, can select/unselect --*/
     ),
 
     TRANSFORM_TABLE(
@@ -885,9 +888,13 @@ public enum Properties {
     }
 
     public Object getPropertyValue(Selectable selectable, String propertyName, Logger log) {
+        Object value;
+
         Map<String, Object> propertyMap = selectable.getPropertyMap();
-        Object value = propertyMap.get(propertyName);
-        if (value != null) return value;
+        if (propertyMap != null) {
+            value = propertyMap.get(propertyName);
+            if (value != null) return value;
+        }
 
         try {
             /*by getValue() method*/

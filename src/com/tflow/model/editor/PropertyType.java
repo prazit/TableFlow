@@ -47,6 +47,7 @@ public enum PropertyType {
     SFTP(/*sftp-id*/0, true),
 
     COLUMNLIST(/*column-ids(names)*/new ArrayList<Integer>()),
+    SELECTEDNAMES(new ArrayList<String>()),
 
     UPLOAD(""),
     FTPFILE(""),

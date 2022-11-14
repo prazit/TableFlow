@@ -64,7 +64,7 @@ public abstract class IOCommand extends KafkaCommand {
 
     protected File getHistoryFile(ProjectFileType projectFileType, RecordAttributesData additional) {
         String fileName = getFileName(projectFileType.getPrefix(), additional.getRecordId());
-        File file = getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath(), "/" + fileName + DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyddMMHHmmssSSS") + environmentConfigs.getDataFileExt());
+        File file = getFile(projectFileType, additional, environmentConfigs.getHistoryRootPath(), "/" + fileName + DateTimeUtil.getStr(additional.getModifiedDate(), "-yyyyMMddHHmmssSSS") + environmentConfigs.getDataFileExt());
         info("DEBUG: historyFile:{} returned from getHistoryFile(projectFileType:{}, additional:{})", file, projectFileType, additional);
         return file;
     }

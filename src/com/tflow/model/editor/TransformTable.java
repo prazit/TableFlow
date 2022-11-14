@@ -99,7 +99,6 @@ public class TransformTable extends DataTable implements HasEvent, HasSelected {
         return quickColumnList;
     }
 
-
     public void setQuickColumnList(List<NameValue> quickColumnList) {
         this.quickColumnList = quickColumnList;
     }

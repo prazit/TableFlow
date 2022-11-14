@@ -1,5 +1,6 @@
 package com.tflow.model.editor.sql;
 
+import com.tflow.model.data.query.TableJoinType;
 import com.tflow.model.editor.LinePlug;
 import com.tflow.model.editor.room.Room;
 

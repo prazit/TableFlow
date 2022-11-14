@@ -79,7 +79,7 @@ public enum ProjectFileType {
     QUERY("", 5),
     QUERY_TABLE_LIST("query-table-list", 5),
     QUERY_TABLE("", 5),
-    QUERY_FILTER_LIST("query-fileter-list", 5),
+    QUERY_FILTER_LIST("query-filter-list", 5),
     QUERY_FILTER("", 5),
     QUERY_SORT_LIST("query-sort-list", 5),
     QUERY_SORT("", 5),

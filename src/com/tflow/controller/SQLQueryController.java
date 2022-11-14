@@ -3,10 +3,10 @@ package com.tflow.controller;
 import com.clevel.dconvers.data.DataColumn;
 import com.clevel.dconvers.data.DataRow;
 import com.clevel.dconvers.data.DataTable;
-import com.tflow.model.data.ProjectDataException;
+import com.clevel.dconvers.input.DBMS;
+import com.tflow.model.data.Dbms;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.DataFile;
-import com.tflow.model.editor.EditorType;
 import com.tflow.model.editor.JavaScript;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.datasource.Database;
@@ -19,6 +19,7 @@ import org.primefaces.event.TabChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @ViewScoped
@@ -77,32 +78,83 @@ public class SQLQueryController extends Controller {
     }
 
     private void reloadTableList() {
+        log.debug("reloadTableList.");
         tableList = new ArrayList<>();
 
         /*load table list from Database using DConvers*/
         Project project = workspace.getProject();
         int dataSourceId = dataFile.getDataSourceId();
-        Database database = project.getDatabaseMap().get(dataSourceId);
-        String shortenDBMS = database.getDbms().name().split("[_]")[0].toLowerCase();
-        Properties configs = workspace.getConfigs("dconvers." + shortenDBMS + ".");
+        Database database = workspace.getProject().getDatabaseMap().get(dataSourceId);
+        Dbms dbms = database.getDbms();
+        Properties configs = getDBMSConfigs(dbms);
+        String schemas = quotedArray(query.getSchemaList(), dbms.getValueQuote());
 
         DConversHelper dConvers = new DConversHelper();
         String dataSourceName = dConvers.addDatabase(dataSourceId, project);
-        dConvers.addSourceTable("tables", 1, dataSourceName, configs.getProperty("sql.tables"), "");
-        dConvers.addVariable("schema", database.getSchema());
+        String dConversTableName = "tables";
+        dConvers.addSourceTable(dConversTableName, 1, dataSourceName, configs.getProperty("sql.tables"), "");
+        dConvers.addConsoleOutput(dConversTableName);
+        dConvers.addVariable("schema", schemas);
         if (!dConvers.run()) {
-            jsBuilder.pre(JavaScript.notiWarn, "Load Table List Failed! please investigate in application log");
-            log.error("");
+            String message = "Load Table List Failed! please investigate in application log";
+            jsBuilder.pre(JavaScript.notiWarn, message);
             tableList = new ArrayList<>();
+            log.error(message);
             return;
         }
 
         /*first column must be table-name*/
-        DataTable tables = dConvers.getSourceTable("tables");
+        DataTable tables = dConvers.getSourceTable(dConversTableName);
         for (DataRow row : tables.getRowList()) {
             DataColumn column = row.getColumn(0);
             tableList.add(column.getValue());
         }
+        if (log.isDebugEnabled()) log.debug("reloadTableList: completed, tableList: {}", Arrays.toString(tableList.toArray()));
+    }
+
+    private String quotedArray(List<String> schemaList, String quoteSymbol) {
+        StringBuilder result = new StringBuilder();
+        for (String schema : schemaList) {
+            result.append(',').append(quoteSymbol).append(schema.toUpperCase()).append(quoteSymbol);
+        }
+        return result.length() == 0 ? quoteSymbol + quoteSymbol : result.substring(1);
+    }
+
+    private Properties getDBMSConfigs(Dbms dbms) {
+        String shortenDBMS = dbms.name().split("[_]")[0].toLowerCase();
+        return workspace.getConfigs("dconvers." + shortenDBMS + ".");
+    }
+
+    private void reloadSchemaList() {
+        log.debug("reloadSchemaList.");
+        List<String> schemaList = query.getAllSchemaList();
+        schemaList.clear();
+
+        /*load table list from Database using DConvers*/
+        Project project = workspace.getProject();
+        int dataSourceId = dataFile.getDataSourceId();
+        Database database = workspace.getProject().getDatabaseMap().get(dataSourceId);
+        Dbms dbms = database.getDbms();
+        Properties configs = getDBMSConfigs(dbms);
+
+        DConversHelper dConvers = new DConversHelper();
+        String dataSourceName = dConvers.addDatabase(dataSourceId, project);
+        String dConversTableName = "schemas";
+        dConvers.addSourceTable(dConversTableName, 1, dataSourceName, configs.getProperty("sql.schemas"), "");
+        if (!dConvers.run()) {
+            String message = "Load Schema List Failed! please investigate in application log";
+            jsBuilder.pre(JavaScript.notiWarn, message);
+            log.error(message);
+            return;
+        }
+
+        /*first column must be schema-name*/
+        DataTable tables = dConvers.getSourceTable(dConversTableName);
+        for (DataRow row : tables.getRowList()) {
+            DataColumn column = row.getColumn(0);
+            schemaList.add(column.getValue());
+        }
+        if (log.isDebugEnabled()) log.debug("reloadSchemaList: completed, schemaList: {}", Arrays.toString(schemaList.toArray()));
     }
 
     private void reloadQuery() {
@@ -110,6 +162,8 @@ public class SQLQueryController extends Controller {
         int queryId = propertyMap.getInteger(PropertyVar.queryId.name(), 0);
         try {
             query = workspace.getProjectManager().loadQuery(queryId, workspace.getProject());
+            query.setOwner(dataFile);
+            getStep().getSelectableMap().put(query.getSelectableId(), query);
         } catch (Exception ex) {
             jsBuilder.pre(JavaScript.notiWarn, "Load Query Failed! {}", ex.getMessage());
             log.error("{}", ex.getMessage());
@@ -119,6 +173,12 @@ public class SQLQueryController extends Controller {
     }
 
     private void selectQuery() {
+        /*need all schemas*/
+        if (query.getAllSchemaList().size() == 0) {
+            reloadSchemaList();
+        }
+
+        query.refreshQuickColumnList();
         jsBuilder
                 .pre(JavaScript.selectObject, query.getSelectableId())
                 .runOnClient(true);
@@ -151,9 +211,11 @@ public class SQLQueryController extends Controller {
     }
 
     private String openQuerySection() {
-        reloadQuery();
-        selectQuery();
-        reloadTableList();
+        if (query == null || query.getId() == 0) {
+            reloadQuery();
+            selectQuery();
+            reloadTableList();
+        }
         return SQLQuerySection.QUERY.getUpdate();
     }
 

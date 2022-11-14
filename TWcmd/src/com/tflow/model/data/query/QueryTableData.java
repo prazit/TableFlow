@@ -16,6 +16,13 @@ public class QueryTableData extends RoomData implements Serializable {
 
     private int id;
     private String name;
+    private String alias;
+    private String schema;
+
+    private TableJoinType joinType;
+    private String joinTable;
+    private int joinTableId;
+    private String joinCondition;
 
     private LinePlugData startPlug;
     private LinePlugData endPlug;

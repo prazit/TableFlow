@@ -27,7 +27,12 @@
         <div class="flow-chart">
             <h:form id="queryForm">
                 <p:outputPanel class="query-actions">
-                    <p:commandButton icon="pi pi-chevron-right" iconPos="right" value="Close Query" onclick="window.parent.closeQuery();console.debug('Close Query Activated');"/>
+                    <p:commandButton icon="pi pi-chevron-right" iconPos="right" value="Close Query" onclick="window.parent.closeQuery();"/>
+                </p:outputPanel>
+
+                <p:outputPanel class="selectable query">
+                    <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
+                    <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
                 </p:outputPanel>
 
                 <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);" class="query-cover">
@@ -84,7 +89,9 @@
                                     </p:divider>
 
                                     <p:outputPanel id="filterTab">
-                                        FILTERS HERE
+                                        <p:dataTable value="#{sqlQueryCtl.query.filterList}" var="filter">
+                                            <p:column>#{filter}</p:column>
+                                        </p:dataTable>
                                     </p:outputPanel>
                                 </p:tab>
 
@@ -102,7 +109,9 @@
                                     </p:divider>
 
                                     <p:outputPanel id="sortTab">
-                                        SORT HERE
+                                        <p:dataTable value="#{sqlQueryCtl.query.sortList}" var="sort">
+                                            <p:column>#{sort}</p:column>
+                                        </p:dataTable>
                                     </p:outputPanel>
                                 </p:tab>
                             </p:tabView>
@@ -115,6 +124,7 @@
                             <i class="pi #{SQLQuerySection.SQL.icon}"/>
                             <p:outputLabel value=" #{SQLQuerySection.SQL.title}"/>
                         </f:facet>
+
                         <p:divider align="left">
                             <div class="inline-flex align-items-center">
                                 <i class="pi pi-code"/>
@@ -123,7 +133,7 @@
                         </p:divider>
 
                         <p:outputPanel id="sqlTab">
-                            SQL HERE
+                            #{sqlQueryCtl.query}
                         </p:outputPanel>
                     </p:tab>
                 </p:tabView>

@@ -6,7 +6,7 @@ function warning(msg) {
 }
 
 function blockScreen(text) {
-    if (tflow.blockScreenText === undefined) {
+    if (tflow.blockScreen === undefined) {
         tflow.blockScreen = $('.screen-blocker');
         tflow.blockScreenText = tflow.blockScreen.find('.screen-block-text');
     }
@@ -16,7 +16,7 @@ function blockScreen(text) {
 }
 
 function unblockScreen() {
-    tflow.blockScreen.hide();
+    if (tflow.blockScreen !== undefined) tflow.blockScreen.hide();
 }
 
 function updateProperty(className) {
