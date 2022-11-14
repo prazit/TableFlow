@@ -6,6 +6,7 @@ import com.clevel.dconvers.data.DataTable;
 import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.DataFile;
+import com.tflow.model.editor.EditorType;
 import com.tflow.model.editor.JavaScript;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.datasource.Database;
@@ -72,6 +73,7 @@ public class SQLQueryController extends Controller {
         dataFile = (DataFile) workspace.getProject().getActiveStep().getActiveObject();
         openSectionUpdate = openQuerySection();
         openSectionUpdate = openFilterSection();
+        jsBuilder.post(JavaScript.unblockScreen).runOnClient();
     }
 
     private void reloadTableList() {

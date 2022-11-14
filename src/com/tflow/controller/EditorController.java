@@ -18,10 +18,7 @@ import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.model.mapper.RecordMapper;
-import com.tflow.util.DConversHelper;
-import com.tflow.util.FacesUtil;
-import com.tflow.util.ProjectUtil;
-import com.tflow.util.SerializeUtil;
+import com.tflow.util.*;
 import net.mcmanus.eamonn.serialysis.SEntity;
 import net.mcmanus.eamonn.serialysis.SerialScan;
 import org.apache.tika.Tika;
@@ -1603,11 +1600,12 @@ public class EditorController extends Controller {
             jsBuilder.pre(JavaScript.notiWarn, "Database Connection Required!");
             return;
         }
-        jsBuilder.pre(JavaScript.notiInfo, "Database Connection Ready");
 
         /*need queryId*/
-        boolean hasQuery = dataFile.getPropertyMap().get(PropertyVar.queryId.name()) != null;
+        boolean hasQuery = new HelperMap<>(dataFile.getPropertyMap()).getInteger(PropertyVar.queryId.name(), 0) != 0;
         if (!hasQuery) {
+            jsBuilder.pre(JavaScript.blockScreenWithText, "Transforming Query, please wait ...").runOnClient();
+
             BinaryFile sqlFile = null;
             try {
                 sqlFile = projectManager.loadUploaded(dataFile.getUploadedId(), workspace.getProject());
@@ -1641,7 +1639,7 @@ public class EditorController extends Controller {
         editorType = EditorType.SQL;
         jsBuilder
                 .pre(JavaScript.setFlowChart, editorType.getPage())
-                .post(JavaScript.refreshFlowChart)
+                .append(JavaScript.refreshFlowChart)
                 .runOnClient();
 
         /*continue on SQLEditorController.onCreation() */
@@ -1666,5 +1664,15 @@ public class EditorController extends Controller {
         String sql = new String(sqlFile.getContent(), StandardCharsets.ISO_8859_1).toUpperCase();
         int index = sql.indexOf("SELECT");
         return sql.indexOf("SELECT", index + 1) > 0;
+    }
+
+    public void closeQuery() {
+        log.debug("closeQuery:fromClient");
+
+        /*show stepList*/
+        jsBuilder.pre(JavaScript.showStepList, true, true);
+
+        /*refresh flowchart*/
+        selectStep(getStep().getIndex());
     }
 }

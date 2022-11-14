@@ -31,6 +31,7 @@ public enum JavaScript {
     contentWindow("contentWindow."),
 
     blockScreen("blockScreen();"),
+    blockScreenWithText("blockScreen('%s');"),
     unblockScreen("unblockScreen();"),
 
     notiInfo(null),
@@ -54,8 +55,7 @@ public enum JavaScript {
     showActionButtons("showActionButtons(%s,%s);"),
     showColumnNumbers("showColumnNumbers(%s,%s);"),
     stopProgressBar("PF('%s').cancel();"),
-    changeTheme("PrimeFaces.changeTheme('%s');contentWindow.PrimeFaces.changeTheme('%s');"),
-    ;
+    changeTheme("PrimeFaces.changeTheme('%s');contentWindow.PrimeFaces.changeTheme('%s');");
 
     private String javascript;
 

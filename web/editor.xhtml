@@ -24,6 +24,7 @@
         <p:remoteCommand name="refreshElement" action="#{editorCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="notification" action="#{editorCtl.showNoti}"/>
         <p:remoteCommand name="propertiesAppend" action="#{editorCtl.propertiesAppend}"/>
+        <p:remoteCommand name="closeQuery" action="#{editorCtl.closeQuery}"/>
 
         <script>console.log('-- first-line of editor --');</script>
         <div class="container">

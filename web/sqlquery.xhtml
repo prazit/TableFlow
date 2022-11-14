@@ -15,17 +15,22 @@
 
     </h:head>
     <h:body style="background-color: var(--surface-a)">
-        <script>console.log('-- first-line of sql query --');</script>
-
         <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
         <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="editor-page.js#{app.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="sqlquery.js#{app.forceReloadResources}" target="head"/>
 
-        <div class="flow-chart">
-                <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
+        <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
 
-                <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);">
+        <script>console.log('-- first-line of sql query --');</script>
+
+        <div class="flow-chart">
+            <h:form id="queryForm">
+                <p:outputPanel class="query-actions">
+                    <p:commandButton icon="pi pi-chevron-right" iconPos="right" value="Close Query" onclick="window.parent.closeQuery();console.debug('Close Query Activated');"/>
+                </p:outputPanel>
+
+                <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);" class="query-cover">
                     <p:importEnum type="com.tflow.controller.SQLQuerySection" var="SQLQuerySection"/>
                     <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}"/>
 
@@ -122,6 +127,7 @@
                         </p:outputPanel>
                     </p:tab>
                 </p:tabView>
+            </h:form>
         </div>
 
         <script>console.log('-- last-line of sql query --');</script>

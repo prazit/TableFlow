@@ -191,6 +191,13 @@ body .query-panel .select-column-panel {
     background-color: var(--surface-a);
 }
 
+body .query-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: calc(var(--margin) * 2);
+}
+
 /* -- flow-chart -- */
 
 .flow-chart {
