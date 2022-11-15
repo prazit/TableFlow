@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Known implementation classes.<br/>
- * EmptyRoom, DataSource, DataFile, DataTable, ColumnFx, TransformTable
+ * EmptyRoom, DataSource, DataFile, DataTable, ColumnFx, TransformTable, QueryTable
  */
 public class Room {
     private transient Logger log = LoggerFactory.getLogger(Room.class);

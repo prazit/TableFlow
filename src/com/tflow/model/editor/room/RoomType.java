@@ -7,7 +7,8 @@ public enum RoomType {
     DATA_TABLE("markdown.png"),
     COLUMN_FX_TABLE("string.png"),
     TRANSFORM_TABLE("markdown.png"),
-    EMPTY("");
+    EMPTY(""),
+    QUERY_TABLE("");
 
     private String image;
 

@@ -77,6 +77,7 @@ public enum ProjectFileType {
     TRANSFORM_OUTPUT("", 4),
 
     QUERY("", 5),
+    QUERY_TOWER("", 5),
     QUERY_TABLE_LIST("query-table-list", 5),
     QUERY_TABLE("", 5),
     QUERY_FILTER_LIST("query-filter-list", 5),
@@ -88,12 +89,8 @@ public enum ProjectFileType {
     FLOOR("", 2),
 
     LINE_LIST("line-list", 2),
-    LINE("", 2),
+    LINE("", 2);
 
-
-
-
-    ;
 
     private String prefix;
     private int requireType;

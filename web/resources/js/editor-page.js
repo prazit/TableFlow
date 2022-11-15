@@ -10,17 +10,15 @@ var tflow = {
     }, lines = []
 ;
 
-function blockScreen() {
-    window.parent.blockScreen();
+function blockScreen(text) {
+    window.parent.blockScreen(text);
 }
 
 function unblockScreen() {
     window.parent.unblockScreen();
-    console.debug("unblockScreen.")
 }
 
 function noti() {
-    console.log('call parent.noti();');
     window.parent.noti();
 }
 
@@ -162,7 +160,6 @@ function showLines() {
     if (!tflow.needShowLines) return;
     tflow.needShowLines = false;
 
-    console.log("showLines.")
     $(lines).each(function (i, line) {
         try {
             line.position();

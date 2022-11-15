@@ -1,8 +1,15 @@
 package com.tflow.model.editor.sql;
 
+import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.query.ColumnType;
+import com.tflow.model.editor.LinePlug;
+import com.tflow.model.editor.Properties;
+import com.tflow.model.editor.Selectable;
 
-public class QueryColumn {
+import java.util.Map;
+
+public class QueryColumn implements Selectable {
 
     private int id;
     private int index;
@@ -93,5 +100,35 @@ public class QueryColumn {
                 ", selected:" + selected +
                 ", owner:" + (owner == null ? "none" : owner.getName()) +
                 '}';
+    }
+
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return null;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return null;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return IDPrefix.QUERY_COLUMN.getPrefix() + id;
+    }
+
+    @Override
+    public LinePlug getStartPlug() {
+        return null;
+    }
+
+    @Override
+    public void setStartPlug(LinePlug startPlug) {
+        /*nothing*/
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return null;
     }
 }

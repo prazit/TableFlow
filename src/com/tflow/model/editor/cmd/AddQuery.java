@@ -11,6 +11,7 @@ import com.tflow.model.data.PropertyVar;
 import com.tflow.model.data.query.*;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
+import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.sql.*;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.system.Properties;
@@ -44,6 +45,10 @@ public class AddQuery extends Command {
         query.setId(ProjectUtil.newUniqueId(project));
         dataFile.getPropertyMap().put(PropertyVar.queryId.name(), query.getId());
 
+        Step step = project.getActiveStep();
+        Tower tower = new Tower(ProjectUtil.newUniqueId(project), 0, step);
+        query.setTower(tower);
+
         /* assume sql is simple select (no nested) */
         String sql = new String(sqlFile.getContent(), StandardCharsets.ISO_8859_1).replaceAll("[\\s]+", " ");
         StringBuilder select = new StringBuilder();
@@ -65,7 +70,7 @@ public class AddQuery extends Command {
         /*from => tableList*/
         String[] fromArray = splitBy(from.toString(), "[,]|([Ff][Uu][Ll][Ll] |[Ll][Ee][Ff][Tt] |[Rr][Ii][Gg][Hh][Tt] )*([Ii][Nn][Nn][Ee][Rr] |[Oo][Uu][Tt][Ee][Rr] )*([Jj][Oo][Ii][Nn])");
         List<QueryTable> tableList = query.getTableList();
-        addTableTo(tableList, fromArray, selectedColumnList);
+        addTableTo(tableList, fromArray, selectedColumnList, tower);
         addSchemaTo(query.getSchemaList(), tableList);
         if (log.isDebugEnabled()) log.debug("TableList: {}", Arrays.toString(tableList.toArray()));
 
@@ -91,7 +96,7 @@ public class AddQuery extends Command {
         // save Query Data
         DataManager dataManager = project.getDataManager();
         ProjectUser projectUser = workspace.getProjectUser();
-        int stepId = project.getActiveStep().getId();
+        int stepId = step.getId();
         saveQuery(query, stepId, mapper, dataManager, projectUser);
 
         // save DataFile
@@ -106,10 +111,15 @@ public class AddQuery extends Command {
     }
 
     private void addSchemaTo(List<String> schemaList, List<QueryTable> tableList) {
+        StringBuilder alreadyAdded = new StringBuilder();
         String schema;
         for (QueryTable table : tableList) {
             schema = table.getSchema();
-            if (schema != null) schemaList.add(schema);
+            if (schema == null) continue;
+            if (!alreadyAdded.toString().contains("," + schema)) {
+                alreadyAdded.append(",").append(schema);
+                schemaList.add(schema);
+            }
         }
         schemaList.sort(String::compareTo);
     }
@@ -150,6 +160,10 @@ public class AddQuery extends Command {
         int queryId = query.getId();
         String childId = String.valueOf(queryId);
         dataManager.addData(ProjectFileType.QUERY, mapper.map(query), projectUser, queryId, stepId, childId);
+
+        /*QUERY_TOWER*/
+        Tower tower = query.getTower();
+        dataManager.addData(ProjectFileType.QUERY_TOWER, mapper.map(tower), projectUser, tower.getId(), stepId, childId);
 
         /*QUERY_TABLE_LIST*/
         dataManager.addData(ProjectFileType.QUERY_TABLE_LIST, mapper.fromQueryTableList(query.getTableList()), projectUser, queryId, stepId, childId);
@@ -280,7 +294,7 @@ public class AddQuery extends Command {
         return false;
     }
 
-    private void addTableTo(List<QueryTable> tableList, String[] fromArray, List<QueryColumn> selectedColumnList) {
+    private void addTableTo(List<QueryTable> tableList, String[] fromArray, List<QueryColumn> selectedColumnList, Tower tower) {
         QueryTable queryTable;
         StringBuilder tableSchema;
         StringBuilder tableName;
@@ -288,10 +302,9 @@ public class AddQuery extends Command {
         StringBuilder tableJoinType;
         StringBuilder joinedTableName;
         StringBuilder joinCondition;
-        String tableNameString;
-        String tableAliasString;
         String[] words;
         String upperCase;
+        int roomIndex = 0;
         for (String table : fromArray) {
             words = table.trim().split("[,][ ]|[ ,()=]");
             upperCase = words[0].toUpperCase();
@@ -305,8 +318,11 @@ public class AddQuery extends Command {
                         queryTable = new QueryTable(ProjectUtil.newUniqueId(project), word);
                     }
                     tableList.add(queryTable);
+
                     loadColumnList(queryTable);
                     markSelectedColumn(queryTable, selectedColumnList);
+
+                    tower.setRoom(0, roomIndex++, queryTable);
                 }
 
             } else {
@@ -318,10 +334,12 @@ public class AddQuery extends Command {
                 joinCondition = new StringBuilder();
                 splitTableWithJoin(table, words, tableSchema, tableName, tableAlias, tableJoinType, joinedTableName, joinCondition);
                 queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
-
                 tableList.add(queryTable);
+
                 loadColumnList(queryTable);
                 markSelectedColumn(queryTable, selectedColumnList);
+
+                tower.setRoom(0, roomIndex++, queryTable);
             }
         }
         tableList.sort(Comparator.comparing(QueryTable::getName));
@@ -374,7 +392,7 @@ public class AddQuery extends Command {
 
             queryColumn = new QueryColumn(index++, ProjectUtil.newUniqueId(project), name, null);
             queryColumn.setType(type);
-            queryColumn.setValue(value);
+            queryColumn.setValue(value.trim());
             queryColumn.setSelected(true);
             selectedColumnList.add(queryColumn);
         }
@@ -392,16 +410,20 @@ public class AddQuery extends Command {
         }
     }
 
+    /*
+     * TODO: NEED TO RUN IN DEBUG MODE NOW
+     */
     private void markSelectedColumn(QueryTable queryTable, List<QueryColumn> selectedColumnList) {
         String tableName = queryTable.getName().toUpperCase();
         for (QueryColumn selected : selectedColumnList) {
             if (selected.getType() != ColumnType.COMPUTE) {
-                if (tableName.equals(queryTable.getName().toUpperCase())) {
+                String[] tableColumn = selected.getValue().toUpperCase().split("[.]");
+                if (tableName.equals(tableColumn[0])) {
                     selected.setOwner(queryTable);
-
-                    String selectedName = selected.getName().toUpperCase();
-                    QueryColumn column = findColumn(selectedName, queryTable);
+                    QueryColumn column = findColumn(tableColumn[1], queryTable);
                     if (column != null) column.setSelected(true);
+                } else {
+                    log.debug("markSelectedColumn: ignore different table({}) and selected-table({}), selected-column: {}", tableName, tableColumn[0], selected);
                 }
             }
         }
@@ -471,12 +493,12 @@ public class AddQuery extends Command {
     }
 
     private QueryColumn findColumn(String columnName, QueryTable queryTable) {
-        columnName = columnName.trim().toUpperCase();
         for (QueryColumn column : queryTable.getColumnList()) {
-            if (columnName.equals(column.getName().toLowerCase())) {
+            if (columnName.equals(column.getName().toUpperCase())) {
                 return column;
             }
         }
+        log.debug("findColumn: column({}) not found on table({})", columnName, queryTable.getName());
         // need null instead of throw new UnsupportedOperationException("Invalid Column Reference: '" + columnName + "' not found in table '" + queryTable.getName() + "'");
         return null;
     }

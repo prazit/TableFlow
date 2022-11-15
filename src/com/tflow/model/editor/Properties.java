@@ -352,7 +352,7 @@ public enum Properties {
             "dataSourceIdentifier:Database:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
             "name:File Name:Upload:type:uploadedId:Invalid SQL file!|updateProperty('name');:[]editable",
             ".:propertyMap:editable:Turn to Editable Query:Boolean|updateProperty('edit');updateProperty('name');",
-            "edit:Open Query:Button:openSQLEditor|[x]editable",
+            "edit:Open Query:Button:openQuery|[x]editable",
             "--: Packaged Properties :--",
             ".:propertyMap:quotesName:Quote symbol for column name:String:1000",
             ".:propertyMap:quotesValue:Quote symbol for column value:String:1000|=\'",
@@ -373,6 +373,18 @@ public enum Properties {
 
             /*-- table-list + flow-chart: selected tables (selected-column.table) can select/unselect --*/
             /*-- flow-chart: selected columns, can select/unselect --*/
+    ),
+
+    QUERY_FILTER(
+            "==: Query Filter : Query Filter compatible with conditions in where section in sql select statement:=="
+    ),
+
+    QUERY_SORT(
+            "==: Query Sort : Query Sort compatible with columns in order-by section in sql select statement:=="
+    ),
+
+    QUERY_PREVIEW(
+            "==: Query Preview : Preview the SQL Select that generated from the query:=="
     ),
 
     TRANSFORM_TABLE(

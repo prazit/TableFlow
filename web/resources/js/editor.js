@@ -6,6 +6,7 @@ function warning(msg) {
 }
 
 function blockScreen(text) {
+    console.debug("blockScreen('", text, "');");
     if (tflow.blockScreen === undefined) {
         tflow.blockScreen = $('.screen-blocker');
         tflow.blockScreenText = tflow.blockScreen.find('.screen-block-text');
@@ -16,6 +17,7 @@ function blockScreen(text) {
 }
 
 function unblockScreen() {
+    console.debug("editor.unblockScreen");
     if (tflow.blockScreen !== undefined) tflow.blockScreen.hide();
 }
 
@@ -84,7 +86,6 @@ function setFlowchart(page) {
 
 function refreshStepList() {
     showStepList(leftPanel.css('display') === 'block');
-    console.log('refreshStepList completed.');
 }
 
 function refreshFlowChart() {
@@ -217,7 +218,6 @@ function zoom() {
 }
 
 function zoomEnd(submit) {
-    console.log("zoomEnd(submit:" + (submit !== undefined ? submit : false) + ")");
     zoom();
 
     var active = contentWindow.$('.active').first();
@@ -313,7 +313,6 @@ function updateEm(selectableId) {
 }
 
 function hideDebugInfo($container) {
-    console.log('hideDebugInfo( showDebugInfo:' + tflow.showDebugInfo + ', $container:' + $container.attr('class') + ' )');
     if (!tflow.showDebugInfo) {
         $container.find('.debug').hide();
     }

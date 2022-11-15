@@ -3,12 +3,10 @@ package com.tflow.controller;
 import com.clevel.dconvers.data.DataColumn;
 import com.clevel.dconvers.data.DataRow;
 import com.clevel.dconvers.data.DataTable;
-import com.clevel.dconvers.input.DBMS;
 import com.tflow.model.data.Dbms;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.PropertyVar;
-import com.tflow.model.editor.DataFile;
-import com.tflow.model.editor.JavaScript;
-import com.tflow.model.editor.Project;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.sql.Query;
 import com.tflow.system.Properties;
@@ -21,6 +19,7 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @ViewScoped
 @Named("sqlQueryCtl")
@@ -28,7 +27,11 @@ public class SQLQueryController extends Controller {
 
     private DataFile dataFile;
     private List<String> tableList;
+
     private Query query;
+    private Selectable selectableFilter;
+    private Selectable selectableSort;
+    private Selectable selectablePreview;
 
     private String openSectionUpdate;
 
@@ -64,6 +67,30 @@ public class SQLQueryController extends Controller {
         this.tableList = tableList;
     }
 
+    public Selectable getSelectableFilter() {
+        return selectableFilter;
+    }
+
+    public void setSelectableFilter(Selectable selectableFilter) {
+        this.selectableFilter = selectableFilter;
+    }
+
+    public Selectable getSelectableSort() {
+        return selectableSort;
+    }
+
+    public void setSelectableSort(Selectable selectableSort) {
+        this.selectableSort = selectableSort;
+    }
+
+    public Selectable getSelectablePreview() {
+        return selectablePreview;
+    }
+
+    public void setSelectablePreview(Selectable selectablePreview) {
+        this.selectablePreview = selectablePreview;
+    }
+
     @Override
     public Page getPage() {
         return workspace.getCurrentPage();
@@ -72,12 +99,17 @@ public class SQLQueryController extends Controller {
     @Override
     void onCreation() {
         dataFile = (DataFile) workspace.getProject().getActiveStep().getActiveObject();
+        query = new Query();
+    }
+
+    public void clientReady() {
+        log.debug("clientReady:fromClient");
         openSectionUpdate = openQuerySection();
-        openSectionUpdate = openFilterSection();
         jsBuilder.post(JavaScript.unblockScreen).runOnClient();
     }
 
     private void reloadTableList() {
+        jsBuilder.pre(JavaScript.blockScreenWithText, "LOADING TABLE LIST ...").runOnClient();
         log.debug("reloadTableList.");
         tableList = new ArrayList<>();
 
@@ -109,13 +141,15 @@ public class SQLQueryController extends Controller {
             DataColumn column = row.getColumn(0);
             tableList.add(column.getValue());
         }
+        tableList.sort(String::compareTo);
         if (log.isDebugEnabled()) log.debug("reloadTableList: completed, tableList: {}", Arrays.toString(tableList.toArray()));
     }
 
     private String quotedArray(List<String> schemaList, String quoteSymbol) {
         StringBuilder result = new StringBuilder();
         for (String schema : schemaList) {
-            result.append(',').append(quoteSymbol).append(schema.toUpperCase()).append(quoteSymbol);
+            schema = "," + quoteSymbol + schema.trim().toUpperCase();
+            if (!result.toString().contains(schema)) result.append(schema).append(quoteSymbol);
         }
         return result.length() == 0 ? quoteSymbol + quoteSymbol : result.substring(1);
     }
@@ -126,6 +160,7 @@ public class SQLQueryController extends Controller {
     }
 
     private void reloadSchemaList() {
+        jsBuilder.pre(JavaScript.blockScreenWithText, "LOADING ALL SCHEMAS ...").runOnClient();
         log.debug("reloadSchemaList.");
         List<String> schemaList = query.getAllSchemaList();
         schemaList.clear();
@@ -154,33 +189,81 @@ public class SQLQueryController extends Controller {
             DataColumn column = row.getColumn(0);
             schemaList.add(column.getValue());
         }
+        schemaList.sort(String::compareTo);
         if (log.isDebugEnabled()) log.debug("reloadSchemaList: completed, schemaList: {}", Arrays.toString(schemaList.toArray()));
     }
 
     private void reloadQuery() {
+        jsBuilder.pre(JavaScript.blockScreenWithText, "LOADING QUERY ...").runOnClient();
         HelperMap<String, Object> propertyMap = new HelperMap(dataFile.getPropertyMap());
         int queryId = propertyMap.getInteger(PropertyVar.queryId.name(), 0);
         try {
             query = workspace.getProjectManager().loadQuery(queryId, workspace.getProject());
             query.setOwner(dataFile);
-            getStep().getSelectableMap().put(query.getSelectableId(), query);
         } catch (Exception ex) {
             jsBuilder.pre(JavaScript.notiWarn, "Load Query Failed! {}", ex.getMessage());
             log.error("{}", ex.getMessage());
             log.trace("", ex);
             query = new Query();
+            return;
         }
+
+        selectableFilter = new SelectableReady() {
+            String selectableId = IDPrefix.QUERY_FILTER.getPrefix() + query.getId();
+
+            @Override
+            public com.tflow.model.editor.Properties getProperties() {
+                return com.tflow.model.editor.Properties.QUERY_FILTER;
+            }
+
+            @Override
+            public String getSelectableId() {
+                return selectableId;
+            }
+        };
+        selectableSort = new SelectableReady() {
+            String selectableId = IDPrefix.QUERY_SORT.getPrefix() + query.getId();
+
+            @Override
+            public com.tflow.model.editor.Properties getProperties() {
+                return com.tflow.model.editor.Properties.QUERY_SORT;
+            }
+
+            @Override
+            public String getSelectableId() {
+                return selectableId;
+            }
+        };
+        selectablePreview = new SelectableReady() {
+            String selectableId = IDPrefix.QUERY_PREVIEW.getPrefix() + query.getId();
+
+            @Override
+            public com.tflow.model.editor.Properties getProperties() {
+                return com.tflow.model.editor.Properties.QUERY_PREVIEW;
+            }
+
+            @Override
+            public String getSelectableId() {
+                return selectableId;
+            }
+        };
+
+        Map<String, Selectable> selectableMap = getStep().getSelectableMap();
+        selectableMap.put(query.getSelectableId(), query);
+        selectableMap.put(selectableFilter.getSelectableId(), selectableFilter);
+        selectableMap.put(selectableSort.getSelectableId(), selectableSort);
+        selectableMap.put(selectablePreview.getSelectableId(), selectablePreview);
     }
 
-    private void selectQuery() {
-        /*need all schemas*/
-        if (query.getAllSchemaList().size() == 0) {
-            reloadSchemaList();
+    private void selectQuery(Selectable selectable) {
+        if (selectable instanceof Query) {
+            Query query = (Query) selectable;
+            if (query.getAllSchemaList().size() == 0) reloadSchemaList();
+            query.refreshQuickColumnList();
         }
 
-        query.refreshQuickColumnList();
         jsBuilder
-                .pre(JavaScript.selectObject, query.getSelectableId())
+                .pre(JavaScript.selectObject, selectable.getSelectableId())
                 .runOnClient(true);
     }
 
@@ -199,7 +282,7 @@ public class SQLQueryController extends Controller {
                 openSectionUpdate = openQuerySection();
                 break;
             case SQL:
-                openSectionUpdate = openSQLSection();
+                openSectionUpdate = openPreviewSection();
                 break;
             case FILTER:
                 openSectionUpdate = openFilterSection();
@@ -208,35 +291,31 @@ public class SQLQueryController extends Controller {
                 openSectionUpdate = openSortSection();
                 break;
         }
+        jsBuilder.post(JavaScript.unblockScreen).runOnClient();
     }
 
     private String openQuerySection() {
-        if (query == null || query.getId() == 0) {
-            reloadQuery();
-            selectQuery();
-            reloadTableList();
-        }
+        if (query == null || query.getId() == 0) reloadQuery();
+        selectQuery(query);
+        if (tableList == null) reloadTableList();
         return SQLQuerySection.QUERY.getUpdate();
     }
 
-    private String openSQLSection() {
+    private String openPreviewSection() {
+        selectQuery(selectablePreview);
 
-        /*TODO: load generated SQL*/
+        /*TODO: generate preview*/
 
         return SQLQuerySection.SQL.getUpdate();
     }
 
     private String openFilterSection() {
-
-        /*TODO: load Filters*/
-
+        selectQuery(selectableFilter);
         return SQLQuerySection.FILTER.getUpdate();
     }
 
     private String openSortSection() {
-
-        /*TODO: load sorts*/
-
+        selectQuery(selectableSort);
         return SQLQuerySection.SORT.getUpdate();
     }
 

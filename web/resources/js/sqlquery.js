@@ -25,6 +25,6 @@ $(function () {
 
     tflow.ready = true;
 
-    var $queryActions = $('.query-actions');
-    $queryActions.appendTo($('.query-cover'));
+    blockScreen();
+    clientReady();
 });

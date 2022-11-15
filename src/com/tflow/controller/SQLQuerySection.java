@@ -2,11 +2,11 @@ package com.tflow.controller;
 
 public enum SQLQuerySection {
 
-    QUERY("Query", "pi-database", "queryTab"),
-    FILTER("Filter", "pi-filter", "queryTabView:filterTab"),
-    SORT("Sort", "pi-sort", "queryTabView:sortTab"),
+    QUERY("Query", "pi-database", "queryForm:tabview:queryTab"),
+    FILTER("Filter", "pi-filter", "queryForm:tabview:filterTab"),
+    SORT("Sort", "pi-sort", "queryForm:tabview:sortTab"),
 
-    SQL("SQL", "pi-code", "sqlTab"),
+    SQL("Preview", "pi-code", "queryForm:tabview:sqlTab"),
     ;
 
     private String title;

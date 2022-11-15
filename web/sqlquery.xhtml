@@ -21,22 +21,16 @@
         <h:outputScript library="js" name="sqlquery.js#{app.forceReloadResources}" target="head"/>
 
         <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
+        <p:remoteCommand name="clientReady" action="#{sqlQueryCtl.clientReady}" update="queryForm:tabview"/>
 
         <script>console.log('-- first-line of sql query --');</script>
 
+        <p:importEnum type="com.tflow.controller.SQLQuerySection" var="SQLQuerySection"/>
+        <p:importEnum type="com.tflow.model.editor.room.RoomType" var="RoomType"/>
+
         <div class="flow-chart">
             <h:form id="queryForm">
-                <p:outputPanel class="query-actions">
-                    <p:commandButton icon="pi pi-chevron-right" iconPos="right" value="Close Query" onclick="window.parent.closeQuery();"/>
-                </p:outputPanel>
-
-                <p:outputPanel class="selectable query">
-                    <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
-                    <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
-                </p:outputPanel>
-
                 <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);" class="query-cover">
-                    <p:importEnum type="com.tflow.controller.SQLQuerySection" var="SQLQuerySection"/>
                     <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}"/>
 
                     <p:tab title="#{SQLQuerySection.QUERY.title}">
@@ -52,7 +46,10 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel id="querytab">
+                        <p:outputPanel id="queryTab" class="selectable query">
+                            <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
+                            <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
+
                             <div class="query-panel ui-g">
 
                                 <div class="select-table-panel ui-g-2">
@@ -65,57 +62,108 @@
 
                                 <div class="select-column-panel ui-g-10">
                                     <div class="horizon-scroll-panel fit-height">
-                                        <!-- TODO: Tower -->
-                                        <!-- TODO: Query Table with Column List with Selected Columns -->
+                                        <table class="query-tower">
+                                            <p:repeat value="#{sqlQueryCtl.query.tower.floorList}" var="floor">
+                                                <tr>
+                                                    <td>
+                                                        <p:spacer width="50"/>
+                                                    </td>
+                                                    <p:repeat value="#{floor.roomList}" var="room">
+                                                        <td style="vertical-align:top">
+                                                            <p:panel header="" styleClass="query-table selectable" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
+                                                                <input name="selectableId" type="hidden" value="#{room.selectableId}"/>
+                                                                <p:remoteCommand name="update#{room.selectableId}" update="@parent" oncomplete="updateComplete('#{room.selectableId}')"/>
+
+                                                                <f:facet name="actions">
+                                                                    <div class="#{room.endPlug.styleClass}" id="#{room.endPlug}">
+                                                                        <input name="removeButtonTip" type="hidden" value="#{room.endPlug.removeButtonTip}"/>
+                                                                    </div>
+                                                                    <div>
+                                                                        <b>#{room.name}</b>
+                                                                    </div>
+                                                                    <div class="#{room.startPlug.styleClass}" id="#{room.startPlug}"></div>
+                                                                </f:facet>
+
+                                                                <p:outputPanel rendered="#{room.columnList.size()==0}" styleClass="column">
+                                                                    <label>(no column)</label>
+                                                                </p:outputPanel>
+
+                                                                <p:repeat value="#{room.columnList}" var="column">
+                                                                    <p:outputPanel styleClass="#{column.type.name().toLowerCase()} column selectable#{column.selected?' active':''}">
+                                                                        <input name="selectableId" type="hidden" value="#{column.selectableId}"/>
+                                                                        <p:remoteCommand name="update#{column.selectableId}" update="@parent" oncomplete="updateComplete('#{column.selectableId}')"/>
+                                                                        <label class="number">#{column.index}</label>
+                                                                        <label>#{column.name}</label>
+                                                                        <div class="#{column.startPlug.styleClass}" id="#{column.startPlug}"></div>
+                                                                    </p:outputPanel>
+                                                                </p:repeat>
+                                                            </p:panel>
+                                                        </td>
+                                                        <td>
+                                                            <p:spacer width="50"/>
+                                                        </td>
+                                                    </p:repeat>
+                                                </tr>
+                                            </p:repeat>
+                                        </table>
                                     </div>
                                 </div>
 
                             </div>
 
-                            <p:tabView id="queryTabView" style="padding: var(--padding);margin: var(--margin);">
-                                <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}"/>
+                            <p:outputPanel class="query-actions" rendered="#{sqlQueryCtl.query.id > 0}">
+                                <p:commandButton icon="pi pi-chevron-right" iconPos="right" value="Close Query" onclick="window.parent.closeQuery([{name: 'querySelectableId', value: '#{sqlQueryCtl.query.selectableId}'}]);"/>
+                                <script>$(function () {
+                                    $('.query-actions').appendTo($('.query-cover'));
+                                });
+                                </script>
+                            </p:outputPanel>
+                        </p:outputPanel>
+                    </p:tab>
 
-                                <p:tab title="#{SQLQuerySection.FILTER.title}">
-                                    <f:facet name="title">
-                                        <i class="pi #{SQLQuerySection.FILTER.icon}"/>
-                                        <p:outputLabel value=" #{SQLQuerySection.FILTER.title}"/>
-                                    </f:facet>
+                    <p:tab title="#{SQLQuerySection.FILTER.title}">
+                        <f:facet name="title">
+                            <i class="pi #{SQLQuerySection.FILTER.icon}"/>
+                            <p:outputLabel value=" #{SQLQuerySection.FILTER.title}"/>
+                        </f:facet>
 
-                                    <p:divider align="left">
-                                        <div class="inline-flex align-items-center">
-                                            <i class="pi pi-database"/>
-                                            <b>Where conditions</b>
-                                        </div>
-                                    </p:divider>
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-database"/>
+                                <b>Where conditions</b>
+                            </div>
+                        </p:divider>
 
-                                    <p:outputPanel id="filterTab">
-                                        <p:dataTable value="#{sqlQueryCtl.query.filterList}" var="filter">
-                                            <p:column>#{filter}</p:column>
-                                        </p:dataTable>
-                                    </p:outputPanel>
-                                </p:tab>
+                        <p:outputPanel id="filterTab" class="selectable filter">
+                            <input name="selectableId" type="hidden" value="#{sqlQueryCtl.selectableFilter.selectableId}"/>
+                            <p:remoteCommand name="update#{sqlQueryCtl.selectableFilter.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.selectableFilter.selectableId}')"/>
 
-                                <p:tab title="#{SQLQuerySection.SORT.title}">
-                                    <f:facet name="title">
-                                        <i class="pi #{SQLQuerySection.SORT.icon}"/>
-                                        <p:outputLabel value=" #{SQLQuerySection.SORT.title}"/>
-                                    </f:facet>
+                            <p:dataTable value="#{sqlQueryCtl.query.filterList}" var="filter">
+                                <p:column>#{filter}</p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+                    </p:tab>
 
-                                    <p:divider align="left">
-                                        <div class="inline-flex align-items-center">
-                                            <i class="pi pi-database"/>
-                                            <b>Order by</b>
-                                        </div>
-                                    </p:divider>
+                    <p:tab title="#{SQLQuerySection.SORT.title}">
+                        <f:facet name="title">
+                            <i class="pi #{SQLQuerySection.SORT.icon}"/>
+                            <p:outputLabel value=" #{SQLQuerySection.SORT.title}"/>
+                        </f:facet>
 
-                                    <p:outputPanel id="sortTab">
-                                        <p:dataTable value="#{sqlQueryCtl.query.sortList}" var="sort">
-                                            <p:column>#{sort}</p:column>
-                                        </p:dataTable>
-                                    </p:outputPanel>
-                                </p:tab>
-                            </p:tabView>
+                        <p:divider align="left">
+                            <div class="inline-flex align-items-center">
+                                <i class="pi pi-database"/>
+                                <b>Order by</b>
+                            </div>
+                        </p:divider>
 
+                        <p:outputPanel id="sortTab" class="selectable sort">
+                            <input name="selectableId" type="hidden" value="#{sqlQueryCtl.selectableSort.selectableId}"/>
+                            <p:remoteCommand name="update#{sqlQueryCtl.selectableSort.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.selectableSort.selectableId}')"/>
+
+                            <p:dataTable value="#{sqlQueryCtl.query.sortList}" var="sort">
+                                <p:column>#{sort}</p:column>
+                            </p:dataTable>
                         </p:outputPanel>
                     </p:tab>
 
@@ -132,8 +180,11 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel id="sqlTab">
-                            #{sqlQueryCtl.query}
+                        <p:outputPanel id="sqlTab" class="selectable preview">
+                            <input name="selectableId" type="hidden" value="#{sqlQueryCtl.selectablePreview.selectableId}"/>
+                            <p:remoteCommand name="update#{sqlQueryCtl.selectablePreview.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.selectablePreview.selectableId}')"/>
+
+                            GENERATING SQL ...
                         </p:outputPanel>
                     </p:tab>
                 </p:tabView>

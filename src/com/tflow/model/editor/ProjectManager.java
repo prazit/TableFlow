@@ -433,22 +433,7 @@ public class ProjectManager {
             Tower tower = mapper.map((TowerData) throwExceptionOnError(data));
             tower.setOwner(step);
             towerList.add(tower);
-
-            /*create each floor in tower*/
-            int roomsOnAFloor = tower.getRoomsOnAFloor();
-            List<Floor> floorList = tower.getFloorList();
-            for (int floorIndex = 0; floorIndex < floorList.size(); floorIndex++) {
-                Floor floor = floorList.get(floorIndex);
-                floor.setIndex(floorIndex);
-                floor.setTower(tower);
-
-                /*create each room in a floor*/
-                List<Room> roomList = floor.getRoomList();
-                roomList.clear();
-                for (int index = 0; index < roomsOnAFloor; index++) {
-                    roomList.add(new EmptyRoom(index, floor));
-                }
-            }
+            fillTower(tower);
         }
         step.setDataTower(towerList.get(0));
         step.setTransformTower(towerList.get(1));
@@ -664,6 +649,14 @@ public class ProjectManager {
         Object data = dataManager.getData(ProjectFileType.QUERY, projectUser, queryId, stepId, childId);
         Query query = mapper.map((QueryData) throwExceptionOnError(data));
 
+        /*QUETY_TOWER*/
+        data = dataManager.getData(ProjectFileType.QUERY_TOWER, projectUser, query.getTower().getId(), stepId, childId);
+        Tower tower = mapper.map((TowerData) throwExceptionOnError(data));
+        query.setTower(tower);
+
+        /*create each floor in tower*/
+        fillTower(tower);
+
         /*QUERY_TABLE_LIST*/
         data = dataManager.getData(ProjectFileType.QUERY_TABLE_LIST, projectUser, queryId, stepId, childId);
         List<Integer> idList = (List) throwExceptionOnError(data);
@@ -678,6 +671,7 @@ public class ProjectManager {
             queryTableData = (QueryTableData) throwExceptionOnError(data);
             queryTable = mapper.map(queryTableData);
             tableList.add(queryTable);
+            tower.setRoom(queryTable.getFloorIndex(), queryTable.getRoomIndex(), queryTable);
         }
 
         /*QUERY_FILTER_LIST*/
@@ -692,7 +686,7 @@ public class ProjectManager {
             queryFilterData = (QueryFilterData) throwExceptionOnError(data);
             filterList.add(mapper.map(queryFilterData));
         }
-        
+
         /*QUERY_SORT_LIST*/
         data = dataManager.getData(ProjectFileType.QUERY_SORT_LIST, projectUser, queryId, stepId, childId);
         idList = (List) throwExceptionOnError(data);
@@ -706,6 +700,26 @@ public class ProjectManager {
         }
 
         return query;
+    }
+
+    /**
+     * Create floors and rooms for Empty-Tower after load data.
+     */
+    private void fillTower(Tower tower) {
+        int roomsOnAFloor = tower.getRoomsOnAFloor();
+        List<Floor> floorList = tower.getFloorList();
+        for (int floorIndex = 0; floorIndex < floorList.size(); floorIndex++) {
+            Floor floor = floorList.get(floorIndex);
+            floor.setIndex(floorIndex);
+            floor.setTower(tower);
+
+            /*create each room in a floor*/
+            List<Room> roomList = floor.getRoomList();
+            roomList.clear();
+            for (int index = 0; index < roomsOnAFloor; index++) {
+                roomList.add(new EmptyRoom(index, floor));
+            }
+        }
     }
 
     /**

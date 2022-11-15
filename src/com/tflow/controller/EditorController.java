@@ -1609,7 +1609,7 @@ public class EditorController extends Controller {
     /**
      * Notice: must extract before to confirm this SQL is valid
      */
-    public void openSQLEditor(PropertyView property) {
+    public void openQuery(PropertyView property) {
         ProjectManager projectManager = workspace.getProjectManager();
         DataFile dataFile = (DataFile) activeObject;
 
@@ -1686,13 +1686,18 @@ public class EditorController extends Controller {
     }
 
     public void closeQuery() {
-        log.debug("closeQuery:fromClient");
+        String querySelectableId = FacesUtil.getRequestParam("querySelectableId");
+        log.debug("closeQuery:fromClient( querySelectableId: {} )", querySelectableId);
+        Selectable selectable = getStep().getSelectableMap().get(querySelectableId);
+        if (selectable == null) {
+            jsBuilder.post(JavaScript.notiError, "Can not close the query!<br/>querySelectableId: {}", querySelectableId);
+        }
 
         /*show stepList*/
         jsBuilder.pre(JavaScript.showStepList, true, true);
 
         /*refresh flowchart*/
-        Query query = (Query) activeObject;
+        Query query = (Query) selectable;
         selectObject(query.getOwner().getSelectableId());
         selectStep(getStep().getIndex());
     }

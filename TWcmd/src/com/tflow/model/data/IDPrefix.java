@@ -29,7 +29,11 @@ public enum IDPrefix {
     TRANSFORM_COLUMNFX(""),
 
     QUERY("q"),
-    ;
+    QUERY_TABLE("qt"),
+    QUERY_COLUMN("qc"),
+    QUERY_FILTER("qf"),
+    QUERY_SORT("qs"),
+    QUERY_PREVIEW("qp");
 
     String prefix;
 

@@ -1,14 +1,20 @@
 package com.tflow.model.editor.sql;
 
+import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.query.TableJoinType;
 import com.tflow.model.editor.LinePlug;
+import com.tflow.model.editor.Properties;
+import com.tflow.model.editor.Selectable;
 import com.tflow.model.editor.room.Room;
+import com.tflow.model.editor.room.RoomType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-public class QueryTable extends Room {
+public class QueryTable extends Room implements Selectable {
 
     private int id;
     private String name;
@@ -54,6 +60,7 @@ public class QueryTable extends Room {
     }
 
     public void init() {
+        this.setRoomType(RoomType.QUERY_TABLE);
         this.columnList = new ArrayList<>();
     }
 
@@ -97,12 +104,32 @@ public class QueryTable extends Room {
         this.columnList = columnList;
     }
 
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return ProjectFileType.QUERY_TABLE;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return null;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return IDPrefix.QUERY_TABLE.getPrefix() + id;
+    }
+
     public LinePlug getStartPlug() {
         return startPlug;
     }
 
     public void setStartPlug(LinePlug startPlug) {
         this.startPlug = startPlug;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return null;
     }
 
     public LinePlug getEndPlug() {
