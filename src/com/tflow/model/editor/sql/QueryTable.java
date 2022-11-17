@@ -38,6 +38,13 @@ public class QueryTable extends Room implements Selectable {
         init();
     }
 
+    /*for Mapper*/
+    public QueryTable(int id) {
+        this.id = id;
+        this.joinType = TableJoinType.NONE;
+        init();
+    }
+
     public QueryTable(int id, String name) {
         this.id = id;
         this.schema = "";

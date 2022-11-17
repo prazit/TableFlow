@@ -672,6 +672,10 @@ public class ProjectManager {
             queryTable = mapper.map(queryTableData);
             tableList.add(queryTable);
             tower.setRoom(queryTable.getFloorIndex(), queryTable.getRoomIndex(), queryTable);
+
+            for (QueryColumn queryColumn : queryTable.getColumnList()) {
+                queryColumn.setOwner(queryTable);
+            }
         }
 
         /*QUERY_FILTER_LIST*/

@@ -22,6 +22,7 @@
 
         <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="clientReady" action="#{sqlQueryCtl.clientReady}" update="queryForm:tabview"/>
+        <p:remoteCommand name="selectQueryColumn" action="#{sqlQueryCtl.selectColumn}" oncomplete="refreshProperties()"/>
 
         <script>console.log('-- first-line of sql query --');</script>
 
@@ -46,7 +47,7 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel id="queryTab" class="selectable query">
+                        <p:outputPanel id="queryTab" class="query">
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
 
@@ -70,10 +71,7 @@
                                                     </td>
                                                     <p:repeat value="#{floor.roomList}" var="room">
                                                         <td style="vertical-align:top">
-                                                            <p:panel header="" styleClass="query-table selectable" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
-                                                                <input name="selectableId" type="hidden" value="#{room.selectableId}"/>
-                                                                <p:remoteCommand name="update#{room.selectableId}" update="@parent" oncomplete="updateComplete('#{room.selectableId}')"/>
-
+                                                            <p:panel header="" styleClass="query-table" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
                                                                 <f:facet name="actions">
                                                                     <div class="#{room.endPlug.styleClass}" id="#{room.endPlug}">
                                                                         <input name="removeButtonTip" type="hidden" value="#{room.endPlug.removeButtonTip}"/>
@@ -89,12 +87,10 @@
                                                                 </p:outputPanel>
 
                                                                 <p:repeat value="#{room.columnList}" var="column">
-                                                                    <p:outputPanel styleClass="#{column.type.name().toLowerCase()} column selectable#{column.selected?' active':''}">
-                                                                        <input name="selectableId" type="hidden" value="#{column.selectableId}"/>
-                                                                        <p:remoteCommand name="update#{column.selectableId}" update="@parent" oncomplete="updateComplete('#{column.selectableId}')"/>
+                                                                    <p:outputPanel styleClass="selectable column#{column.selected?' selected':''}">
+                                                                        <div id="#{room.id}.#{column.id}" class="hidden"></div>
                                                                         <label class="number">#{column.index}</label>
                                                                         <label>#{column.name}</label>
-                                                                        <div class="#{column.startPlug.styleClass}" id="#{column.startPlug}"></div>
                                                                     </p:outputPanel>
                                                                 </p:repeat>
                                                             </p:panel>
@@ -118,6 +114,11 @@
                                 });
                                 </script>
                             </p:outputPanel>
+
+                            <script>$(function(){
+                                selectableHandle($('.selectable'));
+                            });
+                            </script>
                         </p:outputPanel>
                     </p:tab>
 
@@ -134,7 +135,7 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel id="filterTab" class="selectable filter">
+                        <p:outputPanel id="filterTab" class="filter">
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.selectableFilter.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.selectableFilter.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.selectableFilter.selectableId}')"/>
 
@@ -157,7 +158,7 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel id="sortTab" class="selectable sort">
+                        <p:outputPanel id="sortTab" class="sort">
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.selectableSort.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.selectableSort.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.selectableSort.selectableId}')"/>
 
@@ -180,7 +181,7 @@
                             </div>
                         </p:divider>
 
-                        <p:outputPanel id="sqlTab" class="selectable preview">
+                        <p:outputPanel id="sqlTab" class="preview">
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.selectablePreview.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.selectablePreview.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.selectablePreview.selectableId}')"/>
 

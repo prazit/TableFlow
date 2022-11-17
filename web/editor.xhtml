@@ -292,13 +292,7 @@
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.BUTTON==prop.type}" style="padding:var(--padding)">
-                                            <p:commandButton id="propButton" value="#{prop.label}" disabled="#{editorCtl.disabled(prop)}" actionListener="#{editorCtl[prop.params[0]](prop)}" oncomplete="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                            <p:blockUI id="propButtonBUI" trigger="propButton" block="screen-area">
-                                                <div style="font-size:var(--font-size-1);color:var(--surface-c)">
-                                                    <i class="pi pi-spinner pi-spin"></i>
-                                                    <span style="text-transform:uppercase">#{prop.label} ...</span>
-                                                </div>
-                                            </p:blockUI>
+                                            <p:commandButton id="propButton" value="#{prop.label}" disabled="#{editorCtl.disabled(prop)}" onclick="blockScreen('#{prop.label} ...')" actionListener="#{editorCtl[prop.params[0]](prop)}" oncomplete="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
                                         </p:outputPanel>
 
                                     </p:repeat>

@@ -123,6 +123,7 @@ public class Application {
     }
 
     public String getForceReloadResources() {
+        refreshForceReloadResources();
         return forceReloadResources;
     }
 

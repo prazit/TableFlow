@@ -198,6 +198,15 @@ body .query-actions {
     margin: calc(var(--margin) * 2);
 }
 
+body .query-table .selected.column {
+    background-color: var(--surface-c);
+}
+
+body .hide-numbers .query-table .number,
+body .hide-actions .query-table .action {
+    display: none;
+}
+
 /* -- flow-chart -- */
 
 .flow-chart {

@@ -43,6 +43,7 @@ public class AddQuery extends Command {
 
         Query query = new Query();
         query.setId(ProjectUtil.newUniqueId(project));
+        query.setName(sqlFile.getName());
         dataFile.getPropertyMap().put(PropertyVar.queryId.name(), query.getId());
 
         Step step = project.getActiveStep();
@@ -390,11 +391,12 @@ public class AddQuery extends Command {
                 value = column.startsWith(",") ? column.substring(1) : column;
             }
 
-            queryColumn = new QueryColumn(index++, ProjectUtil.newUniqueId(project), name, null);
+            queryColumn = new QueryColumn(index, index, name, null);
             queryColumn.setType(type);
             queryColumn.setValue(value.trim());
             queryColumn.setSelected(true);
             selectedColumnList.add(queryColumn);
+            index++;
         }
     }
 
@@ -410,9 +412,6 @@ public class AddQuery extends Command {
         }
     }
 
-    /*
-     * TODO: NEED TO RUN IN DEBUG MODE NOW
-     */
     private void markSelectedColumn(QueryTable queryTable, List<QueryColumn> selectedColumnList) {
         String tableName = queryTable.getName().toUpperCase();
         for (QueryColumn selected : selectedColumnList) {
@@ -421,7 +420,12 @@ public class AddQuery extends Command {
                 if (tableName.equals(tableColumn[0])) {
                     selected.setOwner(queryTable);
                     QueryColumn column = findColumn(tableColumn[1], queryTable);
-                    if (column != null) column.setSelected(true);
+                    if (column != null) {
+                        selected.setSelected(true);
+                        selected.setId(column.getId());
+                        selected.setOwner(column.getOwner());
+                        column.setSelected(true);
+                    }
                 } else {
                     log.debug("markSelectedColumn: ignore different table({}) and selected-table({}), selected-column: {}", tableName, tableColumn[0], selected);
                 }
@@ -485,10 +489,16 @@ public class AddQuery extends Command {
         }
 
         /*first column must be column-name*/
+        QueryColumn queryColumn;
+        DataColumn column;
+        String columnName;
         int index = 0;
         for (DataRow row : tables.getRowList()) {
-            DataColumn column = row.getColumn(0);
-            columnList.add(new QueryColumn(index++, ProjectUtil.newUniqueId(project), column.getValue(), queryTable));
+            column = row.getColumn(0);
+            columnName = column.getValue();
+            queryColumn = new QueryColumn(index++, ProjectUtil.newUniqueId(project), columnName, queryTable);
+            queryColumn.setValue(tableName + "." + columnName);
+            columnList.add(queryColumn);
         }
     }
 

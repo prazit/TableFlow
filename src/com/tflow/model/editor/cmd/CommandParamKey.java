@@ -48,7 +48,7 @@ public enum CommandParamKey {
     TEMPLATE_ID,
 
     BINARY_FILE,
-    SWITCH_ON;
+    SWITCH_ON, QUERY, QUERY_COLUMN, COLUMN_ID;
 
     boolean optional;
 

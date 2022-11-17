@@ -26,6 +26,7 @@ public class AppHeartbeatJob extends Job {
         } catch (Exception ex) {
             Logger log = LoggerFactory.getLogger(AppHeartbeatJob.class);
             log.error("AppHeartbeatJob: send heartbeat(app:{}) to zookeeper failed by {}:{}", appName, ex.getClass().getSimpleName(), ex.getMessage());
+            log.trace("", ex);
         }
     }
 }

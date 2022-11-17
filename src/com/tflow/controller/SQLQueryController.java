@@ -7,19 +7,23 @@ import com.tflow.model.data.Dbms;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.*;
+import com.tflow.model.editor.action.Action;
+import com.tflow.model.editor.action.AddQueryColumn;
+import com.tflow.model.editor.action.RemoveQueryColumn;
+import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.sql.Query;
+import com.tflow.model.editor.sql.QueryColumn;
+import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.system.Properties;
 import com.tflow.util.DConversHelper;
+import com.tflow.util.FacesUtil;
 import com.tflow.util.HelperMap;
 import org.primefaces.event.TabChangeEvent;
 
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ViewScoped
 @Named("sqlQueryCtl")
@@ -317,6 +321,87 @@ public class SQLQueryController extends Controller {
     private String openSortSection() {
         selectQuery(selectableSort);
         return SQLQuerySection.SORT.getUpdate();
+    }
+
+    public void selectColumn() {
+        String param = FacesUtil.getRequestParam("columnId");
+        String selected = FacesUtil.getRequestParam("selected");
+        if (param == null || selected == null) {
+            log.error("selectColumn:fromClient requires columnId and selected!");
+            jsBuilder.pre(JavaScript.notiError, "Can not perform select action, invalid parameters!");
+            return;
+        }
+        log.debug("selectColumn:fromClient");
+
+        String[] params = param.split("[.]");
+        int tableId = Integer.parseInt(params[0]);
+        int columnId = Integer.parseInt(params[1]);
+
+        QueryTable table = getTable(tableId, query.getTableList());
+        if (table == null) {
+            log.error("invalid table-id:{}", tableId);
+            jsBuilder.pre(JavaScript.notiError, "Can not perform select action, invalid table-id:{}!", tableId);
+            return;
+        }
+
+        QueryColumn column = getColumn(columnId, table.getColumnList());
+        if (column == null) {
+            log.error("invalid column-id:{}", columnId);
+            jsBuilder.pre(JavaScript.notiError, "Can not perform select action, invalid column-id:{}!", columnId);
+            return;
+        }
+
+        Step step = getStep();
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.QUERY, query);
+        paramMap.put(CommandParamKey.STEP, step);
+
+        Action action;
+        if (Boolean.parseBoolean(selected)) {
+            paramMap.put(CommandParamKey.QUERY_COLUMN, column);
+            action = new AddQueryColumn(paramMap);
+        } else {
+            paramMap.put(CommandParamKey.COLUMN_ID, column.getId());
+            action = new RemoveQueryColumn(paramMap);
+        }
+
+        try {
+            action.execute();
+
+            /*need to update query object in selectableMap*/
+            Map<String, Selectable> selectableMap = step.getSelectableMap();
+            Query oldQuery = (Query) selectableMap.get(query.getSelectableId());
+
+            int newQueryHash = query.hashCode();
+            int oldQueryHash = oldQuery.hashCode();
+            log.debug("oldQueryHashCode:{}, newQueryHashCode:{}", oldQueryHash, newQueryHash);
+
+            selectableMap.put(query.getSelectableId(), query);
+
+        } catch (Exception ex) {
+            String message = "Action {} failed! {}:{}";
+            jsBuilder.pre(JavaScript.notiError, message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
+            log.error(message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
+            log.trace("", ex);
+        }
+    }
+
+    private QueryColumn getColumn(int id, List<QueryColumn> columnList) {
+        for (QueryColumn column : columnList) {
+            if (column.getId() == id) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    private QueryTable getTable(int id, List<QueryTable> tableList) {
+        for (QueryTable table : tableList) {
+            if (table.getId() == id) {
+                return table;
+            }
+        }
+        return null;
     }
 
 }

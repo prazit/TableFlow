@@ -129,6 +129,12 @@ body .screen-area .screen-blocker {
     text-transform: uppercase;
 }
 
+
+body .screen-area .screen-blocker .pi,
+body .screen-area .screen-blocker .screen-block-text {
+    color: var(--primary-color);
+}
+
 .screen-area .ui-panel {
     height: 100%;
 }

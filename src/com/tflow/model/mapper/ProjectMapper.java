@@ -176,7 +176,6 @@ public interface ProjectMapper {
 
     /*---- ALL COPY ----*/
 
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "selected", ignore = true)
     void copy(QueryColumn sourceColumn, @MappingTarget QueryColumn targetColumn);
 
@@ -227,7 +226,7 @@ public interface ProjectMapper {
     }
 
     default Integer id(QueryTable queryTable) {
-        return queryTable.getId();
+        return queryTable == null ? -1 : queryTable.getId();
     }
 
     default Integer id(QueryColumn queryColumn) {
@@ -293,6 +292,10 @@ public interface ProjectMapper {
 
     default Line toLine(Integer id) {
         return new Line(id);
+    }
+
+    default QueryTable toQueryTable(Integer id) {
+        return new QueryTable(id);
     }
 
 

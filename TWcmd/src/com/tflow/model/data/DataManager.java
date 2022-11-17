@@ -352,7 +352,7 @@ public class DataManager {
     /**
      * Notice: submit will always be run within another thread.
      */
-    private boolean submit() {
+    private synchronized boolean submit() {
         log.debug("submit: {}", Thread.currentThread().getName());
 
         ArrayList<ProjectDataWriteBuffer> commitList = new ArrayList<>(projectDataWriteBufferList.values());
@@ -360,7 +360,7 @@ public class DataManager {
         ProjectFileType fileType;
         KafkaRecord kafkaRecord;
         String key;
-        commitList.sort((t1, t2) -> Integer.compare(t1.getIndex(), t2.getIndex()));
+        commitList.sort(Comparator.comparingInt(ProjectDataWriteBuffer::getIndex));
 
         if (!ready(producer)) {
             log.error("commitInTread: producer not ready, try to commit again next {} ms", commitAgainMilliseconds);

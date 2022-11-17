@@ -1301,6 +1301,7 @@ public class EditorController extends Controller {
     }
 
     public void refreshProperties() {
+        log.debug("refreshProperties:fromClient");
         setPropertySheet(workspace.getProject().getActiveStep().getActiveObject());
     }
 
