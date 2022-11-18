@@ -1617,7 +1617,9 @@ public class EditorController extends Controller {
         /*check database connection first*/
         int dataSourceId = dataFile.getDataSourceId();
         if (!isDatabaseReady(dataSourceId)) {
-            jsBuilder.pre(JavaScript.notiWarn, "Database Connection Required!");
+            jsBuilder.pre(JavaScript.notiWarn, "Database Connection Required!")
+                    .pre(JavaScript.unblockScreen)
+                    .runOnClient();
             return;
         }
 

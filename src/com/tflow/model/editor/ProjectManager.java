@@ -662,6 +662,7 @@ public class ProjectManager {
         List<Integer> idList = (List) throwExceptionOnError(data);
 
         /*QUERY_TABLE*/
+        LinkedHashMap<Integer, QueryTable> tableMap = new LinkedHashMap<>();
         List<QueryTable> tableList = query.getTableList();
         QueryTableData queryTableData;
         QueryTable queryTable;
@@ -676,6 +677,18 @@ public class ProjectManager {
             for (QueryColumn queryColumn : queryTable.getColumnList()) {
                 queryColumn.setOwner(queryTable);
             }
+
+            tableMap.put(queryTable.getId(), queryTable);
+        }
+
+        /*selected columns need owner*/
+        int tableId;
+        for (QueryColumn queryColumn : query.getColumnList()) {
+            tableId = queryColumn.getOwner().getId();
+            if(tableId < 0) continue;
+
+            queryTable = tableMap.get(tableId);
+            if(queryTable!=null) queryColumn.setOwner(queryTable);
         }
 
         /*QUERY_FILTER_LIST*/

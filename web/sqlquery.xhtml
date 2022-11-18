@@ -22,7 +22,7 @@
 
         <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="clientReady" action="#{sqlQueryCtl.clientReady}" update="queryForm:tabview"/>
-        <p:remoteCommand name="selectQueryColumn" action="#{sqlQueryCtl.selectColumn}" oncomplete="refreshProperties()"/>
+        <p:remoteCommand name="selectQueryColumn" action="#{sqlQueryCtl.columnSelected}" oncomplete="refreshProperties()"/>
 
         <script>console.log('-- first-line of sql query --');</script>
 

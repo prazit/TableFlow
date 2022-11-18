@@ -16,6 +16,9 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * TODO: try to remove columns from 2 tables, switch to another table after each remove.
+ */
 public class RemoveQueryColumn extends Command {
 
     public void execute(Map<CommandParamKey, Object> paramMap) {

@@ -323,15 +323,15 @@ public class SQLQueryController extends Controller {
         return SQLQuerySection.SORT.getUpdate();
     }
 
-    public void selectColumn() {
+    public void columnSelected() {
         String param = FacesUtil.getRequestParam("columnId");
         String selected = FacesUtil.getRequestParam("selected");
         if (param == null || selected == null) {
-            log.error("selectColumn:fromClient requires columnId and selected!");
+            log.error("columnSelected:fromClient requires columnId and selected!");
             jsBuilder.pre(JavaScript.notiError, "Can not perform select action, invalid parameters!");
             return;
         }
-        log.debug("selectColumn:fromClient");
+        log.debug("columnSelected:fromClient");
 
         String[] params = param.split("[.]");
         int tableId = Integer.parseInt(params[0]);
@@ -367,17 +367,7 @@ public class SQLQueryController extends Controller {
 
         try {
             action.execute();
-
-            /*need to update query object in selectableMap*/
-            Map<String, Selectable> selectableMap = step.getSelectableMap();
-            Query oldQuery = (Query) selectableMap.get(query.getSelectableId());
-
-            int newQueryHash = query.hashCode();
-            int oldQueryHash = oldQuery.hashCode();
-            log.debug("oldQueryHashCode:{}, newQueryHashCode:{}", oldQueryHash, newQueryHash);
-
-            selectableMap.put(query.getSelectableId(), query);
-
+            query.refreshQuickColumnList();
         } catch (Exception ex) {
             String message = "Action {} failed! {}:{}";
             jsBuilder.pre(JavaScript.notiError, message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
