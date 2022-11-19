@@ -116,7 +116,7 @@ body .screen-area {
     height: calc(100% - var(--top-bar-height));
 }
 
-body .screen-area .screen-blocker {
+body .container .screen-blocker {
     z-index: 90909;
     position: fixed;
     width: 100%;
@@ -130,8 +130,8 @@ body .screen-area .screen-blocker {
 }
 
 
-body .screen-area .screen-blocker .pi,
-body .screen-area .screen-blocker .screen-block-text {
+body .container .screen-blocker .pi,
+body .container .screen-blocker .screen-block-text {
     color: var(--primary-color);
 }
 

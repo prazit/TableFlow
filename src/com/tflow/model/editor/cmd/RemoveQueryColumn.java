@@ -16,33 +16,44 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 import java.util.Map;
 
-/**
- * TODO: try to remove columns from 2 tables, switch to another table after each remove.
- */
 public class RemoveQueryColumn extends Command {
 
     public void execute(Map<CommandParamKey, Object> paramMap) {
+        boolean selectAll = (Boolean) paramMap.get(CommandParamKey.SWITCH_ON);
         Query query = (Query) paramMap.get(CommandParamKey.QUERY);
-        int columnId = (Integer) paramMap.get(CommandParamKey.COLUMN_ID);
-
+        int removeId = (Integer) paramMap.get(CommandParamKey.COLUMN_ID);
         List<QueryColumn> columnList = query.getColumnList();
-        QueryColumn column = null;
-        for (int index = 0; index < columnList.size(); index++) {
-            column = columnList.get(index);
-            if (column.getId() == columnId) {
-                columnList.remove(index);
+
+        QueryTable queryTable;
+        QueryColumn removeColumn = null;
+        if (selectAll) {
+            /*find table by removeId and then*/
+            queryTable = findTable(removeId, query.getTableList());
+            if (queryTable == null) throw new UnsupportedOperationException("table not found for table-id(" + removeId + ") in query '" + query.getName() + "'");
+
+            for (QueryColumn originalColumn : queryTable.getColumnList()) {
+                if(!originalColumn.isSelected()) continue;
+
+                /*find selected-column by originalColumnId then remove immediately*/
+                removeColumn(originalColumn.getId(), columnList);
+
+                /*mark selected on original column (in table)*/
+                originalColumn.setSelected(false);
             }
-        }
+            removeColumn = queryTable.getColumnList().get(0);
 
-        if (column == null) {
-            throw new UnsupportedOperationException("column not found for column-id(" + columnId + ") in query '" + query.getName() + "'");
-        }
+        } else {
+            /*find selected-column by removeId and then remove immediately*/
+            removeColumn = removeColumn(removeId, columnList);
+            if (removeColumn == null) throw new UnsupportedOperationException("column not found for column-id(" + removeId + ") in query '" + query.getName() + "'");
 
-        QueryTable queryTable = column.getOwner();
-        for (QueryColumn queryColumn : queryTable.getColumnList()) {
-            if (queryColumn.getId() == columnId) {
-                queryColumn.setSelected(false);
-                break;
+            /*mark selected on original column (in table)*/
+            queryTable = removeColumn.getOwner();
+            for (QueryColumn originalColumn : queryTable.getColumnList()) {
+                if (originalColumn.getId() == removeId) {
+                    originalColumn.setSelected(false);
+                    break;
+                }
             }
         }
 
@@ -50,7 +61,7 @@ public class RemoveQueryColumn extends Command {
         Project project = step.getOwner();
 
         /*for Acion.executeUndo (AddQueryColumn)*/
-        paramMap.put(CommandParamKey.QUERY_COLUMN, column);
+        paramMap.put(CommandParamKey.QUERY_COLUMN, removeColumn);
 
         /*Action Result*/
 
@@ -67,6 +78,26 @@ public class RemoveQueryColumn extends Command {
 
         // need to wait commit thread after addData.
         dataManager.waitAllTasks();
+    }
+
+    private QueryColumn removeColumn(int removeId, List<QueryColumn> columnList) {
+        QueryColumn column = null;
+        for (int index = 0; index < columnList.size(); index++) {
+            column = columnList.get(index);
+            if (column.getId() == removeId) {
+                columnList.remove(index);
+            }
+        }
+        return column;
+    }
+
+    private QueryTable findTable(int id, List<QueryTable> tableList) {
+        for (QueryTable table : tableList) {
+            if (table.getId() == id) {
+                return table;
+            }
+        }
+        return null;
     }
 
 }

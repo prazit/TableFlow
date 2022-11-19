@@ -4,6 +4,7 @@
         xmlns:p="http://primefaces.org/ui">
 
     <h:outputStylesheet library="css" name="tflow.css${topMenuCtl.forceReloadResources}" target="head"/>
+    <h:outputScript library="js" name="tflow.js#{topMenuCtl.forceReloadResources}" target="head"/>
 
     <div class="top-area fixed-top no-border no-padding no-margin">
         <p:graphicImage library="images" name="logo.jpg" styleClass="logo"/>
@@ -62,6 +63,13 @@
                     <p:menuitem value="Logout" icon="pi pi-fw pi-power-off"/>
                 </p:menubar>
             </h:form>
+        </div>
+    </div>
+
+    <div class="screen-blocker" style="display: none;">
+        <div style="font-size:var(--font-size-1);color:var(--surface-c)">
+            <i class="pi pi-spinner pi-spin"></i>
+            <span class="screen-block-text">please wait ...</span>
         </div>
     </div>
 

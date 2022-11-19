@@ -37,15 +37,28 @@ function updateEm(selectableId) {
     window.parent.updateEm(selectableId);
 }
 
-function updateEmByClass(className) {
+function updateEmByClass(className, postRefreshElement) {
     var $property = $('.' + className);
     var id = $property.attr('id');
-    tflow.postRefreshElement = function () {};
+    tflow.postRefreshElement = postRefreshElement == undefined ? function () {
+    } : postRefreshElement;
     refreshElement([
         {name: 'componentId', value: id}
     ]);
 }
 
+function postUpdate(func) {
+    var i = tflow.postUpdate.length;
+    tflow.postUpdate[i] = func;
+    unblockScreen();
+}
+
+function doPostUpdate() {
+    $(tflow.postUpdate).each(function (i, e) {
+        e();
+    });
+    tflow.postUpdate = [];
+}
 
 function getSelectableId($selectable) {
     return $selectable.find('input[name=selectableId]').attr('value');

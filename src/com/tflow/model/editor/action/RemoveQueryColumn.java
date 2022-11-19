@@ -23,6 +23,7 @@ public class RemoveQueryColumn extends Action {
         setParams(
                 CommandParamKey.QUERY,
                 CommandParamKey.COLUMN_ID,
+                CommandParamKey.SWITCH_ON,
                 CommandParamKey.STEP
         );
         setCommands(new com.tflow.model.editor.cmd.RemoveQueryColumn());
@@ -33,6 +34,7 @@ public class RemoveQueryColumn extends Action {
         setUndoParams(
                 CommandParamKey.QUERY,
                 CommandParamKey.QUERY_COLUMN,
+                CommandParamKey.SWITCH_ON,
                 CommandParamKey.STEP
         );
         setUndoCommands(new com.tflow.model.editor.cmd.AddQueryColumn());

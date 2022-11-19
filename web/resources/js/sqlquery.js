@@ -20,13 +20,39 @@ function buttonHandle($button) {
     });
 }
 
+function sortTableColumns(tableId, byName, maxFirst) {
+    console.debug('sortTableColumns( tableId:', tableId, ', byName:', byName, ', maxFirst:', maxFirst, ' )');
+
+    sortColumns([
+        {name: 'byName', value: byName},
+        {name: 'maxFirst', value: maxFirst},
+        {name: 'tableId', value: tableId}
+    ]);
+
+    updateEmByClass('qt' + tableId, function () {
+        selectableHandle($('.qt' + tableId).find('.selectable'));
+    });
+}
+
+function selectTableColumns(tableId, selected) {
+    console.debug('selectTableColumns(tableId:', tableId, ', selected:', selected, ')');
+
+    selectQueryColumn([
+        {name: 'columnId', value: tableId},
+        {name: 'selected', value: selected}
+    ]);
+
+    updateEmByClass('qt' + tableId, function () {
+        selectableHandle($('.qt' + tableId).find('.selectable'));
+    });
+}
+
 function selectColumn($e) {
     if ($e.jquery !== undefined) {
         if ($e.hasClass('column')) {
             var selectedClass = 'selected',
                 selected = !$e.hasClass(selectedClass),
                 columnId = $e.find('.hidden').attr('id');
-            console.debug('column(' + columnId + ') clicked');
 
             if (selected) $e.addClass(selectedClass);
             else $e.removeClass(selectedClass);
@@ -35,8 +61,8 @@ function selectColumn($e) {
                 {name: 'columnId', value: columnId},
                 {name: 'selected', value: selected}
             ]);
-
             return;
+
         }
     }
     activeSelectObject($e);

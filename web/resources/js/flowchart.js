@@ -51,19 +51,6 @@ function updateComplete(selectableId) {
     doPostUpdate();
 }
 
-function postUpdate(func) {
-    var i = tflow.postUpdate.length;
-    tflow.postUpdate[i] = func;
-    unblockScreen();
-}
-
-function doPostUpdate() {
-    $(tflow.postUpdate).each(function (i, e) {
-        e();
-    });
-    tflow.postUpdate = [];
-}
-
 function tableAction(remoteFunction, selectableId) {
     window[remoteFunction]([
         {name: "selectableId", value: selectableId}

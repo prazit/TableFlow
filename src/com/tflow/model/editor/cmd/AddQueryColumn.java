@@ -19,35 +19,40 @@ import java.util.Map;
 public class AddQueryColumn extends Command {
 
     public void execute(Map<CommandParamKey, Object> paramMap) {
-        Query query = (Query) paramMap.get(CommandParamKey.QUERY);
-        QueryColumn queryColumn = (QueryColumn) paramMap.get(CommandParamKey.QUERY_COLUMN);
         Step step = (Step) paramMap.get(CommandParamKey.STEP);
+        Query query = (Query) paramMap.get(CommandParamKey.QUERY);
+        boolean selectAll = (Boolean) paramMap.get(CommandParamKey.SWITCH_ON);
+        QueryColumn queryColumn = (QueryColumn) paramMap.get(CommandParamKey.QUERY_COLUMN);
 
         Project project = step.getOwner();
-        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
+        QueryTable queryTable = queryColumn.getOwner();
         List<QueryColumn> columnList = query.getColumnList();
+        ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
 
-        int columnId = queryColumn.getId();
-        String columnName = queryColumn.getName();
-        if (exists(columnName, columnList)) {
-            throw new UnsupportedOperationException("Column name '" + columnName + "' already exists");
+        int removeId;
+        if (selectAll) {
+            for (QueryColumn column : queryTable.getColumnList()) {
+                int columnId = column.getId();
+                String columnName = column.getName();
+                if (exists(columnName, columnList)) continue;
+                column.setSelected(true);
+                addColumnTo(columnList, column, columnId, columnName);
+            }
+            removeId = queryTable.getId();
+
+        } else {
+            int columnId = queryColumn.getId();
+            String columnName = queryColumn.getName();
+            if (exists(columnName, columnList)) {
+                throw new UnsupportedOperationException("Column name '" + columnName + "' already exists");
+            }
+            queryColumn.setSelected(true);
+            addColumnTo(columnList, queryColumn, columnId, columnName);
+            removeId = columnId;
         }
 
-        QueryColumn selectedColumn = new QueryColumn();
-        selectedColumn.setId(columnId);
-        selectedColumn.setIndex(columnList.size());
-        selectedColumn.setSelected(true);
-        selectedColumn.setType(ColumnType.NORMAL);
-        selectedColumn.setName(columnName);
-        selectedColumn.setValue(queryColumn.getValue());
-        selectedColumn.setOwner(queryColumn.getOwner());
-        columnList.add(selectedColumn);
-
-        queryColumn.setSelected(true);
-        QueryTable queryTable = queryColumn.getOwner();
-
         /*for Acion.executeUndo (RemoveQueryColumn)*/
-        paramMap.put(CommandParamKey.COLUMN_ID, columnId);
+        paramMap.put(CommandParamKey.COLUMN_ID, removeId);
 
         /*Action Result*/
 
@@ -66,6 +71,18 @@ public class AddQueryColumn extends Command {
 
         // need to wait commit thread after addData.
         dataManager.waitAllTasks();
+    }
+
+    private void addColumnTo(List<QueryColumn> columnList, QueryColumn prototypeColumn, int id, String name) {
+        QueryColumn selectedColumn = new QueryColumn();
+        selectedColumn.setId(id);
+        selectedColumn.setIndex(columnList.size());
+        selectedColumn.setSelected(true);
+        selectedColumn.setType(ColumnType.NORMAL);
+        selectedColumn.setName(name);
+        selectedColumn.setValue(prototypeColumn.getValue());
+        selectedColumn.setOwner(prototypeColumn.getOwner());
+        columnList.add(selectedColumn);
     }
 
     private boolean exists(String columnName, List<QueryColumn> columnList) {

@@ -5,6 +5,7 @@
         xmlns:f="http://java.sun.com/jsf/core"
         xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui"
+        xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 >
 
     <h:head>
@@ -23,6 +24,7 @@
         <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="clientReady" action="#{sqlQueryCtl.clientReady}" update="queryForm:tabview"/>
         <p:remoteCommand name="selectQueryColumn" action="#{sqlQueryCtl.columnSelected}" oncomplete="refreshProperties()"/>
+        <p:remoteCommand name="sortColumns" action="#{sqlQueryCtl.sortColumns}"/>
 
         <script>console.log('-- first-line of sql query --');</script>
 
@@ -71,14 +73,28 @@
                                                     </td>
                                                     <p:repeat value="#{floor.roomList}" var="room">
                                                         <td style="vertical-align:top">
-                                                            <p:panel header="" styleClass="query-table" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
+                                                            <p:panel header="" styleClass="query-table qt#{room.id}" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
                                                                 <f:facet name="actions">
                                                                     <div class="#{room.endPlug.styleClass}" id="#{room.endPlug}">
                                                                         <input name="removeButtonTip" type="hidden" value="#{room.endPlug.removeButtonTip}"/>
                                                                     </div>
-                                                                    <div>
+                                                                    <div id="#{room.id}" class="hiddden"></div>
+                                                                    <div style="display:inline-block">
                                                                         <b>#{room.name}</b>
                                                                     </div>
+                                                                    <p:menuButton icon="pi pi-bars">
+                                                                        <p:menuitem value="Select All" icon="pi pi-checked" onclick="selectTableColumns(#{room.id},true)"/>
+                                                                        <p:menuitem value="Unselect All" icon="pi pi-unchecked" onclick="selectTableColumns(#{room.id},false)"/>
+
+                                                                        <p:divider layout="horizontal"/>
+
+                                                                        <p:submenu label="Sort by">
+                                                                            <p:menuitem value="Name" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},true,false)"/>
+                                                                            <p:menuitem value="Name (Max First)" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},true,true)"/>
+                                                                            <p:menuitem value="Index" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},false,false)"/>
+                                                                            <p:menuitem value="Index (Max First)" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},false,true)"/>
+                                                                        </p:submenu>
+                                                                    </p:menuButton>
                                                                     <div class="#{room.startPlug.styleClass}" id="#{room.startPlug}"></div>
                                                                 </f:facet>
 
@@ -115,7 +131,7 @@
                                 </script>
                             </p:outputPanel>
 
-                            <script>$(function(){
+                            <script>$(function () {
                                 selectableHandle($('.selectable'));
                             });
                             </script>

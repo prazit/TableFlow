@@ -332,10 +332,18 @@ public class SQLQueryController extends Controller {
             return;
         }
         log.debug("columnSelected:fromClient");
+        boolean selectAll = !param.contains(".");
 
-        String[] params = param.split("[.]");
-        int tableId = Integer.parseInt(params[0]);
-        int columnId = Integer.parseInt(params[1]);
+        int tableId;
+        int columnId;
+        if (selectAll) {
+            tableId = Integer.parseInt(param);
+            columnId = 0;
+        } else {
+            String[] params = param.split("[.]");
+            tableId = Integer.parseInt(params[0]);
+            columnId = Integer.parseInt(params[1]);
+        }
 
         QueryTable table = getTable(tableId, query.getTableList());
         if (table == null) {
@@ -344,15 +352,22 @@ public class SQLQueryController extends Controller {
             return;
         }
 
-        QueryColumn column = getColumn(columnId, table.getColumnList());
-        if (column == null) {
-            log.error("invalid column-id:{}", columnId);
-            jsBuilder.pre(JavaScript.notiError, "Can not perform select action, invalid column-id:{}!", columnId);
-            return;
+        List<QueryColumn> columnList = table.getColumnList();
+        QueryColumn column;
+        if (selectAll) {
+            column = columnList.get(0);
+        } else {
+            column = getColumn(columnId, columnList);
+            if (column == null) {
+                log.error("invalid column-id:{}", columnId);
+                jsBuilder.pre(JavaScript.notiError, "Can not perform select action, invalid column-id:{}!", columnId);
+                return;
+            }
         }
 
         Step step = getStep();
         Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.SWITCH_ON, selectAll);
         paramMap.put(CommandParamKey.QUERY, query);
         paramMap.put(CommandParamKey.STEP, step);
 
@@ -361,7 +376,7 @@ public class SQLQueryController extends Controller {
             paramMap.put(CommandParamKey.QUERY_COLUMN, column);
             action = new AddQueryColumn(paramMap);
         } else {
-            paramMap.put(CommandParamKey.COLUMN_ID, column.getId());
+            paramMap.put(CommandParamKey.COLUMN_ID, selectAll ? table.getId() : column.getId());
             action = new RemoveQueryColumn(paramMap);
         }
 
@@ -392,6 +407,39 @@ public class SQLQueryController extends Controller {
             }
         }
         return null;
+    }
+
+    public void sortColumns() {
+        log.debug("sortColumns:fromtClient");
+        boolean byName = Boolean.parseBoolean(FacesUtil.getRequestParam("byName"));
+        boolean maxFirst = Boolean.parseBoolean(FacesUtil.getRequestParam("maxFirst"));
+        int tableId = Integer.parseInt(FacesUtil.getRequestParam("tableId"));
+        log.debug("tableId:{}, byName:{}, maxFIrst:{}", tableId, byName, maxFirst);
+
+        QueryTable queryTable = getTable(tableId, query.getTableList());
+        if (queryTable == null) {
+            jsBuilder.pre(JavaScript.notiError, "Table({}) not found!", tableId);
+            return;
+        }
+
+        if (byName) {
+            if (maxFirst) {
+                queryTable.getColumnList().sort((c1, c2) -> {
+                    return c2.getName().compareTo(c1.getName());
+                });
+            } else {
+                queryTable.getColumnList().sort(Comparator.comparing(QueryColumn::getName));
+            }
+
+        } else /*byIndex*/ {
+            if (maxFirst) {
+                queryTable.getColumnList().sort((c1, c2) -> {
+                    return Integer.compare(c2.getIndex(), c1.getIndex());
+                });
+            } else {
+                queryTable.getColumnList().sort(Comparator.comparingInt(QueryColumn::getIndex));
+            }
+        }
     }
 
 }

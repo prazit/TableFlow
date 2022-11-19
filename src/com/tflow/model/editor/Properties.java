@@ -352,7 +352,7 @@ public enum Properties {
             "dataSourceIdentifier:Database:DATASOURCE:DATABASE|updateProperty('dataSourceType');updateProperty('dataSourceId');",
             "name:File Name:Upload:type:uploadedId:Invalid SQL file!|updateProperty('name');:[]editable",
             ".:propertyMap:editable:Turn to Editable Query:Boolean|updateProperty('edit');updateProperty('name');",
-            "edit:Open Query:Button:openQuery|[x]editable",
+            "edit:Open Query:Button:openQuery|[x]editable:@actionForm",
             "--: Packaged Properties :--",
             ".:propertyMap:quotesName:Quote symbol for column name:String:1000",
             ".:propertyMap:quotesValue:Quote symbol for column value:String:1000|=\'",

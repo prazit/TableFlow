@@ -1,6 +1,5 @@
 package com.tflow.controller;
 
-import com.tflow.kafka.EnvironmentConfigs;
 import com.tflow.kafka.KafkaRecord;
 import com.tflow.kafka.KafkaRecordAttributes;
 import com.tflow.kafka.ProjectFileType;
@@ -11,8 +10,8 @@ import com.tflow.model.editor.Properties;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
-import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.datasource.DataSourceType;
+import com.tflow.model.editor.datasource.*;
 import com.tflow.model.editor.sql.Query;
 import com.tflow.model.editor.view.ActionView;
 import com.tflow.model.editor.view.PropertyView;
@@ -39,7 +38,6 @@ import org.primefaces.model.menu.MenuModel;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;

@@ -5,22 +5,6 @@ function warning(msg) {
     ]);
 }
 
-function blockScreen(text) {
-    console.debug("blockScreen('", text, "');");
-    if (tflow.blockScreen === undefined) {
-        tflow.blockScreen = $('.screen-blocker');
-        tflow.blockScreenText = tflow.blockScreen.find('.screen-block-text');
-    }
-    if (text === undefined) text = "PLEASE WAIT";
-    if (tflow.blockScreenText[0] !== undefined) tflow.blockScreenText[0].innerText = text;
-    tflow.blockScreen.show();
-}
-
-function unblockScreen() {
-    console.debug("editor.unblockScreen");
-    if (tflow.blockScreen !== undefined) tflow.blockScreen.hide();
-}
-
 function updateProperty(className) {
     var $properties = $('.properties');
     var $property = $properties.find('.' + className);
