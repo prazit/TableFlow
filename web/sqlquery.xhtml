@@ -53,17 +53,22 @@
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
 
-                            <div class="query-panel ui-g">
-
-                                <div class="select-table-panel ui-g-2">
+                            <p:outputPanel style="overflow:visible; position:absolute; height: 10em; width: 100%;">
+                                <p:overlayPanel showDelay="1" widgetVar="tableListPanel"
+                                                styleClass="select-table-panel fit-width hidden"
+                                                showCloseIcon="false" dismissable="true"
+                                                blockScroll="false" modal="false" for="queryTab" at="top left" my="top left"
+                                                collision="fit flip" onShow="console.debug('Table List Show.')" onHide="console.debug('Table List Hide.')">
                                     <div class="vertical-scroll-panel">
                                         <p:dataList value="#{sqlQueryCtl.tableList}" var="tableName">
                                             <div>#{tableName}</div>
                                         </p:dataList>
                                     </div>
-                                </div>
+                                </p:overlayPanel>
+                            </p:outputPanel>
 
-                                <div class="select-column-panel ui-g-10">
+                            <div class="query-panel">
+                                <div class="select-column-panel">
                                     <div class="horizon-scroll-panel fit-height">
                                         <table class="query-tower">
                                             <p:repeat value="#{sqlQueryCtl.query.tower.floorList}" var="floor">

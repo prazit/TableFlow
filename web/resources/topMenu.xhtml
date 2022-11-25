@@ -3,6 +3,7 @@
         xmlns:h="http://java.sun.com/jsf/html"
         xmlns:p="http://primefaces.org/ui">
 
+    <h:outputScript library="primefaces" name="jquery/jquery.panel.suite.js#{groupCtl.forceReloadResources}" target="head"/>
     <h:outputStylesheet library="css" name="tflow.css${topMenuCtl.forceReloadResources}" target="head"/>
     <h:outputScript library="js" name="tflow.js#{topMenuCtl.forceReloadResources}" target="head"/>
 
@@ -66,7 +67,7 @@
         </div>
     </div>
 
-    <div class="screen-blocker" style="display: none;">
+    <div class="screen-blocker">
         <div style="font-size:var(--font-size-1);color:var(--surface-c)">
             <i class="pi pi-spinner pi-spin"></i>
             <span class="screen-block-text">please wait ...</span>

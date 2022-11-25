@@ -1,5 +1,5 @@
 'use strict';
 
-tflow = Object.assign({
-    tflowIsMustHave: true
-}, tflow);
+var tflow = {
+        tflowIsMustHave: true
+    };

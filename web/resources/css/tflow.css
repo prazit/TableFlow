@@ -116,6 +116,10 @@ body .screen-area {
     height: calc(100% - var(--top-bar-height));
 }
 
+body .container .screen-blocker.hidden {
+    display: none;
+}
+
 body .container .screen-blocker {
     z-index: 90909;
     position: fixed;
@@ -200,7 +204,7 @@ body .tool-panel .ui-tabs .ui-menu {
     color: var(--surface-a);
 }
 
-/* SPECIFIC */
+/* -- SPECIFIC -- */
 
 .float-left {
     float: left;
@@ -239,4 +243,36 @@ body .tool-panel .ui-tabs .ui-menu {
 .error-panel {
     background-color: orangered;
     color: yellow;
+}
+
+/* -- Animated -- */
+
+@keyframes ani-zoomInUp {
+    0% {
+        margin-top: 100%;
+        height: 0%;
+    }
+    100%  {
+        margin-top: 0%;
+        height: 100%;
+    }
+}
+
+@keyframes ani-zoomOutDown {
+    0% {
+        margin-top: 0%;
+        height: 100%;
+    }
+    100%  {
+        margin-top: 100%;
+        height: 0%;
+    }
+}
+
+.ani-zoomInUp {
+    animation-name: ani-zoomInUp;
+}
+
+.ani-zoomOutDown {
+    animation-name: ani-zoomOutDown;
 }

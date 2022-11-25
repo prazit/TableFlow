@@ -1,5 +1,9 @@
 'use strict';
 
+function showTableList() {
+
+}
+
 function updatePanelComplete(panel) {
     selectableHandle($(panel + ' .selectable'));
     buttonHandle($(panel + ' .button'));

@@ -2,18 +2,14 @@
 
 function blockScreen(text) {
     console.debug("blockScreen('", text, "');");
-    if (tflow.blockScreen == null) {
-        tflow.blockScreen = $('.screen-blocker');
-        tflow.blockScreenText = tflow.blockScreen.find('.screen-block-text');
-    }
     if (text === undefined) text = "PLEASE WAIT";
     if (tflow.blockScreenText[0] !== undefined) tflow.blockScreenText[0].innerText = text;
-    tflow.blockScreen.show();
+    Appanel.chains(tflow.blockScreen,"-hidden,ani-zoomInUp:0.5");
 }
 
 function unblockScreen() {
     console.debug("unblockScreen();");
-    if (tflow.blockScreen != null) tflow.blockScreen.hide();
+    Appanel.chains(tflow.blockScreen,"ani-zoomOutDown:0.5,hidden");
 }
 
 var tflowBlockScreen = {
@@ -25,3 +21,9 @@ if (window['tflow'] === undefined)
     window['tflow'] = tflowBlockScreen;
 else
     window['tflow'] = Object.assign(tflow, tflowBlockScreen);
+
+$(function(){
+    tflow.blockScreen = $('.screen-blocker');
+    tflow.blockScreenText = tflow.blockScreen.find('.screen-block-text');
+    unblockScreen();
+});
