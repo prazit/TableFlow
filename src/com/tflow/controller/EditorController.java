@@ -1532,7 +1532,7 @@ public class EditorController extends Controller {
     }
 
     /**
-     * for PropertyType.COLUMNLIST
+     * for PropertyType.COLUMNLIST and PropertyType.SELECTEDNAMES
      */
     public void columnListSelect(SelectEvent<String> event) {
         /*Cancel added item by remove it from the list*/
@@ -1585,10 +1585,14 @@ public class EditorController extends Controller {
         Database database = (Database) activeObject;
         int dataSourceId = database.getId();
         if (!isDatabaseReady(dataSourceId)) {
-            jsBuilder.pre(JavaScript.notiWarn, "Connection fail!");
+            jsBuilder.pre(JavaScript.notiWarn, "Connection fail!")
+                    .post(JavaScript.unblockScreen)
+                    .runOnClient();
             return;
         }
-        jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
+        jsBuilder.pre(JavaScript.notiInfo, "Connect successful!")
+                .post(JavaScript.unblockScreen)
+                .runOnClient();
     }
 
     public void testSFTPConnection(PropertyView property) {
@@ -1598,11 +1602,15 @@ public class EditorController extends Controller {
         int sftpId = sftp.getId();
         dconvers.addSFTP(sftpId, workspace.getProject());
         if (!dconvers.run()) {
-            jsBuilder.pre(JavaScript.notiWarn, "Connection fail!");
+            jsBuilder.pre(JavaScript.notiWarn, "Connection fail!")
+                    .post(JavaScript.unblockScreen)
+                    .runOnClient();
             return;
         }
 
-        jsBuilder.pre(JavaScript.notiInfo, "Connect successful!");
+        jsBuilder.pre(JavaScript.notiInfo, "Connect successful!")
+                .post(JavaScript.unblockScreen)
+                .runOnClient();
     }
 
     /**

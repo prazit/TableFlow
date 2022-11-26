@@ -210,8 +210,8 @@
                                             <span class="hidden">#{prop.oldValue=prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}</span>
                                             <p:outputPanel styleClass="ui-g-8 ui-nopad">
                                                 <p:chips value="#{prop.hasParent()?editorCtl.activeObject[prop.varParent][prop.var]:editorCtl.activeObject[prop.var]}" addOnBlur="true" disabled="#{editorCtl.disabled(prop)}" title="Use X button to remove unwanted name" styleClass="#{prop.var}">
-                                                    <p:ajax event="itemUnselect" onstart="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
-                                                    <p:ajax event="itemSelect" listener="#{editorCtl.selectedNamesSelect}" process="@this" update="@this"/>
+                                                    <p:ajax event="itemUnselect" listener="#{editorCtl.columnListUnselect}" onsuccess="updateEm('#{editorCtl.activeObject.selectableId}');#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                                    <p:ajax event="itemSelect" listener="#{editorCtl.columnListSelect}" process="@this" update="@this"/>
                                                 </p:chips>
                                             </p:outputPanel>
                                         </p:outputPanel>
@@ -286,7 +286,7 @@
                                         </p:outputPanel>
 
                                         <p:outputPanel styleClass="ui-g #{prop.var}" rendered="#{PropertyType.BUTTON==prop.type}" style="padding:var(--padding)">
-                                            <p:commandButton id="propButton" value="#{prop.label}" disabled="#{editorCtl.disabled(prop)}" onclick="blockScreen('#{prop.label} ...')" actionListener="#{editorCtl[prop.params[0]](prop)}" oncomplete="#{prop.javaScript}" process="@this" update="#{prop.update}"/>
+                                            <p:commandButton id="propButton" value="#{prop.label}" disabled="#{editorCtl.disabled(prop)}" onclick="blockScreen('#{prop.label} ...')" actionListener="#{editorCtl[prop.params[0]](prop)}" oncomplete="#{prop.javaScript};" process="@this" update="#{prop.update}"/>
                                         </p:outputPanel>
 
                                     </p:repeat>

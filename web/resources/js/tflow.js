@@ -4,12 +4,14 @@ function blockScreen(text) {
     console.debug("blockScreen('", text, "');");
     if (text === undefined) text = "PLEASE WAIT";
     if (tflow.blockScreenText[0] !== undefined) tflow.blockScreenText[0].innerText = text;
-    Appanel.chains(tflow.blockScreen,"-hidden,ani-zoomInUp:0.5");
+    if (!tflow.blockScreen.hasClass('hidden')) return;
+    Appanel.chains(tflow.blockScreen, "-hidden,ani-zoomInUp:0.5");
 }
 
 function unblockScreen() {
+    if (tflow.blockScreen.hasClass('hidden')) return;
     console.debug("unblockScreen();");
-    Appanel.chains(tflow.blockScreen,"ani-zoomOutDown:0.5,hidden");
+    Appanel.chains(tflow.blockScreen, "ani-zoomOutDown:0.5,hidden");
 }
 
 var tflowBlockScreen = {
@@ -22,7 +24,7 @@ if (window['tflow'] === undefined)
 else
     window['tflow'] = Object.assign(tflow, tflowBlockScreen);
 
-$(function(){
+$(function () {
     tflow.blockScreen = $('.screen-blocker');
     tflow.blockScreenText = tflow.blockScreen.find('.screen-block-text');
     unblockScreen();

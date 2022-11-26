@@ -16,10 +16,11 @@
 
     </h:head>
     <h:body style="background-color: var(--surface-a)">
-        <h:outputStylesheet library="css" name="tflow.css#{app.forceReloadResources}" target="head"/>
-        <h:outputStylesheet library="css" name="editor.css#{app.forceReloadResources}" target="head"/>
-        <h:outputScript library="js" name="editor-page.js#{app.forceReloadResources}" target="head"/>
-        <h:outputScript library="js" name="sqlquery.js#{app.forceReloadResources}" target="head"/>
+        <h:outputScript library="primefaces" name="jquery/jquery.panel.suite.js#{sqlQueryCtl.forceReloadResources}" target="head"/>
+        <h:outputStylesheet library="css" name="tflow.css#{sqlQueryCtl.forceReloadResources}" target="head"/>
+        <h:outputStylesheet library="css" name="editor.css#{sqlQueryCtl.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="editor-page.js#{sqlQueryCtl.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="sqlquery.js#{sqlQueryCtl.forceReloadResources}" target="head"/>
 
         <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="clientReady" action="#{sqlQueryCtl.clientReady}" update="queryForm:tabview"/>
@@ -42,29 +43,23 @@
                             <p:outputLabel value=" #{SQLQuerySection.QUERY.title}"/>
                         </f:facet>
 
-                        <p:divider align="left">
-                            <div class="inline-flex align-items-center">
-                                <i class="pi pi-pointer"/>
-                                <b>Select Column</b>
-                            </div>
-                        </p:divider>
-
                         <p:outputPanel id="queryTab" class="query">
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
 
-                            <p:outputPanel style="overflow:visible; position:absolute; height: 10em; width: 100%;">
-                                <p:overlayPanel showDelay="1" widgetVar="tableListPanel"
-                                                styleClass="select-table-panel fit-width hidden"
-                                                showCloseIcon="false" dismissable="true"
-                                                blockScroll="false" modal="false" for="queryTab" at="top left" my="top left"
-                                                collision="fit flip" onShow="console.debug('Table List Show.')" onHide="console.debug('Table List Hide.')">
-                                    <div class="vertical-scroll-panel">
-                                        <p:dataList value="#{sqlQueryCtl.tableList}" var="tableName">
-                                            <div>#{tableName}</div>
-                                        </p:dataList>
+                            <p:outputPanel styleClass="select-table-panel vertical-scroll-panel ui-g hidden">
+                                <p:divider align="left">
+                                    <div class="inline-flex align-items-center">
+                                        <i class="pi pi-table"/>
+                                        <b>Add Table</b>
                                     </div>
-                                </p:overlayPanel>
+                                </p:divider>
+                                <p:tooltip widgetVar="propertiesToolTip" globalSelector=":button" position="top"/>
+                                <p:repeat value="#{sqlQueryCtl.tableList}" var="tableName">
+                                    <div class="ui-g-3" style="padding:var(--padding);height:auto;overflow:visible;">
+                                        <p:commandButton value="#{tableName}" actionListener="#{sqlQueryCtl.addTable(tableName)}" styleClass="fit-width" title="#{tableName}"/>
+                                    </div>
+                                </p:repeat>
                             </p:outputPanel>
 
                             <div class="query-panel">

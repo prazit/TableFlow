@@ -147,6 +147,9 @@ public class SQLQueryController extends Controller {
         }
         tableList.sort(String::compareTo);
         if (log.isDebugEnabled()) log.debug("reloadTableList: completed, tableList: {}", Arrays.toString(tableList.toArray()));
+
+        /*TODO: need to exclude all tables that already selected in the Query*/
+
     }
 
     private String quotedArray(List<String> schemaList, String quoteSymbol) {
@@ -440,6 +443,15 @@ public class SQLQueryController extends Controller {
                 queryTable.getColumnList().sort(Comparator.comparingInt(QueryColumn::getIndex));
             }
         }
+    }
+
+    public void addTable(String tableName) {
+        log.debug("addTable(tableName:{})", tableName);
+
+        /*TODO: call AddQueryTable action*/
+
+
+        jsBuilder.pre(JavaScript.notiInfo, "addTable(tableName:{})", tableName);
     }
 
 }

@@ -183,8 +183,13 @@ body .query-panel {
     align-items: stretch;
 }
 
-body .query-panel .select-table-panel {
+body .query .select-table-panel {
+    z-index: 8000;
+    position:absolute;
+    margin-left: calc(var(--padding)*-2);
+    margin-right: calc(var(--padding)*2);
     background-color: var(--surface-b);
+    padding: var(--padding);
 }
 
 body .query-panel .select-column-panel {

@@ -116,10 +116,6 @@ body .screen-area {
     height: calc(100% - var(--top-bar-height));
 }
 
-body .container .screen-blocker.hidden {
-    display: none;
-}
-
 body .container .screen-blocker {
     z-index: 90909;
     position: fixed;
@@ -205,6 +201,11 @@ body .tool-panel .ui-tabs .ui-menu {
 }
 
 /* -- SPECIFIC -- */
+
+body .container .hidden,
+body .flow-chart .hidden {
+    display: none !important;
+}
 
 .float-left {
     float: left;

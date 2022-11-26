@@ -14,6 +14,7 @@ import com.tflow.model.editor.datasource.DataSourceSelector;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.datasource.Local;
 import com.tflow.model.editor.datasource.SFTP;
+import com.tflow.model.editor.sql.Query;
 import com.tflow.model.editor.view.PropertyView;
 import com.tflow.model.editor.view.VersionedFile;
 import com.tflow.model.mapper.ProjectMapper;
@@ -266,6 +267,12 @@ public abstract class Command {
                 dataManager.addData(ProjectFileType.VARIABLE, mapper.map(variable), projectUser, variable.getId());
                 break;
 
+            case QUERY:
+                Query query = (Query) dataObject;
+                int queryID = query.getId();
+                String childId = "" + queryID;
+                dataManager.addData(ProjectFileType.QUERY, mapper.map(query), projectUser, queryID, step.getId(), childId);
+                break;
 
             /*Notice: need to find Changeable List and do the same way of STEP_LIST
              * Changeable List are ItemData familiar.

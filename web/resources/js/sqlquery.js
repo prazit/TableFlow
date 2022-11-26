@@ -1,7 +1,17 @@
 'use strict';
 
-function showTableList() {
+function showTableList(show) {
+    if (show === undefined) show = true;
 
+    var $tablePanel = $('.query').find('.select-table-panel'),
+        isHidden = $tablePanel.hasClass('hidden');
+
+    if (show && isHidden) {
+        Appanel.chains($tablePanel, "-hidden,ani-zoomInUp:0.5");
+
+    } else if (!show && !isHidden) {
+        Appanel.chains($tablePanel, "ani-zoomOutDown:0.5,hidden");
+    }
 }
 
 function updatePanelComplete(panel) {
