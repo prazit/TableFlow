@@ -7,9 +7,7 @@ import com.tflow.model.data.Dbms;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.action.Action;
-import com.tflow.model.editor.action.AddQueryColumn;
-import com.tflow.model.editor.action.RemoveQueryColumn;
+import com.tflow.model.editor.action.*;
 import com.tflow.model.editor.cmd.CommandParamKey;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.sql.Query;
@@ -30,7 +28,7 @@ import java.util.*;
 public class SQLQueryController extends Controller {
 
     private DataFile dataFile;
-    private List<String> tableList;
+    private List<QueryTable> tableList;
 
     private Query query;
     private Selectable selectableFilter;
@@ -63,11 +61,11 @@ public class SQLQueryController extends Controller {
         this.dataFile = dataFile;
     }
 
-    public List<String> getTableList() {
+    public List<QueryTable> getTableList() {
         return tableList;
     }
 
-    public void setTableList(List<String> tableList) {
+    public void setTableList(List<QueryTable> tableList) {
         this.tableList = tableList;
     }
 
@@ -112,6 +110,8 @@ public class SQLQueryController extends Controller {
         jsBuilder.post(JavaScript.unblockScreen).runOnClient();
     }
 
+    /*TODO: each table need Alias-Name from Oracle Synonym,
+        and need to show Alias-Name instead of Name*/
     private void reloadTableList() {
         jsBuilder.pre(JavaScript.blockScreenWithText, "LOADING TABLE LIST ...").runOnClient();
         log.debug("reloadTableList.");
@@ -139,16 +139,32 @@ public class SQLQueryController extends Controller {
             return;
         }
 
-        /*first column must be table-name*/
+        /*first column must be table-name and second column must be schema-name*/
+        List<QueryTable> selectedList = query.getTableList();
         DataTable tables = dConvers.getSourceTable(dConversTableName);
+        String tableName;
+        String schemaName;
+        boolean isSelected;
+        int index = 0;
         for (DataRow row : tables.getRowList()) {
-            DataColumn column = row.getColumn(0);
-            tableList.add(column.getValue());
-        }
-        tableList.sort(String::compareTo);
-        if (log.isDebugEnabled()) log.debug("reloadTableList: completed, tableList: {}", Arrays.toString(tableList.toArray()));
+            tableName = row.getColumn(0).getValue();
+            schemaName = row.getColumn(1).getValue();
 
-        /*TODO: need to exclude all tables that already selected in the Query*/
+            /*exclude all tables that already selected in the Query*/
+            isSelected = false;
+            for (QueryTable selectedTable : selectedList) {
+                if (selectedTable.getSchema().equalsIgnoreCase(schemaName) && selectedTable.getName().equalsIgnoreCase(tableName)) {
+                    isSelected = true;
+                    break;
+                }
+            }
+
+            if (isSelected) continue;
+            tableList.add(new QueryTable(index++, tableName, schemaName));
+        }
+
+        tableList.sort(Comparator.comparing(QueryTable::getName));
+        if (log.isDebugEnabled()) log.debug("reloadTableList: completed, tableList: {}", Arrays.toString(tableList.toArray()));
 
     }
 
@@ -445,13 +461,44 @@ public class SQLQueryController extends Controller {
         }
     }
 
-    public void addTable(String tableName) {
-        log.debug("addTable(tableName:{})", tableName);
+    public void addTable(QueryTable queryTable) {
+        log.debug("addTable(table:{})", queryTable);
+        int index = tableList.indexOf(queryTable);
 
-        /*TODO: call AddQueryTable action*/
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.QUERY, query);
+        paramMap.put(CommandParamKey.QUERY_TABLE, queryTable);
+        paramMap.put(CommandParamKey.WORKSPACE, workspace);
+        AddQueryTable action = new AddQueryTable(paramMap);
 
+        try {
+            action.execute();
+            tableList.remove(index);
+        } catch (Exception ex) {
+            String message = "Action {} failed! {}:{}";
+            jsBuilder.pre(JavaScript.notiError, message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
+            log.error(message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
+            log.trace("", ex);
+        }
+    }
 
-        jsBuilder.pre(JavaScript.notiInfo, "addTable(tableName:{})", tableName);
+    public void removeTable(QueryTable queryTable) {
+        log.debug("removeTable(table:{})", queryTable);
+
+        Map<CommandParamKey, Object> paramMap = new HashMap<>();
+        paramMap.put(CommandParamKey.QUERY, query);
+        paramMap.put(CommandParamKey.QUERY_TABLE, queryTable);
+        paramMap.put(CommandParamKey.WORKSPACE, workspace);
+        RemoveQueryTable action = new RemoveQueryTable(paramMap);
+
+        try {
+            action.execute();
+        } catch (Exception ex) {
+            String message = "Action {} failed! {}:{}";
+            jsBuilder.pre(JavaScript.notiError, message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
+            log.error(message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
+            log.trace("", ex);
+        }
     }
 
 }

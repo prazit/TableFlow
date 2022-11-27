@@ -652,6 +652,7 @@ public class ProjectManager {
         /*QUETY_TOWER*/
         data = dataManager.getData(ProjectFileType.QUERY_TOWER, projectUser, query.getTower().getId(), stepId, childId);
         Tower tower = mapper.map((TowerData) throwExceptionOnError(data));
+        tower.setOwner(project.getActiveStep());
         query.setTower(tower);
 
         /*create each floor in tower*/

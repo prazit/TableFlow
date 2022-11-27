@@ -185,9 +185,10 @@ body .query-panel {
 
 body .query .select-table-panel {
     z-index: 8000;
-    position:absolute;
-    margin-left: calc(var(--padding)*-2);
-    margin-right: calc(var(--padding)*2);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     background-color: var(--surface-b);
     padding: var(--padding);
 }

@@ -55,6 +55,16 @@ public class QueryTable extends Room implements Selectable {
         init();
     }
 
+    public QueryTable(int id, String name, String schema) {
+        this.id = id;
+        this.name = name;
+        this.alias = name;
+        this.schema = schema;
+        this.joinType = TableJoinType.NONE;
+        this.joinTable = "";
+        init();
+    }
+
     public QueryTable(int id, String schema, String name, String alias, String joinType, String joinTable, String joinCondition) {
         this.id = id;
         this.schema = schema;

@@ -248,32 +248,72 @@ body .flow-chart .hidden {
 
 /* -- Animated -- */
 
-@keyframes ani-zoomInUp {
+@keyframes ani-block-screen {
     0% {
         margin-top: 100%;
         height: 0%;
     }
-    100%  {
+    100% {
         margin-top: 0%;
         height: 100%;
     }
 }
 
-@keyframes ani-zoomOutDown {
+.ani-block-screen {
+    animation-name: ani-block-screen;
+}
+
+@keyframes ani-unblock-screen {
     0% {
         margin-top: 0%;
         height: 100%;
     }
-    100%  {
+    100% {
         margin-top: 100%;
         height: 0%;
     }
 }
 
-.ani-zoomInUp {
-    animation-name: ani-zoomInUp;
+.ani-unblock-screen {
+    animation-name: ani-unblock-screen;
 }
 
-.ani-zoomOutDown {
-    animation-name: ani-zoomOutDown;
+@keyframes ani-open-query-table-list {
+    0% {
+        height: 0%;
+    }
+    100% {
+        height: 100%;
+    }
 }
+
+.ani-open-query-table-list {
+    animation-name: ani-open-query-table-list;
+}
+
+@keyframes ani-close-query-table-list {
+    0% {
+        height: 100%;
+    }
+    100% {
+        height: 0%;
+    }
+}
+
+.ani-close-query-table-list {
+    animation-name: ani-close-query-table-list;
+}
+
+@keyframes ani-hide-button {
+    0% {
+        transform: scale3d(1, 1, 1);
+    }
+    100% {
+        transform: scale3d(0, 0, 0);
+    }
+}
+
+.ani-hide-button {
+    animation-name: ani-hide-button;
+}
+

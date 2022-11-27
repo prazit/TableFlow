@@ -34,7 +34,7 @@
 
         <div class="flow-chart">
             <h:form id="queryForm">
-                <p:tabView id="tabview" style="padding: var(--padding);margin: var(--margin);" class="query-cover">
+                <p:tabView id="tabview" widgetVar="tabview" style="padding: var(--padding);margin: var(--margin);" class="query-cover">
                     <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}"/>
 
                     <p:tab title="#{SQLQuerySection.QUERY.title}">
@@ -47,19 +47,22 @@
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
 
-                            <p:outputPanel styleClass="select-table-panel vertical-scroll-panel ui-g hidden">
+                            <p:outputPanel styleClass="select-table-panel vertical-scroll-panel hidden">
                                 <p:divider align="left">
                                     <div class="inline-flex align-items-center">
                                         <i class="pi pi-table"/>
                                         <b>Add Table</b>
                                     </div>
                                 </p:divider>
-                                <p:tooltip widgetVar="propertiesToolTip" globalSelector=":button" position="top"/>
-                                <p:repeat value="#{sqlQueryCtl.tableList}" var="tableName">
-                                    <div class="ui-g-3" style="padding:var(--padding);height:auto;overflow:visible;">
-                                        <p:commandButton value="#{tableName}" actionListener="#{sqlQueryCtl.addTable(tableName)}" styleClass="fit-width" title="#{tableName}"/>
-                                    </div>
-                                </p:repeat>
+
+                                <div class="ui-g fit-width">
+                                    <p:repeat value="#{sqlQueryCtl.tableList}" var="table">
+                                        <div class="ui-g-3" style="padding:var(--padding);height:auto;overflow:visible;">
+                                            <p:commandButton value="#{table.name}" actionListener="#{sqlQueryCtl.addTable(table)}" onclick="hideTableButton(this);" styleClass="fit-width" title="#{table.schema}.#{table.name}"/>
+                                        </div>
+                                    </p:repeat>
+                                    <p:tooltip widgetVar="propertiesToolTip" globalSelector=":button" position="top"/>
+                                </div>
                             </p:outputPanel>
 
                             <div class="query-panel">
@@ -83,16 +86,20 @@
                                                                         <b>#{room.name}</b>
                                                                     </div>
                                                                     <p:menuButton icon="pi pi-bars">
-                                                                        <p:menuitem value="Select All" icon="pi pi-checked" onclick="selectTableColumns(#{room.id},true)"/>
-                                                                        <p:menuitem value="Unselect All" icon="pi pi-unchecked" onclick="selectTableColumns(#{room.id},false)"/>
+                                                                        <p:menuitem value="Remove Table" icon="pi pi-remove" actionListener="#{sqlQueryCtl.removeTable(room)}" onsuccess="PF('tabview').select(0);"/>
 
                                                                         <p:divider layout="horizontal"/>
 
-                                                                        <p:submenu label="Sort by">
-                                                                            <p:menuitem value="Name" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},true,false)"/>
-                                                                            <p:menuitem value="Name (Max First)" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},true,true)"/>
-                                                                            <p:menuitem value="Index" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},false,false)"/>
-                                                                            <p:menuitem value="Index (Max First)" icon="pi pi-sort" onclick="sortTableColumns(#{room.id},false,true)"/>
+                                                                        <p:menuitem value="Select All Columns" icon="pi pi-checked" onclick="selectTableColumns(#{room.id},true)"/>
+                                                                        <p:menuitem value="Unselect All Columns" icon="pi pi-unchecked" onclick="selectTableColumns(#{room.id},false)"/>
+
+                                                                        <p:divider layout="horizontal"/>
+
+                                                                        <p:submenu label="Sort by" icon="pi pi-sort">
+                                                                            <p:menuitem value="Name" onclick="sortTableColumns(#{room.id},true,false)"/>
+                                                                            <p:menuitem value="Name (Max First)" onclick="sortTableColumns(#{room.id},true,true)"/>
+                                                                            <p:menuitem value="Index" onclick="sortTableColumns(#{room.id},false,false)"/>
+                                                                            <p:menuitem value="Index (Max First)" onclick="sortTableColumns(#{room.id},false,true)"/>
                                                                         </p:submenu>
                                                                     </p:menuButton>
                                                                     <div class="#{room.startPlug.styleClass}" id="#{room.startPlug}"></div>

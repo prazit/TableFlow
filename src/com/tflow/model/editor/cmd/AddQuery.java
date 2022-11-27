@@ -1,21 +1,16 @@
 package com.tflow.model.editor.cmd;
 
-import com.clevel.dconvers.data.DataColumn;
-import com.clevel.dconvers.data.DataRow;
-import com.clevel.dconvers.data.DataTable;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
-import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.PropertyVar;
-import com.tflow.model.data.query.*;
+import com.tflow.model.data.query.ColumnType;
+import com.tflow.model.data.query.QueryFilterData;
+import com.tflow.model.data.query.QuerySortData;
 import com.tflow.model.editor.*;
-import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.sql.*;
 import com.tflow.model.mapper.ProjectMapper;
-import com.tflow.system.Properties;
-import com.tflow.util.DConversHelper;
 import com.tflow.util.ProjectUtil;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
@@ -25,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class AddQuery extends Command {
+public class AddQuery extends QueryCommand {
 
     private Logger log;
     private Workspace workspace;
@@ -320,7 +315,7 @@ public class AddQuery extends Command {
                     }
                     tableList.add(queryTable);
 
-                    loadColumnList(queryTable);
+                    loadColumnList(queryTable, dataFile, project, workspace);
                     markSelectedColumn(queryTable, selectedColumnList);
 
                     tower.setRoom(0, roomIndex++, queryTable);
@@ -337,7 +332,7 @@ public class AddQuery extends Command {
                 queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
                 tableList.add(queryTable);
 
-                loadColumnList(queryTable);
+                loadColumnList(queryTable, dataFile, project, workspace);
                 markSelectedColumn(queryTable, selectedColumnList);
 
                 tower.setRoom(0, roomIndex++, queryTable);
@@ -430,75 +425,6 @@ public class AddQuery extends Command {
                     log.debug("markSelectedColumn: ignore different table({}) and selected-table({}), selected-column: {}", tableName, tableColumn[0], selected);
                 }
             }
-        }
-    }
-
-    private void loadColumnList(QueryTable queryTable) {
-        String tableName = queryTable.getName().toUpperCase();
-        String tableSchema = queryTable.getSchema();
-        log.debug("loadColumnList: table: {}={}", tableName, queryTable);
-
-        /*load table list from Database using DConvers*/
-        int dataSourceId = dataFile.getDataSourceId();
-        Database database = project.getDatabaseMap().get(dataSourceId);
-        String shortenDBMS = database.getDbms().name().split("[_]")[0].toLowerCase();
-        Properties configs = workspace.getConfigs("dconvers." + shortenDBMS + ".");
-        tableSchema = tableSchema == null ? database.getSchema().toUpperCase() : tableSchema;
-
-        /*load SYNONYMS info by table_name*/
-        DConversHelper dConvers = new DConversHelper();
-        String dbSchema = tableSchema;
-        String dbTable = tableName;
-        String dataSourceName = dConvers.addDatabase(dataSourceId, project);
-        String synonymsTableName = "synonyms";
-        dConvers.addSourceTable(synonymsTableName, 1, dataSourceName, configs.getProperty("sql.synonyms"), "TABLE_NAME");
-        dConvers.addVariable("table", tableName.toUpperCase());
-        dConvers.addConsoleOutput(synonymsTableName);
-        if (dConvers.run()) {
-            DataTable synonymsTable = dConvers.getSourceTable(synonymsTableName);
-            if (synonymsTable != null) {
-                DataRow row = synonymsTable.getRow(0);
-                dbTable = row.getColumn(0).getValue();
-                dbSchema = row.getColumn(1).getValue();
-            }
-        } else {
-            log.warn("load SYNONYMS failed but allow to try next step.");
-        }
-
-        /*load column list by table_name and owner*/
-        dConvers = new DConversHelper();
-        dataSourceName = dConvers.addDatabase(dataSourceId, project);
-        String columnsTableName = "columns";
-        dConvers.addSourceTable(columnsTableName, 1, dataSourceName, configs.getProperty("sql.columns"), "");
-        dConvers.addVariable("schema", dbSchema);
-        dConvers.addVariable("table", dbTable);
-        dConvers.addConsoleOutput(columnsTableName);
-        if (!dConvers.run()) {
-            throw new UnsupportedOperationException("Load Column List Failed by DConvers!");
-        }
-
-        if (log.isDebugEnabled()) {
-            byte[] configFileContent = dConvers.getConfigFile();
-            log.debug("DConvers Config File: {}", configFileContent == null ? "null" : new String(configFileContent, StandardCharsets.ISO_8859_1));
-        }
-
-        List<QueryColumn> columnList = queryTable.getColumnList();
-        DataTable tables = dConvers.getSourceTable(columnsTableName);
-        if (tables.getRowList().size() == 0) {
-            throw new UnsupportedOperationException("No column for table " + tableName + "!");
-        }
-
-        /*first column must be column-name*/
-        QueryColumn queryColumn;
-        DataColumn column;
-        String columnName;
-        int index = 0;
-        for (DataRow row : tables.getRowList()) {
-            column = row.getColumn(0);
-            columnName = column.getValue();
-            queryColumn = new QueryColumn(index++, ProjectUtil.newUniqueId(project), columnName, queryTable);
-            queryColumn.setValue(tableName + "." + columnName);
-            columnList.add(queryColumn);
         }
     }
 
