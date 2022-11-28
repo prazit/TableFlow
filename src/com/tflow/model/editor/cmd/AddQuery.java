@@ -315,6 +315,7 @@ public class AddQuery extends QueryCommand {
                     }
                     tableList.add(queryTable);
 
+                    loadTableName(queryTable, dataFile, project, workspace);
                     loadColumnList(queryTable, dataFile, project, workspace);
                     markSelectedColumn(queryTable, selectedColumnList);
 
@@ -332,13 +333,14 @@ public class AddQuery extends QueryCommand {
                 queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
                 tableList.add(queryTable);
 
+                loadTableName(queryTable, dataFile, project, workspace);
                 loadColumnList(queryTable, dataFile, project, workspace);
                 markSelectedColumn(queryTable, selectedColumnList);
 
                 tower.setRoom(0, roomIndex++, queryTable);
             }
         }
-        tableList.sort(Comparator.comparing(QueryTable::getName));
+        tableList.sort(Comparator.comparing(QueryTable::getAlias));
 
         /*need Table-ID for JoinedTable*/
         QueryTable joinTable;
@@ -407,42 +409,10 @@ public class AddQuery extends QueryCommand {
         }
     }
 
-    private void markSelectedColumn(QueryTable queryTable, List<QueryColumn> selectedColumnList) {
-        String tableName = queryTable.getName().toUpperCase();
-        for (QueryColumn selected : selectedColumnList) {
-            if (selected.getType() != ColumnType.COMPUTE) {
-                String[] tableColumn = selected.getValue().toUpperCase().split("[.]");
-                if (tableName.equals(tableColumn[0])) {
-                    selected.setOwner(queryTable);
-                    QueryColumn column = findColumn(tableColumn[1], queryTable);
-                    if (column != null) {
-                        selected.setSelected(true);
-                        selected.setId(column.getId());
-                        selected.setOwner(column.getOwner());
-                        column.setSelected(true);
-                    }
-                } else {
-                    log.debug("markSelectedColumn: ignore different table({}) and selected-table({}), selected-column: {}", tableName, tableColumn[0], selected);
-                }
-            }
-        }
-    }
-
-    private QueryColumn findColumn(String columnName, QueryTable queryTable) {
-        for (QueryColumn column : queryTable.getColumnList()) {
-            if (columnName.equals(column.getName().toUpperCase())) {
-                return column;
-            }
-        }
-        log.debug("findColumn: column({}) not found on table({})", columnName, queryTable.getName());
-        // need null instead of throw new UnsupportedOperationException("Invalid Column Reference: '" + columnName + "' not found in table '" + queryTable.getName() + "'");
-        return null;
-    }
-
     private QueryTable findTable(String tableName, List<QueryTable> tableList) {
         tableName = tableName.toUpperCase();
         for (QueryTable table : tableList) {
-            if (tableName.equals(table.getName().toUpperCase())) {
+            if (tableName.equals(table.getName().toUpperCase()) || tableName.equals(table.getAlias().toUpperCase())) {
                 return table;
             }
         }

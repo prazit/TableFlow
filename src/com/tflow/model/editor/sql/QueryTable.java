@@ -55,10 +55,10 @@ public class QueryTable extends Room implements Selectable {
         init();
     }
 
-    public QueryTable(int id, String name, String schema) {
+    public QueryTable(int id, String name, String schema, String alias) {
         this.id = id;
         this.name = name;
-        this.alias = name;
+        this.alias = alias;
         this.schema = schema;
         this.joinType = TableJoinType.NONE;
         this.joinTable = "";

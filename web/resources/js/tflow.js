@@ -2,8 +2,10 @@
 
 function blockScreen(text) {
     console.debug("blockScreen('", text, "');");
+
     if (text === undefined) text = "PLEASE WAIT";
-    if (tflow.blockScreenText[0] !== undefined) tflow.blockScreenText[0].innerText = text;
+    tflow.blockScreenText[0].innerText = text;
+
     if (!tflow.blockScreen.hasClass('hidden')) return;
     Appanel.chains(tflow.blockScreen, "-hidden,ani-block-screen:0.5");
 }

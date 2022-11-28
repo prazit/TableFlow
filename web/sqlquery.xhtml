@@ -43,7 +43,7 @@
                             <p:outputLabel value=" #{SQLQuerySection.QUERY.title}"/>
                         </f:facet>
 
-                        <p:outputPanel id="queryTab" class="query">
+                        <p:outputPanel id="queryTab" class="selectable query">
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
 
@@ -61,19 +61,18 @@
                                             <p:commandButton value="#{table.name}" actionListener="#{sqlQueryCtl.addTable(table)}" onclick="hideTableButton(this);" styleClass="fit-width" title="#{table.schema}.#{table.name}"/>
                                         </div>
                                     </p:repeat>
-                                    <p:tooltip widgetVar="propertiesToolTip" globalSelector=":button" position="top"/>
                                 </div>
                             </p:outputPanel>
 
                             <div class="query-panel">
+                                <p:tooltip widgetVar="tooltip" position="top"/>
+
                                 <div class="select-column-panel">
                                     <div class="horizon-scroll-panel fit-height">
                                         <table class="query-tower">
                                             <p:repeat value="#{sqlQueryCtl.query.tower.floorList}" var="floor">
                                                 <tr>
-                                                    <td>
-                                                        <p:spacer width="50"/>
-                                                    </td>
+                                                    <td><p:outputLabel value="No selected table, click 'Add Table' to add table to the query." rendered="#{sqlQueryCtl.query.tableList.size() == 0}"/></td>
                                                     <p:repeat value="#{floor.roomList}" var="room">
                                                         <td style="vertical-align:top">
                                                             <p:panel header="" styleClass="query-table qt#{room.id}" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
@@ -83,7 +82,7 @@
                                                                     </div>
                                                                     <div id="#{room.id}" class="hiddden"></div>
                                                                     <div style="display:inline-block">
-                                                                        <b>#{room.name}</b>
+                                                                        <b><p:outputLabel value="#{room.alias}" title="#{room.schema}.#{room.name}"/></b>
                                                                     </div>
                                                                     <p:menuButton icon="pi pi-bars">
                                                                         <p:menuitem value="Remove Table" icon="pi pi-remove" actionListener="#{sqlQueryCtl.removeTable(room)}" onsuccess="PF('tabview').select(0);"/>
@@ -96,9 +95,9 @@
                                                                         <p:divider layout="horizontal"/>
 
                                                                         <p:submenu label="Sort by" icon="pi pi-sort">
-                                                                            <p:menuitem value="Name" onclick="sortTableColumns(#{room.id},true,false)"/>
+                                                                            <p:menuitem value="Name (Min First)" onclick="sortTableColumns(#{room.id},true,false)"/>
                                                                             <p:menuitem value="Name (Max First)" onclick="sortTableColumns(#{room.id},true,true)"/>
-                                                                            <p:menuitem value="Index" onclick="sortTableColumns(#{room.id},false,false)"/>
+                                                                            <p:menuitem value="Index (Min First)" onclick="sortTableColumns(#{room.id},false,false)"/>
                                                                             <p:menuitem value="Index (Max First)" onclick="sortTableColumns(#{room.id},false,true)"/>
                                                                         </p:submenu>
                                                                     </p:menuButton>

@@ -110,8 +110,6 @@ public class SQLQueryController extends Controller {
         jsBuilder.post(JavaScript.unblockScreen).runOnClient();
     }
 
-    /*TODO: each table need Alias-Name from Oracle Synonym,
-        and need to show Alias-Name instead of Name*/
     private void reloadTableList() {
         jsBuilder.pre(JavaScript.blockScreenWithText, "LOADING TABLE LIST ...").runOnClient();
         log.debug("reloadTableList.");
@@ -139,16 +137,22 @@ public class SQLQueryController extends Controller {
             return;
         }
 
-        /*first column must be table-name and second column must be schema-name*/
+        /*order of columns must be follow:
+         0 table-name
+         1 schema-name
+         2 synonym-name (or table-name if synonym not present)
+         */
         List<QueryTable> selectedList = query.getTableList();
         DataTable tables = dConvers.getSourceTable(dConversTableName);
         String tableName;
         String schemaName;
+        String shortName;
         boolean isSelected;
         int index = 0;
         for (DataRow row : tables.getRowList()) {
             tableName = row.getColumn(0).getValue();
             schemaName = row.getColumn(1).getValue();
+            shortName = row.getColumn(2).getValue();
 
             /*exclude all tables that already selected in the Query*/
             isSelected = false;
@@ -160,10 +164,10 @@ public class SQLQueryController extends Controller {
             }
 
             if (isSelected) continue;
-            tableList.add(new QueryTable(index++, tableName, schemaName));
+            tableList.add(new QueryTable(index++, tableName, schemaName, shortName.isEmpty() ? tableName : shortName));
         }
 
-        tableList.sort(Comparator.comparing(QueryTable::getName));
+        tableList.sort(Comparator.comparing(QueryTable::getAlias));
         if (log.isDebugEnabled()) log.debug("reloadTableList: completed, tableList: {}", Arrays.toString(tableList.toArray()));
 
     }
@@ -493,6 +497,8 @@ public class SQLQueryController extends Controller {
 
         try {
             action.execute();
+            tableList.add(queryTable);
+            tableList.sort(Comparator.comparing(QueryTable::getAlias));
         } catch (Exception ex) {
             String message = "Action {} failed! {}:{}";
             jsBuilder.pre(JavaScript.notiError, message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());

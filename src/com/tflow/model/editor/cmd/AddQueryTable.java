@@ -44,6 +44,7 @@ public class AddQueryTable extends QueryCommand {
 
         /*need columns*/
         loadColumnList(queryTable, query.getOwner(), project, workspace);
+        markSelectedColumn(queryTable, query.getColumnList());
 
         /*TODO: need more info about Joined Table*/
 
