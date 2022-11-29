@@ -14,8 +14,15 @@ public class QueryColumnData extends TWData implements Serializable {
     private int id;
     private int index;
     private ColumnType type;
+    private String dataType;
     private String name;
     private String value;
+
+    /*JOIN*/
+    private boolean pk;
+    private boolean fk;
+    private String fkSchema;
+    private String fkTable;
 
     private boolean selected;
 

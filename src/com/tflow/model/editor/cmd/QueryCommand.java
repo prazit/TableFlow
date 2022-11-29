@@ -3,8 +3,10 @@ package com.tflow.model.editor.cmd;
 import com.clevel.dconvers.data.DataColumn;
 import com.clevel.dconvers.data.DataRow;
 import com.clevel.dconvers.data.DataTable;
+import com.tflow.model.data.Dbms;
 import com.tflow.model.data.query.ColumnType;
 import com.tflow.model.editor.DataFile;
+import com.tflow.model.editor.DataType;
 import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Workspace;
 import com.tflow.model.editor.datasource.Database;
@@ -89,10 +91,17 @@ public abstract class QueryCommand extends Command {
             throw new UnsupportedOperationException("No column for table " + tableName + "!");
         }
 
-        /*first column must be column-name*/
+        /*IMPORTANT: Notice: column order must be following
+          0 column-name
+          1 data-type
+          2 constraint-type ( 'P'=primary-key, 'R'=foreign-key )
+          3 foreign-table-schema
+          4 foreign-table-name
+         */
         QueryColumn queryColumn;
         DataColumn column;
         String columnName;
+        String consType;
         String tableAlias = queryTable.getAlias();
         int index = 0;
         for (DataRow row : tables.getRowList()) {
@@ -100,8 +109,25 @@ public abstract class QueryCommand extends Command {
             columnName = column.getValue();
             queryColumn = new QueryColumn(index++, ProjectUtil.newUniqueId(project), columnName, queryTable);
             queryColumn.setValue(tableAlias + "." + columnName);
+            consType = row.getColumn(2).getValue();
+            queryColumn.setDataType(getColumnType(row.getColumn(1).getValue(), database.getDbms()));
+            queryColumn.setPk(consType.equals("P"));
+            queryColumn.setFk(consType.equals("R"));
+            if (queryColumn.isFk()) {
+                queryColumn.setFkSchema(row.getColumn(3).getValue());
+                queryColumn.setFkTable(row.getColumn(4).getValue());
+            }
             columnList.add(queryColumn);
         }
+    }
+
+    /*TODO: move this function to DBMSFunctions class for Oracle*/
+    private DataType getColumnType(String type, Dbms dbms) {
+        /*dbms == ORACLE*/
+        type = type.trim().toUpperCase();
+        if (type.equals("DATE")) return DataType.DATE;
+        if (type.equals("NUMBER")) return DataType.DECIMAL;
+        return DataType.STRING;
     }
 
     protected void markSelectedColumn(QueryTable queryTable, List<QueryColumn> selectedColumnList) {
@@ -136,7 +162,6 @@ public abstract class QueryCommand extends Command {
         // need null instead of throw new UnsupportedOperationException("Invalid Column Reference: '" + columnName + "' not found in table '" + queryTable.getName() + "'");
         return null;
     }
-
 
 
 }

@@ -13,6 +13,7 @@ public enum TableJoinType {
 
     FULL_JOIN,
     FULL_OUTER_JOIN,
+
     OUTER_JOIN,
     ;
 }

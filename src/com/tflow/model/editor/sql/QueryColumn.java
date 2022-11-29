@@ -1,14 +1,22 @@
 package com.tflow.model.editor.sql;
 
 import com.tflow.model.data.query.ColumnType;
+import com.tflow.model.editor.DataType;
 
 public class QueryColumn {
 
     private int id;
     private int index;
     private ColumnType type;
+    private DataType dataType;
     private String name;
     private String value;
+
+    /*JOIN*/
+    private boolean pk;
+    private boolean fk;
+    private String fkSchema;
+    private String fkTable;
 
     private boolean selected;
 
@@ -24,6 +32,7 @@ public class QueryColumn {
         this.id = id;
         this.name = name;
         this.owner = owner;
+        this.dataType = DataType.STRING;
     }
 
     public int getId() {
@@ -50,6 +59,14 @@ public class QueryColumn {
         this.type = type;
     }
 
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
+    }
+
     public String getName() {
         return name;
     }
@@ -74,6 +91,38 @@ public class QueryColumn {
         this.selected = selected;
     }
 
+    public boolean isPk() {
+        return pk;
+    }
+
+    public void setPk(boolean pk) {
+        this.pk = pk;
+    }
+
+    public boolean isFk() {
+        return fk;
+    }
+
+    public void setFk(boolean fk) {
+        this.fk = fk;
+    }
+
+    public String getFkSchema() {
+        return fkSchema;
+    }
+
+    public void setFkSchema(String fkSchema) {
+        this.fkSchema = fkSchema;
+    }
+
+    public String getFkTable() {
+        return fkTable;
+    }
+
+    public void setFkTable(String fkTable) {
+        this.fkTable = fkTable;
+    }
+
     public QueryTable getOwner() {
         return owner;
     }
@@ -85,13 +134,18 @@ public class QueryColumn {
     @Override
     public String toString() {
         return "{" +
-                "index:" + index +
-                ", id:" + id +
-                ", type:'" + type + '\'' +
+                "id:" + id +
+                ", index:" + index +
+                ", type:" + type +
+                ", dataType: " + dataType +
                 ", name:'" + name + '\'' +
                 ", value:'" + value + '\'' +
                 ", selected:" + selected +
-                ", owner:" + (owner == null ? "none" : owner.getName()) +
+                ", pk:" + pk +
+                ", fk:" + fk +
+                ", fkSchema:'" + fkSchema + '\'' +
+                ", fkTable:'" + fkTable + '\'' +
+                ", owner:" + (owner == null ? "null" : "'" + owner.getId() + ":" + owner.getName() + "'") +
                 '}';
     }
 }

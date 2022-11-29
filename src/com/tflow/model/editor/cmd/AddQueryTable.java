@@ -46,7 +46,12 @@ public class AddQueryTable extends QueryCommand {
         loadColumnList(queryTable, query.getOwner(), project, workspace);
         markSelectedColumn(queryTable, query.getColumnList());
 
-        /*TODO: need more info about Joined Table*/
+        /*TODO: need more info about Joined Table
+            TableJoinType joinType;
+            String joinTable;
+            int joinTableId;
+            String joinCondition;
+        */
 
         /*for Acion.executeUndo (RemoveQueryTable)*/
         //paramMap.put(CommandParamKey.QUERY_TABLE, queryTable);
