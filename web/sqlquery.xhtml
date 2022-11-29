@@ -43,9 +43,11 @@
                             <p:outputLabel value=" #{SQLQuerySection.QUERY.title}"/>
                         </f:facet>
 
-                        <p:outputPanel id="queryTab" class="selectable query">
-                            <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
+                        <p:outputPanel id="queryTab" class="query">
                             <p:remoteCommand name="update#{sqlQueryCtl.query.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.query.selectableId}')"/>
+                            <div class="selectable">
+                                <input name="selectableId" type="hidden" value="#{sqlQueryCtl.query.selectableId}"/>
+                            </div>
 
                             <p:outputPanel styleClass="select-table-panel vertical-scroll-panel hidden">
                                 <p:divider align="left">
@@ -58,15 +60,13 @@
                                 <div class="ui-g fit-width">
                                     <p:repeat value="#{sqlQueryCtl.tableList}" var="table">
                                         <div class="ui-g-3" style="padding:var(--padding);height:auto;overflow:visible;">
-                                            <p:commandButton value="#{table.name}" actionListener="#{sqlQueryCtl.addTable(table)}" onclick="hideTableButton(this);" styleClass="fit-width" title="#{table.schema}.#{table.name}"/>
+                                            <p:commandButton value="#{table.alias}" actionListener="#{sqlQueryCtl.addTable(table)}" onclick="hideTableButton(this);" styleClass="fit-width" title="#{table.schema}.#{table.name}"/>
                                         </div>
                                     </p:repeat>
                                 </div>
                             </p:outputPanel>
 
                             <div class="query-panel">
-                                <p:tooltip widgetVar="tooltip" position="top"/>
-
                                 <div class="select-column-panel">
                                     <div class="horizon-scroll-panel fit-height">
                                         <table class="query-tower">

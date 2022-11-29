@@ -144,6 +144,7 @@ public class SQLQueryController extends Controller {
          */
         List<QueryTable> selectedList = query.getTableList();
         DataTable tables = dConvers.getSourceTable(dConversTableName);
+        DataColumn shortNameColumn;
         String tableName;
         String schemaName;
         String shortName;
@@ -152,7 +153,8 @@ public class SQLQueryController extends Controller {
         for (DataRow row : tables.getRowList()) {
             tableName = row.getColumn(0).getValue();
             schemaName = row.getColumn(1).getValue();
-            shortName = row.getColumn(2).getValue();
+            shortNameColumn = row.getColumn(2);
+            shortName = shortNameColumn.isNull()?tableName:shortNameColumn.getValue();
 
             /*exclude all tables that already selected in the Query*/
             isSelected = false;
@@ -164,7 +166,7 @@ public class SQLQueryController extends Controller {
             }
 
             if (isSelected) continue;
-            tableList.add(new QueryTable(index++, tableName, schemaName, shortName.isEmpty() ? tableName : shortName));
+            tableList.add(new QueryTable(index++, tableName, schemaName, shortName));
         }
 
         tableList.sort(Comparator.comparing(QueryTable::getAlias));
