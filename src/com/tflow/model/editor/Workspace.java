@@ -336,6 +336,10 @@ public class Workspace implements Serializable {
                 parameterMap.put(parameter.getPageParameter(), parameter.getValue());
             }
         }
+        refreshPage(page);
+    }
+
+    public void refreshPage(Page page) {
         FacesUtil.redirect("/" + page.getName());
     }
 

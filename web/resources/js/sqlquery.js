@@ -5,10 +5,9 @@ function hideTableButton(e) {
 
     /*hide button pad*/
     Appanel.chains($e, "ani-hide-button:0.5,hidden");
-
     tflow.queryNeedRefresh = true;
 
-    /*refresh query when close the select-table-panel*/
+    /*auto close select-table-panel*/
     var $uiGrid = $e.parent('.ui-g'),
         $buttons = $uiGrid.find('.ui-g-3'),
         $hiddens = $uiGrid.find('.ui-g-3.hidden'),
@@ -36,6 +35,7 @@ function showTableList(show) {
 
     if (show && isHidden) {
         Appanel.chains($tablePanel, "-hidden,ani-open-query-table-list:0.5");
+        $('.query').find('.refresh-table-list').click();
     } else if (!show && !isHidden) {
         Appanel.chains($tablePanel, "ani-close-query-table-list:0.5,hidden");
         if (tflow.queryNeedRefresh !== undefined && tflow.queryNeedRefresh) {

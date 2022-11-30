@@ -35,7 +35,7 @@
         <div class="flow-chart">
             <h:form id="queryForm">
                 <p:tabView id="tabview" widgetVar="tabview" style="padding: var(--padding);margin: var(--margin);" class="query-cover">
-                    <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}"/>
+                    <p:ajax event="tabChange" listener="#{sqlQueryCtl.openSection}" update="#{sqlQueryCtl.openSectionUpdate}" oncomplete="unblockScreen();"/>
 
                     <p:tab title="#{SQLQuerySection.QUERY.title}">
                         <f:facet name="title">
@@ -54,16 +54,17 @@
                                     <div class="inline-flex align-items-center">
                                         <i class="pi pi-table"/>
                                         <b>Add Table</b>
+                                        <p:commandButton styleClass="refresh-table-list" icon="pi pi-refresh" actionListener="#{sqlQueryCtl.reloadTableList}" title="Reload Tables in Schemas" onclick="blockScreen('Reload Tables in Schemas');" oncomplete="unblockScreen()" update="table-list"/>
                                     </div>
                                 </p:divider>
 
-                                <div class="ui-g fit-width">
+                                <p:outputPanel class="table-list ui-g fit-width" id="table-list">
                                     <p:repeat value="#{sqlQueryCtl.tableList}" var="table">
                                         <div class="ui-g-3" style="padding:var(--padding);height:auto;overflow:visible;">
                                             <p:commandButton value="#{table.alias}" actionListener="#{sqlQueryCtl.addTable(table)}" onclick="hideTableButton(this);" styleClass="fit-width" title="#{table.schema}.#{table.name}"/>
                                         </div>
                                     </p:repeat>
-                                </div>
+                                </p:outputPanel>
                             </p:outputPanel>
 
                             <div class="query-panel">
@@ -112,10 +113,10 @@
                                                                     <p:outputPanel styleClass="selectable column#{column.selected?' selected':''}">
                                                                         <div id="#{room.id}.#{column.id}" class="hidden"></div>
                                                                         <label class="number">#{column.index}</label>
-                                                                        <!-- TODO: need icon for DataType -->
+                                                                        <p:graphicImage library="images" name="#{column.dataType.image}"/>
                                                                         <label>#{column.name}</label>
-                                                                        <!-- TODO: need icon for PK -->
-                                                                        <!-- TODO: need icon for FK -->
+                                                                        <p:graphicImage library="images" name="pk.png" rendered="#{column.pk}"/>
+                                                                        <p:graphicImage library="images" name="fk.png" rendered="#{column.fk}" title="#{column.fkSchema}.#{column.fkTable}"/>
                                                                     </p:outputPanel>
                                                                 </p:repeat>
                                                             </p:panel>

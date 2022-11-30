@@ -5,6 +5,7 @@ import com.tflow.model.editor.JavaScript;
 import com.tflow.system.Environment;
 import com.tflow.system.constant.Theme;
 
+import javax.faces.event.ActionListener;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
@@ -55,5 +56,9 @@ public class TopMenuController extends Controller {
 
     public void dummy() {
         log.debug("dummy called");
+    }
+
+    public void reloadPage() {
+        workspace.refreshPage(workspace.getCurrentPage());
     }
 }

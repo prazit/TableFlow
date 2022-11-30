@@ -15,6 +15,7 @@ import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.model.mapper.ProjectMapper;
 import org.mapstruct.factory.Mappers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +45,9 @@ public class RemoveQueryTable extends Command {
             /*mark selected on original column (in table)*/
             originalColumn.setSelected(false);
         }
+
+        /*need to remove columns from queryTable to turn it back to the state before AddQueryTable*/
+        queryTable.setColumnList(new ArrayList<>());
 
         /*remove from Tower*/
         Tower tower = query.getTower();

@@ -110,7 +110,7 @@ public class SQLQueryController extends Controller {
         jsBuilder.post(JavaScript.unblockScreen).runOnClient();
     }
 
-    private void reloadTableList() {
+    public void reloadTableList() {
         jsBuilder.pre(JavaScript.blockScreenWithText, "LOADING TABLE LIST ...").runOnClient();
         log.debug("reloadTableList.");
         tableList = new ArrayList<>();
@@ -154,7 +154,7 @@ public class SQLQueryController extends Controller {
             tableName = row.getColumn(0).getValue();
             schemaName = row.getColumn(1).getValue();
             shortNameColumn = row.getColumn(2);
-            shortName = shortNameColumn.isNull()?tableName:shortNameColumn.getValue();
+            shortName = shortNameColumn.isNull() ? tableName : shortNameColumn.getValue();
 
             /*exclude all tables that already selected in the Query*/
             isSelected = false;
@@ -324,9 +324,10 @@ public class SQLQueryController extends Controller {
     }
 
     private String openQuerySection() {
+        jsBuilder.pre(JavaScript.blockScreenWithText, "Refresh query ...").runOnClient();
+
         if (query == null || query.getId() == 0) reloadQuery();
         selectQuery(query);
-        if (tableList == null) reloadTableList();
         return SQLQuerySection.QUERY.getUpdate();
     }
 
@@ -479,7 +480,6 @@ public class SQLQueryController extends Controller {
 
         try {
             action.execute();
-            tableList.remove(index);
         } catch (Exception ex) {
             String message = "Action {} failed! {}:{}";
             jsBuilder.pre(JavaScript.notiError, message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());

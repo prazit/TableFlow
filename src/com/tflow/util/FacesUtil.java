@@ -124,4 +124,5 @@ public class FacesUtil implements Serializable {
     public static void updateComponent(String componentId) {
         PrimeFaces.current().ajax().update(componentId);
     }
+
 }

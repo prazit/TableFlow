@@ -176,7 +176,7 @@ iframe {
     position: static;
 }
 
-/* -- query-chart -- */
+/* -- query -- */
 
 body .query-panel {
     min-height: 20rem;
@@ -191,6 +191,10 @@ body .query .select-table-panel {
     right: 0;
     background-color: var(--surface-b);
     padding: var(--padding);
+}
+
+body .query .select-table-panel button[disabled] {
+    opacity: 60%;
 }
 
 body .query-panel .select-column-panel {

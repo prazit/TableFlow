@@ -1,12 +1,13 @@
 'use strict';
 
 function blockScreen(text) {
-    console.debug("blockScreen('", text, "');");
-
     if (text === undefined) text = "PLEASE WAIT";
     tflow.blockScreenText[0].innerText = text;
 
     if (!tflow.blockScreen.hasClass('hidden')) return;
+
+    console.debug("blockScreen('", text, "');");
+    /*TODO: call blockScreen during (pf-ajax)load process will not play animation until the load process is end*/
     Appanel.chains(tflow.blockScreen, "-hidden,ani-block-screen:0.5");
 }
 
