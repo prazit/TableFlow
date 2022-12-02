@@ -26,7 +26,8 @@ public class AddQuery extends Action {
                 CommandParamKey.BINARY_FILE
         );
         setCommands(
-                new com.tflow.model.editor.cmd.AddQuery()
+                new com.tflow.model.editor.cmd.AddQuery(),
+                new com.tflow.model.editor.cmd.RearrangeQueryTable()
         );
     }
 

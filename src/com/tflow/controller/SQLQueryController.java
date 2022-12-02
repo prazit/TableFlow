@@ -166,7 +166,7 @@ public class SQLQueryController extends Controller {
             }
 
             if (isSelected) continue;
-            tableList.add(new QueryTable(index++, tableName, schemaName, shortName));
+            tableList.add(new QueryTable(index++, schemaName, tableName, shortName));
         }
 
         tableList.sort(Comparator.comparing(QueryTable::getAlias));
@@ -468,7 +468,7 @@ public class SQLQueryController extends Controller {
         }
     }
 
-    public void addTable(QueryTable queryTable) {
+    public synchronized void addTable(QueryTable queryTable) {
         log.debug("addTable(table:{})", queryTable);
         int index = tableList.indexOf(queryTable);
 

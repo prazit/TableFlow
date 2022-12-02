@@ -66,7 +66,7 @@ public class AddQuery extends QueryCommand {
         /*from => tableList*/
         String[] fromArray = splitBy(from.toString(), "[,]|([Ff][Uu][Ll][Ll] |[Ll][Ee][Ff][Tt] |[Rr][Ii][Gg][Hh][Tt] )*([Ii][Nn][Nn][Ee][Rr] |[Oo][Uu][Tt][Ee][Rr] )*([Jj][Oo][Ii][Nn])");
         List<QueryTable> tableList = query.getTableList();
-        addTableTo(tableList, fromArray, selectedColumnList, tower);
+        addTableTo(tableList, fromArray, selectedColumnList, tower, query.getLineList(), step);
         addSchemaTo(query.getSchemaList(), tableList);
         if (log.isDebugEnabled()) log.debug("TableList: {}", Arrays.toString(tableList.toArray()));
 
@@ -88,6 +88,9 @@ public class AddQuery extends QueryCommand {
 
         /*not update selectableMap, lets SQLQueryController do it*/
 
+        /*for next Command (RearrangeQueryTable)*/
+        paramMap.put(CommandParamKey.SWITCH_ON, tableList.size() > 1);
+        paramMap.put(CommandParamKey.QUERY, query);
 
         // save Query Data
         DataManager dataManager = project.getDataManager();
@@ -290,7 +293,7 @@ public class AddQuery extends QueryCommand {
         return false;
     }
 
-    private void addTableTo(List<QueryTable> tableList, String[] fromArray, List<QueryColumn> selectedColumnList, Tower tower) {
+    private void addTableTo(List<QueryTable> tableList, String[] fromArray, List<QueryColumn> selectedColumnList, Tower tower, List<Line> lineList, Step step) {
         QueryTable queryTable;
         StringBuilder tableSchema;
         StringBuilder tableName;
@@ -300,6 +303,11 @@ public class AddQuery extends QueryCommand {
         StringBuilder joinCondition;
         String[] words;
         String upperCase;
+
+        /*for LineList*/
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
+        setStep(step);
+
         int roomIndex = 0;
         for (String table : fromArray) {
             words = table.trim().split("[,][ ]|[ ,()=]");
@@ -308,12 +316,13 @@ public class AddQuery extends QueryCommand {
                 for (String word : words) {
                     if (word.contains(".")) {
                         String[] schemaName = word.split("[.]");
-                        queryTable = new QueryTable(ProjectUtil.newUniqueId(project), schemaName[1]);
+                        queryTable = new QueryTable(ProjectUtil.newUniqueId(project), "", schemaName[1], ProjectUtil.newElementId(project), ProjectUtil.newElementId(project));
                         queryTable.setSchema(schemaName[0]);
                     } else {
-                        queryTable = new QueryTable(ProjectUtil.newUniqueId(project), word);
+                        queryTable = new QueryTable(ProjectUtil.newUniqueId(project), "", word, ProjectUtil.newElementId(project), ProjectUtil.newElementId(project));
                     }
                     tableList.add(queryTable);
+                    selectableMap.put(queryTable.getSelectableId(), queryTable);
 
                     loadTableName(queryTable, dataFile, project, workspace);
                     loadColumnList(queryTable, dataFile, project, workspace);
@@ -330,8 +339,9 @@ public class AddQuery extends QueryCommand {
                 joinedTableName = new StringBuilder();
                 joinCondition = new StringBuilder();
                 splitTableWithJoin(table, words, tableSchema, tableName, tableAlias, tableJoinType, joinedTableName, joinCondition);
-                queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString());
+                queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString(), ProjectUtil.newElementId(project), ProjectUtil.newElementId(project));
                 tableList.add(queryTable);
+                selectableMap.put(queryTable.getSelectableId(), queryTable);
 
                 loadTableName(queryTable, dataFile, project, workspace);
                 loadColumnList(queryTable, dataFile, project, workspace);
@@ -340,16 +350,17 @@ public class AddQuery extends QueryCommand {
                 tower.setRoom(0, roomIndex++, queryTable);
             }
         }
-        tableList.sort(Comparator.comparing(QueryTable::getAlias));
 
-        /*need Table-ID for JoinedTable*/
+        /*need Table-ID for JoinedTable, and need line between JoinedTables*/
         QueryTable joinTable;
         for (QueryTable table : tableList) {
             String joinTableName = table.getJoinTable();
             if (joinTableName.isEmpty()) continue;
 
             joinTable = findTable(joinTableName, tableList);
-            table.setJoinTableId(joinTable == null ? 0 : joinTable.getId());
+            table.setJoinTableId(joinTable.getId());
+
+            addLine(joinTable.getSelectableId(), table.getSelectableId(), lineList);
         }
     }
 

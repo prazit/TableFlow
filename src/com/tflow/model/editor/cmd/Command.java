@@ -50,7 +50,13 @@ public abstract class Command {
      * Internal use to add new line to the step without history.
      */
     protected Line addLine(String startSelectableId, String endSelectableId) {
-        List<Line> lineList = step.getLineList();
+        return addLine(startSelectableId, endSelectableId, step.getLineList());
+    }
+
+    /**
+     * Internal use to add new line for step and query without history.
+     */
+    protected Line addLine(String startSelectableId, String endSelectableId, List<Line> lineList) {
         Map<String, Selectable> selectableMap = step.getSelectableMap();
 
         Line newLine = new Line(startSelectableId, endSelectableId);

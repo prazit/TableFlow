@@ -7,7 +7,7 @@ function blockScreen(text) {
     if (!tflow.blockScreen.hasClass('hidden')) return;
 
     console.debug("blockScreen('", text, "');");
-    /*TODO: call blockScreen during (pf-ajax)load process will not play animation until the load process is end*/
+    /*TODO: problem when I call blockScreen during (pf-ajax)load process, the animation is not play until the load process is end*/
     Appanel.chains(tflow.blockScreen, "-hidden,ani-block-screen:0.5");
 }
 

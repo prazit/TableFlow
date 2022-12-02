@@ -375,6 +375,18 @@ public enum Properties {
             /*-- flow-chart: selected columns, can select/unselect --*/
     ),
 
+    QUERY_TABLE(
+            "==: Query Table ::==",
+            "name:Name:ReadOnly",
+            "--: Join :--",
+            "joinType:Type:ReadOnly",
+            "joinTable:Table:ReadOnly",
+            "joinTableId:Table Id:ReadOnly",
+            "joinCondition:Condition:ReadOnly",
+            "--: Technical Support :--",
+            "id:ID:ReadOnly"
+    ),
+
     QUERY_FILTER(
             "==: Query Filter : Query Filter compatible with conditions in where section in sql select statement:=="
     ),

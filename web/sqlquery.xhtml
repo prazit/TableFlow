@@ -76,7 +76,10 @@
                                                     <td><p:outputLabel value="No selected table, click 'Add Table' to add table to the query." rendered="#{sqlQueryCtl.query.tableList.size() == 0}"/></td>
                                                     <p:repeat value="#{floor.roomList}" var="room">
                                                         <td style="vertical-align:top">
-                                                            <p:panel header="" styleClass="query-table qt#{room.id}" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
+                                                            <p:panel header="" styleClass="selectable query-table qt#{room.id}" rendered="#{room.roomType==RoomType.QUERY_TABLE}">
+                                                                <p:remoteCommand name="update#{room.selectableId}" oncomplete="updateComplete('#{room.selectableId}')"/>
+                                                                <input name="selectableId" type="hidden" value="#{room.selectableId}"/>
+
                                                                 <f:facet name="actions">
                                                                     <div class="#{room.endPlug.styleClass}" id="#{room.endPlug}">
                                                                         <input name="removeButtonTip" type="hidden" value="#{room.endPlug.removeButtonTip}"/>

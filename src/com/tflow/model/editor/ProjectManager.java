@@ -639,7 +639,8 @@ public class ProjectManager {
     }
 
     public Query loadQuery(int queryId, Project project) throws ProjectDataException {
-        int stepId = project.getActiveStep().getId();
+        Step step = project.getActiveStep();
+        int stepId = step.getId();
 
         ProjectMapper mapper = Mappers.getMapper(ProjectMapper.class);
         DataManager dataManager = project.getDataManager();
@@ -652,7 +653,7 @@ public class ProjectManager {
         /*QUETY_TOWER*/
         data = dataManager.getData(ProjectFileType.QUERY_TOWER, projectUser, query.getTower().getId(), stepId, childId);
         Tower tower = mapper.map((TowerData) throwExceptionOnError(data));
-        tower.setOwner(project.getActiveStep());
+        tower.setOwner(step);
         query.setTower(tower);
 
         /*create each floor in tower*/
@@ -668,6 +669,7 @@ public class ProjectManager {
         QueryTableData queryTableData;
         QueryTable queryTable;
         QueryColumnData queryColumnData;
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
         for (Integer tableId : idList) {
             data = dataManager.getData(ProjectFileType.QUERY_TABLE, projectUser, tableId, stepId, childId);
             queryTableData = (QueryTableData) throwExceptionOnError(data);
@@ -680,16 +682,17 @@ public class ProjectManager {
             }
 
             tableMap.put(queryTable.getId(), queryTable);
+            selectableMap.put(queryTable.getSelectableId(), queryTable);
         }
 
         /*selected columns need owner*/
         int tableId;
         for (QueryColumn queryColumn : query.getColumnList()) {
             tableId = queryColumn.getOwner().getId();
-            if(tableId < 0) continue;
+            if (tableId < 0) continue;
 
             queryTable = tableMap.get(tableId);
-            if(queryTable!=null) queryColumn.setOwner(queryTable);
+            if (queryTable != null) queryColumn.setOwner(queryTable);
         }
 
         /*QUERY_FILTER_LIST*/
@@ -716,6 +719,8 @@ public class ProjectManager {
             querySortData = (QuerySortData) throwExceptionOnError(data);
             filterList.add(mapper.map(querySortData));
         }
+
+        /*TODO: LINE LIST need something same as loadStep()*/
 
         return query;
     }

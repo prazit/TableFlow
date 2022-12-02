@@ -25,7 +25,10 @@ public class AddQueryTable extends Action {
                 CommandParamKey.QUERY_TABLE,
                 CommandParamKey.WORKSPACE
         );
-        setCommands(new com.tflow.model.editor.cmd.AddQueryTable());
+        setCommands(
+                new com.tflow.model.editor.cmd.AddQueryTable(),
+                new com.tflow.model.editor.cmd.RearrangeQueryTable()
+        );
     }
 
     @Override

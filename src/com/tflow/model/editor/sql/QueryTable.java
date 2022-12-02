@@ -3,9 +3,7 @@ package com.tflow.model.editor.sql;
 import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.query.TableJoinType;
-import com.tflow.model.editor.LinePlug;
-import com.tflow.model.editor.Properties;
-import com.tflow.model.editor.Selectable;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.room.Room;
 import com.tflow.model.editor.room.RoomType;
 
@@ -14,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class QueryTable extends Room implements Selectable {
+public class QueryTable extends Room implements Selectable, HasEndPlug {
 
     private int id;
     private String name;
@@ -35,37 +33,40 @@ public class QueryTable extends Room implements Selectable {
     /*for Mapper*/
     public QueryTable() {
         this.joinType = TableJoinType.NONE;
-        init();
+        init(null, null);
     }
 
     /*for Mapper*/
     public QueryTable(int id) {
         this.id = id;
         this.joinType = TableJoinType.NONE;
-        init();
+        init(null, null);
     }
 
-    public QueryTable(int id, String name) {
-        this.id = id;
-        this.schema = "";
-        this.name = name;
-        this.alias = name;
-        this.joinType = TableJoinType.NONE;
-        this.joinTable = "";
-        init();
-    }
-
-    public QueryTable(int id, String name, String schema, String alias) {
+    /*for Add Table List*/
+    public QueryTable(int id, String schema, String name, String alias) {
         this.id = id;
         this.name = name;
         this.alias = alias;
         this.schema = schema;
         this.joinType = TableJoinType.NONE;
         this.joinTable = "";
-        init();
+        init(null, null);
     }
 
-    public QueryTable(int id, String schema, String name, String alias, String joinType, String joinTable, String joinCondition) {
+    /*for AddQuery action*/
+    public QueryTable(int id, String schema, String name, String startPlug, String endPlug) {
+        this.id = id;
+        this.schema = schema;
+        this.name = name;
+        this.alias = name;
+        this.joinType = TableJoinType.NONE;
+        this.joinTable = "";
+        init(startPlug, endPlug);
+    }
+
+    /*for AddQuery action*/
+    public QueryTable(int id, String schema, String name, String alias, String joinType, String joinTable, String joinCondition, String startPlug, String endPlug) {
         this.id = id;
         this.schema = schema;
         this.name = name;
@@ -73,10 +74,13 @@ public class QueryTable extends Room implements Selectable {
         this.joinType = TableJoinType.valueOf(joinType);
         this.joinTable = joinTable;
         this.joinCondition = joinCondition;
-        init();
+        init(startPlug, endPlug);
     }
 
-    public void init() {
+    public void init(String startPlug, String endPlug) {
+        this.startPlug = new StartPlug(startPlug);
+        this.endPlug = new EndPlug(endPlug);
+
         this.setRoomType(RoomType.QUERY_TABLE);
         this.columnList = new ArrayList<>();
     }
@@ -128,7 +132,7 @@ public class QueryTable extends Room implements Selectable {
 
     @Override
     public Properties getProperties() {
-        return null;
+        return Properties.QUERY_TABLE;
     }
 
     @Override
@@ -149,10 +153,12 @@ public class QueryTable extends Room implements Selectable {
         return null;
     }
 
+    @Override
     public LinePlug getEndPlug() {
         return endPlug;
     }
 
+    @Override
     public void setEndPlug(LinePlug endPlug) {
         this.endPlug = endPlug;
     }
