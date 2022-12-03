@@ -377,7 +377,9 @@ public enum Properties {
 
     QUERY_TABLE(
             "==: Query Table ::==",
+            "schema:Schema:ReadOnly",
             "name:Name:ReadOnly",
+            "alias:Alias:ReadOnly",
             "--: Join :--",
             "joinType:Type:ReadOnly",
             "joinTable:Table:ReadOnly",

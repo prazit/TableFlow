@@ -43,17 +43,24 @@ public class AddQueryTable extends QueryCommand {
         /*add to selectableMap*/
         step.getSelectableMap().put(queryTable.getSelectableId(), queryTable);
 
+        /*add to saveList*/
+        List<QueryTable> saveList = new ArrayList<>();
+        saveList.add(queryTable);
+
         /*the table need columns*/
         loadColumnList(queryTable, query.getOwner(), project, workspace);
         markSelectedColumn(queryTable, query.getColumnList());
 
-        /*the table need more information for Joined table*/
-        List<QueryTable> fkTableList = collectFKTable(queryTable.getSchema(), queryTable.getName(), tableList);
+        /*need Join Info for this table*/
+        String tableName = queryTable.getName();
+        List<QueryTable> fkTableList = collectFKTable(queryTable.getSchema(), tableName, tableList);
         boolean hasFkTable = fkTableList.size() > 0;
+        setStep(step);
         if (hasFkTable) {
             QueryTable fkTable = null;
             String joinCondition = null;
             for (QueryTable table : fkTableList) {
+                if (table.getName().equalsIgnoreCase(tableName)) continue;
                 joinCondition = getJoinCondition(queryTable, table);
                 if (joinCondition != null) {
                     fkTable = table;
@@ -70,20 +77,39 @@ public class AddQueryTable extends QueryCommand {
                 queryTable.setJoinCondition(joinCondition);
 
                 /*need line between (pk)queryTable and fkTable*/
-                setStep(step);
-                addLine(queryTable.getSelectableId(), fkTable.getSelectableId(), query.getLineList());
+                addLine(fkTable.getSelectableId(), queryTable.getSelectableId(), query.getLineList());
+            }
+        }
+
+        /*need Join Info for older tables that has Join-Type == NONE*/
+        String joinCondition = null;
+        int tableId = queryTable.getId();
+        for (QueryTable pkTable : tableList) {
+            if (pkTable.getJoinType() != TableJoinType.NONE || pkTable.getName().equalsIgnoreCase(tableName)) continue;
+
+            joinCondition = getJoinCondition(pkTable, queryTable);
+            if (joinCondition != null) {
+                hasFkTable = true;
+                saveList.add(pkTable);
+
+                pkTable.setJoinType(TableJoinType.LEFT_JOIN);
+                pkTable.setJoinTable(tableName);
+                pkTable.setJoinTableId(tableId);
+                pkTable.setJoinCondition(joinCondition);
+
+                /*need line between (pk)queryTable and fkTable*/
+                addLine(queryTable.getSelectableId(), pkTable.getSelectableId(), query.getLineList());
             }
         }
 
         /*add no-join-table to tower*/
-        if (!hasFkTable) {
+        /*TODO: uncomment after RearrageQueryTable exist*/
+        /*if (!hasFkTable) {*/
             Tower tower = query.getTower();
             int roomIndex = tower.getRoomsOnAFloor();
             tower.addRoom(1);
             tower.setRoom(0, roomIndex, queryTable);
-        }
-
-        /*TODO: need to find existing tables that can join to this table*/
+        /*}*/
 
         /*for next Command (RearrangeQueryTable)*/
         paramMap.put(CommandParamKey.SWITCH_ON, hasFkTable);
@@ -102,7 +128,9 @@ public class AddQueryTable extends QueryCommand {
         dataManager.addData(ProjectFileType.QUERY_TABLE_LIST, mapper.fromQueryTableList(tableList), projectUser, queryId, stepId, childId);
 
         // save Table data
-        dataManager.addData(ProjectFileType.QUERY_TABLE, mapper.map(queryTable), projectUser, queryTable.getId(), step.getId(), childId);
+        for (QueryTable saveTable : saveList) {
+            dataManager.addData(ProjectFileType.QUERY_TABLE, mapper.map(saveTable), projectUser, saveTable.getId(), step.getId(), childId);
+        }
 
         // save Project data: need to update Project record every Action that call the newUniqueId*/
         dataManager.addData(ProjectFileType.PROJECT, mapper.map(project), projectUser, project.getId());
@@ -118,9 +146,9 @@ public class AddQueryTable extends QueryCommand {
         String fkTableName = fkTable.getName();
 
         Queue<QueryColumn> pkColumnList = new PriorityQueue<>(pkTable.getColumnList().stream().filter(QueryColumn::isPk).collect(Collectors.toList()));
-        List<QueryColumn> fkColumnList = fkTable.getColumnList().stream().filter(QueryColumn::isFk).collect(Collectors.toList());
+        List<QueryColumn> fkColumnList = fkTable.getColumnList().stream().filter(fkCol -> fkCol.isFk() && fkCol.getFkTable().equalsIgnoreCase(pkTableName)).collect(Collectors.toList());
         if (pkColumnList.size() != fkColumnList.size()) {
-            if (log.isDebugEnabled()) log.debug("getJoinCondition(pkTable:{}, fkTable:{}): fk-column count({}) not match pk-column count({}).", pkTableName, fkTableName, pkColumnList.size(), fkColumnList.size());
+            if (log.isDebugEnabled()) log.debug("getJoinCondition(pkTable:{}, fkTable:{}): pk-column count({}) not match fk-column count({}).", pkTableName, fkTableName, pkColumnList.size(), fkColumnList.size());
             return null;
         }
 
@@ -143,9 +171,11 @@ public class AddQueryTable extends QueryCommand {
 
             /*try to match next columns before*/
             if (matchColumn == null) {
+                if (log.isDebugEnabled()) log.debug("getJoinCondition: no column in fkTable({}) that match the pkColumn({}.{})", fkTableName, pkTableName, pkColumn.getName());
                 pkColumnList.add(pkColumn);
                 continue;
             }
+
             fkColumnList.remove(matchColumn);
 
             /*condition for match column*/
@@ -157,6 +187,7 @@ public class AddQueryTable extends QueryCommand {
         }
 
         if (pkColumnList.size() > 0) {
+
             for (int index = 0; index < pkColumnList.size(); index++) {
                 pkColumn = pkColumnList.poll();
                 matchColumn = fkColumnList.remove(0);
@@ -172,7 +203,9 @@ public class AddQueryTable extends QueryCommand {
 
         /* pkTable.pkColumn1 = fkTable.fkColumn1
             and pkTable.pkColumn2 = fkTable.fkColumn2 */
-        return condition.toString();
+        String joinCondition = condition.toString();
+        if (log.isDebugEnabled()) log.debug("getJoinCondition(pkTable:{}, fkTable:{}) return '{}'.", pkTableName, fkTableName, joinCondition);
+        return joinCondition;
     }
 
     private List<QueryTable> collectFKTable(String schema, String tableName, List<QueryTable> tableList) {

@@ -499,8 +499,10 @@ public class SQLQueryController extends Controller {
 
         try {
             action.execute();
-            tableList.add(queryTable);
-            tableList.sort(Comparator.comparing(QueryTable::getAlias));
+            if (tableList != null) {
+                tableList.add(queryTable);
+                tableList.sort(Comparator.comparing(QueryTable::getAlias));
+            }
         } catch (Exception ex) {
             String message = "Action {} failed! {}:{}";
             jsBuilder.pre(JavaScript.notiError, message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
