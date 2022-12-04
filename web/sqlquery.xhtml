@@ -21,7 +21,10 @@
         <h:outputStylesheet library="css" name="editor.css#{sqlQueryCtl.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="editor-page.js#{sqlQueryCtl.forceReloadResources}" target="head"/>
         <h:outputScript library="js" name="sqlquery.js#{sqlQueryCtl.forceReloadResources}" target="head"/>
+        <h:outputScript library="js" name="plain-draggable.min.js" target="head"/>
+        <h:outputScript library="js" name="leader-line.min.js" target="head"/>
 
+        <p:remoteCommand name="drawLines" action="#{sqlQueryCtl.drawLines}"/>
         <p:remoteCommand name="refreshElement" action="#{sqlQueryCtl.updateComponent}" oncomplete="tflow.postRefreshElement();"/>
         <p:remoteCommand name="clientReady" action="#{sqlQueryCtl.clientReady}" update="queryForm:tabview"/>
         <p:remoteCommand name="selectQueryColumn" action="#{sqlQueryCtl.columnSelected}" oncomplete="refreshProperties()"/>
@@ -81,9 +84,8 @@
                                                                 <input name="selectableId" type="hidden" value="#{room.selectableId}"/>
 
                                                                 <f:facet name="actions">
-                                                                    <div class="#{room.endPlug.styleClass}" id="#{room.endPlug}">
-                                                                        <input name="removeButtonTip" type="hidden" value="#{room.endPlug.removeButtonTip}"/>
-                                                                    </div>
+                                                                    <div class="#{room.endPlug.styleClass}" id="#{room.endPlug}"></div>
+
                                                                     <div id="#{room.id}" class="hiddden"></div>
                                                                     <div style="display:inline-block">
                                                                         <b><p:outputLabel value="#{room.alias}" title="#{room.schema}.#{room.name}"/></b>
@@ -105,6 +107,7 @@
                                                                             <p:menuitem value="Index (Max First)" onclick="sortTableColumns(#{room.id},false,true)"/>
                                                                         </p:submenu>
                                                                     </p:menuButton>
+
                                                                     <div class="#{room.startPlug.styleClass}" id="#{room.startPlug}"></div>
                                                                 </f:facet>
 
@@ -125,7 +128,7 @@
                                                             </p:panel>
                                                         </td>
                                                         <td>
-                                                            <p:spacer width="50"/>
+                                                            <p:spacer width="200"/>
                                                         </td>
                                                     </p:repeat>
                                                 </tr>
@@ -133,7 +136,6 @@
                                         </table>
                                     </div>
                                 </div>
-
                             </div>
 
                             <p:outputPanel class="query-actions" rendered="#{sqlQueryCtl.query.id > 0}">
@@ -146,6 +148,8 @@
 
                             <script>$(function () {
                                 selectableHandle($('.selectable'));
+                                drawLines();
+                                console.log('drawLines(): query-panel refreshed.');
                             });
                             </script>
                         </p:outputPanel>

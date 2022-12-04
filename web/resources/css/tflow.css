@@ -133,6 +133,7 @@ body .container .screen-blocker {
 body .container .screen-blocker .pi,
 body .container .screen-blocker .screen-block-text {
     color: var(--primary-color);
+    margin-top: -2em;
 }
 
 .screen-area .ui-panel {

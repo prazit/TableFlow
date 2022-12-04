@@ -116,6 +116,31 @@ function refreshProperties() {
     window.parent.refreshProperties();
 }
 
+function startup() {
+    /*nothing*/
+}
+
+var pLine = {
+        outline: false,
+
+        startSocket: 'right',
+        startPlug: 'behind',
+
+        endSocket: 'left',
+        endPlug: 'behind',
+        endPlugSize: 2
+    },
+    tLine = Object.assign({color: 'gray', path: 'fluid', size: 2}, pLine),
+    cLine = Object.assign({path: 'straight', size: 1, dash: {len: 7, gap: 7}}, pLine),
+    sLine = Object.assign({color: 'red'}, cLine),
+    iLine = Object.assign({color: 'green'}, cLine),
+    dLine = Object.assign({color: 'blue'}, cLine),
+    dtLine = Object.assign({color: 'yellow'}, cLine),
+    dgLine = Object.assign(cLine, {
+        color: 'silver', startSocket: 'auto', endSocket: 'auto', size: 2
+    }),
+    $draggable;
+
 $(function () {
     // redirect selectObject to selectColumn
     window['activeSelectObject'] = window['selectObject'];

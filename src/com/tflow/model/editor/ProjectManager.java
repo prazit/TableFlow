@@ -720,9 +720,6 @@ public class ProjectManager {
             filterList.add(mapper.map(querySortData));
         }
 
-        /*TODO: LINE LIST need something same as loadStep()*/
-
-
         return query;
     }
 

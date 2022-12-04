@@ -360,7 +360,16 @@ public class AddQuery extends QueryCommand {
             joinTable = findTable(joinTableName, tableList);
             table.setJoinTableId(joinTable.getId());
 
-            addLine(joinTable.getSelectableId(), table.getSelectableId(), lineList);
+            /*TODO: need to change Line between join-tables,
+            *  1.need Condition object
+            *  2.turn QueryTable.JoinCondition to Condition object.
+            *  3.turn Query.WhereCondition to Condition object.
+             * 4.need to parse QueryTable.JoinCondition
+             * 5.need to parse Query.WhereCondition
+            *  6.change to line between join-columns
+            **/
+            Line line = addLine(joinTable.getSelectableId(), table.getSelectableId(), lineList);
+            line.setText(table.getJoinCondition());
         }
     }
 

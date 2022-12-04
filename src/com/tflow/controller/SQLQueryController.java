@@ -282,6 +282,8 @@ public class SQLQueryController extends Controller {
         selectableMap.put(selectableFilter.getSelectableId(), selectableFilter);
         selectableMap.put(selectableSort.getSelectableId(), selectableSort);
         selectableMap.put(selectablePreview.getSelectableId(), selectablePreview);
+
+        correctLine();
     }
 
     private void selectQuery(Selectable selectable) {
@@ -509,6 +511,47 @@ public class SQLQueryController extends Controller {
             log.error(message, action.getName(), ex.getClass().getSimpleName(), ex.getMessage());
             log.trace("", ex);
         }
+    }
+
+
+    private void correctLine() {
+        // need to correct line index, need real plug by selectableId.
+        Map<String, Selectable> selectableMap = getStep().getSelectableMap();
+        int clientIndex = 0;
+        for (Line line : query.getLineList()) {
+            line.setClientIndex(clientIndex++);
+            log.debug("line={}", line);
+            try {
+                LinePlug startPlug = selectableMap.get(line.getStartSelectableId()).getStartPlug();
+                line.setStartPlug(startPlug);
+                startPlug.getLineList().add(line);
+            } catch (NullPointerException ex) {
+                log.error("startSelectableId:{} not found", line.getStartSelectableId());
+                log.trace("", ex);
+            }
+
+            try {
+                LinePlug endPlug = ((HasEndPlug) selectableMap.get(line.getEndSelectableId())).getEndPlug();
+                line.setEndPlug(endPlug);
+                endPlug.getLineList().add(line);
+            } catch (NullPointerException ex) {
+                log.error("endSelectableId:{} not found", line.getEndSelectableId());
+                log.trace("", ex);
+            }
+        }
+    }
+
+    /**
+     * Draw lines on the client sub-page already loaded.
+     */
+    public void drawLines() {
+        log.debug("drawLines:fromClient");
+        jsBuilder.pre(JavaScript.preStartup);
+        for (Line line : query.getLineList()) {
+            jsBuilder.append(line.getJsAdd());
+        }
+        jsBuilder.append(JavaScript.postStartup)
+                .runOnClient(true);
     }
 
 }

@@ -2,6 +2,7 @@ package com.tflow.model.editor.sql;
 
 import com.tflow.model.data.query.ColumnType;
 import com.tflow.model.editor.DataType;
+import com.tflow.model.editor.LinePlug;
 
 public class QueryColumn {
 

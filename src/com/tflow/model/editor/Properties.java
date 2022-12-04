@@ -383,10 +383,12 @@ public enum Properties {
             "--: Join :--",
             "joinType:Type:ReadOnly",
             "joinTable:Table:ReadOnly",
-            "joinTableId:Table Id:ReadOnly",
             "joinCondition:Condition:ReadOnly",
             "--: Technical Support :--",
-            "id:ID:ReadOnly"
+            "id:ID:ReadOnly",
+            "endPlug:End-Plug:ReadOnly",
+            "startPlug:Start-Plug:ReadOnly",
+            "joinTableId:Table Id:ReadOnly"
     ),
 
     QUERY_FILTER(

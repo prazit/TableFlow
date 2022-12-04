@@ -1,5 +1,6 @@
 package com.tflow.model.data.query;
 
+import com.tflow.model.data.LineData;
 import com.tflow.model.data.TWData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,4 +21,7 @@ public class QueryData extends TWData implements Serializable {
     private List<String> schemaList;
 
     private List<QueryColumnData> columnList;
+
+    private List<LineData> lineList;
+
 }

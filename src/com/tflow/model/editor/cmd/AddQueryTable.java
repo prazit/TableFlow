@@ -4,9 +4,7 @@ import com.tflow.kafka.ProjectFileType;
 import com.tflow.model.data.DataManager;
 import com.tflow.model.data.ProjectUser;
 import com.tflow.model.data.query.TableJoinType;
-import com.tflow.model.editor.Project;
-import com.tflow.model.editor.Step;
-import com.tflow.model.editor.Workspace;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.sql.Query;
 import com.tflow.model.editor.sql.QueryColumn;
@@ -77,7 +75,10 @@ public class AddQueryTable extends QueryCommand {
                 queryTable.setJoinCondition(joinCondition);
 
                 /*need line between (pk)queryTable and fkTable*/
-                addLine(fkTable.getSelectableId(), queryTable.getSelectableId(), query.getLineList());
+                fkTable.setStartPlug(new StartPlug(ProjectUtil.newElementId(project)));
+                queryTable.setEndPlug(new EndPlug(ProjectUtil.newElementId(project)));
+                Line line = addLine(fkTable.getSelectableId(), queryTable.getSelectableId(), query.getLineList());
+                line.setText(queryTable.getJoinCondition());
             }
         }
 
@@ -98,7 +99,10 @@ public class AddQueryTable extends QueryCommand {
                 pkTable.setJoinCondition(joinCondition);
 
                 /*need line between (pk)queryTable and fkTable*/
-                addLine(queryTable.getSelectableId(), pkTable.getSelectableId(), query.getLineList());
+                queryTable.setStartPlug(new StartPlug(ProjectUtil.newElementId(project)));
+                pkTable.setEndPlug(new EndPlug(ProjectUtil.newElementId(project)));
+                Line line = addLine(queryTable.getSelectableId(), pkTable.getSelectableId(), query.getLineList());
+                line.setText(pkTable.getJoinCondition());
             }
         }
 
