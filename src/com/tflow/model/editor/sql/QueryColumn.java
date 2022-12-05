@@ -1,10 +1,13 @@
 package com.tflow.model.editor.sql;
 
+import com.tflow.kafka.ProjectFileType;
+import com.tflow.model.data.IDPrefix;
 import com.tflow.model.data.query.ColumnType;
-import com.tflow.model.editor.DataType;
-import com.tflow.model.editor.LinePlug;
+import com.tflow.model.editor.*;
 
-public class QueryColumn {
+import java.util.Map;
+
+public class QueryColumn implements Selectable {
 
     private int id;
     private int index;
@@ -21,6 +24,9 @@ public class QueryColumn {
 
     private boolean selected;
 
+    private LinePlug startPlug;
+    private LinePlug endPlug;
+
     private QueryTable owner;
 
     /*for Mapper*/
@@ -28,12 +34,14 @@ public class QueryColumn {
         /*nothing*/
     }
 
-    public QueryColumn(int index, int id, String name, QueryTable owner) {
+    public QueryColumn(int index, int id, String name, QueryTable owner, String startPlug, String endPlug) {
         this.index = index;
         this.id = id;
         this.name = name;
         this.owner = owner;
         this.dataType = DataType.STRING;
+        this.startPlug = new StartPlug(startPlug);
+        this.endPlug = new EndPlug(endPlug);
     }
 
     public int getId() {
@@ -124,6 +132,42 @@ public class QueryColumn {
         this.fkTable = fkTable;
     }
 
+    @Override
+    public ProjectFileType getProjectFileType() {
+        return null;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return null;
+    }
+
+    @Override
+    public String getSelectableId() {
+        return IDPrefix.QUERY_COLUMN.getPrefix() + id;
+    }
+
+    public LinePlug getStartPlug() {
+        return startPlug;
+    }
+
+    public void setStartPlug(LinePlug startPlug) {
+        this.startPlug = startPlug;
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return null;
+    }
+
+    public LinePlug getEndPlug() {
+        return endPlug;
+    }
+
+    public void setEndPlug(LinePlug endPlug) {
+        this.endPlug = endPlug;
+    }
+
     public QueryTable getOwner() {
         return owner;
     }
@@ -146,6 +190,8 @@ public class QueryColumn {
                 ", fk:" + fk +
                 ", fkSchema:'" + fkSchema + '\'' +
                 ", fkTable:'" + fkTable + '\'' +
+                ", startPlug:" + startPlug +
+                ", endPlug:" + endPlug +
                 ", owner:" + (owner == null ? "null" : "'" + owner.getId() + ":" + owner.getName() + "'") +
                 '}';
     }

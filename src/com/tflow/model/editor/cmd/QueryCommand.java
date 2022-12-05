@@ -11,6 +11,7 @@ import com.tflow.model.editor.Project;
 import com.tflow.model.editor.Workspace;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.sql.QueryColumn;
+import com.tflow.model.editor.sql.QueryFilter;
 import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.system.Properties;
 import com.tflow.util.DConversHelper;
@@ -107,7 +108,7 @@ public abstract class QueryCommand extends Command {
         for (DataRow row : tables.getRowList()) {
             column = row.getColumn(0);
             columnName = column.getValue();
-            queryColumn = new QueryColumn(index++, ProjectUtil.newUniqueId(project), columnName, queryTable);
+            queryColumn = new QueryColumn(index++, ProjectUtil.newUniqueId(project), columnName, queryTable, ProjectUtil.newElementId(project), ProjectUtil.newElementId(project));
             queryColumn.setValue(tableAlias + "." + columnName);
             consType = row.getColumn(2).getValue();
             queryColumn.setDataType(getColumnType(row.getColumn(1).getValue(), database.getDbms()));
@@ -163,5 +164,112 @@ public abstract class QueryCommand extends Command {
         return null;
     }
 
+    protected String[] splitBy(String source, String splitters) {
+        String splitter = "__SPLITTER__";
+        source = source.replaceAll("(" + splitters + ")", splitter + "$1");
+        return source.split(splitter);
+    }
+
+    protected void addFilterTo(List<QueryFilter> filterList, String[] whereArray, Project project) {
+        if (whereArray.length == 0) return;
+
+        /*first condition need connector same as other condition*/
+        whereArray[0] = "AND " + whereArray[0];
+        StringBuilder operation;
+        String connector;
+        int operationIndex;
+        for (String where : whereArray) {
+            connector = where.substring(0, 3).trim().toUpperCase();
+            operation = new StringBuilder();
+            operationIndex = findOperation(where, operation);
+            QueryFilter queryFilter = new QueryFilter(
+                    ProjectUtil.newUniqueId(project),
+                    connector,
+                    where.substring(3, operationIndex).trim(),
+                    operation.toString(),
+                    where.substring(operationIndex + operation.length()).trim()
+            );
+            filterList.add(queryFilter);
+        }
+    }
+
+    private int findOperation(String where, StringBuilder operation) {
+        char[] one = {'=', '>', '<', '!'};
+        char[] second = {'S', 'N'};
+
+        where = where.toUpperCase();
+        char[] chars = where.toCharArray();
+        char ch;
+        char next;
+        int operLength = 0;
+        int operStart = 0;
+        for (int index = 0; index < chars.length; index++) {
+            ch = chars[index];
+            if (match(ch, one)) {
+                /*[ =, >, <, <>, !=, >=, <= ]*/
+                next = chars[index + 1];
+                operLength = (next == '=' || next == '>') ? 2 : 1;
+                operStart = index;
+                break;
+
+            } else if (ch == 'I') {
+                /*[ IS, IN, IS NOT ]*/
+                next = chars[index + 1];
+                if (match(next, second)) {
+                    next = chars[index + 2];
+                    if (next == ' ') {
+                        if (where.substring(index, index + 6).equals("IS NOT")) {
+                            operLength = 6;
+                            operStart = index;
+                            break;
+                        } else {
+                            /*[ IS, IN ]*/
+                            operLength = 2;
+                            operStart = index;
+                            break;
+                        }
+                    }
+                }
+
+            } else if (ch == 'N') {
+                if (where.substring(index, index + 6).equals("NOT IN")) {
+                    operLength = 6;
+                    operStart = index;
+                    break;
+                } else if (where.substring(index, index + 8).equals("NOT LIKE")) {
+                    operLength = 8;
+                    operStart = index;
+                    break;
+                }
+
+            } else if (ch == 'L') {
+                if (where.substring(index, index + 4).equals("LIKE")) {
+                    operLength = 4;
+                    operStart = index;
+                    break;
+                }
+            }
+        } // end of for
+
+        operation.append(where, operStart, operStart + operLength);
+        return operStart;
+    }
+
+    private boolean match(char ch, char[] chars) {
+        for (char aChar : chars) {
+            if (ch == aChar) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected String getColumnSelectableId(String filterValue) {
+        /*TODO: split value to tableName and columnName*/
+        /*TODO: find table by tableName*/
+        /*TODO: find column by columnName*/
+        /*TODO: add found-column to selectableMap for addLine function*/
+        return null;
+    }
 
 }

@@ -28,6 +28,9 @@ public class QueryTable extends Room implements Selectable, HasEndPlug {
     private TableJoinType joinType;
     private String joinTable;
     private int joinTableId;
+    private List<QueryFilter> filterList;
+
+    @Deprecated
     private String joinCondition;
 
     /*for Mapper*/
@@ -81,6 +84,8 @@ public class QueryTable extends Room implements Selectable, HasEndPlug {
         this.startPlug = new StartPlug(startPlug);
         this.endPlug = new EndPlug(endPlug);
 
+        this.filterList = new ArrayList<>();
+
         this.setRoomType(RoomType.QUERY_TABLE);
         this.columnList = new ArrayList<>();
     }
@@ -123,6 +128,14 @@ public class QueryTable extends Room implements Selectable, HasEndPlug {
 
     public void setColumnList(List<QueryColumn> columnList) {
         this.columnList = columnList;
+    }
+
+    public List<QueryFilter> getFilterList() {
+        return filterList;
+    }
+
+    public void setFilterList(List<QueryFilter> filterList) {
+        this.filterList = filterList;
     }
 
     @Override
@@ -207,6 +220,7 @@ public class QueryTable extends Room implements Selectable, HasEndPlug {
                 ", joinTable:'" + joinTable + '\'' +
                 ", joinTableId:'" + joinTableId + '\'' +
                 ", joinCondition:'" + joinCondition + '\'' +
+                ", filterList:" + Arrays.toString(filterList.toArray()) +
                 ", startPlug:" + startPlug +
                 ", endPlug:" + endPlug +
                 '}';

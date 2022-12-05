@@ -55,7 +55,7 @@ public class AddQuery extends QueryCommand {
         log.debug("AddQuery: select = {}", select);
         log.debug("AddQuery: from = {}", from);
         log.debug("AddQuery: where = {}", where);
-        log.debug("AddQuery: orderBy = {}", where);
+        log.debug("AddQuery: orderBy = {}", orderBy);
 
         /*select => columnList*/
         String[] selectArray = splitColumn(select.toString());
@@ -73,7 +73,7 @@ public class AddQuery extends QueryCommand {
         /*where => filterList*/
         String[] whereArray = splitBy(where.toString(), "[Aa][Nn][Dd]|[Oo][Rr]");
         List<QueryFilter> filterList = query.getFilterList();
-        addFilterTo(filterList, whereArray);
+        addFilterTo(filterList, whereArray, project);
         if (log.isDebugEnabled()) log.debug("FilterList: {}", Arrays.toString(filterList.toArray()));
 
         /*oder by => sortList*/
@@ -199,100 +199,6 @@ public class AddQuery extends QueryCommand {
         }
     }
 
-    private void addFilterTo(List<QueryFilter> filterList, String[] whereArray) {
-        if (whereArray.length == 0) return;
-
-        /*first condition need connector same as other condition*/
-        whereArray[0] = "AND " + whereArray[0];
-        StringBuilder operation;
-        String connector;
-        int operationIndex;
-        for (String where : whereArray) {
-            connector = where.substring(0, 3).trim().toUpperCase();
-            operation = new StringBuilder();
-            operationIndex = findOperation(where, operation);
-            QueryFilter queryFilter = new QueryFilter(
-                    ProjectUtil.newUniqueId(project),
-                    connector,
-                    where.substring(3, operationIndex).trim(),
-                    operation.toString(),
-                    where.substring(operationIndex + operation.length()).trim()
-            );
-            filterList.add(queryFilter);
-        }
-    }
-
-    private int findOperation(String where, StringBuilder operation) {
-        char[] one = {'=', '>', '<', '!'};
-        char[] second = {'S', 'N'};
-
-        where = where.toUpperCase();
-        char[] chars = where.toCharArray();
-        char ch;
-        char next;
-        int operLength = 0;
-        int operStart = 0;
-        for (int index = 0; index < chars.length; index++) {
-            ch = chars[index];
-            if (match(ch, one)) {
-                /*[ =, >, <, <>, !=, >=, <= ]*/
-                next = chars[index + 1];
-                operLength = (next == '=' || next == '>') ? 2 : 1;
-                operStart = index;
-                break;
-
-            } else if (ch == 'I') {
-                /*[ IS, IN, IS NOT ]*/
-                next = chars[index + 1];
-                if (match(next, second)) {
-                    next = chars[index + 2];
-                    if (next == ' ') {
-                        if (where.substring(index, index + 6).equals("IS NOT")) {
-                            operLength = 6;
-                            operStart = index;
-                            break;
-                        } else {
-                            /*[ IS, IN ]*/
-                            operLength = 2;
-                            operStart = index;
-                            break;
-                        }
-                    }
-                }
-
-            } else if (ch == 'N') {
-                if (where.substring(index, index + 6).equals("NOT IN")) {
-                    operLength = 6;
-                    operStart = index;
-                    break;
-                } else if (where.substring(index, index + 8).equals("NOT LIKE")) {
-                    operLength = 8;
-                    operStart = index;
-                    break;
-                }
-
-            } else if (ch == 'L') {
-                if (where.substring(index, index + 4).equals("LIKE")) {
-                    operLength = 4;
-                    operStart = index;
-                    break;
-                }
-            }
-        } // end of for
-
-        operation.append(where, operStart, operStart + operLength);
-        return operStart;
-    }
-
-    private boolean match(char ch, char[] chars) {
-        for (char aChar : chars) {
-            if (ch == aChar) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void addTableTo(List<QueryTable> tableList, String[] fromArray, List<QueryColumn> selectedColumnList, Tower tower, List<Line> lineList, Step step) {
         QueryTable queryTable;
         StringBuilder tableSchema;
@@ -339,9 +245,17 @@ public class AddQuery extends QueryCommand {
                 joinedTableName = new StringBuilder();
                 joinCondition = new StringBuilder();
                 splitTableWithJoin(table, words, tableSchema, tableName, tableAlias, tableJoinType, joinedTableName, joinCondition);
-                queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinCondition.toString(), ProjectUtil.newElementId(project), ProjectUtil.newElementId(project));
+
+                String joinConditionString = joinCondition.toString();
+                queryTable = new QueryTable(ProjectUtil.newUniqueId(project), tableSchema.toString(), tableName.toString(), tableAlias.toString(), tableJoinType.toString(), joinedTableName.toString(), joinConditionString, ProjectUtil.newElementId(project), ProjectUtil.newElementId(project));
                 tableList.add(queryTable);
                 selectableMap.put(queryTable.getSelectableId(), queryTable);
+
+                /*joinCondition => filterList*/
+                String[] conditionArray = splitBy(joinConditionString, "[Aa][Nn][Dd]|[Oo][Rr]");
+                List<QueryFilter> filterList = queryTable.getFilterList();
+                addFilterTo(filterList, conditionArray, project);
+                if (log.isDebugEnabled()) log.debug("joinCondition '{}' to filterList: {}", joinConditionString, Arrays.toString(filterList.toArray()));
 
                 loadTableName(queryTable, dataFile, project, workspace);
                 loadColumnList(queryTable, dataFile, project, workspace);
@@ -360,16 +274,12 @@ public class AddQuery extends QueryCommand {
             joinTable = findTable(joinTableName, tableList);
             table.setJoinTableId(joinTable.getId());
 
-            /*TODO: need to change Line between join-tables,
-            *  1.need Condition object
-            *  2.turn QueryTable.JoinCondition to Condition object.
-            *  3.turn Query.WhereCondition to Condition object.
-             * 4.need to parse QueryTable.JoinCondition
-             * 5.need to parse Query.WhereCondition
-            *  6.change to line between join-columns
-            **/
-            Line line = addLine(joinTable.getSelectableId(), table.getSelectableId(), lineList);
-            line.setText(table.getJoinCondition());
+            Line line;
+            for (QueryFilter filter : table.getFilterList()) {
+                line = addLine(getColumnSelectableId(filter.getLeftValue()), getColumnSelectableId(filter.getRightValue()), lineList);
+                //line.setText(table.getJoinCondition());
+            }
+
         }
     }
 
@@ -408,7 +318,7 @@ public class AddQuery extends QueryCommand {
                 value = column.startsWith(",") ? column.substring(1) : column;
             }
 
-            queryColumn = new QueryColumn(index, index, name, null);
+            queryColumn = new QueryColumn(index, index, name, null, ProjectUtil.newElementId(project), ProjectUtil.newElementId(project));
             queryColumn.setType(type);
             queryColumn.setValue(value.trim());
             queryColumn.setSelected(true);
@@ -490,12 +400,6 @@ public class AddQuery extends QueryCommand {
                 }
             }
         }
-    }
-
-    private String[] splitBy(String source, String splitters) {
-        String splitter = "__SPLITTER__";
-        source = source.replaceAll("(" + splitters + ")", splitter + "$1");
-        return source.split(splitter);
     }
 
     private String[] splitColumn(String source) {

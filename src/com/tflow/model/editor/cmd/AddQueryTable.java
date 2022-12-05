@@ -8,6 +8,7 @@ import com.tflow.model.editor.*;
 import com.tflow.model.editor.room.Tower;
 import com.tflow.model.editor.sql.Query;
 import com.tflow.model.editor.sql.QueryColumn;
+import com.tflow.model.editor.sql.QueryFilter;
 import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.model.mapper.ProjectMapper;
 import com.tflow.util.ProjectUtil;
@@ -74,11 +75,19 @@ public class AddQueryTable extends QueryCommand {
                 queryTable.setJoinTableId(fkTable.getId());
                 queryTable.setJoinCondition(joinCondition);
 
+                /*joinCondition => filterList*/
+                String[] conditionArray = splitBy(joinCondition, "[Aa][Nn][Dd]|[Oo][Rr]");
+                List<QueryFilter> filterList = queryTable.getFilterList();
+                addFilterTo(filterList, conditionArray, project);
+                if (log.isDebugEnabled()) log.debug("joinCondition '{}' to filterList: {}", joinCondition, Arrays.toString(filterList.toArray()));
+
                 /*need line between (pk)queryTable and fkTable*/
-                fkTable.setStartPlug(new StartPlug(ProjectUtil.newElementId(project)));
-                queryTable.setEndPlug(new EndPlug(ProjectUtil.newElementId(project)));
-                Line line = addLine(fkTable.getSelectableId(), queryTable.getSelectableId(), query.getLineList());
-                line.setText(queryTable.getJoinCondition());
+                Line line;
+                for (QueryFilter filter : filterList) {
+                    line = addLine(getColumnSelectableId(filter.getLeftValue()), getColumnSelectableId(filter.getRightValue()), query.getLineList());
+                    //line.setText(queryTable.getJoinCondition());
+                }
+
             }
         }
 
@@ -97,6 +106,12 @@ public class AddQueryTable extends QueryCommand {
                 pkTable.setJoinTable(tableName);
                 pkTable.setJoinTableId(tableId);
                 pkTable.setJoinCondition(joinCondition);
+
+                /*joinCondition => filterList*/
+                String[] conditionArray = splitBy(joinCondition, "[Aa][Nn][Dd]|[Oo][Rr]");
+                List<QueryFilter> filterList = pkTable.getFilterList();
+                addFilterTo(filterList, conditionArray, project);
+                if (log.isDebugEnabled()) log.debug("joinCondition '{}' to filterList: {}", joinCondition, Arrays.toString(filterList.toArray()));
 
                 /*need line between (pk)queryTable and fkTable*/
                 queryTable.setStartPlug(new StartPlug(ProjectUtil.newElementId(project)));
