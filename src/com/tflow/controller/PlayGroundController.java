@@ -7,13 +7,25 @@ import com.tflow.model.editor.DataFileType;
 import com.tflow.model.editor.JavaScript;
 import com.tflow.system.Environment;
 import com.tflow.util.MetaDiffUtil;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
+import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.axes.cartesian.CartesianScales;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearAxes;
+import org.primefaces.model.charts.line.LineChartDataSet;
+import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.optionconfig.title.Title;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +55,9 @@ public class PlayGroundController extends Controller {
     private List<List<MetaDiffUtil.MetaDiff>> metaDiffCollection;
     private List<List<MetaDiffUtil.MetaDiff>> operandCollection;
     private List<List<MetaDiffUtil.MetaDiff>> operatorCollection;
+
+    private LineChartModel cartesianLinearModel;
+    private int periodicity;
 
     @Override
     public Page getPage() {
@@ -133,6 +148,22 @@ public class PlayGroundController extends Controller {
         this.metaDiffCollection = metaDiffCollection;
     }
 
+    public LineChartModel getCartesianLinearModel() {
+        return cartesianLinearModel;
+    }
+
+    public void setCartesianLinearModel(LineChartModel cartesianLinearModel) {
+        this.cartesianLinearModel = cartesianLinearModel;
+    }
+
+    public int getPeriodicity() {
+        return periodicity;
+    }
+
+    public void setPeriodicity(int periodicity) {
+        this.periodicity = periodicity;
+    }
+
     @Override
     void onCreation() {
         Environment currentEnvironment = workspace.getEnvironment();
@@ -169,6 +200,10 @@ public class PlayGroundController extends Controller {
         transactionData = defaultTransactionData();
         collectionData = new ArrayList<>(Arrays.asList("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""));
         metaDiffData = "";
+
+        /*Apache Math*/
+        initCartesianLinearModel();
+        periodicity = 4;
     }
 
     public void throwException() throws Exception {
@@ -713,6 +748,226 @@ public class PlayGroundController extends Controller {
          * case3: else. : use operand from first MetaDiff (weight by Operator.weight)
          */
 
+    }
+
+
+    public List<List<BigDecimal>> extractTransactionData() {
+        /*parse transactionData to List of MetaDiff, line by line*/
+        String[] lines = transactionData.split("\\n");
+        List<List<BigDecimal>> transactionSetList = new ArrayList<>();
+        List<BigDecimal> transactionDataSet;
+
+        int count = 0;
+        for (String line : lines) {
+            if (line.isEmpty()) continue;
+
+            String[] trans = line.split("[,]");
+            transactionDataSet = new ArrayList<>();
+            for (String digit : trans) {
+                transactionDataSet.add(BigDecimal.valueOf(Double.parseDouble(digit)));
+            }
+
+            transactionSetList.add(transactionDataSet);
+        }
+
+        return transactionSetList;
+    }
+
+    /**
+     * Predict using Apache Commons Math
+     */
+    public void predictNextValue() {
+        linearRegression(periodicity);
+        interpolation(periodicity);
+    }
+
+    /**
+     * TODO: about Interpolation see https://commons.apache.org/proper/commons-math/userguide/analysis.html
+     * @param periodicity
+     */
+    private void interpolation(int periodicity) {
+
+        // Notice: change Interpolator here
+        UnivariateInterpolator interpolator = new SplineInterpolator();
+
+        // Add your data to the regression model
+        List<List<BigDecimal>> transactionDataList = extractTransactionData();
+        List<BigDecimal> decimalXList = new ArrayList<>();
+        List<BigDecimal> interpolateXList;
+        List<BigDecimal> interpolateYList;
+        BigDecimal simX;
+        StringBuilder transactionBuilder;
+        StringBuilder lines = new StringBuilder();
+        LineChartDataSet dataSet;
+        ChartData chartData = new ChartData();
+        BigDecimal data;
+        int startPoint;
+        int dataSetCount = 0;
+        for (List<BigDecimal> decimalYList : transactionDataList) {
+            transactionBuilder = new StringBuilder();
+
+            // Use periodicity to make vary of result
+            startPoint = Math.max(0, decimalYList.size() - periodicity);
+            if (startPoint > 0) {
+                for (int i = 0; i < startPoint; i++) {
+                    transactionBuilder.append(",").append(decimalYList.get(i).toString());
+                }
+            }
+
+            // Simulate X from 1
+            interpolateYList = new ArrayList<>();
+            interpolateXList = new ArrayList<>();
+            simX = BigDecimal.ONE;
+            for (int i = startPoint; i < decimalYList.size(); i++) {
+                data = decimalYList.get(i);
+                interpolateXList.add(simX);
+                interpolateYList.add(data);
+                transactionBuilder.append(",").append(data.toString());
+                if (!decimalXList.contains(simX)) decimalXList.add(simX);
+                simX = simX.add(BigDecimal.ONE);
+            }
+
+            // Predict Next of Y by Next of X
+            double[] x = toArrayOfDouble(interpolateXList);
+            double[] y = toArrayOfDouble(interpolateYList);
+            log.debug("x = {}", x);
+            log.debug("y = {}", y);
+            BigDecimal next = BigDecimal.valueOf(interpolator.interpolate(x, y).value(simX.doubleValue()));
+            decimalYList.add(next);
+            if (!decimalXList.contains(simX)) decimalXList.add(simX);
+
+            // update chart
+            dataSetCount++;
+            dataSet = new LineChartDataSet();
+            dataSet.setLabel("Dataset #" + dataSetCount);
+            dataSet.setYaxisID("left-y-axis");
+            dataSet.setFill(true);
+            dataSet.setTension(0.5);
+            dataSet.setData(Arrays.asList(decimalYList.toArray()));
+            chartData.addChartDataSet(dataSet);
+
+            // update transactionData
+            transactionBuilder.append(",").append(next.toString());
+            lines.append(transactionBuilder.toString().substring(1)).append("\n");
+        }
+
+        this.transactionData = lines.toString();
+        setChartData(chartData, decimalXList);
+    }
+
+    private double[] toArrayOfDouble(List<BigDecimal> decimalList) {
+        double[] db = new double[decimalList.size()];
+        for (int i = 0; i < db.length; i++)
+            db[i] = decimalList.get(i).doubleValue();
+        return db;
+    }
+
+    private void linearRegression(int periodicity) {
+
+        // Create a new SimpleRegression instance
+        SimpleRegression regression;
+
+        // Add your data to the regression model
+        List<List<BigDecimal>> transactionDataList = extractTransactionData();
+        List<BigDecimal> decimalXList = new ArrayList<>();
+        BigDecimal simX, maxX = BigDecimal.ZERO;
+        StringBuilder transactionBuilder;
+        StringBuilder lines = new StringBuilder();
+        LineChartDataSet dataSet;
+        ChartData chartData = new ChartData();
+        BigDecimal data;
+        int startPoint;
+        int dataSetCount = 0;
+        for (List<BigDecimal> decimalYList : transactionDataList) {
+            transactionBuilder = new StringBuilder();
+            regression = new SimpleRegression();
+
+            // Use periodicity to make result of Moving Average
+            startPoint = Math.max(0, decimalYList.size() - periodicity);
+            if (startPoint > 0) {
+                for (int i = 0; i < startPoint; i++) {
+                    transactionBuilder.append(",").append(decimalYList.get(i).toString());
+                }
+            }
+
+            // Simulate X from 1
+            simX = BigDecimal.ONE;
+            for (int i = startPoint; i < decimalYList.size(); i++) {
+                data = decimalYList.get(i);
+
+                regression.addData(simX.doubleValue(), data.doubleValue());
+                transactionBuilder.append(",").append(data.toString());
+
+                if (!decimalXList.contains(simX)) decimalXList.add(simX);
+                simX = simX.add(BigDecimal.ONE);
+            }
+
+            // Predict Next of Y by Next of X
+            BigDecimal next = BigDecimal.valueOf(regression.predict(simX.doubleValue()));
+            decimalYList.add(next);
+            if (!decimalXList.contains(simX)) decimalXList.add(simX);
+
+            // update chart
+            dataSetCount++;
+            dataSet = new LineChartDataSet();
+            dataSet.setLabel("Dataset #" + dataSetCount);
+            dataSet.setYaxisID("left-y-axis");
+            dataSet.setFill(true);
+            dataSet.setTension(0.5);
+            dataSet.setData(Arrays.asList(decimalYList.toArray()));
+            chartData.addChartDataSet(dataSet);
+
+            // update transactionData
+            transactionBuilder.append(",").append(next.toString());
+            lines.append(transactionBuilder.toString().substring(1)).append("\n");
+        }
+
+        this.transactionData = lines.toString();
+        setChartData(chartData, decimalXList);
+    }
+
+    private void initCartesianLinearModel() {
+        ChartData chartData = new ChartData();
+        LineChartDataSet dataSet = new LineChartDataSet();
+        dataSet.setLabel("Dataset");
+        dataSet.setYaxisID("left-y-axis");
+        dataSet.setFill(true);
+        dataSet.setTension(0.5);
+        dataSet.setData(new ArrayList<>());
+        chartData.addChartDataSet(dataSet);
+        setChartData(chartData, new ArrayList<>());
+    }
+
+    private void setChartData(ChartData chartData, List<BigDecimal> decimalXList) {
+        cartesianLinearModel = new LineChartModel();
+
+        List<String> labels = new ArrayList<>();
+        for (BigDecimal decimal : decimalXList) {
+            labels.add(decimal.toString());
+        }
+        chartData.setLabels(labels);
+        cartesianLinearModel.setData(chartData);
+
+        //Options
+        LineChartOptions options = new LineChartOptions();
+        CartesianScales cScales = new CartesianScales();
+        CartesianLinearAxes linearAxes = new CartesianLinearAxes();
+        linearAxes.setId("left-y-axis");
+        linearAxes.setPosition("left");
+        CartesianLinearAxes linearAxes2 = new CartesianLinearAxes();
+        linearAxes2.setId("right-y-axis");
+        linearAxes2.setPosition("right");
+
+        cScales.addYAxesData(linearAxes);
+        cScales.addYAxesData(linearAxes2);
+        options.setScales(cScales);
+
+        Title title = new Title();
+        title.setDisplay(true);
+        title.setText("Cartesian Linear Chart");
+        options.setTitle(title);
+
+        cartesianLinearModel.setOptions(options);
     }
 
 }

@@ -184,7 +184,7 @@ public class MetaDiffUtil {
         metaDiff.next = target;
 
         /*try each <operator> to find <operand> that fit <exp2>*/
-        for (Operator operator : values()) {
+        for (Operator operator : Operator.values()) {
             if (operator.negative)
                 addOperandNegative(metaDiff.operandList, operator, source, target);
             else

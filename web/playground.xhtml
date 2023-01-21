@@ -178,11 +178,24 @@
                                 </p:outputPanel>
 
                                 <div class="ui-g-12">
+                                    <p:lineChart model="#{playCtl.cartesianLinearModel}" style="width:100%;height:250px;"/>
+                                </div>
+
+                                <div class="ui-g-12">
+                                    <div class="float-right">
+                                        <p:outputLabel value="Periodicity :"/>
+                                        <p:inputNumber value="#{playCtl.periodicity}" minValue="1" maxValue="1000"/>
+                                    </div>
+                                </div>
+
+                                <div class="ui-g-12">
                                     <p:commandButton styleClass="float-left" icon="pi pi-angle-double-down" value="Protype : 1.Create Meta Diff Data" actionListener="#{playCtl.prototypeCreateMetaDiffData}" update="@form"/>
                                     <p:commandButton styleClass="float-left" icon="pi pi-angle-double-up" value="Protype : 3.Estimate Next Value" actionListener="#{playCtl.prototypeEstimateNextValue}" update="@form" rendered="#{playCtl.metaDiffCollection != null and playCtl.metaDiffCollection.size() > 0}"/>
 
                                     <p:commandButton styleClass="float-right" icon="pi pi-angle-double-down" value="Pattern : 1.Create Meta Diff Data" actionListener="#{playCtl.patternCreateMetaDiffData}" update="@form"/>
                                     <p:commandButton styleClass="float-right" icon="pi pi-angle-double-up" value="Pattern : 3.Estimate Next Value" actionListener="#{playCtl.patternEstimateNextValue}" update="@form" rendered="#{playCtl.metaDiffCollection != null and playCtl.metaDiffCollection.size() > 0}"/>
+
+                                    <p:commandButton styleClass="float-right" icon="pi pi-angle-double-up" value="Linear : A.Estimate Next Value" actionListener="#{playCtl.predictNextValue}" update="@form"/>
                                 </div>
 
                                 <p:divider align="left">
