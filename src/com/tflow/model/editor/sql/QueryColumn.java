@@ -7,7 +7,7 @@ import com.tflow.model.editor.*;
 
 import java.util.Map;
 
-public class QueryColumn implements Selectable {
+public class QueryColumn implements Selectable, HasEndPlug {
 
     private int id;
     private int index;

@@ -57,7 +57,7 @@ Techonologies want to play with
 
 | name                                 | url                                                         | remark                                                                                                                                |
 | ------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Apache Hop                           | https://hop.apache.org/                                     | Something like any workflow playform come with Web GUI and work for Data Integration (Piplines) like TFlow.                           |
+| Apache Hop                           | https://hop.apache.org/                                     | Something like any workflow platform come with Web GUI and work for Data Integration (Piplines) like TFlow.                           |
 | Apache HBase                         | https://www.tutorialspoint.com/hbase/hbase_installation.htm | Table Store using normal file system with optional HDFS support (can move from local file system to Hadoop DFS) , requires Zookeeper. |
 |                                      | https://hbase.apache.org/                                   | Standalone Mode and direct access without SQL.                                                                                        |
 | Apache Hadoop                        |                                                             | Interesting in MapReduce job with Large Data File (Gigabytes File).                                                                   |
@@ -67,6 +67,115 @@ Techonologies want to play with
 |                                      |                                                             | Dataset df = spark.read().json("logs.json");                                                                                          |
 | <br/>df.where("age > 21")            |                                                             |                                                                                                                                       |
 | <br/>  .select("name.first").show(); |                                                             |                                                                                                                                       |
+
+----
+
+## PLAYGROUND : บัญญัติไตรยางศ์
+
+```matlab
+0 = 0
+1 = SUM(1,0)
+2 = SUM(2,SUM(1,0))
+:   :
+10 = 10 + SUM(n,SUM(n-1,...))
+```
+
+```matlab
+fx(0) = 0
+fx(1) = 1
+fx(2) = 3
+fx(3) = 6
+fx(4) = 10
+```
+
+```matlab
+diff-fl0:data model
+0,1,3,6,10, .. ,15
+
+diff-fl1:0
++1,+2,+3,+4, .. ,+5
+
+diff-fl2:3
++1,+1,+1, .. ,+1
+
+diff-fl3:2
++0,+0, .. ,+0
+
+diff-fl4:1
++0, .. ,+0
+```
+
+## from chat.OpenAI
+
+> 
+
+```java
+// Import the necessary classes from the Apache Commons Math library
+import org.apache.commons.math3.stat.regression.SimpleRegression;
+
+// Create a new SimpleRegression instance
+SimpleRegression regression = new SimpleRegression();
+
+// Add your data to the regression model
+regression.addData(0, 0);
+regression.addData(1, 1);
+regression.addData(2, 3);
+regression.addData(3, 6);
+regression.addData(4, 10);
+
+// Use the regression model to predict the next value in the series
+double nextValue = regression.predict(5);
+```
+
+----
+
+## PLAYGROUND : Learn English
+
+> Answer from charGPT(chage.openAI)
+
+Q: can you help me to learn to understand english quickly
+
+A: Sure, there are a few things you can do to improve your understanding of English quickly:
+
+1. Practice regularly: The more you practice listening to and speaking English, the better you will become at understanding it. Try to find opportunities to listen to and speak English as much as possible, such as through conversations with native speakers, watching English-language movies or TV shows, or listening to English-language podcasts or songs.
+
+2. Focus on the most common words: The English language has a large vocabulary, but a relatively small number of words are used very frequently. By focusing on learning the most common words first, you can quickly improve your ability to understand a wide range of English-language materials.
+
+3. Pay attention to context: English words can have multiple meanings, so it is important to pay attention to the context in which they are used to understand their intended meaning. For example, the word "bat" can refer to a flying mammal or a piece of sports equipment, depending on the context in which it is used.
+
+4. Use resources to improve your vocabulary and grammar: There are many resources available to help you improve your vocabulary and grammar, such as dictionaries, grammar books, and online courses. By using these resources, you can learn the rules of the English language and expand your vocabulary more quickly.
+
+5. Practice active listening: Active listening is a technique that involves fully focusing on the speaker and trying to understand their words and meaning, rather than just passively hearing what they are saying. By practicing active listening, you can improve your ability to understand English more quickly.
+
+Q: how to practice active listening
+
+A: To practice active listening, try the following steps:
+
+1. Remove distractions: Find a quiet place where you can focus on the speaker without any distractions, such as noise or interruptions.
+
+2. Pay attention to the speaker: Focus your attention on the speaker and try to understand their words and meaning, rather than thinking about something else or preparing your response.
+
+3. Use nonverbal cues: Pay attention to the speaker's body language, facial expressions, and tone of voice, as these can provide valuable information about the meaning of their words.
+
+4. Ask clarifying questions: If you don't understand something the speaker said, ask for clarification. This shows that you are engaged and interested in what they are saying, and it will help you to better understand their meaning.
+
+5. Provide feedback: Provide feedback to the speaker to show that you are listening and understanding what they are saying. This can be verbal, such as by nodding your head or saying "I see" or "I understand," or nonverbal, such as by maintaining eye contact or leaning in slightly.
+
+By practicing active listening, you can improve your ability to understand and engage with the speaker, and to better understand their words and meaning.
+
+Q: where can I find the most common words
+
+A: There are many resources available that can help you learn the most common words in English. Some of these resources include:
+
+1. Frequency lists: These are lists of words that are ranked by their frequency of use in the English language. You can find frequency lists online, in books, or in other resources.
+
+2. Vocabulary books: Many vocabulary books are organized around the most common words in English. These books can be a helpful resource for learning the words that are used most frequently in the language.
+
+3. Online courses and apps: There are many online courses and apps that focus on teaching the most common words in English. These resources often use a variety of techniques, such as flashcards and quizzes, to help you learn and remember the words.
+
+4. Corpus linguistics: Corpus linguistics is the study of large collections of written or spoken language, known as "corpora." By analyzing corpora, linguists can identify the most common words in a language. You can find corpora online, in books, or in other resources.
+
+By using these resources, you can learn the most common words in English and quickly improve your ability to understand a wide range of English-language materials.
 
 ----
 

@@ -5,10 +5,7 @@ import com.clevel.dconvers.data.DataRow;
 import com.clevel.dconvers.data.DataTable;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.query.ColumnType;
-import com.tflow.model.editor.DataFile;
-import com.tflow.model.editor.DataType;
-import com.tflow.model.editor.Project;
-import com.tflow.model.editor.Workspace;
+import com.tflow.model.editor.*;
 import com.tflow.model.editor.datasource.Database;
 import com.tflow.model.editor.sql.QueryColumn;
 import com.tflow.model.editor.sql.QueryFilter;
@@ -16,8 +13,11 @@ import com.tflow.model.editor.sql.QueryTable;
 import com.tflow.system.Properties;
 import com.tflow.util.DConversHelper;
 import com.tflow.util.ProjectUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class QueryCommand extends Command {
 
@@ -264,12 +264,48 @@ public abstract class QueryCommand extends Command {
         return false;
     }
 
-    protected String getColumnSelectableId(String filterValue) {
-        /*TODO: split value to tableName and columnName*/
-        /*TODO: find table by tableName*/
-        /*TODO: find column by columnName*/
-        /*TODO: add found-column to selectableMap for addLine function*/
-        return null;
+    protected String getColumnSelectableId(String filterValue, List<QueryTable> tableList, Map<String, Selectable> selectableMap, Project project) {
+
+        /*split filterValue to tableName and columnName*/
+        String[] words = filterValue.replaceAll("[()]", "").split("[.]");
+        String tableName;
+        String columnName;
+        if (words.length > 2) {
+            tableName = words[1];
+            columnName = words[2];
+        } else {
+            tableName = words[0];
+            columnName = words[1];
+        }
+
+        QueryTable queryTable = findTable(tableName, tableList);
+        QueryColumn queryColumn = findColumn(columnName.toUpperCase(), queryTable);
+        Logger log = LoggerFactory.getLogger(getClass());
+        if (log.isDebugEnabled()) log.debug("queryTable({}): ", queryTable);
+        if (queryColumn == null) {
+            throw new UnsupportedOperationException("Invalid join-filter '" + filterValue + "' no column '" + columnName + "' in table '" + tableName + "'!");
+        }
+
+        /*add found-column to selectableMap, to prepare for addLine function*/
+        String selectableId = queryColumn.getSelectableId();
+        selectableMap.put(selectableId, queryColumn);
+
+        /*found-column need startPlug and endPlug*/
+        queryColumn.setStartPlug(new StartPlug(ProjectUtil.newElementId(project)));
+        queryColumn.setEndPlug(new EndPlug(ProjectUtil.newElementId(project)));
+        if (log.isDebugEnabled()) log.debug("queryColumn({}): ", queryColumn);
+
+        return selectableId;
+    }
+
+    protected QueryTable findTable(String tableName, List<QueryTable> tableList) {
+        tableName = tableName.toUpperCase();
+        for (QueryTable table : tableList) {
+            if (tableName.equals(table.getName().toUpperCase()) || tableName.equals(table.getAlias().toUpperCase())) {
+                return table;
+            }
+        }
+        throw new UnsupportedOperationException("Invalid Table Reference: '" + tableName + "' not found in table list!");
     }
 
 }

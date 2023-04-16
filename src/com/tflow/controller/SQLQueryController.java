@@ -5,6 +5,7 @@ import com.clevel.dconvers.data.DataRow;
 import com.clevel.dconvers.data.DataTable;
 import com.tflow.model.data.Dbms;
 import com.tflow.model.data.IDPrefix;
+import com.tflow.model.data.ProjectDataException;
 import com.tflow.model.data.PropertyVar;
 import com.tflow.model.editor.*;
 import com.tflow.model.editor.action.*;
@@ -21,6 +22,7 @@ import org.primefaces.event.TabChangeEvent;
 
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @ViewScoped
@@ -34,6 +36,7 @@ public class SQLQueryController extends Controller {
     private Selectable selectableFilter;
     private Selectable selectableSort;
     private Selectable selectablePreview;
+    private String sqlPreview;
 
     private String openSectionUpdate;
 
@@ -91,6 +94,14 @@ public class SQLQueryController extends Controller {
 
     public void setSelectablePreview(Selectable selectablePreview) {
         this.selectablePreview = selectablePreview;
+    }
+
+    public String getSqlPreview() {
+        return sqlPreview;
+    }
+
+    public void setSqlPreview(String sqlPreview) {
+        this.sqlPreview = sqlPreview;
     }
 
     @Override
@@ -336,9 +347,23 @@ public class SQLQueryController extends Controller {
     private String openPreviewSection() {
         selectQuery(selectablePreview);
 
+        if (sqlPreview == null) {
+            loadSQLPreview();
+        }
+
         /*TODO: generate preview*/
 
         return SQLQuerySection.SQL.getUpdate();
+    }
+
+    private void loadSQLPreview() {
+        BinaryFile binaryFile = null;
+        try {
+            binaryFile = workspace.getProjectManager().loadUploaded(dataFile.getUploadedId(), workspace.getProject());
+        } catch (ProjectDataException e) {
+
+        }
+        sqlPreview = new String(binaryFile.getContent(), StandardCharsets.ISO_8859_1).replaceAll("\n", "<br/>");
     }
 
     private String openFilterSection() {

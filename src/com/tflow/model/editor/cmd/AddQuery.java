@@ -276,7 +276,8 @@ public class AddQuery extends QueryCommand {
 
             Line line;
             for (QueryFilter filter : table.getFilterList()) {
-                line = addLine(getColumnSelectableId(filter.getLeftValue()), getColumnSelectableId(filter.getRightValue()), lineList);
+
+                line = addLine(getColumnSelectableId(filter.getLeftValue(), tableList, selectableMap, project), getColumnSelectableId(filter.getRightValue(), tableList, selectableMap, project), lineList);
                 //line.setText(table.getJoinCondition());
             }
 
@@ -337,16 +338,6 @@ public class AddQuery extends QueryCommand {
             querySort = new QuerySort(index++, ProjectUtil.newUniqueId(project), sort.substring(1).trim());
             sortList.add(querySort);
         }
-    }
-
-    private QueryTable findTable(String tableName, List<QueryTable> tableList) {
-        tableName = tableName.toUpperCase();
-        for (QueryTable table : tableList) {
-            if (tableName.equals(table.getName().toUpperCase()) || tableName.equals(table.getAlias().toUpperCase())) {
-                return table;
-            }
-        }
-        throw new UnsupportedOperationException("Invalid Table Reference: '" + tableName + "' not found in table list!");
     }
 
     private void splitTableWithJoin(String table, String[] words, StringBuilder tableSchema, StringBuilder tableName, StringBuilder tableAlias, StringBuilder tableJoinType, StringBuilder joinedTableName, StringBuilder joinCondition) {

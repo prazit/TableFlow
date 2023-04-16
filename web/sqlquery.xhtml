@@ -117,12 +117,16 @@
 
                                                                 <p:repeat value="#{room.columnList}" var="column">
                                                                     <p:outputPanel styleClass="selectable column#{column.selected?' selected':''}">
+                                                                        <div id="#{column.endPlug}" class="#{column.endPlug.styleClass}"></div>
+
                                                                         <div id="#{room.id}.#{column.id}" class="hidden"></div>
                                                                         <label class="number">#{column.index}</label>
-                                                                        <p:graphicImage library="images" name="#{column.dataType.image}"/>
+                                                                        <p:graphicImage library="images" name="#{column.dataType.image}" title="#{column}"/>
                                                                         <label>#{column.name}</label>
                                                                         <p:graphicImage library="images" name="pk.png" rendered="#{column.pk}"/>
                                                                         <p:graphicImage library="images" name="fk.png" rendered="#{column.fk}" title="#{column.fkSchema}.#{column.fkTable}"/>
+
+                                                                        <div id="#{column.startPlug}" class="#{column.startPlug.styleClass}"></div>
                                                                     </p:outputPanel>
                                                                 </p:repeat>
                                                             </p:panel>
@@ -218,7 +222,7 @@
                             <input name="selectableId" type="hidden" value="#{sqlQueryCtl.selectablePreview.selectableId}"/>
                             <p:remoteCommand name="update#{sqlQueryCtl.selectablePreview.selectableId}" oncomplete="updateComplete('#{sqlQueryCtl.selectablePreview.selectableId}')"/>
 
-                            GENERATING SQL ...
+                            <p:outputPanel styleClass="vertical-scroll-panel">#{sqlQueryCtl.sqlPreview}</p:outputPanel>
                         </p:outputPanel>
                     </p:tab>
                 </p:tabView>

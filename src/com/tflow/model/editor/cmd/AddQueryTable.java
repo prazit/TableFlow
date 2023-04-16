@@ -40,7 +40,8 @@ public class AddQueryTable extends QueryCommand {
         tableList.add(queryTable);
 
         /*add to selectableMap*/
-        step.getSelectableMap().put(queryTable.getSelectableId(), queryTable);
+        Map<String, Selectable> selectableMap = step.getSelectableMap();
+        selectableMap.put(queryTable.getSelectableId(), queryTable);
 
         /*add to saveList*/
         List<QueryTable> saveList = new ArrayList<>();
@@ -84,7 +85,7 @@ public class AddQueryTable extends QueryCommand {
                 /*need line between (pk)queryTable and fkTable*/
                 Line line;
                 for (QueryFilter filter : filterList) {
-                    line = addLine(getColumnSelectableId(filter.getLeftValue()), getColumnSelectableId(filter.getRightValue()), query.getLineList());
+                    line = addLine(getColumnSelectableId(filter.getLeftValue(), tableList, selectableMap, project), getColumnSelectableId(filter.getRightValue(), tableList, selectableMap, project), query.getLineList());
                     //line.setText(queryTable.getJoinCondition());
                 }
 
